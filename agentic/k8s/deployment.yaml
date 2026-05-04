@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentic-bff
+  namespace: platform
+  labels:
+    app.kubernetes.io/name: agentic-bff
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agentic-bff
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: agentic-bff
+        app.kubernetes.io/component: frontend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9001"
+    spec:
+      serviceAccountName: agentic-bff
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: agentic-bff
+      containers:
+        - name: agentic-bff
+          image: us-west1-docker.pkg.dev/p-642-cilab-infrastructure/cilab/agentic:latest
+          ports:
+            - name: http
+              containerPort: 9001
+          volumeMounts:
+            - name: cloudsql
+              mountPath: /cloudsql
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          envFrom:
+            - configMapRef:
+                name: agentic-bff-config
+            # Secrets from Secret Manager (external-secrets-operator):
+            #   agentic-bff/jwt-secret            → JWT_SECRET
+            #   agentic-bff/service-auth-secret   → SERVICE_AUTH_SECRET
+            #   agentic-bff/google-client-id      → GOOGLE_CLIENT_ID
+            #   agentic-bff/google-client-secret  → GOOGLE_CLIENT_SECRET
+            #   agentic-super-admin-emails        → SUPER_ADMIN_EMAILS
+            #   agentic-bff/connector-credentials-secret → CONNECTOR_CREDENTIALS_SECRET
+            #   agentic-bff/database-url          → DATABASE_URL
+            #   agentic-smtp-host                 → SMTP_HOST
+            #   agentic-smtp-port                 → SMTP_PORT
+            #   agentic-smtp-user                 → SMTP_USER
+            #   agentic-smtp-pass                 → SMTP_PASS
+            #   agentic-smtp-secure               → SMTP_SECURE
+            #   agentic-email-from                → EMAIL_FROM
+            #   agentic-email-enabled             → EMAIL_ENABLED
+            - secretRef:
+                name: agentic-bff-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9001
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9001
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+
+        # Cloud SQL Auth Proxy — IAM-authenticated MySQL connection (BFF database)
+        # Instance: p-642-cilab-demo:us-west1:agentic-db (Cloud SQL MySQL, READY)
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
+          args:
+            - "--private-ip"
+            - "--unix-socket=/cloudsql"
+            - "p-642-cilab-demo:us-west1:agentic-db"
+          volumeMounts:
+            - name: cloudsql
+              mountPath: /cloudsql
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          securityContext:
+            runAsNonRoot: true
+      volumes:
+        - name: cloudsql
+          emptyDir: {}

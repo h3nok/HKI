@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1620 960" role="img" aria-labelledby="title desc">
+  <title id="title">Leak paths blocked by HKI</title>
+  <desc id="desc">Three common cross-domain leak paths are shown as editorial panels: query-rewrite broadening, derived-graph traversal, and cache contamination. Each attempt is rejected by HKI and the diagram ends with a fail-closed banner.</desc>
+  <defs>
+    <style>
+      :root { color-scheme: light dark; }
+      svg {
+        --page: #f8fafc; --surface: #ffffff; --surface-2: #f1f5f9;
+        --text: #0f172a; --muted: #475569; --rule: #cbd5e1; --line: #64748b; --arrow: #64748b;
+        --safe-fill: #ecfdf5; --safe-stroke: #059669; --safe-text: #065f46;
+        --policy-fill: #eef2ff; --policy-stroke: #4f46e5; --policy-text: #3730a3;
+        --warn-fill: #fff7ed; --warn-stroke: #ea580c; --warn-text: #9a3412;
+        --danger-fill: #fef2f2; --danger-stroke: #dc2626; --danger-text: #991b1b;
+        --glow-warn: rgba(234,88,12,0.18); --glow-danger: rgba(220,38,38,0.18);
+        --glow-safe: rgba(5,150,105,0.18); --glow-policy: rgba(79,70,229,0.18);
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        svg {
+          --page: #09111a; --surface: #0f172a; --surface-2: #111c2d;
+          --text: #e2e8f0; --muted: #94a3b8; --rule: #334155; --line: #7dd3fc; --arrow: #7dd3fc;
+          --safe-fill: #0e2c28; --safe-stroke: #34d399; --safe-text: #bbf7d0;
+          --policy-fill: #1f2451; --policy-stroke: #a78bfa; --policy-text: #ddd6fe;
+          --warn-fill: #3a220b; --warn-stroke: #fb923c; --warn-text: #fed7aa;
+          --danger-fill: #3a1618; --danger-stroke: #f87171; --danger-text: #fecaca;
+          --glow-warn: rgba(251,146,60,0.22); --glow-danger: rgba(248,113,113,0.22);
+          --glow-safe: rgba(52,211,153,0.22); --glow-policy: rgba(167,139,250,0.22);
+        }
+      }
+      .page { fill: var(--page); }
+      .heading { fill: var(--text); font-size: 38px; font-weight: 800; }
+      .subheading { fill: var(--muted); font-size: 17px; }
+      .panel { fill: var(--surface); stroke: var(--rule); stroke-width: 2; filter: url(#panel-shadow); }
+      .card { stroke-width: 2.5; }
+      .warn { fill: var(--warn-fill); stroke: var(--warn-stroke); filter: url(#glow-warn); }
+      .danger { fill: var(--danger-fill); stroke: var(--danger-stroke); filter: url(#glow-danger); }
+      .policy { fill: var(--policy-fill); stroke: var(--policy-stroke); filter: url(#glow-policy); }
+      .safe { fill: var(--safe-fill); stroke: var(--safe-stroke); filter: url(#glow-safe); }
+      .warn-text { fill: var(--warn-text); } .danger-text { fill: var(--danger-text); }
+      .policy-text { fill: var(--policy-text); } .safe-text { fill: var(--safe-text); }
+      .title { fill: var(--text); font-size: 22px; font-weight: 700; }
+      .body { fill: var(--muted); font-size: 14.5px; }
+      .chip { font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+      .flow { fill: none; stroke: var(--line); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .flow.block { stroke: var(--danger-stroke); stroke-dasharray: 12 8; marker-end: url(#block-arrow); }
+      .banner { fill: var(--safe-fill); stroke: var(--safe-stroke); stroke-width: 3; filter: url(#glow-safe); }
+      .banner-title { fill: var(--safe-text); font-size: 26px; font-weight: 800; }
+      .banner-copy { fill: var(--text); font-size: 15px; font-weight: 600; }
+      .num { font-size: 15px; font-weight: 800; fill: #fff; }
+      .num-bg-warn { fill: var(--warn-stroke); }
+      .num-bg-danger { fill: var(--danger-stroke); }
+      .num-bg-policy { fill: var(--policy-stroke); }
+    </style>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--arrow)" />
+    </marker>
+    <marker id="block-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--danger-stroke)" />
+    </marker>
+    <filter id="panel-shadow" x="-4%" y="-4%" width="110%" height="112%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <filter id="glow-warn" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-warn)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-danger" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-danger)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-policy" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-policy)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-safe" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-safe)" flood-opacity="1"/>
+    </filter>
+    <pattern id="dot-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#8090a0" opacity="0.06"/>
+    </pattern>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1620" height="960" rx="36" />
+  <rect x="0" y="0" width="1620" height="960" rx="36" fill="url(#dot-grid)"/>
+
+  <!-- Decorative accent -->
+  <rect x="70" y="26" width="100" height="5" rx="3" fill="var(--danger-stroke)" opacity="0.5" />
+  <rect x="180" y="26" width="50" height="5" rx="3" fill="var(--policy-stroke)" opacity="0.4" />
+
+  <text class="heading" x="70" y="76">Three leak paths, all blocked</text>
+  <text class="subheading" x="70" y="108">
+    <tspan x="70" dy="0">HKI does not rely on good intentions from helper subsystems.</tspan>
+    <tspan x="70" dy="20">Each attempted boundary violation is rejected against the active-domain contract.</tspan>
+  </text>
+
+  <!-- PANEL 1: Query-rewrite broadening -->
+  <g transform="translate(50 165)">
+    <rect class="panel" x="0" y="0" width="480" height="610" rx="28" />
+    <text class="chip warn-text" x="34" y="44">Leak path 1</text>
+    <text class="title" x="34" y="78">Query-rewrite broadening</text>
+    <text class="body" x="34" y="102">
+      <tspan x="34" dy="0">A retrieval helper expands a Domain A query</tspan>
+      <tspan x="34" dy="17">so aggressively that it reads Domain B content.</tspan>
+    </text>
+
+    <circle class="num-bg-warn" cx="56" cy="150" r="14" />
+    <text class="num" x="56" y="155" text-anchor="middle">1</text>
+    <rect class="card warn" x="36" y="170" width="408" height="96" rx="22" />
+    <text class="title warn-text" x="240" y="206" text-anchor="middle">A-labeled request enters recall</text>
+    <text class="body" x="240" y="230" text-anchor="middle">
+      <tspan x="240" dy="0">The system knows the active domain is A.</tspan>
+      <tspan x="240" dy="17">The question is whether helpers preserve it.</tspan>
+    </text>
+
+    <circle class="num-bg-danger" cx="56" cy="300" r="14" />
+    <text class="num" x="56" y="305" text-anchor="middle">2</text>
+    <rect class="card danger" x="36" y="320" width="408" height="110" rx="22" />
+    <text class="title danger-text" x="240" y="358" text-anchor="middle">Query rewriter broadens toward B</text>
+    <text class="body" x="240" y="384" text-anchor="middle">
+      <tspan x="240" dy="0">The rewritten query becomes relevant across</tspan>
+      <tspan x="240" dy="17">domains and attempts a B-labeled read.</tspan>
+    </text>
+
+    <text x="240" y="454" text-anchor="middle" font-size="20">🚫</text>
+    <circle class="num-bg-policy" cx="56" cy="470" r="14" />
+    <text class="num" x="56" y="475" text-anchor="middle">3</text>
+    <rect class="card policy" x="36" y="490" width="408" height="88" rx="22" />
+    <text class="title policy-text" x="240" y="522" text-anchor="middle">HKI rejects: σ(a)=B ≠ τ(r)=A</text>
+    <text class="body" x="240" y="548" text-anchor="middle">
+      <tspan x="240" dy="0">Exact-domain equality stops the read</tspan>
+      <tspan x="240" dy="17">before data leaves B.</tspan>
+    </text>
+
+    <path class="flow" d="M 240 266 L 240 320" />
+    <path class="flow block" d="M 240 430 L 240 454" />
+  </g>
+
+  <!-- PANEL 2: Derived graph traversal -->
+  <g transform="translate(570 165)">
+    <rect class="panel" x="0" y="0" width="480" height="610" rx="28" />
+    <text class="chip warn-text" x="34" y="44">Leak path 2</text>
+    <text class="title" x="34" y="78">Derived-graph traversal</text>
+    <text class="body" x="34" y="102">
+      <tspan x="34" dy="0">A graph edge appears convenient to follow,</tspan>
+      <tspan x="34" dy="17">but it does not carry a valid scope label.</tspan>
+    </text>
+
+    <circle class="num-bg-warn" cx="56" cy="150" r="14" />
+    <text class="num" x="56" y="155" text-anchor="middle">1</text>
+    <rect class="card warn" x="36" y="170" width="408" height="96" rx="22" />
+    <text class="title warn-text" x="240" y="206" text-anchor="middle">Traversal starts from valid node in A</text>
+    <text class="body" x="240" y="230" text-anchor="middle">
+      <tspan x="240" dy="0">The request begins on a legitimate A-owned</tspan>
+      <tspan x="240" dy="17">artifact. The problem is what follows.</tspan>
+    </text>
+
+    <circle class="num-bg-danger" cx="56" cy="300" r="14" />
+    <text class="num" x="56" y="305" text-anchor="middle">2</text>
+    <rect class="card danger" x="36" y="320" width="408" height="110" rx="22" />
+    <text class="title danger-text" x="240" y="358" text-anchor="middle">Unlabeled derived edge points into B</text>
+    <text class="body" x="240" y="384" text-anchor="middle">
+      <tspan x="240" dy="0">The graph wants to cross domains without</tspan>
+      <tspan x="240" dy="17">proving that the edge itself belongs to A.</tspan>
+    </text>
+
+    <text x="240" y="454" text-anchor="middle" font-size="20">🚫</text>
+    <circle class="num-bg-policy" cx="56" cy="470" r="14" />
+    <text class="num" x="56" y="475" text-anchor="middle">3</text>
+    <rect class="card policy" x="36" y="490" width="408" height="88" rx="22" />
+    <text class="title policy-text" x="240" y="522" text-anchor="middle">HKI rejects: derived edge lacks σ</text>
+    <text class="body" x="240" y="548" text-anchor="middle">
+      <tspan x="240" dy="0">No label-bearing edge, no traversal,</tspan>
+      <tspan x="240" dy="17">no cross-domain leak.</tspan>
+    </text>
+
+    <path class="flow" d="M 240 266 L 240 320" />
+    <path class="flow block" d="M 240 430 L 240 454" />
+  </g>
+
+  <!-- PANEL 3: Cache contamination -->
+  <g transform="translate(1090 165)">
+    <rect class="panel" x="0" y="0" width="480" height="610" rx="28" />
+    <text class="chip warn-text" x="34" y="44">Leak path 3</text>
+    <text class="title" x="34" y="78">Cache contamination</text>
+    <text class="body" x="34" y="102">
+      <tspan x="34" dy="0">A semantic cache finds a useful-looking result,</tspan>
+      <tspan x="34" dy="17">but the key was not bound to the active domain.</tspan>
+    </text>
+
+    <circle class="num-bg-warn" cx="56" cy="150" r="14" />
+    <text class="num" x="56" y="155" text-anchor="middle">1</text>
+    <rect class="card warn" x="36" y="170" width="408" height="96" rx="22" />
+    <text class="title warn-text" x="240" y="206" text-anchor="middle">Cache lookup starts from A request</text>
+    <text class="body" x="240" y="230" text-anchor="middle">
+      <tspan x="240" dy="0">The retriever asks for a fast answer on</tspan>
+      <tspan x="240" dy="17">behalf of A. Correctness depends on the key.</tspan>
+    </text>
+
+    <circle class="num-bg-danger" cx="56" cy="300" r="14" />
+    <text class="num" x="56" y="305" text-anchor="middle">2</text>
+    <rect class="card danger" x="36" y="320" width="408" height="110" rx="22" />
+    <text class="title danger-text" x="240" y="358" text-anchor="middle">Cache hit belongs to B</text>
+    <text class="body" x="240" y="384" text-anchor="middle">
+      <tspan x="240" dy="0">A naive key such as org + query_hash finds</tspan>
+      <tspan x="240" dy="17">a result generated in another domain.</tspan>
+    </text>
+
+    <text x="240" y="454" text-anchor="middle" font-size="20">🚫</text>
+    <circle class="num-bg-policy" cx="56" cy="470" r="14" />
+    <text class="num" x="56" y="475" text-anchor="middle">3</text>
+    <rect class="card policy" x="36" y="490" width="408" height="88" rx="22" />
+    <text class="title policy-text" x="240" y="522" text-anchor="middle">HKI rejects: key must bind domain</text>
+    <text class="body" x="240" y="548" text-anchor="middle">
+      <tspan x="240" dy="0">Cache state is partitioned by label,</tspan>
+      <tspan x="240" dy="17">so B cannot satisfy A.</tspan>
+    </text>
+
+    <path class="flow" d="M 240 266 L 240 320" />
+    <path class="flow block" d="M 240 430 L 240 454" />
+  </g>
+
+  <!-- Bottom banner -->
+  <rect class="banner" x="200" y="820" width="1220" height="100" rx="24" />
+  <text x="810" y="862" text-anchor="middle" font-size="24">🛡</text>
+  <text class="banner-title" x="810" y="890" text-anchor="middle">All three leak paths fail closed</text>
+  <text class="banner-copy" x="810" y="913" text-anchor="middle">No helper subsystem overrules the active-domain contract — no cross-domain bleed occurs.</text>
+</svg>

@@ -1,0 +1,264 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1680 1000" role="img" aria-labelledby="title desc">
+  <title id="title">HKI one-picture summary</title>
+  <desc id="desc">A comparison between conventional domain-aware systems where scope drifts over time and HKI systems where one active domain is sealed through the request lifecycle with explicit publication as the only cross-domain path.</desc>
+  <defs>
+    <style>
+      :root { color-scheme: light dark; }
+      svg {
+        --page: #f8fafc; --surface: #ffffff; --surface-2: #f1f5f9;
+        --text: #0f172a; --muted: #475569; --line: #64748b; --rule: #cbd5e1; --arrow: #64748b;
+        --warn-fill: #fff7ed; --warn-stroke: #ea580c; --warn-text: #9a3412;
+        --danger-fill: #fef2f2; --danger-stroke: #dc2626; --danger-text: #991b1b;
+        --safe-fill: #ecfdf5; --safe-stroke: #059669; --safe-text: #065f46;
+        --policy-fill: #eef2ff; --policy-stroke: #4f46e5; --policy-text: #3730a3;
+        --shared-fill: #f5f3ff; --shared-stroke: #7c3aed; --shared-text: #5b21b6;
+        --glow-warn: rgba(234,88,12,0.18); --glow-danger: rgba(220,38,38,0.18);
+        --glow-safe: rgba(5,150,105,0.18); --glow-policy: rgba(79,70,229,0.18);
+        --glow-shared: rgba(124,58,237,0.18);
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        svg {
+          --page: #09111a; --surface: #0f172a; --surface-2: #111c2d;
+          --text: #e2e8f0; --muted: #94a3b8; --line: #7dd3fc; --rule: #334155; --arrow: #7dd3fc;
+          --warn-fill: #3a220b; --warn-stroke: #fb923c; --warn-text: #fed7aa;
+          --danger-fill: #3a1618; --danger-stroke: #f87171; --danger-text: #fecaca;
+          --safe-fill: #0e2c28; --safe-stroke: #34d399; --safe-text: #bbf7d0;
+          --policy-fill: #1f2451; --policy-stroke: #a78bfa; --policy-text: #ddd6fe;
+          --shared-fill: #26143f; --shared-stroke: #c084fc; --shared-text: #e9d5ff;
+          --glow-warn: rgba(251,146,60,0.22); --glow-danger: rgba(248,113,113,0.22);
+          --glow-safe: rgba(52,211,153,0.22); --glow-policy: rgba(167,139,250,0.22);
+          --glow-shared: rgba(192,132,252,0.22);
+        }
+      }
+      .page { fill: var(--page); }
+      .panel { fill: var(--surface); stroke: var(--rule); stroke-width: 2; filter: url(#panel-shadow); }
+      .panel-header { fill: var(--surface-2); stroke: var(--rule); stroke-width: 2; }
+      .heading { font-size: 38px; font-weight: 800; fill: var(--text); }
+      .subheading { font-size: 17px; fill: var(--muted); }
+      .panel-title { font-size: 26px; font-weight: 700; fill: var(--text); }
+      .panel-copy { font-size: 15px; fill: var(--muted); }
+      .badge { font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+      .card { stroke-width: 2.5; }
+      .warn { fill: var(--warn-fill); stroke: var(--warn-stroke); filter: url(#glow-warn); }
+      .danger { fill: var(--danger-fill); stroke: var(--danger-stroke); filter: url(#glow-danger); }
+      .safe { fill: var(--safe-fill); stroke: var(--safe-stroke); filter: url(#glow-safe); }
+      .policy { fill: var(--policy-fill); stroke: var(--policy-stroke); filter: url(#glow-policy); }
+      .shared { fill: var(--shared-fill); stroke: var(--shared-stroke); filter: url(#glow-shared); }
+      .warn-text { fill: var(--warn-text); } .danger-text { fill: var(--danger-text); }
+      .safe-text { fill: var(--safe-text); } .policy-text { fill: var(--policy-text); }
+      .shared-text { fill: var(--shared-text); }
+      .card-title { font-size: 18px; font-weight: 700; }
+      .card-body { fill: var(--muted); font-size: 14px; }
+      .flow { fill: none; stroke: var(--line); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .flow.soft { stroke-dasharray: 8 10; }
+      .callout { font-size: 14px; font-weight: 700; }
+      .divider { stroke: var(--rule); stroke-width: 2; stroke-dasharray: 10 12; }
+      .num { font-size: 14px; font-weight: 800; fill: #fff; }
+      .num-bg { fill: var(--line); }
+    </style>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--arrow)" />
+    </marker>
+    <filter id="panel-shadow" x="-4%" y="-4%" width="110%" height="112%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <filter id="glow-warn" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-warn)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-danger" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-danger)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-safe" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-safe)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-policy" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-policy)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-shared" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-shared)" flood-opacity="1"/>
+    </filter>
+    <pattern id="dot-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#8090a0" opacity="0.06"/>
+    </pattern>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1680" height="1000" rx="36" />
+  <rect x="0" y="0" width="1680" height="1000" rx="36" fill="url(#dot-grid)"/>
+
+  <!-- Decorative accent bar -->
+  <rect x="70" y="26" width="120" height="5" rx="3" fill="var(--safe-stroke)" opacity="0.6" />
+  <rect x="200" y="26" width="60" height="5" rx="3" fill="var(--policy-stroke)" opacity="0.4" />
+
+  <text class="heading" x="70" y="78">The flow contrast at a glance</text>
+  <text class="subheading" x="70" y="110">
+    <tspan x="70" dy="0">Conventional systems often weaken scope as they optimize.</tspan>
+    <tspan x="70" dy="20">HKI preserves one active domain from the gateway to every downstream decision.</tspan>
+  </text>
+
+  <!-- LEFT PANEL: Advisory scope -->
+  <g transform="translate(50 165)">
+    <rect class="panel" x="0" y="0" width="420" height="820" rx="28" />
+    <rect class="panel-header" x="0" y="0" width="420" height="100" rx="28" />
+    <rect class="panel-header" x="0" y="72" width="420" height="28" rx="0" />
+    <text class="badge warn-text" x="30" y="40">Advisory scope</text>
+    <text class="panel-title" x="30" y="68">Typical domain-aware system</text>
+    <text class="panel-copy" x="30" y="93">
+      <tspan x="30" dy="0">Scope begins as a guess and degrades</tspan>
+    </text>
+
+    <!-- Step 1 -->
+    <circle class="num-bg" cx="70" cy="140" r="14" />
+    <text class="num" x="70" y="145" text-anchor="middle">1</text>
+    <rect class="card warn" x="56" y="162" width="310" height="82" rx="22" />
+    <text class="card-title warn-text" x="211" y="196" text-anchor="middle">Request enters system</text>
+    <text class="card-body" x="211" y="218" text-anchor="middle">
+      <tspan x="211" dy="0">Identity exists, but execution scope</tspan>
+      <tspan x="211" dy="16">is not yet sealed.</tspan>
+    </text>
+
+    <!-- Step 2 -->
+    <circle class="num-bg" cx="70" cy="273" r="14" />
+    <text class="num" x="70" y="278" text-anchor="middle">2</text>
+    <rect class="card warn" x="56" y="295" width="310" height="96" rx="22" />
+    <text class="card-title warn-text" x="211" y="330" text-anchor="middle">Scope inferred opportunistically</text>
+    <text class="card-body" x="211" y="354" text-anchor="middle">
+      <tspan x="211" dy="0">Retrieval and rewrite logic try to</tspan>
+      <tspan x="211" dy="16">guess the right boundary.</tspan>
+    </text>
+
+    <!-- Step 3 -->
+    <circle class="num-bg" cx="70" cy="418" r="14" />
+    <text class="num" x="70" y="423" text-anchor="middle">3</text>
+    <rect class="card warn" x="56" y="440" width="310" height="96" rx="22" />
+    <text class="card-title warn-text" x="211" y="475" text-anchor="middle">Rewrite, graph, cache, jobs</text>
+    <text class="card-body" x="211" y="499" text-anchor="middle">
+      <tspan x="211" dy="0">Optimizers widen the search space</tspan>
+      <tspan x="211" dy="16">and drop precise labels.</tspan>
+    </text>
+
+    <!-- Step 4 -->
+    <circle class="num-bg" cx="70" cy="565" r="14" />
+    <text class="num" x="70" y="570" text-anchor="middle">4</text>
+    <rect class="card danger" x="56" y="587" width="310" height="82" rx="22" />
+    <text class="card-title danger-text" x="211" y="620" text-anchor="middle">Null or global fallback</text>
+    <text class="card-body" x="211" y="642" text-anchor="middle">
+      <tspan x="211" dy="0">Broad relevance is treated as if it</tspan>
+      <tspan x="211" dy="16">were safe visibility.</tspan>
+    </text>
+
+    <!-- Warning icon + Step 5 -->
+    <text x="211" y="698" text-anchor="middle" font-size="22">⚠</text>
+    <rect class="card danger" x="56" y="710" width="310" height="96" rx="22" />
+    <text class="card-title danger-text" x="211" y="745" text-anchor="middle">Cross-domain bleed</text>
+    <text class="card-body" x="211" y="767" text-anchor="middle">
+      <tspan x="211" dy="0">The system can no longer prove the</tspan>
+      <tspan x="211" dy="16">returned data belongs to the request.</tspan>
+    </text>
+
+    <path class="flow" d="M 211 244 L 211 295" />
+    <path class="flow" d="M 211 391 L 211 440" />
+    <path class="flow" d="M 211 536 L 211 587" />
+    <path class="flow" d="M 211 669 L 211 710" />
+  </g>
+
+  <!-- RIGHT PANEL: Sealed scope / HKI -->
+  <g transform="translate(510 165)">
+    <rect class="panel" x="0" y="0" width="1120" height="820" rx="28" />
+    <rect class="panel-header" x="0" y="0" width="1120" height="100" rx="28" />
+    <rect class="panel-header" x="0" y="72" width="1120" height="28" rx="0" />
+    <text class="badge safe-text" x="30" y="40">Sealed scope</text>
+    <text class="panel-title" x="30" y="68">HKI runtime contract</text>
+    <text class="panel-copy" x="30" y="93">
+      <tspan x="30" dy="0">One active domain is selected at the edge, signed into the request, and checked everywhere data moves.</tspan>
+    </text>
+
+    <!-- Shield icon -->
+    <text x="1068" y="45" font-size="34" text-anchor="middle">🛡</text>
+
+    <!-- Step A -->
+    <circle class="num-bg" cx="56" cy="128" r="14" />
+    <text class="num" x="56" y="133" text-anchor="middle">A</text>
+    <rect class="card safe" x="30" y="150" width="210" height="100" rx="22" />
+    <text class="card-title safe-text" x="135" y="188" text-anchor="middle">Gateway selects</text>
+    <text class="card-title safe-text" x="135" y="210" text-anchor="middle">one active domain</text>
+    <text class="card-body" x="135" y="234" text-anchor="middle">Ambiguity fails closed.</text>
+
+    <!-- Step B -->
+    <circle class="num-bg" cx="278" cy="128" r="14" />
+    <text class="num" x="278" y="133" text-anchor="middle">B</text>
+    <rect class="card safe" x="272" y="150" width="210" height="100" rx="22" />
+    <text class="card-title safe-text" x="377" y="188" text-anchor="middle">Signed scope</text>
+    <text class="card-title safe-text" x="377" y="210" text-anchor="middle">envelope propagates</text>
+    <text class="card-body" x="377" y="234" text-anchor="middle">The label rides with the request.</text>
+
+    <!-- Step C -->
+    <circle class="num-bg" cx="514" cy="128" r="14" />
+    <text class="num" x="514" y="133" text-anchor="middle">C</text>
+    <rect class="card safe" x="508" y="150" width="240" height="100" rx="22" />
+    <text class="card-title safe-text" x="628" y="188" text-anchor="middle">Retrieval, graph, cache</text>
+    <text class="card-title safe-text" x="628" y="210" text-anchor="middle">stay label-preserving</text>
+    <text class="card-body" x="628" y="234" text-anchor="middle">No helper gets to erase scope.</text>
+
+    <!-- Step D -->
+    <circle class="num-bg" cx="780" cy="128" r="14" />
+    <text class="num" x="780" y="133" text-anchor="middle">D</text>
+    <rect class="card policy" x="774" y="150" width="210" height="100" rx="22" />
+    <text class="card-title policy-text" x="879" y="188" text-anchor="middle">Exact-domain</text>
+    <text class="card-title policy-text" x="879" y="210" text-anchor="middle">equality check</text>
+    <text class="card-body" x="879" y="234" text-anchor="middle">No label match, no read.</text>
+
+    <!-- Result card -->
+    <text x="980" y="294" font-size="22" text-anchor="middle">✓</text>
+    <rect class="card safe" x="860" y="312" width="220" height="118" rx="22" />
+    <text class="card-title safe-text" x="970" y="351" text-anchor="middle">Only domain-local</text>
+    <text class="card-title safe-text" x="970" y="373" text-anchor="middle">artifacts are visible</text>
+    <text class="card-body" x="970" y="400" text-anchor="middle">
+      <tspan x="970" dy="0">The request can see A</tspan>
+      <tspan x="970" dy="16">and only A.</tspan>
+    </text>
+
+    <!-- Arrows: A→B→C→D→Result -->
+    <path class="flow" d="M 240 200 L 272 200" />
+    <path class="flow" d="M 482 200 L 508 200" />
+    <path class="flow" d="M 748 200 L 774 200" />
+    <path class="flow" d="M 984 236 C 1030 256, 1040 280, 1020 312" />
+
+    <!-- Publication section divider -->
+    <line class="divider" x1="30" y1="470" x2="1090" y2="470" />
+    <text class="callout" x="30" y="498" fill="var(--muted)">
+      <tspan x="30" dy="0">Cross-domain sharing still exists,</tspan>
+      <tspan x="30" dy="18">but it happens through publication instead of fallback.</tspan>
+    </text>
+
+    <!-- Shared -->
+    <rect class="card shared" x="130" y="540" width="240" height="110" rx="22" />
+    <text class="card-title shared-text" x="250" y="576" text-anchor="middle">Shared enterprise</text>
+    <text class="card-title shared-text" x="250" y="596" text-anchor="middle">knowledge</text>
+    <text class="card-body" x="250" y="622" text-anchor="middle">
+      <tspan x="250" dy="0">Useful content outside</tspan>
+      <tspan x="250" dy="16">any one local domain.</tspan>
+    </text>
+
+    <!-- Publication -->
+    <rect class="card policy" x="430" y="540" width="240" height="110" rx="22" />
+    <text class="card-title policy-text" x="550" y="576" text-anchor="middle">Explicit publication</text>
+    <text class="card-body" x="550" y="602" text-anchor="middle">
+      <tspan x="550" dy="0">Replication is deliberate,</tspan>
+      <tspan x="550" dy="16">reviewed, and materialized.</tspan>
+    </text>
+
+    <!-- Domain-local copy -->
+    <rect class="card safe" x="730" y="540" width="240" height="110" rx="22" />
+    <text class="card-title safe-text" x="850" y="576" text-anchor="middle">Domain-local copy</text>
+    <text class="card-body" x="850" y="602" text-anchor="middle">
+      <tspan x="850" dy="0">Shared knowledge enters the</tspan>
+      <tspan x="850" dy="16">request only as a local artifact.</tspan>
+    </text>
+
+    <!-- Publication arrows -->
+    <path class="flow soft" d="M 370 595 L 430 595" />
+    <path class="flow soft" d="M 670 595 L 730 595" />
+    <path class="flow soft" d="M 850 540 C 850 480, 870 460, 920 440" />
+  </g>
+</svg>

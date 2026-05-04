@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1620 650" role="img" aria-labelledby="title desc">
+  <title id="title">HKI migration roadmap</title>
+  <desc id="desc">A five-phase roadmap for adopting HKI: label artifacts, choose the active domain at the gateway, propagate the scope envelope, enforce exact-domain checks, and operationalize explicit publication.</desc>
+  <defs>
+    <style>
+      :root { color-scheme: light dark; }
+      svg {
+        --page: #f8fafc; --surface: #ffffff; --surface-2: #f1f5f9;
+        --text: #0f172a; --muted: #475569; --rule: #cbd5e1; --line: #64748b; --arrow: #64748b;
+        --safe-fill: #ecfdf5; --safe-stroke: #059669; --safe-text: #065f46;
+        --policy-fill: #eef2ff; --policy-stroke: #4f46e5; --policy-text: #3730a3;
+        --shared-fill: #f5f3ff; --shared-stroke: #7c3aed; --shared-text: #5b21b6;
+        --warn-fill: #fff7ed; --warn-stroke: #ea580c; --warn-text: #9a3412;
+        --glow-safe: rgba(5,150,105,0.18); --glow-policy: rgba(79,70,229,0.18);
+        --glow-shared: rgba(124,58,237,0.18); --glow-warn: rgba(234,88,12,0.18);
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        svg {
+          --page: #09111a; --surface: #0f172a; --surface-2: #111c2d;
+          --text: #e2e8f0; --muted: #94a3b8; --rule: #334155; --line: #7dd3fc; --arrow: #7dd3fc;
+          --safe-fill: #0e2c28; --safe-stroke: #34d399; --safe-text: #bbf7d0;
+          --policy-fill: #1f2451; --policy-stroke: #a78bfa; --policy-text: #ddd6fe;
+          --shared-fill: #26143f; --shared-stroke: #c084fc; --shared-text: #e9d5ff;
+          --warn-fill: #3a220b; --warn-stroke: #fb923c; --warn-text: #fed7aa;
+          --glow-safe: rgba(52,211,153,0.22); --glow-policy: rgba(167,139,250,0.22);
+          --glow-shared: rgba(192,132,252,0.22); --glow-warn: rgba(251,146,60,0.22);
+        }
+      }
+      .page { fill: var(--page); }
+      .heading { fill: var(--text); font-size: 38px; font-weight: 800; }
+      .subheading { fill: var(--muted); font-size: 17px; }
+      .panel { fill: var(--surface); stroke: var(--rule); stroke-width: 2; filter: url(#panel-shadow); }
+      .card { stroke-width: 2.5; }
+      .warn { fill: var(--warn-fill); stroke: var(--warn-stroke); filter: url(#glow-warn); }
+      .safe { fill: var(--safe-fill); stroke: var(--safe-stroke); filter: url(#glow-safe); }
+      .policy { fill: var(--policy-fill); stroke: var(--policy-stroke); filter: url(#glow-policy); }
+      .shared { fill: var(--shared-fill); stroke: var(--shared-stroke); filter: url(#glow-shared); }
+      .warn-text { fill: var(--warn-text); } .safe-text { fill: var(--safe-text); }
+      .policy-text { fill: var(--policy-text); } .shared-text { fill: var(--shared-text); }
+      .phase { fill: var(--text); font-size: 19px; font-weight: 700; }
+      .body { fill: var(--muted); font-size: 14px; }
+      .chip { font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+      .flow { fill: none; stroke: var(--line); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .note { fill: var(--surface-2); stroke: var(--rule); stroke-width: 2; filter: url(#panel-shadow); }
+      .note-title { fill: var(--text); font-size: 16px; font-weight: 700; }
+      .note-copy { fill: var(--muted); font-size: 13px; }
+      .num { font-size: 14px; font-weight: 800; fill: #fff; }
+      .num-bg { fill: var(--line); }
+    </style>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--arrow)" />
+    </marker>
+    <filter id="panel-shadow" x="-4%" y="-4%" width="110%" height="112%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <filter id="glow-warn" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-warn)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-safe" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-safe)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-policy" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-policy)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-shared" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-shared)" flood-opacity="1"/>
+    </filter>
+    <pattern id="dot-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#8090a0" opacity="0.06"/>
+    </pattern>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1620" height="650" rx="36" />
+  <rect x="0" y="0" width="1620" height="650" rx="36" fill="url(#dot-grid)"/>
+
+  <!-- Decorative accent -->
+  <rect x="70" y="26" width="100" height="5" rx="3" fill="var(--warn-stroke)" opacity="0.5" />
+  <rect x="180" y="26" width="50" height="5" rx="3" fill="var(--safe-stroke)" opacity="0.4" />
+
+  <text class="heading" x="70" y="76">Five-phase HKI adoption roadmap</text>
+  <text class="subheading" x="70" y="108">
+    <tspan x="70" dy="0">Fail-closed enforcement is only credible after labels, propagation, and state partitioning exist.</tspan>
+    <tspan x="70" dy="20">The roadmap moves from semantics first to enforcement later.</tspan>
+  </text>
+
+  <rect class="panel" x="50" y="160" width="1520" height="450" rx="28" />
+
+  <!-- Progress bar -->
+  <rect x="120" y="200" width="1400" height="6" rx="3" fill="var(--rule)" />
+  <rect x="120" y="200" width="280" height="6" rx="3" fill="var(--warn-stroke)" opacity="0.7" />
+  <rect x="400" y="200" width="280" height="6" rx="3" fill="var(--safe-stroke)" opacity="0.7" />
+  <rect x="680" y="200" width="280" height="6" rx="3" fill="var(--policy-stroke)" opacity="0.7" />
+  <rect x="960" y="200" width="280" height="6" rx="3" fill="var(--shared-stroke)" opacity="0.7" />
+  <rect x="1240" y="200" width="280" height="6" rx="3" fill="var(--safe-stroke)" opacity="0.7" />
+
+  <!-- Phase 1 -->
+  <g transform="translate(100 236)">
+    <circle class="num-bg" cx="130" cy="-6" r="14" />
+    <text class="num" x="130" y="-1" text-anchor="middle">1</text>
+    <rect class="card warn" x="0" y="16" width="260" height="160" rx="22" />
+    <text class="chip warn-text" x="30" y="48">Phase 1</text>
+    <text x="130" y="76" text-anchor="middle" font-size="18">🏷</text>
+    <text class="phase warn-text" x="130" y="102" text-anchor="middle">Label artifacts</text>
+    <text class="body" x="130" y="126" text-anchor="middle">
+      <tspan x="130" dy="0">Assign domain ownership</tspan>
+      <tspan x="130" dy="16">to every artifact and edge.</tspan>
+    </text>
+  </g>
+
+  <!-- Phase 2 -->
+  <g transform="translate(390 236)">
+    <circle class="num-bg" cx="130" cy="-6" r="14" />
+    <text class="num" x="130" y="-1" text-anchor="middle">2</text>
+    <rect class="card safe" x="0" y="16" width="260" height="160" rx="22" />
+    <text class="chip safe-text" x="30" y="48">Phase 2</text>
+    <text x="130" y="76" text-anchor="middle" font-size="18">🚪</text>
+    <text class="phase safe-text" x="130" y="102" text-anchor="middle">Resolve active domain</text>
+    <text class="body" x="130" y="126" text-anchor="middle">
+      <tspan x="130" dy="0">Teach the gateway to select</tspan>
+      <tspan x="130" dy="16">one domain or fail closed.</tspan>
+    </text>
+  </g>
+
+  <!-- Phase 3 -->
+  <g transform="translate(680 236)">
+    <circle class="num-bg" cx="130" cy="-6" r="14" />
+    <text class="num" x="130" y="-1" text-anchor="middle">3</text>
+    <rect class="card policy" x="0" y="16" width="260" height="160" rx="22" />
+    <text class="chip policy-text" x="30" y="48">Phase 3</text>
+    <text x="130" y="76" text-anchor="middle" font-size="18">📨</text>
+    <text class="phase policy-text" x="130" y="102" text-anchor="middle">Propagate scope envelope</text>
+    <text class="body" x="130" y="126" text-anchor="middle">
+      <tspan x="130" dy="0">Carry labels through tools,</tspan>
+      <tspan x="130" dy="16">cache, graph, and jobs.</tspan>
+    </text>
+  </g>
+
+  <!-- Phase 4 -->
+  <g transform="translate(970 236)">
+    <circle class="num-bg" cx="130" cy="-6" r="14" />
+    <text class="num" x="130" y="-1" text-anchor="middle">4</text>
+    <rect class="card shared" x="0" y="16" width="260" height="160" rx="22" />
+    <text class="chip shared-text" x="30" y="48">Phase 4</text>
+    <text x="130" y="76" text-anchor="middle" font-size="18">🛡</text>
+    <text class="phase shared-text" x="130" y="102" text-anchor="middle">Turn on enforcement</text>
+    <text class="body" x="130" y="126" text-anchor="middle">
+      <tspan x="130" dy="0">Require exact-domain equality</tspan>
+      <tspan x="130" dy="16">for every live read.</tspan>
+    </text>
+  </g>
+
+  <!-- Phase 5 -->
+  <g transform="translate(1260 236)">
+    <circle class="num-bg" cx="130" cy="-6" r="14" />
+    <text class="num" x="130" y="-1" text-anchor="middle">5</text>
+    <rect class="card safe" x="0" y="16" width="260" height="160" rx="22" />
+    <text class="chip safe-text" x="30" y="48">Phase 5</text>
+    <text x="130" y="76" text-anchor="middle" font-size="18">📤</text>
+    <text class="phase safe-text" x="130" y="102" text-anchor="middle">Operationalize publication</text>
+    <text class="body" x="130" y="126" text-anchor="middle">
+      <tspan x="130" dy="0">Use explicit materialization</tspan>
+      <tspan x="130" dy="16">for shared enterprise content.</tspan>
+    </text>
+  </g>
+
+  <!-- Arrows -->
+  <path class="flow" d="M 360 332 L 390 332" />
+  <path class="flow" d="M 650 332 L 680 332" />
+  <path class="flow" d="M 940 332 L 970 332" />
+  <path class="flow" d="M 1230 332 L 1260 332" />
+
+  <!-- Note boxes -->
+  <rect class="note" x="100" y="484" width="446" height="100" rx="20" />
+  <text class="note-title warn-text" x="130" y="520">Foundation first</text>
+  <text class="note-copy" x="130" y="544">
+    <tspan x="130" dy="0">Labeling and gateway resolution establish the</tspan>
+    <tspan x="130" dy="16">semantics that later enforcement depends on.</tspan>
+  </text>
+
+  <rect class="note" x="586" y="484" width="446" height="100" rx="20" />
+  <text class="note-title policy-text" x="616" y="520">Propagation is the hard middle</text>
+  <text class="note-copy" x="616" y="544">
+    <tspan x="616" dy="0">Caches, graphs, and agentic helpers must stop</tspan>
+    <tspan x="616" dy="16">erasing scope or HKI remains aspirational.</tspan>
+  </text>
+
+  <rect class="note" x="1072" y="484" width="446" height="100" rx="20" />
+  <text class="note-title safe-text" x="1102" y="520">Enforce only when ready</text>
+  <text class="note-copy" x="1102" y="544">
+    <tspan x="1102" dy="0">Once propagation is real, fail-closed checks and</tspan>
+    <tspan x="1102" dy="16">explicit publication become operationally credible.</tspan>
+  </text>
+</svg>

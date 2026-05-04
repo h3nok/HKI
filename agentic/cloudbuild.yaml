@@ -1,0 +1,32 @@
+# Build context: apps/ai-platform (pnpm workspace root)
+# From apps/ai-platform:
+#   gcloud builds submit --config=agentic/cloudbuild.yaml --project=PROJECT_ID .
+#
+# The Dockerfile builds from the workspace root so pnpm workspace packages
+# (packages/ui, packages/chat) are accessible during the build.
+#
+substitutions:
+  _REGION: us-west1
+  _REGISTRY: cilab
+  _IMAGE: agentic
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - agentic/Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:$COMMIT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:latest
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:$COMMIT_SHA
+  - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  # Agentic build is large (pnpm workspace + Vite build); use a high-CPU machine
+  machineType: E2_HIGHCPU_8

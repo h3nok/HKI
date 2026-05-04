@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: knowledge-api
+  namespace: platform
+  labels:
+    app.kubernetes.io/name: knowledge-api
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: knowledge-api
+  ports:
+    - name: http
+      port: 9509
+      targetPort: 9509
+      protocol: TCP

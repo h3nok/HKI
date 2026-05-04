@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orchestrator-config
+  namespace: platform
+data:
+  SERVICE_NAME: "orchestrator-service"
+  SERVICE_PORT: "9501"
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+
+  # LLM Gateway — Apigee X (authoritative gateway with VerifyAPIKey + SpikeArrest + Quota)
+  # LLM_API_KEY must be the Apigee app key from Secret Manager: orchestrator-litellm-api-key
+  LLM_GATEWAY_URL: "https://apigee.cilabs.np.hki.com/v1"
+  LLM_MODEL_DEFAULT: "gemini-2.0-flash"
+  LLM_MODEL_FAST: "gemini-2.0-flash"
+  LLM_MODEL_SMART: "gemini-2.5-pro"
+  LLM_MODEL_THINKING: "gemini-2.5-flash"
+  LLM_MAX_TOKENS: "4096"
+  LLM_TEMPERATURE: "0.3"
+  LLM_REQUEST_TIMEOUT: "60.0"
+
+  # ADK Agent — Vertex AI direct via WIF + ADC (no key needed)
+  AGENT_MODEL: "gemini-2.5-flash"
+  AGENT_MODEL_FAST: "gemini-2.5-flash"
+  AGENT_MODEL_SMART: "gemini-2.5-pro"
+  MAX_CONCURRENT_CHATS: "100"
+  GOOGLE_GENAI_USE_VERTEXAI: "true"
+  GCP_PROJECT_ID: "p-642-cilab-demo"
+  GCP_LOCATION: "us-central1"
+  VERTEX_AI_LOCATION: "us-central1"
+
+  # Redis — Memorystore
+  REDIS_URL: "redis://10.64.180.68:6379/0"
+  REDIS_KEY_PREFIX: "orch:"
+
+  # Guardrails
+  GUARDRAILS_MAX_INPUT_LENGTH: "5000"
+  GUARDRAILS_RATE_LIMIT_RPM: "100"
+  GUARDRAILS_BLOCK_ON_OUTPUT_FAIL: "false"
+
+  # Downstream services (cluster-internal DNS)
+  KNOWLEDGE_API_URL: "http://knowledge-api:9509"
+  VECTOR_STORE_URL: "http://knowledge-api:9509"
+  KNOWLEDGE_PIPELINE_URL: "http://ingestion-pipeline:9508"
+  ANALYTICS_SERVICE_URL: "http://analytics:9512"
+
+  # Corrective RAG
+  CORRECTIVE_RAG_ENABLED: "true"
+  CORRECTIVE_RAG_MIN_RELEVANCE: "0.4"
+  CORRECTIVE_RAG_MAX_RETRIES: "1"
+
+  # Auth
+  AUTH_ENABLED: "true"
+
+  # GCP-native observability. The shared tracing module exports directly to
+  # Cloud Trace when OTEL_ENABLED=true and GCP_PROJECT_ID is set.
+  OTEL_ENABLED: "true"
+  OTEL_EXPORTER_ENDPOINT: ""
+
+  # CORS
+  CORS_ORIGINS: '["https://agentic.cilabs.np.hki.com"]'

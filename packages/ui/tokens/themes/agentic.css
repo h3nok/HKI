@@ -1,0 +1,216 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AGENTIC APP THEME — Cool Blue-Shift Override
+
+   This file ONLY overrides primitive tokens (color-neutral-*)
+   to give the Agentic app its unique visual identity.
+
+   Apps should NEVER redefine semantic tokens like --background, --card, etc.
+   Instead, override the PRIMITIVES that feed into them.
+
+   LIGHT: Blue-gray canvas (#e4e8f0, L≈91%) + white cards (#fff, L≈100%) —
+          ~9% lightness gap. Cool tint for professional tech feel.
+   DARK:  Navy-shifted neutrals with wide gaps for clear depth.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─────────────────────────────────────────────────────────────────────────
+     AGENTIC LIGHT MODE — Cool Blue-Tint Canvas
+
+     Background has a subtle bluish-gray (#e4e8f0, L≈91%) so white cards
+     (#fff, L≈100%) have a clear ~9% lightness gap. Cards float.
+     Cool blue undertone gives a professional, tech-forward feel.
+     ───────────────────────────────────────────────────────────────────────── */
+  --color-neutral-0: #ffffff; /* Pure white — card / popover / modal surface */
+  --color-neutral-25: #f7f8fb; /* Near-white — elevated cards */
+  --color-neutral-50: #dde2ed; /* App background — cool blue-gray canvas */
+  --color-neutral-75: #d4d9e6; /* Recessed — table rows, sidebar wells */
+  --color-neutral-100: #c9cfdd; /* Muted — code blocks, inset surfaces */
+  --color-neutral-150: #b3bace; /* Interactive bg / border-muted — visible */
+  --color-neutral-200: #8e96a8; /* Borders — visible even at 60% opacity */
+  --color-neutral-300: #64748b; /* Borders (medium) / border-hover */
+  --color-neutral-400: #475569; /* Placeholder text */
+  --color-neutral-500: #334155; /* Secondary text — WCAG AA on white */
+  --color-neutral-600: #1e293b; /* Body text — strong slate */
+  --color-neutral-700: #0f172a; /* Headings — near-black blue-slate */
+  --color-neutral-800: #1a1f2e; /* Dark surfaces */
+  --color-neutral-850: #151a26;
+  --color-neutral-900: #0e1219; /* Near black */
+  --color-neutral-925: #0a0d14;
+  --color-neutral-950: #060810;
+}
+
+.dark {
+  /* ─────────────────────────────────────────────────────────────────────────
+     AGENTIC DARK MODE — High Contrast Obsidian
+
+     Deep black aesthetic with aggressive lightness steps for perfect
+     contrast and depth. Shadows don't work well in dark mode, so we rely
+     heavily on distinct surface lightness.
+
+     Surface hierarchy:
+       background → 900 (#060606)  L≈2%   ── Near-black (allows some shadow depth)
+       card       → 850 (#161619)  L≈9%   ── +7%  Strong elevation above canvas
+       muted      → 800 (#242428)  L≈14%  ── +5%  Clear input boundaries
+       border     → 700 (#34343a)  L≈20%  ── +6%  Crisp edge definition
+       border-hov → 600 (#4b4b53)  L≈29%  ── Visible feedback
+     ───────────────────────────────────────────────────────────────────────── */
+  --color-neutral-0: #ffffff;
+  --color-neutral-25: #fafafa;
+  --color-neutral-50: #f4f4f5; /* Primary text */
+  --color-neutral-75: #e4e4e7;
+  --color-neutral-100: #d4d4d8; /* Body text */
+  --color-neutral-150: #c2c2c7;
+  --color-neutral-200: #a1a1aa; /* Secondary text */
+  --color-neutral-300: #888891;
+  --color-neutral-400: #71717a; /* Muted-foreground */
+  --color-neutral-500: #52525b; /* Text muted */
+  --color-neutral-600: #52525b; /* Border-hover - visibly brighter */
+  --color-neutral-700: #3f3f46; /* Border - extremely crisp edge */
+  --color-neutral-800: #27272a; /* Muted / input bg - unmistakably raised */
+  --color-neutral-850: #18181b; /* Card / sidebar / popover - strongly elevated */
+  --color-neutral-900: #000000; /* App canvas background - Pure OLED Black */
+  --color-neutral-925: #000000; /* Deep recessed */
+  --color-neutral-950: #000000; /* Pure black */
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DARK MARKETING / ONBOARDING SURFACES
+
+   Pages that use an ink/navy canvas (#060910, etc.) with white typography
+   should wrap the root in `.surface-on-dark` and use the utilities below
+   (`text-on-dark-muted`, `border-on-dark`, …) instead of `text-white/15`–`/35`.
+
+   Tokens are tuned for ~4.5:1+ perceived readability on dark blue-black.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.surface-on-dark {
+  --on-dark-text: rgba(255, 255, 255, 0.94);
+  --on-dark-text-secondary: rgba(255, 255, 255, 0.78);
+  --on-dark-text-muted: rgba(255, 255, 255, 0.62);
+  --on-dark-text-subtle: rgba(255, 255, 255, 0.48);
+  --on-dark-text-legal: rgba(255, 255, 255, 0.4);
+  --on-dark-border: rgba(255, 255, 255, 0.14);
+  --on-dark-border-muted: rgba(255, 255, 255, 0.1);
+  --on-dark-surface: rgba(255, 255, 255, 0.04);
+  --on-dark-input-bg: rgba(255, 255, 255, 0.08);
+  --on-dark-input-fg: rgba(255, 255, 255, 0.9);
+  --on-dark-placeholder: rgba(255, 255, 255, 0.42);
+  --on-dark-link: rgba(147, 197, 253, 0.92);
+  --on-dark-link-hover: rgba(186, 230, 253, 0.98);
+}
+
+/* ── Text ── */
+.surface-on-dark.text-on-dark-primary,
+.surface-on-dark .text-on-dark-primary {
+  color: var(--on-dark-text);
+}
+
+.surface-on-dark.text-on-dark-secondary,
+.surface-on-dark .text-on-dark-secondary {
+  color: var(--on-dark-text-secondary);
+}
+
+.surface-on-dark.text-on-dark-muted,
+.surface-on-dark .text-on-dark-muted {
+  color: var(--on-dark-text-muted);
+}
+
+.surface-on-dark.text-on-dark-subtle,
+.surface-on-dark .text-on-dark-subtle {
+  color: var(--on-dark-text-subtle);
+}
+
+.surface-on-dark.text-on-dark-legal,
+.surface-on-dark .text-on-dark-legal {
+  color: var(--on-dark-text-legal);
+}
+
+.surface-on-dark.text-on-dark-input,
+.surface-on-dark .text-on-dark-input {
+  color: var(--on-dark-input-fg);
+}
+
+.surface-on-dark.text-on-dark-placeholder,
+.surface-on-dark .text-on-dark-placeholder {
+  color: var(--on-dark-placeholder);
+}
+
+.surface-on-dark .placeholder-on-dark::placeholder {
+  color: var(--on-dark-placeholder);
+}
+
+/* Back link pattern: subtle → secondary on hover */
+.surface-on-dark .on-dark-nav-back {
+  color: var(--on-dark-text-subtle);
+  transition: color 150ms ease;
+}
+
+.surface-on-dark .on-dark-nav-back:hover {
+  color: var(--on-dark-text-secondary);
+}
+
+/* Inline links (sentence + href) */
+.surface-on-dark .text-on-dark-link {
+  color: var(--on-dark-link);
+  transition: color 150ms ease;
+}
+
+.surface-on-dark .text-on-dark-link:hover {
+  color: var(--on-dark-link-hover);
+}
+
+/* ── Borders & surfaces ── */
+.surface-on-dark .border-on-dark {
+  border-color: var(--on-dark-border);
+}
+
+.surface-on-dark .border-on-dark-muted {
+  border-color: var(--on-dark-border-muted);
+}
+
+.surface-on-dark .bg-on-dark-surface {
+  background-color: var(--on-dark-surface);
+}
+
+.surface-on-dark .bg-on-dark-input {
+  background-color: var(--on-dark-input-bg);
+}
+
+.surface-on-dark .shadow-on-dark-inset {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
+/* Secondary outline control on dark canvas */
+.surface-on-dark .on-dark-ghost-button {
+  color: var(--on-dark-text-subtle);
+  border-color: var(--on-dark-border);
+  transition:
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+.surface-on-dark .on-dark-ghost-button:hover {
+  color: var(--on-dark-text-secondary);
+  border-color: var(--on-dark-border);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AGENTIC ANIMATIONS & TEXTURES
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.bg-noise {
+  position: relative;
+}
+.bg-noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  z-index: 0;
+}

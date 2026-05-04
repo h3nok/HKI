@@ -1,0 +1,42 @@
+# General Cloud Build source filtering for apps/ai-platform.
+
+# Keep service source, workspace packages, and build configs.
+
+# Exclude only local artifacts and heavy caches that should never be uploaded.
+
+.gcloudignore
+.git
+.gitignore
+.dev/
+.tmp/
+.turbo/
+**/.dev/
+**/.tmp/
+\*\*/.turbo/
+
+node_modules/
+\*\*/node_modules/
+
+**/.venv/
+**/.terraform/
+**/**pycache**/
+**/.pytest*cache/
+**/.ruff_cache/
+**/.mypy_cache/
+**/.cache/
+**/coverage/
+**/dist/
+**/build/
+**/\*.egg-info/
+**/*.pyc
+\*\*/\_.pyo
+**/\*.pyd
+**/.DS_Store
+
+**/.env
+**/.env.\*
+!\*\*/.env.example
+
+docs/
+tests/
+docker-compose/

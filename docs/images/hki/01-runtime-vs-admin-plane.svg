@@ -1,0 +1,264 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1660 920" role="img" aria-labelledby="title desc">
+  <title id="title">HKI runtime plane versus admin plane</title>
+  <desc id="desc">A diagram showing that live requests operate only inside the runtime plane with one active domain, while cross-domain inspection and publication happen in a separate admin plane that does not weaken runtime enforcement.</desc>
+  <defs>
+    <style>
+      :root { color-scheme: light dark; }
+      svg {
+        --page: #f8fafc; --surface: #ffffff; --surface-2: #f1f5f9;
+        --text: #0f172a; --muted: #475569; --rule: #cbd5e1; --line: #64748b; --arrow: #64748b;
+        --safe-fill: #ecfdf5; --safe-stroke: #059669; --safe-text: #065f46;
+        --policy-fill: #eef2ff; --policy-stroke: #4f46e5; --policy-text: #3730a3;
+        --shared-fill: #f5f3ff; --shared-stroke: #7c3aed; --shared-text: #5b21b6;
+        --warn-fill: #fff7ed; --warn-stroke: #ea580c; --warn-text: #9a3412;
+        --danger-fill: #fef2f2; --danger-stroke: #dc2626; --danger-text: #991b1b;
+        --glow-warn: rgba(234,88,12,0.18); --glow-danger: rgba(220,38,38,0.18);
+        --glow-safe: rgba(5,150,105,0.18); --glow-policy: rgba(79,70,229,0.18);
+        --glow-shared: rgba(124,58,237,0.18);
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        svg {
+          --page: #09111a; --surface: #0f172a; --surface-2: #111c2d;
+          --text: #e2e8f0; --muted: #94a3b8; --rule: #334155; --line: #7dd3fc; --arrow: #7dd3fc;
+          --safe-fill: #0e2c28; --safe-stroke: #34d399; --safe-text: #bbf7d0;
+          --policy-fill: #1f2451; --policy-stroke: #a78bfa; --policy-text: #ddd6fe;
+          --shared-fill: #26143f; --shared-stroke: #c084fc; --shared-text: #e9d5ff;
+          --warn-fill: #3a220b; --warn-stroke: #fb923c; --warn-text: #fed7aa;
+          --danger-fill: #3a1618; --danger-stroke: #f87171; --danger-text: #fecaca;
+          --glow-warn: rgba(251,146,60,0.22); --glow-danger: rgba(248,113,113,0.22);
+          --glow-safe: rgba(52,211,153,0.22); --glow-policy: rgba(167,139,250,0.22);
+          --glow-shared: rgba(192,132,252,0.22);
+        }
+      }
+      .page { fill: var(--page); }
+      .panel { fill: var(--surface); stroke: var(--rule); stroke-width: 2; filter: url(#panel-shadow); }
+      .panel-head { fill: var(--surface-2); stroke: var(--rule); stroke-width: 2; }
+      .heading { fill: var(--text); font-size: 38px; font-weight: 800; }
+      .subheading { fill: var(--muted); font-size: 17px; }
+      .badge { font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+      .panel-title { fill: var(--text); font-size: 25px; font-weight: 700; }
+      .panel-copy { fill: var(--muted); font-size: 14px; }
+      .card { stroke-width: 2.5; }
+      .safe { fill: var(--safe-fill); stroke: var(--safe-stroke); filter: url(#glow-safe); }
+      .policy { fill: var(--policy-fill); stroke: var(--policy-stroke); filter: url(#glow-policy); }
+      .shared { fill: var(--shared-fill); stroke: var(--shared-stroke); filter: url(#glow-shared); }
+      .warn { fill: var(--warn-fill); stroke: var(--warn-stroke); filter: url(#glow-warn); }
+      .danger { fill: var(--danger-fill); stroke: var(--danger-stroke); filter: url(#glow-danger); }
+      .safe-text { fill: var(--safe-text); } .policy-text { fill: var(--policy-text); }
+      .shared-text { fill: var(--shared-text); } .warn-text { fill: var(--warn-text); }
+      .danger-text { fill: var(--danger-text); }
+      .card-title { font-size: 19px; font-weight: 700; }
+      .card-body { fill: var(--muted); font-size: 14px; }
+      .flow { fill: none; stroke: var(--line); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .flow.soft { stroke-dasharray: 8 10; }
+      .flow.blocked { stroke: var(--danger-stroke); stroke-dasharray: 12 8; marker-end: url(#block-arrow); }
+      .divider { stroke: var(--rule); stroke-width: 2; stroke-dasharray: 10 12; }
+      .label { fill: var(--muted); font-size: 13px; font-weight: 700; }
+      .note { fill: var(--surface-2); stroke: var(--rule); stroke-width: 2; filter: url(#panel-shadow); }
+      .note-text { fill: var(--text); font-size: 14px; font-weight: 600; }
+      .num { font-size: 14px; font-weight: 800; fill: #fff; }
+      .num-bg { fill: var(--line); }
+    </style>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--arrow)" />
+    </marker>
+    <marker id="block-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--danger-stroke)" />
+    </marker>
+    <filter id="panel-shadow" x="-4%" y="-4%" width="110%" height="112%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <filter id="glow-warn" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-warn)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-danger" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-danger)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-safe" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-safe)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-policy" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-policy)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-shared" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-shared)" flood-opacity="1"/>
+    </filter>
+    <pattern id="dot-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#8090a0" opacity="0.06"/>
+    </pattern>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1660" height="920" rx="36" />
+  <rect x="0" y="0" width="1660" height="920" rx="36" fill="url(#dot-grid)"/>
+
+  <!-- Decorative accent -->
+  <rect x="70" y="26" width="100" height="5" rx="3" fill="var(--safe-stroke)" opacity="0.6" />
+  <rect x="180" y="26" width="50" height="5" rx="3" fill="var(--shared-stroke)" opacity="0.4" />
+
+  <text class="heading" x="70" y="76">Runtime plane vs admin plane</text>
+  <text class="subheading" x="70" y="108">
+    <tspan x="70" dy="0">HKI keeps live request execution inside one active domain. Cross-domain visibility</tspan>
+    <tspan x="70" dy="20">belongs to separate administrative workflows, not to the runtime path.</tspan>
+  </text>
+
+  <!-- LEFT PANEL: Runtime plane -->
+  <g transform="translate(40 162)">
+    <rect class="panel" x="0" y="0" width="1060" height="700" rx="28" />
+    <rect class="panel-head" x="0" y="0" width="1060" height="108" rx="28" />
+    <rect class="panel-head" x="0" y="80" width="1060" height="28" rx="0" />
+    <text class="badge safe-text" x="34" y="42">Runtime plane</text>
+    <text class="panel-title" x="34" y="72">One request, one active domain</text>
+    <text class="panel-copy" x="34" y="100">
+      <tspan x="34" dy="0">Every live read is pinned to the active label before orchestration,</tspan>
+      <tspan x="34" dy="16">retrieval, graph traversal, or tool use begins.</tspan>
+    </text>
+
+    <!-- Shield icon -->
+    <text x="1008" y="50" font-size="30" text-anchor="middle">🛡</text>
+
+    <!-- Principal -->
+    <circle class="num-bg" cx="68" cy="148" r="14" />
+    <text class="num" x="68" y="153" text-anchor="middle">1</text>
+    <rect class="card warn" x="48" y="168" width="180" height="92" rx="22" />
+    <text class="card-title warn-text" x="138" y="206" text-anchor="middle">Principal</text>
+    <text class="card-body" x="138" y="228" text-anchor="middle">
+      <tspan x="138" dy="0">User or agent request</tspan>
+      <tspan x="138" dy="16">enters the system.</tspan>
+    </text>
+
+    <!-- Gateway -->
+    <circle class="num-bg" cx="278" cy="148" r="14" />
+    <text class="num" x="278" y="153" text-anchor="middle">2</text>
+    <rect class="card safe" x="260" y="168" width="190" height="92" rx="22" />
+    <text class="card-title safe-text" x="355" y="206" text-anchor="middle">Gateway</text>
+    <text class="card-body" x="355" y="228" text-anchor="middle">
+      <tspan x="355" dy="0">Authenticates caller and</tspan>
+      <tspan x="355" dy="16">pins tenant context.</tspan>
+    </text>
+
+    <!-- Policy resolver -->
+    <circle class="num-bg" cx="502" cy="148" r="14" />
+    <text class="num" x="502" y="153" text-anchor="middle">3</text>
+    <rect class="card policy" x="482" y="168" width="250" height="102" rx="22" />
+    <text class="card-title policy-text" x="607" y="206" text-anchor="middle">Policy resolver</text>
+    <text class="card-body" x="607" y="230" text-anchor="middle">
+      <tspan x="607" dy="0">Selects exactly one active domain</tspan>
+      <tspan x="607" dy="16">and signs the scope envelope.</tspan>
+    </text>
+
+    <!-- Orchestrator -->
+    <circle class="num-bg" cx="784" cy="148" r="14" />
+    <text class="num" x="784" y="153" text-anchor="middle">4</text>
+    <rect class="card safe" x="764" y="168" width="240" height="92" rx="22" />
+    <text class="card-title safe-text" x="884" y="206" text-anchor="middle">Orchestrator</text>
+    <text class="card-body" x="884" y="228" text-anchor="middle">
+      <tspan x="884" dy="0">Carries the label through</tspan>
+      <tspan x="884" dy="16">every downstream step.</tspan>
+    </text>
+
+    <!-- Knowledge service -->
+    <rect class="card safe" x="482" y="386" width="252" height="100" rx="22" />
+    <text class="card-title safe-text" x="608" y="424" text-anchor="middle">Knowledge service</text>
+    <text class="card-body" x="608" y="450" text-anchor="middle">
+      <tspan x="608" dy="0">Retrieval, cache, graph, and tools</tspan>
+      <tspan x="608" dy="16">must stay label-preserving.</tspan>
+    </text>
+
+    <!-- Domain A store -->
+    <text x="884" y="368" text-anchor="middle" font-size="18">✓</text>
+    <rect class="card safe" x="766" y="386" width="236" height="96" rx="22" />
+    <text class="card-title safe-text" x="884" y="424" text-anchor="middle">Domain A store</text>
+    <text class="card-body" x="884" y="448" text-anchor="middle">
+      <tspan x="884" dy="0">Only artifacts with σ(a) = A</tspan>
+      <tspan x="884" dy="16">are visible at runtime.</tspan>
+    </text>
+
+    <!-- Domain B store (blocked) -->
+    <text x="884" y="536" text-anchor="middle" font-size="18">🚫</text>
+    <rect class="card danger" x="766" y="556" width="236" height="96" rx="22" />
+    <text class="card-title danger-text" x="884" y="594" text-anchor="middle">Domain B store</text>
+    <text class="card-body" x="884" y="618" text-anchor="middle">
+      <tspan x="884" dy="0">Different label — therefore</tspan>
+      <tspan x="884" dy="16">not readable at runtime.</tspan>
+    </text>
+
+    <!-- Arrows -->
+    <path class="flow" d="M 228 214 L 260 214" />
+    <path class="flow" d="M 450 214 L 482 214" />
+    <path class="flow" d="M 732 220 L 764 220" />
+    <path class="flow" d="M 607 270 L 607 386" />
+    <path class="flow" d="M 734 436 L 766 436" />
+    <path class="flow blocked" d="M 734 456 C 790 500, 810 536, 830 556" />
+
+    <!-- Policy note box -->
+    <rect class="note" x="482" y="556" width="230" height="76" rx="18" />
+    <text class="note-text policy-text" x="597" y="586" text-anchor="middle">Exact-domain equality</text>
+    <text class="note-text policy-text" x="597" y="604" text-anchor="middle">is enforced everywhere.</text>
+    <text class="card-body" x="597" y="624" text-anchor="middle">No match → no read.</text>
+
+    <!-- Blocked label -->
+    <text class="label danger-text" x="740" y="524">
+      <tspan x="740" dy="0">Runtime cannot pivot</tspan>
+      <tspan x="740" dy="14">into another domain.</tspan>
+    </text>
+  </g>
+
+  <!-- Divider -->
+  <path class="divider" d="M 1116 200 L 1116 830" />
+
+  <!-- RIGHT PANEL: Admin plane -->
+  <g transform="translate(1140 162)">
+    <rect class="panel" x="0" y="0" width="480" height="700" rx="28" />
+    <rect class="panel-head" x="0" y="0" width="480" height="108" rx="28" />
+    <rect class="panel-head" x="0" y="80" width="480" height="28" rx="0" />
+    <text class="badge shared-text" x="34" y="42">Admin plane</text>
+    <text class="panel-title" x="34" y="72">Cross-domain ops live here</text>
+    <text class="panel-copy" x="34" y="100">
+      <tspan x="34" dy="0">Auditing, cataloging, and publication can</tspan>
+      <tspan x="34" dy="16">inspect many domains — they do not answer</tspan>
+      <tspan x="34" dy="16">a live end-user request.</tspan>
+    </text>
+
+    <!-- Admin icon -->
+    <text x="436" y="50" font-size="26" text-anchor="middle">⚙</text>
+
+    <!-- Admin auditor -->
+    <rect class="card shared" x="36" y="184" width="196" height="96" rx="22" />
+    <text class="card-title shared-text" x="134" y="222" text-anchor="middle">Admin auditor</text>
+    <text class="card-body" x="134" y="246" text-anchor="middle">
+      <tspan x="134" dy="0">Reads logs and metadata</tspan>
+      <tspan x="134" dy="16">across domains.</tspan>
+    </text>
+
+    <!-- Catalog service -->
+    <rect class="card shared" x="250" y="184" width="194" height="96" rx="22" />
+    <text class="card-title shared-text" x="347" y="222" text-anchor="middle">Catalog service</text>
+    <text class="card-body" x="347" y="246" text-anchor="middle">
+      <tspan x="347" dy="0">Indexes ownership,</tspan>
+      <tspan x="347" dy="16">policy, and lineage.</tspan>
+    </text>
+
+    <!-- Publication pipeline -->
+    <rect class="card policy" x="86" y="358" width="310" height="100" rx="22" />
+    <text class="card-title policy-text" x="241" y="396" text-anchor="middle">Publication pipeline</text>
+    <text class="card-body" x="241" y="420" text-anchor="middle">
+      <tspan x="241" dy="0">Materializes reviewed copies into</tspan>
+      <tspan x="241" dy="16">target domains on purpose.</tspan>
+    </text>
+
+    <!-- Warning banner card -->
+    <rect class="card warn" x="56" y="536" width="370" height="110" rx="22" />
+    <text x="241" y="570" text-anchor="middle" font-size="18">⚠</text>
+    <text class="card-title warn-text" x="241" y="594" text-anchor="middle">Admin ≠ runtime access</text>
+    <text class="card-body" x="241" y="618" text-anchor="middle">
+      <tspan x="241" dy="0">This plane may inspect many domains,</tspan>
+      <tspan x="241" dy="16">but it cannot weaken live request checks.</tspan>
+    </text>
+
+    <!-- Arrows -->
+    <path class="flow soft" d="M 134 280 L 134 324 C 134 344, 154 358, 174 358" />
+    <path class="flow soft" d="M 347 280 L 347 324 C 347 344, 320 358, 300 358" />
+    <path class="flow soft" d="M 241 458 L 241 536" />
+  </g>
+</svg>

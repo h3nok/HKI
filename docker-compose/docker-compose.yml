@@ -1,0 +1,132 @@
+# AI Platform — Local Development Infrastructure
+# All ports standardized to 9000 range for consistency
+#
+# NOTE: LiteLLM runs here on :4000 for local dev.
+# apps/litellm-gateway/docker-compose.yml is the standalone gateway used for
+# integration testing — do NOT run both at the same time (port 4000 conflict).
+
+services:
+  # ── Core Services (required for local dev) ─────────────────────────────────
+
+  # MySQL Database — Agentic BFF (Drizzle ORM)
+  mysql:
+    image: mysql:8.0
+    container_name: retail-agentic-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-retail_agentic}
+    ports:
+      - "${MYSQL_PORT:-9306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis — Orchestrator cache, rate limiting, knowledge pipeline job store
+  redis:
+    image: redis:7-alpine
+    container_name: retail-agentic-redis
+    ports:
+      - "${REDIS_PORT:-9379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── Knowledge Stack ────────────────────────────────────────────────────────
+
+  # PostgreSQL + pgvector — AlloyDB-compatible local dev for Knowledge API
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: retail-agentic-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-knowledge}
+    ports:
+      - "${POSTGRES_PORT:-9432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Neo4j — Knowledge graph (optional, used by dev-knowledge-api-full)
+  neo4j:
+    image: neo4j:5-community
+    container_name: retail-agentic-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-knowledge}
+      NEO4J_PLUGINS: '["apoc"]'
+    ports:
+      - "${NEO4J_BOLT_PORT:-9687}:7687"
+      - "${NEO4J_HTTP_PORT:-9474}:7474"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "cypher-shell -u neo4j -p ${NEO4J_PASSWORD:-knowledge} 'RETURN 1'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── LLM Gateway ────────────────────────────────────────────────────────────
+  #
+  # LOCAL DEV: LiteLLM lightweight proxy — config from apps/litellm-gateway/
+  # GCP PROD:  apps/litellm-gateway/ deployed via its own tf/ and docker-compose
+  # CONFLICT:  Do not run apps/litellm-gateway/docker-compose.yml at the same time
+  #            as this file — both bind to port 4000.
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: retail-agentic-litellm
+    ports:
+      - "${LITELLM_PORT:-4000}:4000"
+    volumes:
+      - ../../litellm-gateway/config.yaml:/app/config.yaml
+      - ./creds/gcp_creds.json:/app/creds/gcp_creds.json:ro
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - VERTEX_PROJECT=${VERTEX_PROJECT:-p-642-cilab-sandbox}
+      - VERTEX_LOCATION=${VERTEX_LOCATION:-us-central1}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/creds/gcp_creds.json
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Cloud Pub/Sub Emulator (local dev for knowledge pipeline queue)
+  pubsub-emulator:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    container_name: retail-agentic-pubsub
+    command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8085 --project=local-dev
+    ports:
+      - "${PUBSUB_PORT:-9085}:8085"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  mysql_data:
+  redis_data:
+  postgres_data:
+  neo4j_data:
+
+networks:
+  default:
+    name: retail-agentic-network

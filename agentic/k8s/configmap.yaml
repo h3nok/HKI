@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentic-bff-config
+  namespace: platform
+data:
+  NODE_ENV: "production"
+  PORT: "9001"
+  KB_HERMETIC_ISOLATION: "true"
+
+  # Downstream services (cluster-internal DNS)
+  ORCHESTRATOR_URL: "http://orchestrator:9501"
+  KNOWLEDGE_PIPELINE_URL: "http://ingestion-pipeline:9508"
+  KNOWLEDGE_API_URL: "http://knowledge-api:9509"
+  VECTOR_STORE_URL: "http://knowledge-api:9509"
+  ANALYTICS_URL: "http://analytics:9512"
+
+  # LLM Gateway — Apigee X (authoritative gateway with VerifyAPIKey + SpikeArrest + Quota)
+  LLM_GATEWAY_URL: "https://apigee.cilabs.np.hki.com/v1"
+
+  # Orchestrator fallback
+  ENABLE_GEMINI_ORCHESTRATOR_FALLBACK: "true"
+
+  # App
+  VITE_APP_ID: "agentic"
+  BASE_URL: "https://agentic.cilabs.np.hki.com"
+
+  # Redis for multi-pod WebSocket broadcast + connector sync locking.
+  # deploy-k8s.sh patches this from Terraform outputs during rollout.
+  REDIS_URL: ""
+
+  # Google OAuth redirect (update to production domain)
+  GOOGLE_DRIVE_REDIRECT_URI: "https://agentic.cilabs.np.hki.com/api/connectors/google-drive/callback"
+
+  # GCP-native observability console link used by the Agentic UI.
+  VITE_OBSERVABILITY_URL: "https://console.cloud.google.com/monitoring/dashboards?project=p-642-cilab-gke"

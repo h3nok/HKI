@@ -1,0 +1,164 @@
+{
+  "suite_name": "knowledge-base-core-evaluation",
+  "description": "Core evaluation test cases for knowledge base retrieval quality",
+  "version": "1.0.0",
+  "created": "2026-03-16",
+  "cases": [
+    {
+      "id": "return-policy-basic",
+      "query": "What is Costco's return policy?",
+      "expected_answer": "Costco accepts returns on most items at any time if the customer is not satisfied. Electronics have a 90-day return window. Special rules apply for certain items like tires and major appliances.",
+      "departments": ["customer-service"],
+      "document_types": ["policy"],
+      "notes": "Basic factual recall - foundational knowledge"
+    },
+    {
+      "id": "membership-executive-benefits",
+      "query": "What are the benefits of Executive membership?",
+      "expected_answer": "Executive members receive 2% annual reward on qualified Costco purchases, exclusive offers, and additional savings on Costco services. The annual fee is $120.",
+      "departments": ["membership"],
+      "document_types": ["policy", "benefits"],
+      "notes": "Multi-faceted answer requiring synthesis"
+    },
+    {
+      "id": "pharmacy-prescription-refill",
+      "query": "How do I refill a prescription at Costco Pharmacy?",
+      "expected_answer": "Prescriptions can be refilled online via Costco.com, through the Costco mobile app, by calling the pharmacy, or in person at any Costco Pharmacy location. Auto-refill is available for maintenance medications.",
+      "departments": ["pharmacy"],
+      "document_types": ["sop"],
+      "notes": "Procedural knowledge - step-by-step process"
+    },
+    {
+      "id": "product-warranty-kirkland",
+      "query": "What warranty does Kirkland Signature offer on their products?",
+      "expected_answer": "Kirkland Signature products are backed by a satisfaction guarantee. If you're not completely satisfied, return it for a full refund. Specific warranty terms vary by product category.",
+      "departments": ["products"],
+      "document_types": ["warranty", "policy"],
+      "notes": "Brand-specific policy knowledge"
+    },
+    {
+      "id": "store-hours-holiday",
+      "query": "Are Costco warehouses open on major holidays?",
+      "expected_answer": "Costco warehouses are closed on New Year's Day, Easter, Memorial Day, Independence Day, Labor Day, Thanksgiving, and Christmas. Holiday hours may vary by location for other holidays.",
+      "departments": ["operations"],
+      "document_types": ["policy"],
+      "notes": "Temporal/schedule-based information"
+    },
+    {
+      "id": "employee-benefits-health",
+      "query": "What health insurance benefits do Costco employees receive?",
+      "expected_answer": "Eligible employees receive comprehensive health insurance including medical, dental, vision, and prescription drug coverage. Coverage begins after a short waiting period for full-time and part-time employees.",
+      "departments": ["hr"],
+      "document_types": ["benefits", "internal"],
+      "notes": "Internal knowledge - employee-specific"
+    },
+    {
+      "id": "food-safety-temperature",
+      "query": "What are the temperature requirements for storing fresh meat?",
+      "expected_answer": "Fresh meat must be stored at 32-40°F (0-4°C). Ground meat and variety meats should be used within 1-2 days. Whole cuts can be stored for 3-5 days. Temperature must be monitored and logged every 4 hours.",
+      "departments": ["food-safety", "operations"],
+      "document_types": ["sop", "compliance"],
+      "notes": "Regulatory/compliance knowledge with specific values"
+    },
+    {
+      "id": "inventory-shortage-protocol",
+      "query": "What should I do if a high-demand item is out of stock?",
+      "expected_answer": "Check the system for incoming shipments, offer to place a special order if available, suggest comparable alternative products, and log the shortage for inventory planning. Notify the department manager for fast-moving items.",
+      "departments": ["inventory", "operations"],
+      "document_types": ["sop"],
+      "notes": "Multi-step procedural with decision tree"
+    },
+    {
+      "id": "fraud-prevention-payment",
+      "query": "How do we verify large cash transactions?",
+      "expected_answer": "Cash transactions over $10,000 require manager approval and CTR (Currency Transaction Report) filing per federal requirements. Verify member ID, document the transaction, and follow AML procedures.",
+      "departments": ["security", "compliance"],
+      "document_types": ["sop", "compliance"],
+      "notes": "Security-sensitive procedural knowledge"
+    },
+    {
+      "id": "sustainability-packaging",
+      "query": "What is Costco's policy on sustainable packaging?",
+      "expected_answer": "Costco prioritizes reducing packaging waste through right-sizing, recyclable materials, and eliminating unnecessary packaging layers. The company works with suppliers to minimize environmental impact while maintaining product protection.",
+      "departments": ["sustainability", "procurement"],
+      "document_types": ["policy"],
+      "notes": "Corporate initiative knowledge"
+    },
+    {
+      "id": "edge-case-digital-vs-physical",
+      "query": "Can I return a digital product purchased on Costco.com?",
+      "expected_answer": "Digital products including software downloads, e-books, and digital subscriptions are generally non-refundable once accessed. Physical software in boxes follows standard return policy.",
+      "departments": ["customer-service", "e-commerce"],
+      "document_types": ["policy"],
+      "notes": "Edge case with category-specific rules"
+    },
+    {
+      "id": "ambiguous-tire-installation",
+      "query": "How long does it take to get tires installed?",
+      "expected_answer": "Tire installation typically takes 45-60 minutes for a set of four tires. Wait times vary by location and appointment availability. Appointments are recommended but walk-ins are accepted based on capacity.",
+      "departments": ["tire-center", "operations"],
+      "document_types": ["sop"],
+      "notes": "Time-based query with variability"
+    },
+    {
+      "id": "contradictory-alcohol-sales",
+      "query": "Can I purchase alcohol without a Costco membership?",
+      "expected_answer": "In some states, you can purchase alcohol without a membership due to state liquor laws. This varies by location. Check with your local warehouse for specific regulations.",
+      "departments": ["legal", "operations"],
+      "document_types": ["policy", "compliance"],
+      "notes": "Location-dependent policy requiring qualification"
+    },
+    {
+      "id": "multi-hop-price-adjustment",
+      "query": "If I bought an item yesterday and the price dropped today, can I get a refund for the difference?",
+      "expected_answer": "Yes, Costco offers a price adjustment within 30 days of purchase. Bring your receipt to the membership counter for a refund of the difference. This applies to warehouse purchases; online orders have separate policies.",
+      "departments": ["customer-service"],
+      "document_types": ["policy"],
+      "notes": "Multi-condition procedural requiring policy linkage"
+    },
+    {
+      "id": "technical-optical-prescription",
+      "query": "Does Costco Optical accept prescriptions from other providers?",
+      "expected_answer": "Yes, Costco Optical accepts valid prescriptions from any licensed eye care professional. The prescription must be current (within 1-2 years depending on state law) and include all required measurements.",
+      "departments": ["optical", "compliance"],
+      "document_types": ["sop", "compliance"],
+      "notes": "Technical requirement with regulatory aspects"
+    }
+  ],
+  "metadata": {
+    "total_cases": 15,
+    "departments_covered": [
+      "customer-service",
+      "membership",
+      "pharmacy",
+      "products",
+      "operations",
+      "hr",
+      "food-safety",
+      "inventory",
+      "security",
+      "compliance",
+      "sustainability",
+      "procurement",
+      "e-commerce",
+      "tire-center",
+      "legal",
+      "optical"
+    ],
+    "difficulty_distribution": {
+      "basic": 5,
+      "intermediate": 7,
+      "advanced": 3
+    },
+    "test_dimensions": [
+      "factual_recall",
+      "multi_step_procedure",
+      "policy_synthesis",
+      "edge_cases",
+      "temporal_knowledge",
+      "regulatory_compliance",
+      "location_dependent",
+      "multi_hop_reasoning"
+    ]
+  }
+}

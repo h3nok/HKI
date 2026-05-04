@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentic-bff
+  namespace: platform
+  labels:
+    app.kubernetes.io/name: agentic-bff
+  annotations:
+    # Standalone zonal NEG used by the shared global load balancer in lab/.
+    cloud.google.com/neg: '{"exposed_ports":{"9001":{"name":"agentic-bff-neg"}}}'
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: agentic-bff
+  ports:
+    - name: http
+      port: 9001
+      targetPort: 9001
+      protocol: TCP

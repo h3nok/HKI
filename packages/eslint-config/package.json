@@ -1,0 +1,35 @@
+{
+  "name": "@hki/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./base": "./base.js",
+    "./next": "./next.js",
+    "./react-library": "./react-library.js"
+  },
+  "files": [
+    "index.js",
+    "base.js",
+    "next.js",
+    "react-library.js"
+  ],
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.56.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.0"
+  }
+}

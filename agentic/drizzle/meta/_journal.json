@@ -1,0 +1,132 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1769649328520,
+      "tag": "0000_spicy_madripoor",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1769649778795,
+      "tag": "0001_curved_kitty_pryde",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1769664329393,
+      "tag": "0002_abnormal_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1769664683610,
+      "tag": "0003_fuzzy_roxanne_simpson",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1770478471151,
+      "tag": "0004_massive_medusa",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1771616640000,
+      "tag": "0005_org_id_value_streams",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1771620000000,
+      "tag": "0006_agent_definition_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1771700000000,
+      "tag": "0007_knowledge_collections",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1771780000000,
+      "tag": "0008_knowledge_invites",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1771857412829,
+      "tag": "0009_gamification",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1771857500000,
+      "tag": "0010_sync_snapshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1771940000000,
+      "tag": "0011_fix_uservaluestreams_pk",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1772020000000,
+      "tag": "0013_knowledge_connectors",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1772100000000,
+      "tag": "0014_knowledge_gap_snapshots",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1772180000000,
+      "tag": "0015_self_service_billing",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "5",
+      "when": 1772260000000,
+      "tag": "0016_access_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1772340000000,
+      "tag": "0017_thoughttrace_enum",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1772400000000,
+      "tag": "0018_message_provenance",
+      "breakpoints": true
+    }
+  ]
+}

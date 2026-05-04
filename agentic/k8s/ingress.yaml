@@ -1,0 +1,77 @@
+# External HTTPS Ingress — Cloud Load Balancing + Cloud Armor WAF
+#
+# Prerequisites:
+#   1. Reserve a static IP:
+#      gcloud compute addresses create agentic-ip --global
+#   2. Provision a managed TLS cert:
+#      Domain derived from gateway URL pattern: *.cilabs.np.hki.com
+#   3. Create a Cloud Armor security policy:
+#      gcloud compute security-policies create agentic-waf \
+#        --description "OWASP ruleset for AI platform BFF"
+#      gcloud compute security-policies rules create 1000 \
+#        --security-policy agentic-waf \
+#        --expression "evaluatePreconfiguredExpr('xss-stable')" \
+#        --action deny-403
+#      (Add rules for sqli-stable, rce-stable, etc.)
+#   4. Attach Cloud Armor to the BackendConfig (see below).
+#
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: agentic-bff
+  namespace: platform
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "cilab-platform-ip"
+    networking.gke.io/managed-certificates: "agentic-tls"
+    networking.gke.io/v1beta1.FrontendConfig: "agentic-frontend-config"
+    # Cloud Armor WAF policy — see BackendConfig below
+    cloud.google.com/backend-config: '{"default": "agentic-backend-config"}'
+spec:
+  rules:
+    - host: agentic.cilabs.np.hki.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: agentic-bff
+                port:
+                  number: 9001
+---
+# Managed TLS certificate
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: agentic-tls
+  namespace: platform
+spec:
+  domains:
+    - agentic.cilabs.np.hki.com
+---
+# HTTP → HTTPS redirect
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: agentic-frontend-config
+  namespace: platform
+spec:
+  redirectToHttps:
+    enabled: true
+    responseCodeName: MOVED_PERMANENTLY_DEFAULT
+---
+# BackendConfig — attaches Cloud Armor WAF + connection draining
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: agentic-backend-config
+  namespace: platform
+spec:
+  securityPolicy:
+    name: "agentic-waf"
+  connectionDraining:
+    drainingTimeoutSec: 60
+  timeoutSec: 120
+  healthCheck:
+    requestPath: /health
+    port: 9001

@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestion-pipeline-worker
+  namespace: platform
+  labels:
+    app.kubernetes.io/name: ingestion-pipeline-worker
+    app.kubernetes.io/component: worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingestion-pipeline-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ingestion-pipeline-worker
+        app.kubernetes.io/component: worker
+    spec:
+      serviceAccountName: ingestion-pipeline
+      terminationGracePeriodSeconds: 60
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingestion-pipeline-worker
+      containers:
+        - name: ingestion-pipeline-worker
+          image: us-west1-docker.pkg.dev/p-642-cilab-infrastructure/cilab/ingestion-pipeline-service:latest
+          command:
+            - python
+            - -m
+            - src.worker
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: LLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ingestion-pipeline-secrets
+                  key: LITELLM_API_KEY
+          envFrom:
+            - configMapRef:
+                name: ingestion-pipeline-config
+            - secretRef:
+                name: ingestion-pipeline-secrets

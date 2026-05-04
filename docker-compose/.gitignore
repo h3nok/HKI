@@ -1,0 +1,12 @@
+# Ignore Google Service Account Keys and other secrets
+gcp_creds.json
+*creds.json
+*key.json
+*.pem
+*.p12
+
+# Ignore environment config
+.env
+.env.local
+.env.*.local
+

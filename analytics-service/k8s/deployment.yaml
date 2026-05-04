@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics
+  namespace: platform
+  labels:
+    app.kubernetes.io/name: analytics
+    app.kubernetes.io/component: service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: analytics
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: analytics
+        app.kubernetes.io/component: service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9512"
+    spec:
+      serviceAccountName: analytics
+      containers:
+        - name: analytics
+          image: us-west1-docker.pkg.dev/p-642-cilab-infrastructure/cilab/analytics:latest
+          ports:
+            - name: http
+              containerPort: 9512
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          envFrom:
+            - configMapRef:
+                name: analytics-config
+            # Secrets from Secret Manager (external-secrets-operator):
+            #   analytics/service-auth-secret → SERVICE_AUTH_SECRET
+            - secretRef:
+                name: analytics-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9512
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 9512
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: analytics

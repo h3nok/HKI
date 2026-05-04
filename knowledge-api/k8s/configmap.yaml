@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: knowledge-api-config
+  namespace: platform
+data:
+  SERVICE_NAME: "knowledge-api"
+  SERVICE_PORT: "9509"
+  ENVIRONMENT: "production"
+  KB_HERMETIC_ISOLATION: "true"
+  LOG_LEVEL: "INFO"
+
+  # Embedding — Vertex AI direct (no gateway needed in GKE with WIF + ADC)
+  EMBEDDING_GATEWAY_URL: ""
+  EMBEDDING_MODEL: "text-embedding-004"
+  EMBEDDING_DIMENSIONS: "768"
+  VERTEX_AI_LOCATION: "us-central1"
+  # Vertex AI Experiments project for evaluation run tracking. Set to enable cross-deploy comparison.
+  VERTEX_AI_EXPERIMENT: "rag-evaluation"
+
+  # Search defaults
+  MAX_RESULTS: "10"
+  SIMILARITY_THRESHOLD: "0.3"
+  BM25_WEIGHT: "0.3"
+  VECTOR_WEIGHT: "0.7"
+
+  # AlloyDB — direct PSC connection to 10.1.0.6 (knowledge-api-db-psc-endpoint, ACCEPTED).
+  # ALLOYDB_URL is injected from the knowledge-api-secrets Secret (not the ConfigMap).
+  ALLOYDB_POOL_MIN: "5"
+  ALLOYDB_POOL_MAX: "20"
+
+  # Neo4j — Aura instance not yet provisioned; entity extraction disabled until connected.
+  NEO4J_URI: ""
+  NEO4J_USERNAME: "neo4j"
+  NEO4J_DATABASE: "neo4j"
+
+  # Entity extraction — disabled until Neo4j Aura is provisioned
+  ENTITY_EXTRACTION_ENABLED: "false"
+  ENTITY_EXTRACTION_MODEL: "gemini-2.0-flash"
+
+  # Analytics
+  ANALYTICS_SERVICE_URL: "http://analytics:9512"
+
+  # Redis — Memorystore (set to actual Memorystore host in production)
+  REDIS_URL: "redis://10.64.180.68:6379/1"
+
+  # Auth
+  AUTH_ENABLED: "true"
+
+  # GCP
+  GCP_PROJECT_ID: "p-642-cilab-demo"
+  GCP_REGION: "us-west1"
+
+  # OTel — exports directly to Cloud Trace through the shared tracing module
+  OTEL_ENABLED: "true"
+  OTEL_EXPORTER_ENDPOINT: ""
+
+  # CORS — restrict to internal platform origins in production
+  CORS_ORIGINS: '["https://agentic.cilabs.np.hki.com"]'

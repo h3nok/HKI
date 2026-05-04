@@ -1,0 +1,34 @@
+# Build context: apps/ai-platform (repository root for this path is ai-platform/)
+# From apps/ai-platform:
+#   gcloud builds submit --config=orchestrator-service/cloudbuild.yaml --project=p-642-cilab-infrastructure .
+#
+# Cloud Build workers are linux/amd64, so the image is Cloud Run–compatible without buildx.
+#
+# Pass build SA via:
+#   gcloud builds submit ... --service-account=projects/PROJECT/serviceAccounts/cloudrun-sa@PROJECT.iam.gserviceaccount.com
+#
+substitutions:
+  _REGION: us-west1
+  _REGISTRY: cilab
+  _IMAGE: orchestrator-service
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - orchestrator-service/Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REGISTRY}/${_IMAGE}:$COMMIT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REGISTRY}/${_IMAGE}:latest
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REGISTRY}/${_IMAGE}:$COMMIT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REGISTRY}/${_IMAGE}:latest
+
+# With --service-account (required when default PROJECT@cloudbuild.gserviceaccount.com is not usable):
+# use CLOUD_LOGGING_ONLY per https://cloud.google.com/build/docs/securing-builds/configure-access-for-cloud-build-service-account
+options:
+  logging: CLOUD_LOGGING_ONLY

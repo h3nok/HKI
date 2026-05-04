@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1620 700" role="img" aria-labelledby="title desc">
+  <title id="title">HKI publication fanout</title>
+  <desc id="desc">A diagram showing a shared master artifact moving through explicit review and publication before materializing as separate domain-local copies. The copies do not read from one another at runtime.</desc>
+  <defs>
+    <style>
+      :root { color-scheme: light dark; }
+      svg {
+        --page: #f8fafc; --surface: #ffffff; --surface-2: #f1f5f9;
+        --text: #0f172a; --muted: #475569; --rule: #cbd5e1; --line: #64748b; --arrow: #64748b;
+        --safe-fill: #ecfdf5; --safe-stroke: #059669; --safe-text: #065f46;
+        --policy-fill: #eef2ff; --policy-stroke: #4f46e5; --policy-text: #3730a3;
+        --shared-fill: #f5f3ff; --shared-stroke: #7c3aed; --shared-text: #5b21b6;
+        --warn-fill: #fff7ed; --warn-stroke: #ea580c; --warn-text: #9a3412;
+        --glow-safe: rgba(5,150,105,0.18); --glow-policy: rgba(79,70,229,0.18);
+        --glow-shared: rgba(124,58,237,0.18); --glow-warn: rgba(234,88,12,0.18);
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        svg {
+          --page: #09111a; --surface: #0f172a; --surface-2: #111c2d;
+          --text: #e2e8f0; --muted: #94a3b8; --rule: #334155; --line: #7dd3fc; --arrow: #7dd3fc;
+          --safe-fill: #0e2c28; --safe-stroke: #34d399; --safe-text: #bbf7d0;
+          --policy-fill: #1f2451; --policy-stroke: #a78bfa; --policy-text: #ddd6fe;
+          --shared-fill: #26143f; --shared-stroke: #c084fc; --shared-text: #e9d5ff;
+          --warn-fill: #3a220b; --warn-stroke: #fb923c; --warn-text: #fed7aa;
+          --glow-safe: rgba(52,211,153,0.22); --glow-policy: rgba(167,139,250,0.22);
+          --glow-shared: rgba(192,132,252,0.22); --glow-warn: rgba(251,146,60,0.22);
+        }
+      }
+      .page { fill: var(--page); }
+      .heading { fill: var(--text); font-size: 38px; font-weight: 800; }
+      .subheading { fill: var(--muted); font-size: 17px; }
+      .panel { fill: var(--surface); stroke: var(--rule); stroke-width: 2; filter: url(#panel-shadow); }
+      .card { stroke-width: 2.5; }
+      .shared { fill: var(--shared-fill); stroke: var(--shared-stroke); filter: url(#glow-shared); }
+      .policy { fill: var(--policy-fill); stroke: var(--policy-stroke); filter: url(#glow-policy); }
+      .safe { fill: var(--safe-fill); stroke: var(--safe-stroke); filter: url(#glow-safe); }
+      .warn { fill: var(--warn-fill); stroke: var(--warn-stroke); filter: url(#glow-warn); }
+      .shared-text { fill: var(--shared-text); } .policy-text { fill: var(--policy-text); }
+      .safe-text { fill: var(--safe-text); } .warn-text { fill: var(--warn-text); }
+      .title { font-size: 20px; font-weight: 700; fill: var(--text); }
+      .body { font-size: 14px; fill: var(--muted); }
+      .chip { font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+      .flow { fill: none; stroke: var(--line); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .flow.soft { stroke-dasharray: 8 10; }
+      .divider { stroke: var(--rule); stroke-width: 2; stroke-dasharray: 10 12; }
+      .caption { fill: var(--muted); font-size: 14px; font-weight: 700; }
+      .num { font-size: 14px; font-weight: 800; fill: #fff; }
+      .num-bg { fill: var(--line); }
+    </style>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--arrow)" />
+    </marker>
+    <filter id="panel-shadow" x="-4%" y="-4%" width="110%" height="112%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <filter id="glow-shared" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-shared)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-policy" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-policy)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-safe" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-safe)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-warn" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-warn)" flood-opacity="1"/>
+    </filter>
+    <pattern id="dot-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#8090a0" opacity="0.06"/>
+    </pattern>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1620" height="700" rx="36" />
+  <rect x="0" y="0" width="1620" height="700" rx="36" fill="url(#dot-grid)"/>
+
+  <!-- Decorative accent -->
+  <rect x="70" y="26" width="100" height="5" rx="3" fill="var(--shared-stroke)" opacity="0.6" />
+  <rect x="180" y="26" width="50" height="5" rx="3" fill="var(--safe-stroke)" opacity="0.4" />
+
+  <text class="heading" x="70" y="76">Explicit publication and fanout</text>
+  <text class="subheading" x="70" y="108">
+    <tspan x="70" dy="0">HKI does not ban shared knowledge. It changes the mechanism: shared content becomes</tspan>
+    <tspan x="70" dy="20">visible through reviewed materialization into each target domain.</tspan>
+  </text>
+
+  <rect class="panel" x="50" y="160" width="1520" height="490" rx="28" />
+
+  <!-- Source artifact -->
+  <circle class="num-bg" cx="140" cy="214" r="14" />
+  <text class="num" x="140" y="219" text-anchor="middle">1</text>
+  <rect class="card shared" x="100" y="236" width="280" height="140" rx="24" />
+  <text class="chip shared-text" x="136" y="272">Source</text>
+  <text x="240" y="298" text-anchor="middle" font-size="18">📦</text>
+  <text class="title shared-text" x="240" y="324" text-anchor="middle">Curated master artifact</text>
+  <text class="body" x="240" y="348" text-anchor="middle">
+    <tspan x="240" dy="0">Central product, policy, or reference</tspan>
+    <tspan x="240" dy="16">content maintained once.</tspan>
+  </text>
+
+  <!-- Publication workflow -->
+  <circle class="num-bg" cx="456" cy="214" r="14" />
+  <text class="num" x="456" y="219" text-anchor="middle">2</text>
+  <rect class="card policy" x="430" y="236" width="320" height="180" rx="24" />
+  <text class="chip policy-text" x="466" y="272">Controlled bridge</text>
+  <text x="590" y="298" text-anchor="middle" font-size="18">🔍</text>
+  <text class="title policy-text" x="590" y="326" text-anchor="middle">Publication workflow</text>
+  <text class="body" x="590" y="350" text-anchor="middle">
+    <tspan x="590" dy="0">Review policy, choose destinations,</tspan>
+    <tspan x="590" dy="16">stamp lineage, and materialize copies.</tspan>
+    <tspan x="590" dy="16">Only sanctioned cross-domain path.</tspan>
+  </text>
+
+  <!-- Domain A -->
+  <circle class="num-bg" cx="834" cy="214" r="14" />
+  <text class="num" x="834" y="219" text-anchor="middle">3</text>
+  <rect class="card safe" x="810" y="190" width="250" height="114" rx="22" />
+  <text class="chip safe-text" x="846" y="222">Domain A</text>
+  <text class="title safe-text" x="935" y="250" text-anchor="middle">Local copy A</text>
+  <text class="body" x="935" y="272" text-anchor="middle">
+    <tspan x="935" dy="0">Runtime sees it as artifact</tspan>
+    <tspan x="935" dy="16">with σ(a) = A.</tspan>
+  </text>
+
+  <!-- Domain B -->
+  <rect class="card safe" x="810" y="336" width="250" height="114" rx="22" />
+  <text class="chip safe-text" x="846" y="368">Domain B</text>
+  <text class="title safe-text" x="935" y="396" text-anchor="middle">Local copy B</text>
+  <text class="body" x="935" y="418" text-anchor="middle">
+    <tspan x="935" dy="0">Same content, different</tspan>
+    <tspan x="935" dy="16">materialized ownership label.</tspan>
+  </text>
+
+  <!-- Domain C -->
+  <rect class="card safe" x="810" y="482" width="250" height="114" rx="22" />
+  <text class="chip safe-text" x="846" y="514">Domain C</text>
+  <text class="title safe-text" x="935" y="542" text-anchor="middle">Local copy C</text>
+  <text class="body" x="935" y="564" text-anchor="middle">
+    <tspan x="935" dy="0">Each target domain receives</tspan>
+    <tspan x="935" dy="16">its own artifact boundary.</tspan>
+  </text>
+
+  <!-- Runtime rule card -->
+  <rect class="card warn" x="1130" y="258" width="220" height="300" rx="22" />
+  <text class="chip warn-text" x="1164" y="290">Runtime rule</text>
+  <text x="1240" y="320" text-anchor="middle" font-size="18">⚠</text>
+  <text class="title warn-text" x="1240" y="350" text-anchor="middle">No implicit</text>
+  <text class="title warn-text" x="1240" y="374" text-anchor="middle">cross-domain reads</text>
+  <text class="body" x="1240" y="404" text-anchor="middle">
+    <tspan x="1240" dy="0">A request in A cannot</tspan>
+    <tspan x="1240" dy="18">read B or C directly.</tspan>
+  </text>
+  <text class="body" x="1240" y="458" text-anchor="middle">
+    <tspan x="1240" dy="0">Sharing works only</tspan>
+    <tspan x="1240" dy="18">through publication,</tspan>
+    <tspan x="1240" dy="18">not fallback.</tspan>
+  </text>
+
+  <!-- Arrows -->
+  <path class="flow" d="M 380 306 L 430 306" />
+  <path class="flow" d="M 750 320 L 810 247" />
+  <path class="flow" d="M 750 340 L 810 393" />
+  <path class="flow" d="M 750 360 L 810 539" />
+
+  <!-- Dashed dividers to runtime rule -->
+  <path class="divider" d="M 1060 247 L 1130 320" />
+  <path class="divider" d="M 1060 393 L 1130 395" />
+  <path class="divider" d="M 1060 539 L 1130 470" />
+
+  <text class="caption" x="810" y="640">Every copy is local by construction — HKI is preserved at runtime.</text>
+</svg>

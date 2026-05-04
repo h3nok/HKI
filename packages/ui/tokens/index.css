@@ -1,0 +1,747 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ╔═╗╔═╗╔═╗╔╦╗╔═╗╔═╗  ╦╔╗╔╔╗╔╔═╗╦  ╦╔═╗╔╦╗╦╔═╗╔╗╔╔═╗
+   ║  ║ ║╚═╗ ║ ║  ║ ║  ║║║║║║║║ ║╚╗╔╝╠═╣ ║ ║║ ║║║║╚═╗
+   ╚═╝╚═╝╚═╝ ╩ ╚═╝╚═╝  ╩╝╚╝╝╚╝╚═╝ ╚╝ ╩ ╩ ╩ ╩╚═╝╝╚╝╚═╝
+
+   DESIGN SYSTEM v3.0 — Entry Point
+   ═══════════════════════════════════════════════════════════════════════════════
+
+   A world-class, unified design token system for enterprise applications.
+
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │                           ARCHITECTURE                                      │
+   ├─────────────────────────────────────────────────────────────────────────────┤
+   │  Layer 1: PRIMITIVES (primitives.css)                                      │
+   │  └─ Raw atomic values: colors, spacing, typography, shadows, motion        │
+   │  └─ ⚠️  Never use directly in components                                   │
+   │                                                                             │
+   │  Layer 2: SEMANTIC (semantic.css)                                          │
+   │  └─ Meaning-based tokens: --background, --primary, --card, etc.            │
+   │  └─ ✅ USE THESE in your components                                        │
+   │                                                                             │
+   │  Layer 3: APP THEMES (themes/*.css)                                        │
+   │  └─ Override PRIMITIVES only (never semantic tokens)                       │
+   │  └─ Each app gets unique visual identity while staying consistent          │
+   └─────────────────────────────────────────────────────────────────────────────┘
+
+   USAGE:
+   ───────
+   Default:   @import "@hki/ui/tokens";
+
+   Agentic:   @import "@hki/ui/tokens";
+              @import "@hki/ui/tokens/themes/agentic";
+
+   Brand Foundation: HKI Blue (#0066B2) + HKI Red (#E31837)
+   Maintained by: HKI Innovation Platform Team
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CORE TOKEN LAYERS
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@import "./primitives.css";
+@import "./semantic.css";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LEGACY COMPATIBILITY — Brand color aliases
+   These exist for backward compatibility with existing code.
+   New code should use --color-brand-* from primitives.css
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --hki-blue-25: var(--color-brand-blue-25);
+  --hki-blue-50: var(--color-brand-blue-50);
+  --hki-blue-100: var(--color-brand-blue-100);
+  --hki-blue-200: var(--color-brand-blue-200);
+  --hki-blue-300: var(--color-brand-blue-300);
+  --hki-blue-400: var(--color-brand-blue-400);
+  --hki-blue-500: var(--color-brand-blue-500);
+  --hki-blue-600: var(--color-brand-blue-600);
+  --hki-blue-700: var(--color-brand-blue-700);
+  --hki-blue-800: var(--color-brand-blue-800);
+  --hki-blue-900: var(--color-brand-blue-900);
+
+  --hki-red-25: var(--color-brand-red-25);
+  --hki-red-50: var(--color-brand-red-50);
+  --hki-red-100: var(--color-brand-red-100);
+  --hki-red-200: var(--color-brand-red-200);
+  --hki-red-300: var(--color-brand-red-300);
+  --hki-red-400: var(--color-brand-red-400);
+  --hki-red-500: var(--color-brand-red-500);
+  --hki-red-600: var(--color-brand-red-600);
+  --hki-red-700: var(--color-brand-red-700);
+  --hki-red-800: var(--color-brand-red-800);
+  --hki-red-900: var(--color-brand-red-900);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 2: NEUTRAL SCALE — WARM NEUTRALS (No-Washout)
+     Warm-tinted gray scale to avoid sterile white and create depth
+     Stone/cream undertones for premium light theme feel
+     ═══════════════════════════════════════════════════════════════════════ */
+  --neutral-0: #ffffff; /* Pure white - use sparingly */
+  --neutral-25: #fdfdfb; /* Warm off-white */
+  --neutral-50: #faf9f7; /* App background - warm cream */
+  --neutral-75: #f7f6f3; /* Subtle surface step */
+  --neutral-100: #f3f2ef; /* Cards, panels - 1 step up */
+  --neutral-150: #eae9e6; /* Interactive surfaces */
+  --neutral-200: #e0dfdc; /* Borders - visible but quiet */
+  --neutral-300: #d1d0cd; /* Stronger borders */
+  --neutral-400: #a3a29f; /* Placeholder text */
+  --neutral-500: #6f6e6b; /* Secondary text */
+  --neutral-600: #525150; /* Body text */
+  --neutral-700: #3f3e3d; /* Headings */
+  --neutral-800: #292827; /* Dark surfaces */
+  --neutral-850: #1f1e1d; /* Darker */
+  --neutral-900: #171716; /* Near black */
+  --neutral-925: #121211; /* Deeper */
+  --neutral-950: #0a0a09; /* True dark */
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 3: SEMANTIC STATUS COLORS
+     Purpose-built colors for system states and data communication
+     Each scale optimized for accessibility and clarity
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* SUCCESS — Positive outcomes, completions, approvals */
+  --success-25: #f0fdf4;
+  --success-50: #dcfce7;
+  --success-100: #bbf7d0;
+  --success-200: #86efac;
+  --success-300: #4ade80;
+  --success-400: #22c55e;
+  --success-500: #16a34a; /* Primary success */
+  --success-600: #15803d;
+  --success-700: #166534;
+  --success-800: #14532d;
+  --success-900: #052e16;
+
+  /* WARNING — Cautions, pending states, attention needed */
+  --warning-25: #fffbeb;
+  --warning-50: #fef3c7;
+  --warning-100: #fde68a;
+  --warning-200: #fcd34d;
+  --warning-300: #fbbf24;
+  --warning-400: #f59e0b;
+  --warning-500: #d97706; /* Primary warning */
+  --warning-600: #b45309;
+  --warning-700: #92400e;
+  --warning-800: #78350f;
+  --warning-900: #451a03;
+
+  /* INFO — Informational, neutral highlights */
+  --info-25: #f0f9ff;
+  --info-50: #e0f2fe;
+  --info-100: #bae6fd;
+  --info-200: #7dd3fc;
+  --info-300: #38bdf8;
+  --info-400: #0ea5e9;
+  --info-500: #0284c7; /* Primary info */
+  --info-600: #0369a1;
+  --info-700: #075985;
+  --info-800: #0c4a6e;
+  --info-900: #082f49;
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 4: DATA VISUALIZATION PALETTE
+     Carefully selected colors for charts, graphs, and analytics
+     Optimized for colorblind accessibility (Deuteranopia, Protanopia)
+     ═══════════════════════════════════════════════════════════════════════ */
+  --chart-blue: var(--hki-blue-500);
+  --chart-red: var(--hki-red-500);
+  --chart-emerald: #10b981;
+  --chart-amber: #f59e0b;
+  --chart-violet: #8b5cf6;
+  --chart-cyan: #06b6d4;
+  --chart-rose: #f43f5e;
+  --chart-indigo: #6366f1;
+  --chart-orange: #f97316;
+  --chart-teal: #14b8a6;
+
+  /* Categorical palette for multi-series data */
+  --data-1: var(--hki-blue-500);
+  --data-2: var(--hki-red-400);
+  --data-3: #10b981;
+  --data-4: #f59e0b;
+  --data-5: #8b5cf6;
+  --data-6: #06b6d4;
+  --data-7: #ec4899;
+  --data-8: #84cc16;
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 5: SEMANTIC SURFACE TOKENS — NO-WASHOUT SYSTEM
+     5-level surface ladder for depth and hierarchy
+     RULE: Background ≠ Card value — never white-on-white
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Level 0: App Background — warm neutral base (NOT pure white) */
+  --background: var(--neutral-50); /* Warm cream base */
+  --foreground: var(--neutral-700); /* Strong readable text */
+
+  /* Surface Ladder (bottom to top, each +1 value step) */
+  --surface-ground: var(--neutral-75); /* Level 1: Recessed areas, table rows */
+  --surface-base: var(--neutral-0); /* Level 2: Cards, panels (+1 brighter than bg) */
+  --surface-raised: var(--neutral-0); /* Level 3: Hover cards, dropdowns */
+  --surface-overlay: var(--neutral-0); /* Level 4: Modals, popovers, tooltips */
+
+  /* Interactive surface states */
+  --surface-hover: var(--neutral-75); /* Hover on base surfaces */
+  --surface-active: var(--neutral-100); /* Active/pressed state */
+  --surface-selected: var(--hki-blue-25); /* Selected items - subtle accent tint */
+  --surface-input: var(--neutral-0); /* Input fields - placed "on top" of cards */
+
+  /* Muted content */
+  --muted: var(--neutral-100); /* Muted backgrounds */
+  --muted-foreground: var(--neutral-500); /* Secondary text */
+
+  /* Text hierarchy */
+  --text-primary: var(--neutral-700); /* Body text */
+  --text-secondary: var(--neutral-500); /* Secondary labels */
+  --text-muted: var(--neutral-400); /* Placeholders, hints */
+  --text-heading: var(--neutral-900); /* Headings - maximum contrast */
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 6: BORDER TOKENS — QUIET DEPTH SYSTEM
+     Hairline borders for separation, not loud decoration
+     Combined with soft shadows for layered depth
+     ═══════════════════════════════════════════════════════════════════════ */
+  --border: var(--neutral-200); /* Standard card/panel border */
+  --border-muted: var(--neutral-150); /* Subtle internal dividers */
+  --border-subtle: rgba(0, 0, 0, 0.06); /* Nearly invisible separation */
+  --border-hover: var(--neutral-300); /* Hover state border */
+  --border-focus: var(--hki-blue-500);
+  --border-error: var(--hki-red-500);
+  --border-success: var(--success-500);
+
+  /* Input-specific borders (inputs sit "on" cards) */
+  --border-input: var(--neutral-200);
+  --border-input-hover: var(--neutral-300);
+  --border-input-focus: var(--hki-blue-400);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 7: INTERACTIVE ACCENT TOKENS
+     Semantic tokens for interactive elements
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Primary (Blue) accent scale */
+  --accent-blue-subtle: var(--hki-blue-25);
+  --accent-blue-muted: var(--hki-blue-50);
+  --accent-blue-light: var(--hki-blue-100);
+  --accent-blue-default: var(--hki-blue-500);
+  --accent-blue-emphasis: var(--hki-blue-600);
+  --accent-blue-strong: var(--hki-blue-700);
+  --accent-blue-contrast: var(--neutral-0);
+
+  /* Secondary (Red) accent scale */
+  --accent-red-subtle: var(--hki-red-25);
+  --accent-red-muted: var(--hki-red-50);
+  --accent-red-light: var(--hki-red-100);
+  --accent-red-default: var(--hki-red-500);
+  --accent-red-emphasis: var(--hki-red-600);
+  --accent-red-strong: var(--hki-red-700);
+  --accent-red-contrast: var(--neutral-0);
+
+  /* Semantic interactive tokens */
+  --accent-primary: var(--hki-blue-500);
+  --accent-primary-hover: var(--hki-blue-600);
+  --accent-primary-active: var(--hki-blue-700);
+  --accent-primary-light: var(--hki-blue-50);
+
+  --accent-secondary: var(--hki-red-500);
+  --accent-secondary-hover: var(--hki-red-600);
+  --accent-secondary-active: var(--hki-red-700);
+  --accent-secondary-light: var(--hki-red-50);
+
+  /* Link colors */
+  --link: var(--hki-blue-500);
+  --link-hover: var(--hki-blue-600);
+  --link-visited: var(--hki-blue-700);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 8: TYPOGRAPHY TOKENS
+     Modular scale based on 1.25 ratio (Major Third)
+     Base size: 16px
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Font families */
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", "Consolas", monospace;
+  --font-display: "Inter", var(--font-sans);
+
+  /* Type scale (Major Third — 1.25) */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-md: 1.125rem; /* 18px */
+  --text-lg: 1.25rem; /* 20px */
+  --text-xl: 1.5rem; /* 24px */
+  --text-2xl: 1.875rem; /* 30px */
+  --text-3xl: 2.25rem; /* 36px */
+  --text-4xl: 3rem; /* 48px */
+  --text-5xl: 3.75rem; /* 60px */
+  --text-6xl: 4.5rem; /* 72px */
+
+  /* Line heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* Letter spacing */
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+
+  /* Font weights */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 9: SPACING SYSTEM
+     4px base unit for consistent rhythm
+     ═══════════════════════════════════════════════════════════════════════ */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem; /* 2px */
+  --space-1: 0.25rem; /* 4px */
+  --space-1-5: 0.375rem; /* 6px */
+  --space-2: 0.5rem; /* 8px */
+  --space-2-5: 0.625rem; /* 10px */
+  --space-3: 0.75rem; /* 12px */
+  --space-3-5: 0.875rem; /* 14px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-7: 1.75rem; /* 28px */
+  --space-8: 2rem; /* 32px */
+  --space-9: 2.25rem; /* 36px */
+  --space-10: 2.5rem; /* 40px */
+  --space-11: 2.75rem; /* 44px */
+  --space-12: 3rem; /* 48px */
+  --space-14: 3.5rem; /* 56px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
+  --space-28: 7rem; /* 112px */
+  --space-32: 8rem; /* 128px */
+  --space-36: 9rem; /* 144px */
+  --space-40: 10rem; /* 160px */
+  --space-48: 12rem; /* 192px */
+  --space-56: 14rem; /* 224px */
+  --space-64: 16rem; /* 256px */
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 10: BORDER RADIUS
+     Consistent rounding scale
+     ═══════════════════════════════════════════════════════════════════════ */
+  --radius-none: 0;
+  --radius-xs: 0.125rem; /* 2px */
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-md: 0.375rem; /* 6px */
+  --radius-lg: 0.5rem; /* 8px */
+  --radius-xl: 0.75rem; /* 12px */
+  --radius-2xl: 1rem; /* 16px */
+  --radius-3xl: 1.5rem; /* 24px */
+  --radius-full: 9999px;
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 11: ELEVATION & SHADOWS — SOFT DEPTH SYSTEM
+     Consistent soft shadows for quiet depth (no heavy drop shadows)
+     Use: border + shadow together for "material on material" feel
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Shadow ladder (matches surface ladder) */
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 1px 3px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 10px 10px -5px rgba(0, 0, 0, 0.03), 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+
+  /* Legacy aliases for backward compatibility */
+  --elevation-0: var(--shadow-none);
+  --elevation-1: var(--shadow-sm);
+  --elevation-2: var(--shadow-md);
+  --elevation-3: var(--shadow-lg);
+  --elevation-4: var(--shadow-xl);
+  --elevation-5: var(--shadow-2xl);
+
+  /* Inset shadows (for inputs, recessed areas) */
+  --shadow-inset-sm: inset 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-inset-md: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+
+  /* Legacy aliases */
+  --elevation-inset-sm: var(--shadow-inset-sm);
+  --elevation-inset-md: var(--shadow-inset-md);
+
+  /* Brand glow effects - Using official HKI Blue #0066B2 and Red #E31837 */
+  --glow-blue-sm:
+    0 0 0 1px rgba(0, 102, 178, 0.08), 0 2px 8px -2px rgba(0, 102, 178, 0.12),
+    0 4px 12px -4px rgba(0, 102, 178, 0.08);
+  --glow-blue-md:
+    0 0 0 1px rgba(0, 102, 178, 0.12), 0 4px 16px -4px rgba(0, 102, 178, 0.18),
+    0 8px 24px -8px rgba(0, 102, 178, 0.12);
+  --glow-blue-lg:
+    0 0 0 1px rgba(0, 102, 178, 0.16), 0 8px 32px -8px rgba(0, 102, 178, 0.24),
+    0 16px 48px -16px rgba(0, 102, 178, 0.16);
+
+  --glow-red-sm:
+    0 0 0 1px rgba(227, 24, 55, 0.08), 0 2px 8px -2px rgba(227, 24, 55, 0.12),
+    0 4px 12px -4px rgba(227, 24, 55, 0.08);
+  --glow-red-md:
+    0 0 0 1px rgba(227, 24, 55, 0.12), 0 4px 16px -4px rgba(227, 24, 55, 0.18),
+    0 8px 24px -8px rgba(227, 24, 55, 0.12);
+  --glow-red-lg:
+    0 0 0 1px rgba(227, 24, 55, 0.16), 0 8px 32px -8px rgba(227, 24, 55, 0.24),
+    0 16px 48px -16px rgba(227, 24, 55, 0.16);
+
+  /* Focus rings */
+  --ring-blue: 0 0 0 3px rgba(0, 102, 178, 0.25);
+  --ring-red: 0 0 0 3px rgba(227, 24, 55, 0.25);
+  --ring-offset: 0 0 0 2px var(--background);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 12: MOTION & ANIMATION
+     Perceptually smooth easing curves
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Duration scale */
+  --duration-instant: 50ms;
+  --duration-faster: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-moderate: 250ms;
+  --duration-slow: 300ms;
+  --duration-slower: 400ms;
+  --duration-slowest: 500ms;
+
+  /* Easing curves */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Expressive easing */
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1); /* Smooth deceleration */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy overshoot */
+  --ease-swift: cubic-bezier(0.4, 0, 0.2, 1); /* Quick & snappy */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1); /* Dramatic entrance */
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1); /* Gentle stop */
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 13: Z-INDEX SCALE
+     Predictable stacking order
+     ═══════════════════════════════════════════════════════════════════════ */
+  --z-behind: -1;
+  --z-base: 0;
+  --z-raised: 1;
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-fixed: 30;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-popover: 60;
+  --z-toast: 70;
+  --z-tooltip: 80;
+  --z-max: 9999;
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 14: COMPONENT-SPECIFIC TOKENS
+     Standardized sizing for common components
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Input sizing */
+  --input-height-sm: 2rem; /* 32px */
+  --input-height-md: 2.5rem; /* 40px */
+  --input-height-lg: 3rem; /* 48px */
+  --input-padding-x: 0.75rem; /* 12px */
+  --input-padding-y: 0.5rem; /* 8px */
+
+  /* Button sizing */
+  --button-height-xs: 1.75rem; /* 28px */
+  --button-height-sm: 2rem; /* 32px */
+  --button-height-md: 2.5rem; /* 40px */
+  --button-height-lg: 3rem; /* 48px */
+  --button-height-xl: 3.5rem; /* 56px */
+
+  /* Avatar sizing */
+  --avatar-xs: 1.5rem; /* 24px */
+  --avatar-sm: 2rem; /* 32px */
+  --avatar-md: 2.5rem; /* 40px */
+  --avatar-lg: 3rem; /* 48px */
+  --avatar-xl: 4rem; /* 64px */
+  --avatar-2xl: 5rem; /* 80px */
+
+  /* Icon sizing */
+  --icon-xs: 0.75rem; /* 12px */
+  --icon-sm: 1rem; /* 16px */
+  --icon-md: 1.25rem; /* 20px */
+  --icon-lg: 1.5rem; /* 24px */
+  --icon-xl: 2rem; /* 32px */
+
+  /* Sidebar & navigation */
+  --sidebar-width: 16rem; /* 256px */
+  --sidebar-collapsed: 4rem; /* 64px */
+  --header-height: 4rem; /* 64px */
+  --footer-height: 4rem; /* 64px */
+
+  /* Content containers */
+  --content-max-xs: 20rem; /* 320px */
+  --content-max-sm: 24rem; /* 384px */
+  --content-max-md: 28rem; /* 448px */
+  --content-max-lg: 32rem; /* 512px */
+  --content-max-xl: 36rem; /* 576px */
+  --content-max-2xl: 42rem; /* 672px */
+  --content-max-3xl: 48rem; /* 768px */
+  --content-max-4xl: 56rem; /* 896px */
+  --content-max-5xl: 64rem; /* 1024px */
+  --content-max-6xl: 72rem; /* 1152px */
+  --content-max-7xl: 80rem; /* 1280px */
+  --content-max-full: 100%;
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SECTION 15: BRAND GRADIENTS
+     Signature gradient combinations
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Primary brand gradient (Blue → Red diagonal) */
+  --gradient-brand: linear-gradient(135deg, var(--hki-blue-500) 0%, var(--hki-red-500) 100%);
+  --gradient-brand-reverse: linear-gradient(
+    135deg,
+    var(--hki-red-500) 0%,
+    var(--hki-blue-500) 100%
+  );
+  --gradient-brand-vertical: linear-gradient(
+    180deg,
+    var(--hki-blue-500) 0%,
+    var(--hki-red-500) 100%
+  );
+  --gradient-brand-horizontal: linear-gradient(
+    90deg,
+    var(--hki-blue-500) 0%,
+    var(--hki-red-500) 100%
+  );
+
+  /* Subtle brand gradients (for backgrounds) */
+  --gradient-brand-subtle: linear-gradient(
+    135deg,
+    rgba(43, 69, 194, 0.06) 0%,
+    rgba(220, 38, 38, 0.06) 100%
+  );
+  --gradient-brand-light: linear-gradient(
+    135deg,
+    var(--hki-blue-50) 0%,
+    var(--hki-red-50) 100%
+  );
+
+  /* Monochromatic gradients */
+  --gradient-blue: linear-gradient(135deg, var(--hki-blue-400) 0%, var(--hki-blue-600) 100%);
+  --gradient-blue-light: linear-gradient(
+    135deg,
+    var(--hki-blue-50) 0%,
+    var(--hki-blue-100) 100%
+  );
+  --gradient-red: linear-gradient(135deg, var(--hki-red-400) 0%, var(--hki-red-600) 100%);
+  --gradient-red-light: linear-gradient(
+    135deg,
+    var(--hki-red-50) 0%,
+    var(--hki-red-100) 100%
+  );
+
+  /* Neutral gradients */
+  --gradient-subtle: linear-gradient(180deg, var(--neutral-50) 0%, var(--neutral-100) 100%);
+  --gradient-elevated: linear-gradient(180deg, var(--neutral-0) 0%, var(--neutral-50) 100%);
+
+  /* Shimmer/loading gradient */
+  --gradient-shimmer: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     LEGACY ALIASES
+     Backward compatibility with existing codebase
+     ═══════════════════════════════════════════════════════════════════════ */
+  --duo-blue-50: var(--hki-blue-50);
+  --duo-blue-100: var(--hki-blue-100);
+  --duo-blue-200: var(--hki-blue-200);
+  --duo-blue-300: var(--hki-blue-300);
+  --duo-blue-400: var(--hki-blue-400);
+  --duo-blue-500: var(--hki-blue-500);
+  --duo-blue-600: var(--hki-blue-600);
+  --duo-blue-700: var(--hki-blue-700);
+  --duo-blue-800: var(--hki-blue-800);
+  --duo-blue-900: var(--hki-blue-900);
+
+  --duo-red-50: var(--hki-red-50);
+  --duo-red-100: var(--hki-red-100);
+  --duo-red-200: var(--hki-red-200);
+  --duo-red-300: var(--hki-red-300);
+  --duo-red-400: var(--hki-red-400);
+  --duo-red-500: var(--hki-red-500);
+  --duo-red-600: var(--hki-red-600);
+  --duo-red-700: var(--hki-red-700);
+  --duo-red-800: var(--hki-red-800);
+  --duo-red-900: var(--hki-red-900);
+
+  --cyber-blue-50: var(--hki-blue-50);
+  --cyber-blue-100: var(--hki-blue-100);
+  --cyber-blue-200: var(--hki-blue-200);
+  --cyber-blue-300: var(--hki-blue-300);
+  --cyber-blue-400: var(--hki-blue-400);
+  --cyber-blue-500: var(--hki-blue-500);
+  --cyber-blue-600: var(--hki-blue-600);
+  --cyber-blue-700: var(--hki-blue-700);
+  --cyber-blue-800: var(--hki-blue-800);
+  --cyber-blue-900: var(--hki-blue-900);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DARK MODE THEME
+   Carefully inverted for optimal contrast and reduced eye strain
+   ═══════════════════════════════════════════════════════════════════════════ */
+.dark {
+  /* Surface inversions */
+  --background: var(--neutral-950);
+  --foreground: var(--neutral-50);
+
+  --surface-ground: var(--neutral-925);
+  --surface-base: var(--neutral-900);
+  --surface-raised: var(--neutral-850);
+  --surface-overlay: var(--neutral-800);
+
+  --surface-hover: var(--neutral-800);
+  --surface-active: var(--neutral-700);
+  --surface-selected: rgba(0, 102, 178, 0.2);
+
+  --muted: var(--neutral-800);
+  --muted-foreground: var(--neutral-400);
+
+  /* Border inversions */
+  --border: var(--neutral-800);
+  --border-muted: var(--neutral-850);
+  --border-subtle: var(--neutral-900);
+  --border-hover: var(--neutral-700);
+
+  /* Accent adjustments for dark mode (lighter tints) - Official HKI Blue #0066B2 */
+  --accent-blue-subtle: rgba(0, 102, 178, 0.08);
+  --accent-blue-muted: rgba(0, 102, 178, 0.15);
+  --accent-blue-light: var(--hki-blue-900);
+  --accent-blue-default: var(--hki-blue-400);
+  --accent-blue-emphasis: var(--hki-blue-300);
+  --accent-blue-strong: var(--hki-blue-200);
+
+  --accent-red-subtle: rgba(227, 24, 55, 0.08);
+  --accent-red-muted: rgba(227, 24, 55, 0.15);
+  --accent-red-light: var(--hki-red-900);
+  --accent-red-default: var(--hki-red-400);
+  --accent-red-emphasis: var(--hki-red-300);
+  --accent-red-strong: var(--hki-red-200);
+
+  --accent-primary: var(--hki-blue-400);
+  --accent-primary-hover: var(--hki-blue-300);
+  --accent-primary-active: var(--hki-blue-200);
+  --accent-primary-light: rgba(0, 102, 178, 0.15);
+
+  --accent-secondary: var(--hki-red-400);
+  --accent-secondary-hover: var(--hki-red-300);
+  --accent-secondary-active: var(--hki-red-200);
+  --accent-secondary-light: rgba(227, 24, 55, 0.15);
+
+  --link: var(--hki-blue-400);
+  --link-hover: var(--hki-blue-300);
+  --link-visited: var(--hki-blue-500);
+
+  /* Dark mode status colors */
+  --success-500: #22c55e;
+  --warning-500: #f59e0b;
+  --info-500: #0ea5e9;
+
+  /* Enhanced dark mode shadows */
+  --elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 3px 0 rgba(0, 0, 0, 0.35);
+  --elevation-2: 0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 4px 6px -1px rgba(0, 0, 0, 0.45);
+  --elevation-3: 0 4px 6px -2px rgba(0, 0, 0, 0.25), 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --elevation-4: 0 10px 10px -5px rgba(0, 0, 0, 0.2), 0 20px 25px -5px rgba(0, 0, 0, 0.55);
+  --elevation-5: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+
+  /* Dark mode glow effects (more vibrant) */
+  --glow-blue-sm:
+    0 0 0 1px rgba(83, 110, 243, 0.12), 0 2px 8px -2px rgba(83, 110, 243, 0.2),
+    0 4px 12px -4px rgba(83, 110, 243, 0.15);
+  --glow-blue-md:
+    0 0 0 1px rgba(83, 110, 243, 0.18), 0 4px 16px -4px rgba(83, 110, 243, 0.28),
+    0 8px 24px -8px rgba(83, 110, 243, 0.2);
+  --glow-blue-lg:
+    0 0 0 1px rgba(83, 110, 243, 0.24), 0 8px 32px -8px rgba(83, 110, 243, 0.36),
+    0 16px 48px -16px rgba(83, 110, 243, 0.24);
+
+  --glow-red-sm:
+    0 0 0 1px rgba(248, 113, 113, 0.12), 0 2px 8px -2px rgba(248, 113, 113, 0.2),
+    0 4px 12px -4px rgba(248, 113, 113, 0.15);
+  --glow-red-md:
+    0 0 0 1px rgba(248, 113, 113, 0.18), 0 4px 16px -4px rgba(248, 113, 113, 0.28),
+    0 8px 24px -8px rgba(248, 113, 113, 0.2);
+  --glow-red-lg:
+    0 0 0 1px rgba(248, 113, 113, 0.24), 0 8px 32px -8px rgba(248, 113, 113, 0.36),
+    0 16px 48px -16px rgba(248, 113, 113, 0.24);
+
+  /* Dark mode focus rings */
+  --ring-blue: 0 0 0 3px rgba(83, 110, 243, 0.35);
+  --ring-red: 0 0 0 3px rgba(248, 113, 113, 0.35);
+
+  /* Dark mode gradients */
+  --gradient-subtle: linear-gradient(180deg, var(--neutral-900) 0%, var(--neutral-925) 100%);
+  --gradient-elevated: linear-gradient(180deg, var(--neutral-850) 0%, var(--neutral-900) 100%);
+  --gradient-shimmer: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SYSTEM PREFERENCE SUPPORT
+   Automatic dark mode based on OS preference
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: var(--neutral-950);
+    --foreground: var(--neutral-50);
+    --surface-ground: var(--neutral-925);
+    --surface-base: var(--neutral-900);
+    --surface-raised: var(--neutral-850);
+    --surface-overlay: var(--neutral-800);
+    --muted: var(--neutral-800);
+    --muted-foreground: var(--neutral-400);
+    --border: var(--neutral-800);
+    --border-hover: var(--neutral-700);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION SUPPORT
+   Accessibility for users with vestibular motion sensitivity
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-faster: 0ms;
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-moderate: 0ms;
+    --duration-slow: 0ms;
+    --duration-slower: 0ms;
+    --duration-slowest: 0ms;
+  }
+}

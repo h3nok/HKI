@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knowledge-api
+  namespace: platform
+  labels:
+    app.kubernetes.io/name: knowledge-api
+    app.kubernetes.io/component: service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: knowledge-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: knowledge-api
+        app.kubernetes.io/component: service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9509"
+    spec:
+      serviceAccountName: knowledge-api
+      # Prevent both replicas from landing on the same node/zone
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: knowledge-api
+      containers:
+        - name: knowledge-api
+          image: us-west1-docker.pkg.dev/p-642-cilab-infrastructure/cilab/knowledge-api:latest
+          ports:
+            - name: http
+              containerPort: 9509
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          envFrom:
+            - configMapRef:
+                name: knowledge-api-config
+            # Secret values sourced from GCP Secret Manager via external-secrets-operator.
+            # Create an ExternalSecret resource pointing to Secret Manager paths:
+            #   knowledge-api/service-auth-secret  → SERVICE_AUTH_SECRET
+            #   knowledge-api/pipeline-secret       → PIPELINE_SERVICE_SECRET
+            #   knowledge-api/neo4j-password        → NEO4J_PASSWORD
+            - secretRef:
+                name: knowledge-api-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9509
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 9509
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+
+        # NOTE: AlloyDB connects directly via PSC endpoint 10.1.0.6 (knowledge-api-db-psc-endpoint,
+        # ACCEPTED). ALLOYDB_URL is provided by the knowledge-api-secrets k8s Secret.
+        # IAM auth proxy can be re-added once alloydb.instances.connect permission propagation is confirmed.

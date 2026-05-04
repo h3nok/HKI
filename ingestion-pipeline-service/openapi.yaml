@@ -1,0 +1,2412 @@
+openapi: 3.1.0
+
+info:
+  title: Knowledge Pipeline Service
+  summary: Document ingestion pipeline for organizational knowledge
+  description: |
+    ## Overview
+
+    The Knowledge Pipeline Service powers the ingestion layer of the Agentic Platform's
+    knowledge management system. It processes raw content — text, URLs, files, and HTML —
+    through a multi-stage pipeline and indexes it into the vector store for semantic retrieval.
+
+    ## Pipeline Stages
+
+    | Stage | Description |
+    |-------|-------------|
+    | **Extract** | Pull raw text from source (text, URL, file, HTML) |
+    | **Clean** | Normalize whitespace, strip boilerplate, deduplicate |
+    | **Enrich** | Extract entities, dates, topics, reading time |
+    | **Contextualize** | Gemini-generated chunk summaries for better retrieval |
+    | **Chunk** | Split into overlapping segments |
+    | **Embed** | Generate vector embeddings (delegated to vector-store) |
+    | **Index** | Store chunks + metadata in the vector store |
+
+    ## Architecture
+
+    - **Queue**: Google Cloud Pub/Sub (in-memory fallback for local dev)
+    - **Job Store**: Redis (in-memory fallback)
+    - **Document Store**: Google Cloud Storage (no-op fallback)
+    - **Auth**: JWT-based multi-tenant isolation (`org_id` from token)
+
+    ## Authentication
+
+    All `/v1/*` endpoints require a Bearer JWT token. The `org_id` and stream scope
+    claims govern tenant isolation and access control.
+
+    ```
+    Authorization: Bearer <jwt>
+    ```
+  version: 1.0.0
+  contact:
+    name: Platform Engineering
+    email: platform-eng@hki.com
+  license:
+    name: Internal
+    identifier: proprietary
+
+servers:
+  - url: http://localhost:9508
+    description: Local development
+  - url: https://knowledge-pipeline.internal.hki.com
+    description: Production
+
+tags:
+  - name: ingestion
+    description: >
+      Submit content for processing through the knowledge pipeline.
+      Supports raw text, URLs, and file uploads with configurable chunking strategies.
+  - name: jobs
+    description: >
+      Monitor and manage ingestion jobs. Track pipeline progress, view processing
+      metrics, and inspect completed job details.
+  - name: review
+    description: >
+      Document review governance workflow. Submit, review, publish, archive,
+      and reconcile documents through the approval lifecycle.
+  - name: quality
+    description: >
+      Pre-ingestion quality gates. Score documents for completeness, specificity,
+      actionability, readability, and PII exposure.
+  - name: generation
+    description: Generate grounded answers from retrieved knowledge chunks using Gemini.
+  - name: evaluation
+    description: RAGAS-style evaluation of RAG responses across faithfulness, relevance, recall, and completeness.
+  - name: versioning
+    description: Track and diff document versions by source reference.
+  - name: feedback
+    description: Chunk-level up/down feedback loop for retrieval quality improvement.
+  - name: lifecycle
+    description: Document lifecycle operations — reprocess with new chunking params or refresh from source URL.
+  - name: observability
+    description: Internal trace viewer and aggregated pipeline statistics.
+  - name: health
+    description: Kubernetes liveness and readiness probes.
+
+security:
+  - BearerAuth: []
+
+paths:
+
+  # ── Health ─────────────────────────────────────────────────────────────────
+
+  /health:
+    get:
+      tags: [health]
+      summary: Liveness probe
+      description: Returns healthy if the process is running. No auth required.
+      operationId: health_check
+      security: []
+      responses:
+        "200":
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  service:
+                    type: string
+                    example: knowledge-pipeline-service
+
+  /ready:
+    get:
+      tags: [health]
+      summary: Readiness probe
+      description: Checks downstream dependencies (vector-store / knowledge-api). Returns `degraded` or `blocked` if checks fail.
+      operationId: readiness_check
+      security: []
+      responses:
+        "200":
+          description: Service is ready or degraded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+        "503":
+          description: Service is blocked (hermetic isolation active with open issues)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+
+  /health/ready:
+    get:
+      tags: [health]
+      summary: Readiness probe (alias)
+      description: Alias for `GET /ready`. Provided for Kubernetes compatibility.
+      operationId: readiness_check_alias
+      security: []
+      responses:
+        "200":
+          $ref: "#/components/responses/ReadinessOK"
+        "503":
+          description: Service blocked
+
+  # ── Ingestion ──────────────────────────────────────────────────────────────
+
+  /v1/ingest/text:
+    post:
+      tags: [ingestion]
+      summary: Ingest raw text
+      description: |
+        Ingest raw text content into the knowledge base.
+
+        **Queue mode** (`PUBSUB_ENABLED=true`): creates a job record, publishes to
+        Pub/Sub, and returns immediately. A worker pod processes it asynchronously.
+
+        **Inline mode** (`PUBSUB_ENABLED=false`): runs the pipeline in a background
+        asyncio task (local dev default).
+
+        The `stream_id` in the request must be present in the caller's JWT scope.
+        Use `"global"` scope to access all streams.
+      operationId: ingest_text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IngestTextRequest"
+            example:
+              content: "HKI's return policy allows members to return most items at any time for a full refund. Electronics must be returned within 90 days."
+              title: Return Policy Overview
+              stream_id: membership-services
+              department: Member Services
+              document_type: policy
+              tags: [returns, refunds, member-services]
+              chunk_size: 512
+              chunk_overlap: 64
+              chunk_strategy: sentence
+              classification: internal
+      responses:
+        "200":
+          description: Job created (queued or inline)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /v1/ingest/url:
+    post:
+      tags: [ingestion]
+      summary: Ingest from URL
+      description: |
+        Fetch content from a URL and ingest into the knowledge base.
+        Supports queue mode and inline mode identically to `POST /v1/ingest/text`.
+      operationId: ingest_url
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IngestURLRequest"
+            example:
+              url: https://www.hki.com/membership-conditions.html
+              title: Membership Conditions
+              stream_id: membership-services
+              department: Membership
+              document_type: policy
+              tags: [membership, terms]
+              classification: internal
+      responses:
+        "200":
+          description: Job created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /v1/ingest/file:
+    post:
+      tags: [ingestion]
+      summary: Upload and ingest a file
+      description: |
+        Upload a file (PDF, DOCX, TXT, CSV, Markdown) and ingest it into the
+        knowledge base. Text is extracted based on file type and processed
+        through the standard ingestion pipeline.
+
+        Supported extensions: `pdf`, `docx`, `txt`, `csv`, `md`, `markdown`.
+
+        File size is bounded by `MAX_DOCUMENT_SIZE_MB` (platform max) and the
+        optional `max_doc_size_mb` form field (stream-level override).
+      operationId: ingest_file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/IngestFileForm"
+      responses:
+        "200":
+          description: File ingested successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          description: File exceeds the configured size limit
+
+  # ── Pre-Ingestion Analysis ─────────────────────────────────────────────────
+
+  /v1/pre-ingest/analyze:
+    post:
+      tags: [ingestion]
+      summary: Analyze content before ingestion
+      description: |
+        Run the 3-stage AI pre-ingestion analysis pipeline without ingesting.
+
+        **Stages:**
+        1. **Validate** — quality score, completeness, PII exposure, readability
+        2. **Interpret** — detect document type, department, tags, named entities
+        3. **Decide** — relevance to value stream, recommendation (ingest / skip / review)
+
+        Returns per-stage structured results with an overall pass/fail and confidence score.
+      operationId: pre_ingest_analyze
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PreIngestRequest"
+      responses:
+        "200":
+          description: Analysis results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreIngestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/pre-ingest/analyze-file:
+    post:
+      tags: [ingestion]
+      summary: Analyze an uploaded file before ingestion
+      description: |
+        Upload a file, extract its text, and run the 3-stage AI pre-ingest
+        analysis (Validate → Interpret → Decide) without actually ingesting.
+
+        Supports: PDF, DOCX, TXT, CSV, Markdown.
+      operationId: pre_ingest_analyze_file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/PreIngestFileForm"
+      responses:
+        "200":
+          description: Analysis results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreIngestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "413":
+          description: File exceeds size limit
+
+  # ── Job Management ─────────────────────────────────────────────────────────
+
+  /v1/jobs:
+    get:
+      tags: [jobs]
+      summary: List ingestion jobs
+      description: >
+        List ingestion jobs for the caller's org and stream scope, with pagination.
+        Results are filtered to jobs the caller has visibility into based on JWT scope.
+      operationId: list_jobs
+      parameters:
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: Paginated job list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobListResponse"
+              example:
+                jobs:
+                  - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    status: completed
+                    title: Return Policy Overview
+                    source_type: text
+                    stream_id: membership-services
+                    document_id: doc-abc123
+                    chunk_count: 12
+                    error: null
+                    failed_at_stage: null
+                    created_at: "2026-04-20T10:30:00Z"
+                    processing_time_ms: 2340.5
+                total: 1
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/jobs/{job_id}:
+    get:
+      tags: [jobs]
+      summary: Get job details
+      description: Get detailed status and stage completion info for a specific ingestion job.
+      operationId: get_job
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique job ID
+      responses:
+        "200":
+          description: Job details with completed stages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobStatusResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/jobs/trigger:
+    post:
+      tags: [jobs]
+      summary: Manually trigger a scheduled job
+      description: |
+        Manually trigger a scheduled job type. Used for local development
+        and on-demand execution. In production, Cloud Scheduler → Pub/Sub
+        handles this automatically.
+
+        Valid job types: `knowledge_refresh`, `eval_run`, `raptor_build`.
+      operationId: trigger_job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TriggerJobRequest"
+      responses:
+        "200":
+          description: Job dispatch result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ── Quality Gates ──────────────────────────────────────────────────────────
+
+  /v1/quality/score:
+    post:
+      tags: [quality]
+      summary: Run quality gates on document text
+      description: |
+        Run all quality gates on the given text:
+        - **Completeness** — sufficient length, structure, and coverage
+        - **Specificity** — concrete details vs. vague generalities
+        - **Accuracy signals** — presence of dates, numbers, named entities
+        - **Actionability** — actionable steps or outcomes present
+        - **Readability** — Flesch-Kincaid grade level
+        - **PII scan** — detected PII categories
+      operationId: quality_score
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QualityScoreRequest"
+      responses:
+        "200":
+          description: Quality gate scores
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QualityScoreResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/quality/pii-scan:
+    post:
+      tags: [quality]
+      summary: Scan text for PII
+      description: Detect personally identifiable information (email, SSN, phone, etc.) in document text.
+      operationId: pii_scan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PIIScanRequest"
+      responses:
+        "200":
+          description: PII scan results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PIIScanResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/quality/pii-redact:
+    post:
+      tags: [quality]
+      summary: Redact PII from text
+      description: Replace detected PII with safe placeholder tokens (e.g. `[EMAIL]`, `[SSN]`).
+      operationId: pii_redact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PIIRedactRequest"
+      responses:
+        "200":
+          description: Redacted text and stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PIIRedactResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ── Generation ─────────────────────────────────────────────────────────────
+
+  /v1/generate/answer:
+    post:
+      tags: [generation]
+      summary: Generate a grounded answer from retrieved chunks
+      description: |
+        Use Gemini to generate a grounded answer from the provided retrieved chunks.
+        Returns the answer with inline citations and a confidence score.
+      operationId: generate_answer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateAnswerRequest"
+      responses:
+        "200":
+          description: Generated answer with citations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateAnswerResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ── RAG Evaluation ─────────────────────────────────────────────────────────
+
+  /v1/evaluate/rag:
+    post:
+      tags: [evaluation]
+      summary: Evaluate a RAG response (RAGAS-style)
+      description: |
+        Evaluate a generated answer against four RAGAS dimensions:
+        - **Faithfulness** — is the answer grounded in the provided chunks?
+        - **Relevance** — does the answer address the question?
+        - **Context recall** — does the context contain sufficient information?
+        - **Completeness** — is the answer fully responsive?
+
+        Uses LLM-as-judge (Gemini) when available, heuristic fallback otherwise.
+      operationId: evaluate_rag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RAGEvalRequest"
+      responses:
+        "200":
+          description: RAGAS-style evaluation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RAGEvalResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ── Versioning ─────────────────────────────────────────────────────────────
+
+  /v1/versions/{source_ref}:
+    get:
+      tags: [versioning]
+      summary: Get version history for a source reference
+      description: Return the version history for a source_ref (URL, filename, stable identifier).
+      operationId: get_version_history
+      parameters:
+        - name: source_ref
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Stable source reference (URL or filename)
+          example: https://www.hki.com/return-policy.html
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: Version history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionHistoryResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/versions/diff:
+    post:
+      tags: [versioning]
+      summary: Compute a line-by-line diff between two text versions
+      description: Compute a unified diff between old and new text versions. Useful for change review.
+      operationId: compute_diff
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiffRequest"
+      responses:
+        "200":
+          description: Line-by-line diff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiffResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ── Feedback ───────────────────────────────────────────────────────────────
+
+  /v1/feedback/chunk:
+    post:
+      tags: [feedback]
+      summary: Record chunk-level feedback
+      description: Record up/down thumbs feedback for chunks that contributed to an answer.
+      operationId: record_chunk_feedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChunkFeedbackRequest"
+      responses:
+        "200":
+          description: Feedback recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChunkFeedbackResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/feedback/flagged:
+    get:
+      tags: [feedback]
+      summary: List chunks flagged by negative feedback
+      description: Return chunks with a reputation score below the given threshold.
+      operationId: get_flagged_chunks
+      parameters:
+        - name: threshold
+          in: query
+          schema:
+            type: number
+            format: float
+            default: 0.4
+          description: Reputation score threshold (0.0–1.0). Chunks below this are returned.
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: Flagged chunks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FlaggedChunkOut"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ── Document Lifecycle ─────────────────────────────────────────────────────
+
+  /v1/documents/reprocess:
+    post:
+      tags: [lifecycle]
+      summary: Reprocess an existing document
+      description: |
+        Re-run the ingestion pipeline on an existing document with new parameters.
+
+        **Flow:**
+        1. Fetch full document content from knowledge-api
+        2. Delete the old document + chunks from knowledge-api
+        3. Re-ingest through the standard pipeline (Extract → Clean → Enrich → Index)
+
+        Use case: model upgrade, chunk size tuning, metadata re-extraction.
+      operationId: reprocess_document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReprocessRequest"
+      responses:
+        "200":
+          description: Reprocess job initiated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReprocessResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/documents/refresh:
+    post:
+      tags: [lifecycle]
+      summary: Refresh a document from its source URL
+      description: |
+        Re-fetch content from the document's original source URL, detect changes,
+        and re-ingest only if the content has changed (SHA-256 comparison).
+
+        **Flow:**
+        1. Fetch document metadata to get `source_url`
+        2. Fetch fresh content from the source URL
+        3. Compare with stored content (hash)
+        4. If changed: delete old → re-ingest new version
+        5. If unchanged: return early with `content_changed: false`
+
+        Use case: keep documents in sync with external sources.
+      operationId: refresh_document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: Refresh result (changed or unchanged)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          description: Failed to fetch content from source URL
+
+  # ── Observability ──────────────────────────────────────────────────────────
+
+  /v1/observability/traces:
+    get:
+      tags: [observability]
+      summary: Get recent operation traces
+      description: |
+        Return recent trace events for the in-app Observability tab.
+
+        Data source is selected by `OBSERVABILITY_BACKEND`:
+        - `cache` → local in-memory ring buffer
+        - `dynatrace` → Dynatrace logs API
+        - `auto` → Dynatrace when configured, else cache
+
+        Falls back to cache on provider failure.
+      operationId: get_traces
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+          description: Maximum number of trace events to return
+        - name: operation
+          in: query
+          schema:
+            type: string
+          description: Filter by operation name (e.g. `api.generate_answer`)
+          required: false
+      responses:
+        "200":
+          description: Recent traces
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traces:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+                  total:
+                    type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/observability/summary:
+    get:
+      tags: [observability]
+      summary: Get aggregated trace statistics
+      description: >
+        Return aggregated trace statistics for dashboard cards (avg latency,
+        error rate, throughput per operation). Uses the same provider
+        selection/fallback as `/v1/observability/traces`.
+      operationId: get_trace_summary
+      responses:
+        "200":
+          description: Aggregated statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ── Review Workflow ────────────────────────────────────────────────────────
+
+  /v1/review/submit:
+    post:
+      tags: [review]
+      summary: Submit a document for review
+      description: |
+        Submit a document for the review governance workflow.
+
+        May auto-approve based on the configured `ReviewPolicy` (e.g. re-ingestion
+        of an existing source always auto-approves). Otherwise transitions to
+        `pending_review` and syncs status to knowledge-api.
+      operationId: submit_for_review
+      parameters:
+        - name: is_reingestion
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Flag to indicate this is a re-ingestion of an existing source
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitRequest"
+      responses:
+        "201":
+          description: Review record created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRecord"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/review/decide:
+    post:
+      tags: [review]
+      summary: Apply a review decision
+      description: >
+        Apply a review decision (approve / reject / request_revision) to a pending
+        review record. Only visible records (matching caller's stream scope) can be reviewed.
+      operationId: decide_review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewRequest"
+      responses:
+        "200":
+          description: Updated review record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/review/pending:
+    get:
+      tags: [review]
+      summary: List pending reviews
+      description: List documents in `pending_review` status for the caller's org and stream scope.
+      operationId: list_pending_reviews
+      parameters:
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: Pending review records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReviewRecord"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/review/history:
+    get:
+      tags: [review]
+      summary: List review history
+      description: >
+        List review records across all statuses (pending, approved, published, rejected,
+        revision_requested) for the caller's org. Deduplicated per document, sorted by
+        most recently updated.
+      operationId: list_review_history
+      parameters:
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: Review history records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReviewRecord"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/review/reconcile:
+    post:
+      tags: [review]
+      summary: Reconcile review and document statuses
+      description: |
+        Find documents where the review status and the knowledge-api document status
+        have drifted (e.g. review says "published" but knowledge-api shows "pending_review")
+        and repair them.
+
+        Pass `?dry_run=true` to preview what would be changed without making any updates.
+      operationId: reconcile_review_statuses
+      parameters:
+        - name: dry_run
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Preview changes without applying them
+      responses:
+        "200":
+          description: Reconciliation summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReconcileResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/review/{record_id}:
+    get:
+      tags: [review]
+      summary: Get a review record by ID
+      operationId: get_review_record
+      parameters:
+        - $ref: "#/components/parameters/RecordIdParam"
+      responses:
+        "200":
+          description: Review record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRecord"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/review/{record_id}/publish:
+    post:
+      tags: [review]
+      summary: Publish an approved document
+      description: Transition an `approved` document to `published`, making it searchable by agents.
+      operationId: publish_document
+      parameters:
+        - $ref: "#/components/parameters/RecordIdParam"
+      responses:
+        "200":
+          description: Updated review record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/review/{record_id}/archive:
+    post:
+      tags: [review]
+      summary: Archive a published document
+      description: Retire a `published` document from agent responses. Terminal state.
+      operationId: archive_document
+      parameters:
+        - $ref: "#/components/parameters/RecordIdParam"
+      responses:
+        "200":
+          description: Updated review record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/review/{record_id}/resubmit:
+    post:
+      tags: [review]
+      summary: Resubmit a rejected document
+      description: >
+        Resubmit a `rejected` or `revision_requested` document back to
+        `pending_review` after the submitter has addressed feedback.
+      operationId: resubmit_document
+      parameters:
+        - $ref: "#/components/parameters/RecordIdParam"
+      responses:
+        "200":
+          description: Updated review record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/review/{record_id}/assign:
+    post:
+      tags: [review]
+      summary: Assign review ownership
+      description: Assign ownership of the next review step to a specific person.
+      operationId: assign_review
+      parameters:
+        - $ref: "#/components/parameters/RecordIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignReviewRequest"
+      responses:
+        "200":
+          description: Updated review record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/review/{record_id}/claim:
+    post:
+      tags: [review]
+      summary: Claim review ownership (self-assign)
+      description: Self-assign as the owner of the next review step.
+      operationId: claim_review
+      parameters:
+        - $ref: "#/components/parameters/RecordIdParam"
+      responses:
+        "200":
+          description: Updated review record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v1/review/{record_id}/remind:
+    post:
+      tags: [review]
+      summary: Record a reminder for the assignee
+      description: Record a follow-up reminder on the currently assigned review item.
+      operationId: remind_review
+      parameters:
+        - $ref: "#/components/parameters/RecordIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReminderRequest"
+      responses:
+        "200":
+          description: Updated review record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+# ── Components ─────────────────────────────────────────────────────────────────
+
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT token with `org_id` claim for tenant isolation and `scope`/`scopes`
+        claim for stream-level access control. Use `"global"` scope to access all streams.
+
+  parameters:
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 50
+        minimum: 1
+        maximum: 200
+      description: Maximum number of results to return
+
+    OffsetParam:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+      description: Number of results to skip for pagination
+
+    RecordIdParam:
+      name: record_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Review record UUID
+
+  responses:
+    BadRequest:
+      description: Invalid request payload or parameters
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    Unauthorized:
+      description: Missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    Forbidden:
+      description: Stream scope not authorized for this caller
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    NotFound:
+      description: Resource not found or not visible to caller
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    ReadinessOK:
+      description: Readiness status
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ReadinessResponse"
+
+  schemas:
+
+    # ── Enums ────────────────────────────────────────────────────────────────
+
+    JobStatus:
+      type: string
+      enum:
+        - queued
+        - extracting
+        - cleaning
+        - enriching
+        - chunking
+        - embedding
+        - indexing
+        - completed
+        - failed
+      description: Lifecycle state of an ingestion job
+
+    SourceType:
+      type: string
+      enum:
+        - text
+        - url
+        - html
+        - markdown
+        - file
+      description: Type of input source
+
+    DocumentClassification:
+      type: string
+      enum:
+        - internal
+        - confidential
+        - restricted
+        - privileged
+      description: Data sensitivity classification
+
+    ReviewStatus:
+      type: string
+      enum:
+        - draft
+        - pending_review
+        - approved
+        - published
+        - rejected
+        - revision_requested
+        - archived
+      description: |
+        Lifecycle state of a document in the review workflow.
+
+        **Transitions:**
+        `draft` → `pending_review` → `approved` → `published` → `archived`
+        `pending_review` → `rejected` → `draft`
+        `pending_review` → `revision_requested` → `draft`
+
+    ReviewDecision:
+      type: string
+      enum:
+        - approve
+        - reject
+        - request_revision
+      description: Decision a reviewer can make on a pending document
+
+    # ── Shared Sub-schemas ───────────────────────────────────────────────────
+
+    DocumentAccessControl:
+      type: object
+      description: Fine-grained access control lists for document visibility
+      properties:
+        allowed_users:
+          type: array
+          items:
+            type: string
+          default: []
+          description: User IDs explicitly allowed to access this document
+        allowed_groups:
+          type: array
+          items:
+            type: string
+          default: []
+          description: Group names explicitly allowed to access this document
+        denied_users:
+          type: array
+          items:
+            type: string
+          default: []
+          description: User IDs explicitly denied access
+        denied_groups:
+          type: array
+          items:
+            type: string
+          default: []
+          description: Group names explicitly denied access
+
+    ErrorResponse:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+
+    # ── Ingestion Schemas ────────────────────────────────────────────────────
+
+    IngestTextRequest:
+      type: object
+      required:
+        - content
+        - stream_id
+      properties:
+        content:
+          type: string
+          description: The raw text content to ingest
+        stream_id:
+          type: string
+          description: Value stream ID for runtime isolation. Must match a scope in the caller's JWT.
+        title:
+          type: string
+          default: ""
+          description: Document title (auto-detected from content if empty)
+        department:
+          type: string
+          default: ""
+          description: Organizational department for filtering
+        document_type:
+          type: string
+          default: general
+          description: "Category: general, policy, faq, procedure, etc."
+        tags:
+          type: array
+          items:
+            type: string
+          default: []
+          description: Searchable tags
+        classification:
+          $ref: "#/components/schemas/DocumentClassification"
+        access_control:
+          $ref: "#/components/schemas/DocumentAccessControl"
+        chunk_size:
+          type: integer
+          default: 512
+          minimum: 64
+          maximum: 4096
+          description: Target tokens per chunk
+        chunk_overlap:
+          type: integer
+          default: 64
+          minimum: 0
+          maximum: 512
+          description: Overlap tokens between consecutive chunks
+        chunk_strategy:
+          type: string
+          default: sentence
+          enum:
+            - sentence
+            - paragraph
+            - fixed
+          description: Chunking strategy
+
+    IngestURLRequest:
+      type: object
+      required:
+        - url
+        - stream_id
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Web URL to fetch and ingest
+        stream_id:
+          type: string
+          description: Value stream ID for runtime isolation
+        title:
+          type: string
+          default: ""
+          description: Document title (auto-detected from page title if empty)
+        department:
+          type: string
+          default: ""
+        document_type:
+          type: string
+          default: general
+        tags:
+          type: array
+          items:
+            type: string
+          default: []
+        classification:
+          $ref: "#/components/schemas/DocumentClassification"
+        access_control:
+          $ref: "#/components/schemas/DocumentAccessControl"
+        chunk_size:
+          type: integer
+          default: 512
+          minimum: 64
+          maximum: 4096
+        chunk_overlap:
+          type: integer
+          default: 64
+          minimum: 0
+          maximum: 512
+        follow_links:
+          type: boolean
+          default: false
+          description: Whether to crawl linked pages (not yet implemented)
+
+    IngestFileForm:
+      type: object
+      required:
+        - file
+        - stream_id
+      properties:
+        file:
+          type: string
+          format: binary
+          description: "File to upload. Allowed types: pdf, docx, txt, csv, md, markdown"
+        stream_id:
+          type: string
+          description: Value stream ID for runtime isolation
+        title:
+          type: string
+          default: ""
+        department:
+          type: string
+          default: ""
+        source_ref:
+          type: string
+          default: ""
+          description: Stable external source identifier for deduplication/versioning
+        document_type:
+          type: string
+          default: general
+        tags:
+          type: string
+          default: ""
+          description: Comma-separated tags (e.g. "returns,policy,member-services")
+        classification:
+          type: string
+          default: internal
+          enum:
+            - internal
+            - confidential
+            - restricted
+            - privileged
+        allowed_users:
+          type: string
+          default: ""
+          description: Comma-separated allowed user IDs
+        allowed_groups:
+          type: string
+          default: ""
+          description: Comma-separated allowed groups
+        denied_users:
+          type: string
+          default: ""
+          description: Comma-separated denied user IDs
+        denied_groups:
+          type: string
+          default: ""
+          description: Comma-separated denied groups
+        max_doc_size_mb:
+          type: integer
+          default: 0
+          description: Optional stream-aware max document size (MB). Bounded by platform max. 0 = use platform default.
+        chunk_size:
+          type: integer
+          default: 512
+        chunk_overlap:
+          type: integer
+          default: 64
+
+    IngestResponse:
+      type: object
+      required:
+        - job_id
+        - status
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          description: Unique job ID for tracking
+        status:
+          $ref: "#/components/schemas/JobStatus"
+        title:
+          type: string
+          default: ""
+        document_id:
+          type: string
+          nullable: true
+          description: Vector store document ID (populated on completion)
+        chunk_count:
+          type: integer
+          default: 0
+          description: Number of chunks indexed (populated on completion)
+        message:
+          type: string
+          default: ""
+          description: Human-readable status message
+
+    PreIngestRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          description: Text content to analyze
+        title:
+          type: string
+          default: ""
+          maxLength: 256
+        value_stream_description:
+          type: string
+          default: ""
+          description: Description of the target value stream for relevance scoring
+
+    PreIngestFileForm:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: "File to analyze. Allowed types: pdf, docx, txt, csv, md, markdown"
+        title:
+          type: string
+          default: ""
+        value_stream_description:
+          type: string
+          default: ""
+        max_doc_size_mb:
+          type: integer
+          default: 0
+
+    PreIngestResponse:
+      type: object
+      description: |
+        3-stage pre-ingestion analysis result. Shape mirrors the internal
+        `PreIngestAnalysis.to_dict()` structure.
+      properties:
+        overall_pass:
+          type: boolean
+        overall_confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        validate:
+          type: object
+          description: Quality gate results (completeness, PII, readability)
+          additionalProperties: true
+        interpret:
+          type: object
+          description: Detected document type, department, tags, entities
+          properties:
+            detected_type:
+              type: string
+            department:
+              type: string
+            tags:
+              type: array
+              items:
+                type: string
+            entities:
+              type: array
+              items:
+                type: string
+          additionalProperties: true
+        decide:
+          type: object
+          description: Relevance decision and recommendation
+          properties:
+            recommendation:
+              type: string
+              enum:
+                - ingest
+                - skip
+                - review
+            rationale:
+              type: string
+          additionalProperties: true
+
+    # ── Job Schemas ──────────────────────────────────────────────────────────
+
+    IngestionJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        org_id:
+          type: string
+          default: default
+        stream_id:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/JobStatus"
+        source_type:
+          $ref: "#/components/schemas/SourceType"
+        source_ref:
+          type: string
+          description: URL or filename of the source
+        title:
+          type: string
+        department:
+          type: string
+        document_type:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        classification:
+          $ref: "#/components/schemas/DocumentClassification"
+        document_id:
+          type: string
+          nullable: true
+        chunk_count:
+          type: integer
+        entity_count:
+          type: integer
+        error:
+          type: string
+          nullable: true
+        failed_at_stage:
+          type: string
+          nullable: true
+        raw_size_bytes:
+          type: integer
+        clean_size_bytes:
+          type: integer
+        processing_time_ms:
+          type: number
+          format: float
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    JobListResponse:
+      type: object
+      properties:
+        jobs:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: Array of job summaries (id, status, title, source_type, stream_id, document_id, chunk_count, error, failed_at_stage, created_at, processing_time_ms)
+        total:
+          type: integer
+          description: Total visible jobs after scope filtering
+
+    JobStatusResponse:
+      type: object
+      properties:
+        job:
+          $ref: "#/components/schemas/IngestionJob"
+        stages_completed:
+          type: array
+          items:
+            type: string
+          description: Pipeline stages that have completed (in order)
+          example:
+            - extracting
+            - cleaning
+            - enriching
+            - chunking
+            - indexing
+
+    TriggerJobRequest:
+      type: object
+      required:
+        - job_type
+      properties:
+        job_type:
+          type: string
+          description: "Scheduled job type to run"
+          example: knowledge_refresh
+        payload:
+          type: object
+          additionalProperties: true
+          default: {}
+        org_id:
+          type: string
+          default: default
+
+    # ── Quality Schemas ──────────────────────────────────────────────────────
+
+    QualityScoreRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: Document text to score
+        title:
+          type: string
+          default: ""
+
+    QualityScoreResponse:
+      type: object
+      properties:
+        overall_score:
+          type: number
+          format: float
+          description: Weighted composite score (0–100)
+        completeness:
+          type: object
+          additionalProperties: true
+        specificity:
+          type: object
+          additionalProperties: true
+        accuracy_signals:
+          type: object
+          additionalProperties: true
+        actionability:
+          type: object
+          additionalProperties: true
+        readability:
+          type: object
+          additionalProperties: true
+        pii_scan:
+          type: object
+          additionalProperties: true
+        auto_approve_eligible:
+          type: boolean
+          description: Whether the document meets the auto-approve quality threshold
+
+    PIIScanRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: Text to scan for PII
+
+    PIIScanResponse:
+      type: object
+      properties:
+        pii_detected:
+          type: boolean
+        categories_found:
+          type: array
+          items:
+            type: string
+          description: PII categories detected (e.g. email, ssn, phone, credit_card)
+        match_count:
+          type: integer
+        summary:
+          type: string
+
+    PIIRedactRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: Text to redact PII from
+        categories:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: Only redact these PII categories. Null = redact all detected categories.
+
+    PIIRedactResponse:
+      type: object
+      properties:
+        redacted_text:
+          type: string
+        original_length:
+          type: integer
+        redacted_length:
+          type: integer
+        redactions_applied:
+          type: integer
+        categories_redacted:
+          type: array
+          items:
+            type: string
+
+    # ── Generation Schemas ───────────────────────────────────────────────────
+
+    ChunkInput:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: Chunk text content
+        score:
+          type: number
+          format: float
+          default: 0.0
+          description: Retrieval similarity score
+        score_scale:
+          type: string
+          default: normalized
+          description: Scale of the score (e.g. normalized, cosine)
+        metadata:
+          type: object
+          additionalProperties: true
+          default: {}
+
+    GenerateAnswerRequest:
+      type: object
+      required:
+        - query
+        - chunks
+      properties:
+        query:
+          type: string
+          description: Original user question
+        chunks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChunkInput"
+          description: Retrieved context chunks
+
+    CitationInfo:
+      type: object
+      properties:
+        index:
+          type: integer
+        title:
+          type: string
+          default: ""
+        score:
+          type: number
+          format: float
+          default: 0.0
+        score_scale:
+          type: string
+          default: normalized
+        document_id:
+          type: string
+          default: ""
+
+    GenerateAnswerResponse:
+      type: object
+      properties:
+        answer:
+          type: string
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        citations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CitationInfo"
+        error:
+          type: string
+          default: ""
+          description: Non-empty if generation failed or was partial
+
+    # ── Evaluation Schemas ───────────────────────────────────────────────────
+
+    RAGEvalRequest:
+      type: object
+      required:
+        - query
+        - answer
+        - chunks
+      properties:
+        query:
+          type: string
+        answer:
+          type: string
+        chunks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChunkInput"
+        confidence:
+          type: number
+          format: float
+          default: 0.0
+          description: Self-reported confidence from the generation step
+
+    EvalDimensionOut:
+      type: object
+      properties:
+        name:
+          type: string
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        rationale:
+          type: string
+          default: ""
+
+    RAGEvalResponse:
+      type: object
+      properties:
+        faithfulness:
+          $ref: "#/components/schemas/EvalDimensionOut"
+        relevance:
+          $ref: "#/components/schemas/EvalDimensionOut"
+        context_recall:
+          $ref: "#/components/schemas/EvalDimensionOut"
+        completeness:
+          $ref: "#/components/schemas/EvalDimensionOut"
+        overall_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        grade:
+          type: string
+          description: Letter grade (A, B, C, D, F)
+
+    # ── Versioning Schemas ───────────────────────────────────────────────────
+
+    VersionEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        change_type:
+          type: string
+          description: "new, updated, unchanged, deleted"
+        document_id:
+          type: string
+        diff_summary:
+          type: string
+        content_length:
+          type: integer
+        word_count:
+          type: integer
+        sha256:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    VersionHistoryResponse:
+      type: object
+      properties:
+        source_ref:
+          type: string
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/VersionEntry"
+        total:
+          type: integer
+
+    DiffRequest:
+      type: object
+      required:
+        - old_text
+        - new_text
+      properties:
+        old_text:
+          type: string
+          description: Previous version text
+        new_text:
+          type: string
+          description: Current version text
+
+    DiffLine:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - added
+            - removed
+            - unchanged
+        content:
+          type: string
+        line_number:
+          type: integer
+          nullable: true
+
+    DiffResponse:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiffLine"
+        stats:
+          type: object
+          properties:
+            added_count:
+              type: integer
+            removed_count:
+              type: integer
+            unchanged_count:
+              type: integer
+
+    # ── Feedback Schemas ─────────────────────────────────────────────────────
+
+    ChunkFeedbackRequest:
+      type: object
+      required:
+        - signal
+        - query
+        - answer
+        - chunk_ids
+      properties:
+        signal:
+          type: string
+          enum:
+            - up
+            - down
+          description: Thumbs up or down feedback signal
+        query:
+          type: string
+        answer:
+          type: string
+        chunk_ids:
+          type: array
+          items:
+            type: string
+          description: IDs of the chunks that contributed to the answer
+        document_ids:
+          type: array
+          items:
+            type: string
+          default: []
+        confidence:
+          type: number
+          format: float
+          default: 0.0
+        eval_score:
+          type: number
+          format: float
+          default: 0.0
+
+    ChunkFeedbackResponse:
+      type: object
+      properties:
+        recorded:
+          type: integer
+          description: Number of chunk feedback records created
+        message:
+          type: string
+
+    FlaggedChunkOut:
+      type: object
+      properties:
+        chunk_id:
+          type: string
+        document_id:
+          type: string
+        upvotes:
+          type: integer
+        downvotes:
+          type: integer
+        reputation_score:
+          type: number
+          format: float
+          description: Score between 0.0–1.0. Below threshold = flagged.
+
+    # ── Lifecycle Schemas ────────────────────────────────────────────────────
+
+    ReprocessRequest:
+      type: object
+      required:
+        - document_id
+      properties:
+        document_id:
+          type: string
+          description: Vector store document ID to reprocess
+        chunk_size:
+          type: integer
+          default: 512
+          minimum: 64
+          maximum: 4096
+        chunk_overlap:
+          type: integer
+          default: 64
+          minimum: 0
+          maximum: 512
+
+    ReprocessResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        document_id:
+          type: string
+        status:
+          type: string
+          example: reprocessing
+        message:
+          type: string
+
+    RefreshRequest:
+      type: object
+      required:
+        - document_id
+      properties:
+        document_id:
+          type: string
+          description: Vector store document ID to refresh
+        chunk_size:
+          type: integer
+          default: 512
+          minimum: 64
+          maximum: 4096
+        chunk_overlap:
+          type: integer
+          default: 64
+          minimum: 0
+          maximum: 512
+
+    RefreshResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: New ingestion job ID (null if content unchanged)
+        document_id:
+          type: string
+        status:
+          type: string
+          enum:
+            - unchanged
+            - refreshing
+        message:
+          type: string
+        content_changed:
+          type: boolean
+
+    # ── Health Schemas ───────────────────────────────────────────────────────
+
+    ReadinessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - ready
+            - degraded
+            - blocked
+        checks:
+          type: object
+          properties:
+            vector_store:
+              type: string
+              example: ok
+          additionalProperties:
+            type: string
+        hvsi:
+          type: object
+          description: Hermetic value-stream isolation status (only present when KB_HERMETIC_ISOLATION=true)
+          properties:
+            enabled:
+              type: boolean
+            ready:
+              type: boolean
+            issues:
+              type: object
+              additionalProperties:
+                type: integer
+
+    # ── Review Schemas ───────────────────────────────────────────────────────
+
+    ReviewComment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        author:
+          type: string
+        decision:
+          $ref: "#/components/schemas/ReviewDecision"
+        text:
+          type: string
+          default: ""
+        created_at:
+          type: string
+          format: date-time
+
+    ReviewRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        org_id:
+          type: string
+          default: default
+        document_id:
+          type: string
+          description: Vector store document ID
+        stream_id:
+          type: string
+          nullable: true
+        source_ref:
+          type: string
+          default: ""
+        title:
+          type: string
+          default: ""
+        status:
+          $ref: "#/components/schemas/ReviewStatus"
+        submitted_by:
+          type: string
+          default: ""
+        reviewed_by:
+          type: string
+          default: ""
+        assigned_to:
+          type: string
+          default: ""
+        assigned_by:
+          type: string
+          default: ""
+        department:
+          type: string
+          default: ""
+        document_type:
+          type: string
+          default: general
+        tags:
+          type: array
+          items:
+            type: string
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewComment"
+        auto_approved:
+          type: boolean
+          default: false
+        auto_approve_rule:
+          type: string
+          default: ""
+          description: Name of the policy rule that triggered auto-approval
+        quality_report:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: score_quality() result at submit time
+        trust_score:
+          type: number
+          format: float
+          nullable: true
+          minimum: 0
+          maximum: 100
+        review_intelligence:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: Duplicate / contradiction signals
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        submitted_at:
+          type: string
+          format: date-time
+          nullable: true
+        reviewed_at:
+          type: string
+          format: date-time
+          nullable: true
+        assigned_at:
+          type: string
+          format: date-time
+          nullable: true
+        last_reminded_at:
+          type: string
+          format: date-time
+          nullable: true
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        archived_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    SubmitRequest:
+      type: object
+      required:
+        - document_id
+        - stream_id
+      properties:
+        document_id:
+          type: string
+          description: Vector store document ID to submit for review
+        stream_id:
+          type: string
+          minLength: 1
+          description: Value stream this document belongs to
+        source_ref:
+          type: string
+          default: ""
+        title:
+          type: string
+          default: ""
+        department:
+          type: string
+          default: ""
+        document_type:
+          type: string
+          default: general
+        tags:
+          type: array
+          items:
+            type: string
+          default: []
+        submitted_by:
+          type: string
+          default: ""
+          description: Submitter name (auto-populated from JWT if empty)
+        quality_report:
+          type: object
+          nullable: true
+          additionalProperties: true
+        trust_score:
+          type: number
+          format: float
+          nullable: true
+          minimum: 0
+          maximum: 100
+        review_intelligence:
+          type: object
+          nullable: true
+          additionalProperties: true
+
+    ReviewRequest:
+      type: object
+      required:
+        - record_id
+        - decision
+      properties:
+        record_id:
+          type: string
+          format: uuid
+        reviewer:
+          type: string
+          default: ""
+          description: Reviewer name (auto-populated from JWT if empty)
+        decision:
+          $ref: "#/components/schemas/ReviewDecision"
+        comment:
+          type: string
+          default: ""
+
+    AssignReviewRequest:
+      type: object
+      required:
+        - assignee
+      properties:
+        record_id:
+          type: string
+          format: uuid
+          description: Set automatically from path parameter — do not include in body
+        assignee:
+          type: string
+          description: Person to assign ownership to
+        assigned_by:
+          type: string
+          default: ""
+          description: Assigner name (auto-populated from JWT if empty)
+        note:
+          type: string
+          default: ""
+
+    ReminderRequest:
+      type: object
+      properties:
+        record_id:
+          type: string
+          format: uuid
+          description: Set automatically from path parameter — do not include in body
+        reminded_by:
+          type: string
+          default: ""
+          description: Person sending the reminder (auto-populated from JWT if empty)
+        message:
+          type: string
+          default: ""
+
+    ReconcileResponse:
+      type: object
+      properties:
+        org_id:
+          type: string
+        checked:
+          type: integer
+          description: Total review records checked
+        drifted:
+          type: integer
+          description: Records where review status and document status diverged
+        repaired:
+          type: integer
+          description: Drifted records that were successfully patched (0 in dry_run mode)
+        details:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            properties:
+              document_id:
+                type: string
+              title:
+                type: string
+              review_status:
+                type: string
+              expected_doc_status:
+                type: string
+              actual_doc_status:
+                type: string

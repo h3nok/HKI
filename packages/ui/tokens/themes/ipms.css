@@ -1,0 +1,55 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   IPMS APP THEME — Innovation Portfolio Management System
+
+   This file ONLY overrides primitive tokens (color-neutral-*)
+   to give the IPMS app its unique visual identity.
+
+   IPMS personality: Clean and corporate. Default warm neutrals (no override).
+   Slightly larger radius than Agentic for a friendlier dashboard feel.
+   The gradient-brand token gives IPMS its signature gradient header.
+
+   Architecture rule: Override PRIMITIVES only, never semantic tokens.
+   Semantic tokens are derived automatically from primitives by semantic.css.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─────────────────────────────────────────────────────────────────────────
+     IPMS uses the default warm-stone neutral scale (no overrides needed).
+     It inherits everything from primitives.css as-is.
+
+     Unique to IPMS: larger radius for dashboard card-heavy UI.
+     ───────────────────────────────────────────────────────────────────────── */
+  --radius: 0.75rem;
+
+  /* Brand gradient — used in IPMS hub header and dashboard banners */
+  --gradient-brand: linear-gradient(
+    135deg,
+    var(--color-brand-blue-700) 0%,
+    var(--color-brand-blue-400) 100%
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   IPMS DARK MODE — True Neutral Grays (matches Agentic v3)
+   Both apps share the same neutral gray scale for cross-app consistency.
+   ───────────────────────────────────────────────────────────────────────── */
+.dark {
+  /* Wide-gap v3 — true neutral grays, matches Agentic */
+  --color-neutral-0: #ffffff;
+  --color-neutral-25: #f0f0f0;
+  --color-neutral-50: #e5e5e5;
+  --color-neutral-75: #d4d4d4;
+  --color-neutral-100: #b5b5b5;
+  --color-neutral-150: #969696;
+  --color-neutral-200: #7a7a7a;
+  --color-neutral-300: #666666;
+  --color-neutral-400: #525252;
+  --color-neutral-500: #444444;
+  --color-neutral-600: #383838;
+  --color-neutral-700: #333333;
+  --color-neutral-800: #242424;
+  --color-neutral-850: #1a1a1a;
+  --color-neutral-900: #111111;
+  --color-neutral-925: #0a0a0a;
+  --color-neutral-950: #050505;
+}

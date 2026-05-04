@@ -1,0 +1,33 @@
+# Dependencies (installed in Docker build)
+node_modules/
+.pnpm-store/
+
+# Build output (built in Docker build)
+dist/
+
+# Dev files
+.env
+.env.local
+*.log
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Tests
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+vitest.config.ts
+coverage/
+
+# Docs
+*.md
+docs/
+todo.md
+
+# OS
+.DS_Store
+Thumbs.db

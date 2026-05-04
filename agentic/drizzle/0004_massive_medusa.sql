@@ -1,0 +1,3 @@
+ALTER TABLE `thoughtTraceSteps` MODIFY COLUMN `type` enum('thinking','planning','executing','reflecting','routing','tool_call','tool_result','guardrail','handoff','memory_recall','memory_store','knowledge_retrieval','cache_hit','final_response') NOT NULL;--> statement-breakpoint
+ALTER TABLE `conversations` ADD `isPinned` tinyint DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `messages` ADD `guardrails` text;

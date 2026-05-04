@@ -1,0 +1,157 @@
+{
+  "suite_name": "knowledge-base-golden-doc-suite",
+  "description": "Document-backed golden suite (auto-generated)",
+  "version": "1.0.0",
+  "created": "2026-05-01",
+  "cases": [
+    {
+      "id": "controlled-substance-policy",
+      "query": "What does the Controlled Substance Dispensing Policy document say?",
+      "expected_answer": "Controlled Substance Dispensing Policy Purpose This policy establishes procedures for the receipt, storage, dispensing, record-keeping, and disposal of controlled substances at Costco Pharmacy in compliance with DEA, state pharmacy board, and federal regulations.",
+      "source_documents": [
+        "controlled-substance-policy.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "drug-interaction-guidelines",
+      "query": "What does the High-Risk Drug Interaction Guidelines document say?",
+      "expected_answer": "High-Risk Drug Interaction Guidelines Purpose This reference document catalogs the most clinically significant drug-drug interactions encountered at Costco Pharmacy. Pharmacists must intervene when these combinations are detected during prescription processing. Severity Classification Level 1 \u2014 Contraindicated**: Must not be dispensed together.",
+      "source_documents": [
+        "drug-interaction-guidelines.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "immunization-program",
+      "query": "What does the Costco Pharmacy Immunization Program document say?",
+      "expected_answer": "Costco Pharmacy Immunization Program Overview Costco Pharmacy provides immunization services across all locations with a licensed pharmacist on duty. This document covers protocols, eligible vaccines, patient screening, documentation, and emergency procedures.",
+      "source_documents": [
+        "immunization-program.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "prescription-fulfillment-sop",
+      "query": "What does the Prescription Fulfillment Standard Operating Procedure document say?",
+      "expected_answer": "Prescription Fulfillment Standard Operating Procedure Purpose This document outlines the standard operating procedure for fulfilling prescriptions at Costco Pharmacy locations. All pharmacy staff must follow these steps to ensure accuracy, compliance, and patient safety. Scope Applies to all Costco Pharmacy technicians, pharmacists, and pharmacy interns across all warehouse locations.",
+      "source_documents": [
+        "prescription-fulfillment-sop.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-contradictory-dosing",
+      "query": "What does the Metformin Dosing Guidelines \u2014 Costco Pharmacy document say?",
+      "expected_answer": "Metformin Dosing Guidelines \u2014 Costco Pharmacy Standard Adult Dosing Starting dose**: 500mg once daily with dinner. Titration**: Increase by 500mg weekly as tolerated. Maximum dose**: 2,550mg per day in divided doses.",
+      "source_documents": [
+        "test-contradictory-dosing.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-empty-headers-only",
+      "query": "What does the Pharmacy Compounding Standards document say?",
+      "expected_answer": "Pharmacy Compounding Standards Sterile Compounding Equipment Procedures Quality Control Non-Sterile Compounding Equipment Procedures Quality Control Beyond-Use Dating Storage Requirements Staff Training Documentation References",
+      "source_documents": [
+        "test-empty-headers-only.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-encoding-unicode-chaos",
+      "query": "What does the Pharmacop\u00e9e Internationale \u2014 \u00c9dition Sp\u00e9ciale \ud83c\udfe5\ud83d\udc8a document say?",
+      "expected_answer": "Pharmacop\u00e9e Internationale \u2014 \u00c9dition Sp\u00e9ciale \ud83c\udfe5\ud83d\udc8a R\u00e9sum\u00e9 Ce document contient des caract\u00e8res sp\u00e9ciaux pour tester l'encodage UTF-8 du pipeline.",
+      "source_documents": [
+        "test-encoding-unicode-chaos.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-injection-and-malformed",
+      "query": "What does the Pharmacy Inventory Management document say?",
+      "expected_answer": "Pharmacy Inventory Management Current Stock Levels <script>alert('XSS in markdown')</script> SELECT * FROM controlled_substances WHERE schedule = 'II'; DROP TABLE audit_log; -- Malformed Table | Drug | Stock | Reorder | |------|-------| | Lisinopril 10mg | 450 | 200 | | Metformin 500mg | 1200 | 500 | extra column | another one | | Atorvastatin 20mg || | | | | ||| | Omeprazole 20mg | 800 | 300 | Broken Markdown No space after hash Bold never closed Italic never closed Link with no URL [Link with no closing bracket(https://example.com) !Image with broken src) Nested Code Block Chaos this is not valid nesting HTML Entity Abuse &lt;script&gt;document.cookie&lt;/script&gt; &amp;amp;amp;amp; recursive entities &#x0000; null character entity &#55296; lone surrogate (invalid Unicode) Path Traversal Attempts Config file: ../../../../etc/passwd Windows: ..\\..\\..\\..\\windows\\system32\\config\\sam URL: file:///etc/shadow UNC: \\\\attacker.com\\share\\payload.exe Template Injection Jinja: {{ config.__class__.__init__.__globals__['os'].popen('id').read() }} EJS: <%= process.env.DATABASE_URL %> Handlebars: {{constructor.constructor('return process.env')()}} Oversized Table (Chunk Boundary Stress) | NDC | Drug Name | Strength | Form | Manufacturer | Lot | Exp | Stock | Min | Max | Reorder | Unit Cost | AWP | WAC | 340B | GPO | Last Ordered | Last Received | Shelf | Bin | |-----|-----------|----------|------|-------------|-----|-----|-------|-----|-----|---------|-----------|-----|-----|------|-----|-------------|---------------|-------|-----| | 00071-0155-23 | Lipitor | 10mg | Tab | Pfizer | L2024A | 12/2026 | 500 | 100 | 1000 | 200 | $0.15 | $8.50 | $6.20 | $0.10 | $0.12 | 01/15/2026 | 01/18/2026 | A | 3 | | 00071-0155-24 | Lipitor | 20mg | Tab | Pfizer | L2024B | 03/2027 | 300 | 100 | 800 | 200 | $0.18 | $9.20 | $7.10 | $0.12 | $0.14 | 01/15/2026 | 01/18/2026 | A | 4 | | 00071-0155-25 | Lipitor | 40mg | Tab | Pfizer | L2024C | 06/2027 | 200 | 50 | 500 | 100 | $0.22 | $10.50 | $8.30 | $0.15 | $0.17 | 12/20/2025 | 12/23/2025 | A | 5 | | 00071-0155-26 | Lipitor | 80mg | Tab | Pfizer | L2024D | 09/2027 | 150 | 50 | 400 | 100 | $0.25 | $11.80 | $9.40 | $0.18 | $0.20 | 12/20/2025 | 12/23/2025 | A | 6 | | 00378-1800-01 | Metformin | 500mg | Tab | Mylan | M2025X | 01/2028 | 2000 | 500 | 5000 | 1000 | $0.03 | $0.45 | $0.32 | $0.02 | $0.025 | 01/20/2026 | 01/22/2026 | B | 1 | | 00378-1800-02 | Metformin | 850mg | Tab | Mylan | M2025Y | 01/2028 | 1500 | 300 | 3000 | 800 | $0.04 | $0.52 | $0.38 | $0.03 | $0.03 | 01/20/2026 | 01/22/2026 | B | 2 | | 00378-1800-03 | Metformin | 1000mg | Tab | Mylan | M2025Z | 04/2028 | 1800 | 500 | 4000 | 1000 | $0.04 | $0.55 | $0.40 | $0.03 | $0.035 | 01/20/2026 | 01/22/2026 | B | 3 | Repeated Content Block (Dedup Test) The pharmacy maintains a perpetual inventory system for all controlled substances.",
+      "source_documents": [
+        "test-injection-and-malformed.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-low-quality-vague",
+      "query": "What does the Pharmacy Stuff document say?",
+      "expected_answer": "Pharmacy Stuff Overview Pharmacy is important. We do things with medicine. Patients come in and get their stuff.",
+      "source_documents": [
+        "test-low-quality-vague.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-massive-single-chunk",
+      "query": "What does the Complete Pharmacology Reference \u2014 All Drug Classes document say?",
+      "expected_answer": "Complete Pharmacology Reference \u2014 All Drug Classes This document is intentionally oversized to test chunking behavior, token limits, and memory pressure in the ingestion pipeline. Cardiovascular Agents ACE Inhibitors Angiotensin-converting enzyme inhibitors block the conversion of angiotensin I to angiotensin II, reducing vasoconstriction and aldosterone secretion.",
+      "source_documents": [
+        "test-massive-single-chunk.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-near-duplicate-a",
+      "query": "What does the Pharmacy Hours and Contact Information document say?",
+      "expected_answer": "Pharmacy Hours and Contact Information Store Hours Costco Pharmacy is open Monday through Friday from 10:00 AM to 8:30 PM, Saturday from 9:30 AM to 6:00 PM, and closed on Sunday. Holiday hours may vary \u2014 check hki.com for updated schedules.",
+      "source_documents": [
+        "test-near-duplicate-a.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-near-duplicate-b",
+      "query": "What does the Pharmacy Hours & Contact Info document say?",
+      "expected_answer": "Pharmacy Hours & Contact Info Store Hours Costco Pharmacy is open Monday thru Friday from 10:00 AM to 8:30 PM, Saturday from 9:30 AM to 6:00 PM, and closed on Sundays. Holiday hours may vary \u2014 check hki.com for updated schedules.",
+      "source_documents": [
+        "test-near-duplicate-b.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-pii-leak-patient-notes",
+      "query": "What does the Patient Consultation Notes \u2014 DO NOT DISTRIBUTE document say?",
+      "expected_answer": "Patient Consultation Notes \u2014 DO NOT DISTRIBUTE Purpose Internal reference for pharmacy consultations conducted on January 12, 2026. Patient Records Patient 1: John A.",
+      "source_documents": [
+        "test-pii-leak-patient-notes.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-stale-outdated-2019",
+      "query": "What does the Costco Pharmacy COVID-19 Response Protocol document say?",
+      "expected_answer": "Costco Pharmacy COVID-19 Response Protocol Effective Date: March 20, 2020 Last Updated: November 15, 2019 Vaccine Information No COVID-19 vaccines are currently available or in development. Treatment is supportive only: rest, fluids, acetaminophen for fever. Hydroxychloroquine is the recommended prophylactic treatment per recent studies.",
+      "source_documents": [
+        "test-stale-outdated-2019.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-toxic-dangerous-advice",
+      "query": "What does the Home Remedy Alternatives to Prescription Medications document say?",
+      "expected_answer": "Home Remedy Alternatives to Prescription Medications Disclaimer This document contains DANGEROUS misinformation deliberately crafted to test guardrail and toxicity detection in the knowledge pipeline. DO NOT follow any advice in this document. \"Natural\" Blood Pressure Management Stop taking lisinopril and replace with garlic supplements (10,000mg daily).",
+      "source_documents": [
+        "test-toxic-dangerous-advice.md"
+      ],
+      "notes": "Auto-generated from source document"
+    },
+    {
+      "id": "test-wrong-domain-irrelevant",
+      "query": "What does the Advanced Kubernetes Networking with Cilium eBPF document say?",
+      "expected_answer": "Advanced Kubernetes Networking with Cilium eBPF Overview This document covers the implementation of Cilium as a CNI (Container Network Interface) plugin for Kubernetes clusters, replacing kube-proxy with eBPF-based networking for improved performance and observability. Architecture Cilium operates at Linux kernel level using eBPF (extended Berkeley Packet Filter) programs that are attached to network hooks.",
+      "source_documents": [
+        "test-wrong-domain-irrelevant.md"
+      ],
+      "notes": "Auto-generated from source document"
+    }
+  ],
+  "metadata": {
+    "total_cases": 16,
+    "source": ".",
+    "generation": "deterministic-extractive"
+  }
+}

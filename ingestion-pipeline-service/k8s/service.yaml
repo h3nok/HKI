@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingestion-pipeline
+  namespace: platform
+  labels:
+    app.kubernetes.io/name: ingestion-pipeline
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: ingestion-pipeline
+  ports:
+    - name: http
+      port: 9508
+      targetPort: 9508
+      protocol: TCP

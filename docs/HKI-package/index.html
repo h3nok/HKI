@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HKI: Hermetic Knowledge Isolation</title>
+    <meta name="author" content="Henok Ghebrechristos, PhD" />
+    <meta name="creator" content="Henok Ghebrechristos" />
+    <meta name="theme-color" content="#0f766e" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta
+      name="description"
+      content="Hermetic Knowledge Isolation (HKI) is a runtime contract for enterprise agentic systems. This page collects the full paper, executive brief, HTML versions, PDFs, and visual summaries."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="HKI" />
+    <meta property="og:title" content="HKI: Hermetic Knowledge Isolation" />
+    <meta
+      property="og:description"
+      content="A runtime contract for enterprise agentic systems: one request, one active domain, no implicit global visibility."
+    />
+    <meta property="og:image" content="images/hki/hki-social-card.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HKI: Hermetic Knowledge Isolation" />
+    <meta
+      name="twitter:description"
+      content="A runtime contract for enterprise agentic systems: one request, one active domain, no implicit global visibility."
+    />
+    <meta name="twitter:image" content="images/hki/hki-social-card.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "HKI: Hermetic Knowledge Isolation",
+        "description": "A packaged landing page for the HKI full paper, executive brief, visual summaries, and downloadable formats.",
+        "author": {
+          "@type": "Person",
+          "name": "Henok Ghebrechristos"
+        },
+        "about": [
+          { "@type": "Thing", "name": "Enterprise AI isolation" },
+          { "@type": "Thing", "name": "Agentic systems" },
+          { "@type": "Thing", "name": "Knowledge boundaries" }
+        ]
+      }
+    </script>
+    <link rel="stylesheet" href="hki-paper.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <main id="main-content">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-shell">
+          <div class="hero-copy">
+            <div class="eyebrow">Enterprise AI Isolation</div>
+            <h1 id="page-title">Hermetic Knowledge Isolation (HKI)</h1>
+            <p class="lede">
+              A runtime contract for enterprise agentic systems: every artifact
+              belongs to one domain, every request runs in one active domain,
+              and shared knowledge appears only through explicit publication
+              rather than silent global fallback.
+            </p>
+            <p class="muted">By Henok Ghebrechristos, PhD</p>
+
+            <div class="cta-row hero-actions">
+              <a class="button" href="HKI-EXECUTIVE-BRIEF.html"
+                >Start with the Brief</a
+              >
+              <a
+                class="button secondary"
+                href="HERMETIC-KNOWLEDGE-ISOLATION.html"
+                >Open the Full Paper</a
+              >
+              <a
+                class="button secondary"
+                href="HERMETIC-KNOWLEDGE-ISOLATION.pdf"
+                >Download PDF</a
+              >
+            </div>
+
+            <div class="metric-strip" aria-label="Document summary">
+              <div class="metric">
+                <strong>20 min</strong>
+                <span>Full paper</span>
+              </div>
+              <div class="metric">
+                <strong>5 min</strong>
+                <span>Executive brief</span>
+              </div>
+              <div class="metric">
+                <strong>6 visuals</strong>
+                <span>System and threat diagrams</span>
+              </div>
+              <div class="metric">
+                <strong>HTML + PDF</strong>
+                <span>Readable and downloadable formats</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-stage" aria-label="HKI highlights">
+            <div class="signal-card drift animate-rise">
+              <span class="signal-label">Typical systems</span>
+              <strong>Scope drifts</strong>
+              <p>
+                Advisory scope weakens as requests move through rewriters,
+                caches, graph traversal, and jobs.
+              </p>
+            </div>
+            <div class="signal-card sealed animate-rise delay-1">
+              <span class="signal-label">HKI</span>
+              <strong>Scope stays sealed</strong>
+              <p>
+                One active domain is selected at the edge and preserved through
+                every downstream transformation.
+              </p>
+            </div>
+            <div class="signal-card publish animate-rise delay-2">
+              <span class="signal-label">Sharing</span>
+              <strong>Publication is explicit</strong>
+              <p>
+                Shared knowledge crosses domains only through materialized
+                copies, never through null or global fallback.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="choose-entry">
+        <h2 id="choose-entry">Choose Your Entry Point</h2>
+        <p class="section-note">
+          Start with the version that matches your time and your goal. The full
+          paper is the most rigorous artifact. The executive brief is the best
+          entry point for leaders and broader audiences.
+        </p>
+
+        <div class="panel-grid">
+          <article class="card">
+            <h3>Executive Brief</h3>
+            <p>
+              A short decision-maker version of HKI focused on the problem, the
+              contract, the leak paths it blocks, the architectural
+              consequences, and the rollout path.
+            </p>
+            <ul class="artifact-list compact">
+              <li>Best for leaders, architects, and broad circulation</li>
+              <li>Plain-language framing with the core visuals</li>
+              <li>~5 minute read</li>
+            </ul>
+            <div class="cta-row">
+              <a class="button" href="HKI-EXECUTIVE-BRIEF.html">Open HTML</a>
+              <a class="button secondary" href="HKI-EXECUTIVE-BRIEF.pdf"
+                >Download PDF</a
+              >
+              <a class="button secondary" href="HKI-EXECUTIVE-BRIEF.md"
+                >View Markdown</a
+              >
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Full Paper</h3>
+            <p>
+              The complete HKI writeup, including the formal model, threat
+              analysis, related work, migration path, theory, scientific
+              framing, and objections.
+            </p>
+            <ul class="artifact-list compact">
+              <li>Best for technical deep dives and design review</li>
+              <li>Includes glossary, theorem sketch, and citations</li>
+              <li>~20 minute read</li>
+            </ul>
+            <div class="cta-row">
+              <a class="button" href="HERMETIC-KNOWLEDGE-ISOLATION.html"
+                >Open HTML</a
+              >
+              <a
+                class="button secondary"
+                href="HERMETIC-KNOWLEDGE-ISOLATION.pdf"
+                >Download PDF</a
+              >
+              <a class="button secondary" href="HERMETIC-KNOWLEDGE-ISOLATION.md"
+                >View Markdown</a
+              >
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="story-section" aria-labelledby="visual-story">
+        <h2 id="visual-story">The Picture</h2>
+        <p class="section-note">
+          The contrast is straightforward: conventional "domain-aware" systems
+          often treat scope as advisory, while HKI treats it as a sealed
+          execution label.
+        </p>
+
+        <div class="story-grid">
+          <article class="card story-copy">
+            <div class="story-tags" aria-label="Key contrasts">
+              <span class="story-tag danger">Advisory scope</span>
+              <span class="story-tag safe">Sealed scope</span>
+              <span class="story-tag policy">Explicit publication</span>
+            </div>
+            <p>
+              On the left, scope starts as an intention and erodes as the
+              request passes through recall optimizers, graph traversal,
+              semantic caches, and workflow shortcuts. On the right, HKI treats
+              scope as part of execution itself.
+            </p>
+            <p>
+              That changes the system's posture. Instead of asking whether a
+              result seems relevant enough to include, HKI asks whether the
+              system is still operating inside the one domain selected for this
+              request.
+            </p>
+            <ul class="artifact-list compact">
+              <li>Typical systems bind scope late and weakly.</li>
+              <li>HKI binds scope early, signs it, and preserves it.</li>
+              <li>Publication is the only bridge between domains.</li>
+            </ul>
+          </article>
+
+          <div class="story-visuals">
+            <figure class="visual-card primary animate-rise">
+              <img
+                src="images/hki/06-hki-story.svg"
+                alt="One-picture summary of HKI. The left side shows typical domain-aware RAG drifting from inferred scope toward null or global fallback and possible cross-domain bleed. The right side shows HKI selecting one active domain at the gateway, propagating a signed scope envelope, enforcing exact-domain equality, and limiting visibility to domain-local artifacts plus explicitly published copies."
+              />
+              <figcaption class="caption">
+                The high-level contrast: scope drift versus sealed execution.
+              </figcaption>
+            </figure>
+
+            <figure class="visual-card secondary animate-rise delay-2">
+              <img
+                src="images/hki/04-leak-paths-blocked.svg"
+                alt="Three common cross-domain leak paths under agentic RAG — query-rewrite broadening, derived-graph traversal, and cache contamination — each rejected by the HKI runtime check."
+              />
+              <figcaption class="caption">
+                The concrete effect: three common leak paths all fail closed.
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="what-you-get">
+        <h2 id="what-you-get">What You Get in the Full Package</h2>
+        <div class="panel-grid">
+          <article class="card compact">
+            <h3>Conceptual Model</h3>
+            <p>
+              TL;DR, executive summary, glossary, one-picture summary, and the
+              four-part HKI thesis.
+            </p>
+          </article>
+          <article class="card compact">
+            <h3>Implementation Guidance</h3>
+            <p>
+              Signed scope envelope, runtime/admin plane split, explicit
+              publication model, threat analysis, and a five-phase rollout
+              roadmap.
+            </p>
+          </article>
+          <article class="card compact">
+            <h3>Defensibility</h3>
+            <p>
+              Novelty positioning, related work, theorem sketch, scientific
+              framing, costs, limits, and anticipated objections.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="sharing">
+        <h2 id="sharing">Recommended Use</h2>
+        <div class="panel-grid">
+          <article class="card compact">
+            <h3>For a broad audience</h3>
+            <p>Share the executive brief HTML or PDF.</p>
+          </article>
+          <article class="card compact">
+            <h3>For technical review</h3>
+            <p>
+              Use the full paper HTML for readability, or the PDF for a frozen
+              artifact.
+            </p>
+          </article>
+          <article class="card compact">
+            <h3>For design sessions</h3>
+            <p>
+              Open the full HTML and use the diagrams plus the threat and
+              migration sections.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <hr class="top-rule" />
+
+      <p class="muted compact">
+        Feedback, critique, and counter-examples are welcome. The sharpest
+        critique remains a concrete enterprise deployment in which null-domain
+        runtime semantics are both safe and necessary.
+      </p>
+      <p class="muted compact">Henok Ghebrechristos, 2026.</p>
+    </main>
+  </body>
+</html>

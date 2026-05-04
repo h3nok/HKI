@@ -1,0 +1,439 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ╔═╗╔═╗╔╦╗╔═╗╔╗╔╔╦╗╦╔═╗
+   ╚═╗║╣ ║║║╠═╣║║║ ║ ║║
+   ╚═╝╚═╝╩ ╩╩ ╩╝╚╝ ╩ ╩╚═╝
+
+   COSTCO INNOVATIONS DESIGN SYSTEM — SEMANTIC TOKENS v3.0
+
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │  LAYER 2: MEANING-BASED TOKENS                                             │
+   │  These tokens reference primitives and define WHAT things are, not HOW.    │
+   │  ✅ USE THESE in your components.                                          │
+   │  ⚠️  Apps should override PRIMITIVES, not semantic tokens.                 │
+   └─────────────────────────────────────────────────────────────────────────────┘
+
+   Architecture:  Primitives → [Semantic] → Components
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@import "./primitives.css";
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LIGHT THEME (Default)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+:root {
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §1 SURFACE HIERARCHY — 5-Level Depth System
+
+     Ground → Canvas → Card → Raised → Overlay
+     Each level is visually distinct for clear hierarchy.
+     ═══════════════════════════════════════════════════════════════════════════ */
+
+  /* Level 0: App Background (Canvas) */
+  --background: var(--color-neutral-50);
+  --foreground: var(--color-neutral-700);
+
+  /* Level 1: Cards & Panels */
+  --card: var(--color-neutral-0);
+  --card-foreground: var(--color-neutral-700);
+
+  /* Level 2: Popovers, Dropdowns, Tooltips */
+  --popover: var(--color-neutral-0);
+  --popover-foreground: var(--color-neutral-700);
+
+  /* Level 3: Modals & Dialogs */
+  --modal: var(--color-neutral-0);
+  --modal-foreground: var(--color-neutral-700);
+
+  /* Surface States */
+  --surface-hover: var(--color-neutral-75);
+  --surface-active: var(--color-neutral-100);
+  --surface-selected: var(--color-brand-blue-50);
+  --surface-disabled: var(--color-neutral-100);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §2 MUTED — Subdued Backgrounds & Secondary Content
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --muted: var(--color-neutral-100);
+  --muted-foreground: var(--color-neutral-500);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §3 BRAND COLORS — Interactive Elements
+     ═══════════════════════════════════════════════════════════════════════════ */
+
+  /* Primary — HKI Blue (main actions, links) */
+  --primary: var(--color-brand-blue-500);
+  --primary-hover: var(--color-brand-blue-600);
+  --primary-active: var(--color-brand-blue-700);
+  --primary-foreground: var(--color-neutral-0);
+  --primary-muted: var(--color-brand-blue-50);
+
+  /* Secondary — HKI Red (emphasis, alerts) */
+  --secondary: var(--color-brand-red-500);
+  --secondary-hover: var(--color-brand-red-600);
+  --secondary-active: var(--color-brand-red-700);
+  --secondary-foreground: var(--color-neutral-0);
+  --secondary-muted: var(--color-brand-red-50);
+
+  /* Accent — Highlighted/selected states */
+  --accent: var(--color-brand-blue-50);
+  --accent-hover: var(--color-brand-blue-100);
+  --accent-foreground: var(--color-brand-blue-700);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §4 STATUS COLORS — Semantic Feedback
+     ═══════════════════════════════════════════════════════════════════════════ */
+
+  /* Destructive/Error */
+  --destructive: var(--color-error-500);
+  --destructive-hover: var(--color-error-600);
+  --destructive-foreground: var(--color-neutral-0);
+  --destructive-muted: var(--color-error-50);
+
+  /* Success */
+  --success: var(--color-success-500);
+  --success-hover: var(--color-success-600);
+  --success-foreground: var(--color-neutral-0);
+  --success-muted: var(--color-success-50);
+
+  /* Warning */
+  --warning: var(--color-warning-500);
+  --warning-hover: var(--color-warning-600);
+  --warning-foreground: var(--color-neutral-0);
+  --warning-muted: var(--color-warning-50);
+
+  /* Info */
+  --info: var(--color-info-500);
+  --info-hover: var(--color-info-600);
+  --info-foreground: var(--color-neutral-0);
+  --info-muted: var(--color-info-50);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §5 BORDERS & DIVIDERS
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --border: var(--color-neutral-200);
+  --border-hover: var(--color-neutral-300);
+  --border-focus: var(--color-brand-blue-500);
+  --border-muted: var(--color-neutral-150);
+  --border-subtle: var(--color-neutral-100);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §6 INPUTS & FORMS
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --input: var(--color-neutral-0);
+  --input-border: var(--color-neutral-200);
+  --input-border-hover: var(--color-neutral-300);
+  --input-border-focus: var(--color-brand-blue-500);
+  --input-placeholder: var(--color-neutral-400);
+  --input-disabled: var(--color-neutral-100);
+
+  /* Focus Ring */
+  --ring: var(--color-brand-blue-500);
+  --ring-offset: var(--color-neutral-0);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §7 TEXT HIERARCHY
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --text-heading: var(--color-neutral-900);
+  --text-body: var(--color-neutral-700);
+  --text-secondary: var(--color-neutral-500);
+  --text-muted: var(--color-neutral-400);
+  --text-disabled: var(--color-neutral-300);
+  --text-inverse: var(--color-neutral-0);
+  --text-link: var(--color-brand-blue-500);
+  --text-link-hover: var(--color-brand-blue-600);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §8 SIDEBAR — Navigation Panel
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --sidebar: var(--color-neutral-0);
+  --sidebar-foreground: var(--color-neutral-700);
+  --sidebar-muted: var(--color-neutral-100);
+  --sidebar-muted-foreground: var(--color-neutral-500);
+  --sidebar-primary: var(--color-brand-blue-500);
+  --sidebar-primary-foreground: var(--color-neutral-0);
+  --sidebar-accent: var(--color-neutral-100);
+  --sidebar-accent-foreground: var(--color-neutral-700);
+  --sidebar-border: var(--color-neutral-200);
+  --sidebar-ring: var(--color-brand-blue-500);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §9 HEADER & FOOTER
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --header: var(--color-neutral-0);
+  --header-foreground: var(--color-neutral-700);
+  --header-border: var(--color-neutral-200);
+  --footer: var(--color-neutral-50);
+  --footer-foreground: var(--color-neutral-600);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §10 DATA VISUALIZATION — Charts
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --chart-1: var(--color-data-1);
+  --chart-2: var(--color-data-2);
+  --chart-3: var(--color-data-3);
+  --chart-4: var(--color-data-4);
+  --chart-5: var(--color-data-5);
+  --chart-6: var(--color-data-6);
+  --chart-7: var(--color-data-7);
+  --chart-8: var(--color-data-8);
+  --chart-9: var(--color-data-9);
+  --chart-10: var(--color-data-10);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §11 OVERLAYS & BACKDROPS
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --overlay: rgb(0 0 0 / 0.5);
+  --overlay-light: rgb(0 0 0 / 0.3);
+  --overlay-heavy: rgb(0 0 0 / 0.7);
+  --backdrop-blur: var(--blur-md);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §12 SKELETON & LOADING
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --skeleton: var(--color-neutral-200);
+  --skeleton-shine: var(--color-neutral-100);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §13 SCROLLBAR
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: var(--color-neutral-300);
+  --scrollbar-thumb-hover: var(--color-neutral-400);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §14 COMPONENT DEFAULTS
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --radius: var(--radius-lg);
+  --radius-button: var(--radius-md);
+  --radius-input: var(--radius-md);
+  --radius-card: var(--radius-xl);
+  --radius-badge: var(--radius-full);
+  --radius-avatar: var(--radius-full);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §15 GRADIENTS
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --gradient-brand: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  --gradient-brand-subtle: linear-gradient(
+    135deg,
+    var(--primary-muted) 0%,
+    var(--secondary-muted) 100%
+  );
+  --gradient-surface: linear-gradient(180deg, var(--background) 0%, var(--muted) 100%);
+  --gradient-shimmer: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(255 255 255 / 0.4) 50%,
+    transparent 100%
+  );
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §16 FOCUS & SELECTION
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --focus-ring: 0 0 0 2px var(--ring-offset), 0 0 0 4px var(--ring);
+  --selection-bg: var(--color-brand-blue-100);
+  --selection-text: var(--color-brand-blue-900);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   DARK THEME
+
+   Carefully crafted dark mode with optimal contrast ratios.
+   Uses lighter brand colors for accessibility on dark backgrounds.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.dark {
+  /* §1 Surfaces — Inverted hierarchy */
+  --background: var(--color-neutral-900);
+  --foreground: var(--color-neutral-50);
+
+  --card: var(--color-neutral-850);
+  --card-foreground: var(--color-neutral-50);
+
+  --popover: var(--color-neutral-800);
+  --popover-foreground: var(--color-neutral-50);
+
+  --modal: var(--color-neutral-850);
+  --modal-foreground: var(--color-neutral-50);
+
+  --surface-hover: var(--color-neutral-800);
+  --surface-active: var(--color-neutral-700);
+  --surface-selected: rgb(43 69 194 / 0.2);
+  --surface-disabled: var(--color-neutral-800);
+
+  /* §2 Muted */
+  --muted: var(--color-neutral-800);
+  --muted-foreground: var(--color-neutral-400);
+
+  /* §3 Brand Colors — Lighter for dark backgrounds */
+  --primary: var(--color-brand-blue-400);
+  --primary-hover: var(--color-brand-blue-300);
+  --primary-active: var(--color-brand-blue-200);
+  --primary-foreground: var(--color-neutral-900);
+  --primary-muted: rgb(43 69 194 / 0.15);
+
+  --secondary: var(--color-brand-red-400);
+  --secondary-hover: var(--color-brand-red-300);
+  --secondary-active: var(--color-brand-red-200);
+  --secondary-foreground: var(--color-neutral-900);
+  --secondary-muted: rgb(220 38 38 / 0.15);
+
+  --accent: rgb(83 110 243 / 0.15);
+  --accent-hover: rgb(83 110 243 / 0.25);
+  --accent-foreground: var(--color-brand-blue-300);
+
+  /* §4 Status Colors — Brighter for visibility */
+  --destructive: var(--color-error-400);
+  --destructive-hover: var(--color-error-300);
+  --destructive-foreground: var(--color-neutral-900);
+  --destructive-muted: rgb(239 68 68 / 0.15);
+
+  --success: var(--color-success-400);
+  --success-hover: var(--color-success-300);
+  --success-foreground: var(--color-neutral-900);
+  --success-muted: rgb(34 197 94 / 0.15);
+
+  --warning: var(--color-warning-400);
+  --warning-hover: var(--color-warning-300);
+  --warning-foreground: var(--color-neutral-900);
+  --warning-muted: rgb(245 158 11 / 0.15);
+
+  --info: var(--color-info-400);
+  --info-hover: var(--color-info-300);
+  --info-foreground: var(--color-neutral-900);
+  --info-muted: rgb(14 165 233 / 0.15);
+
+  /* §5 Borders */
+  --border: var(--color-neutral-700);
+  --border-hover: var(--color-neutral-600);
+  --border-focus: var(--color-brand-blue-400);
+  --border-muted: var(--color-neutral-800);
+  --border-subtle: var(--color-neutral-850);
+
+  /* §6 Inputs */
+  --input: var(--color-neutral-800);
+  --input-border: var(--color-neutral-700);
+  --input-border-hover: var(--color-neutral-600);
+  --input-border-focus: var(--color-brand-blue-400);
+  --input-placeholder: var(--color-neutral-500);
+  --input-disabled: var(--color-neutral-850);
+
+  --ring: var(--color-brand-blue-400);
+  --ring-offset: var(--color-neutral-900);
+
+  /* §7 Text */
+  --text-heading: var(--color-neutral-0);
+  --text-body: var(--color-neutral-100);
+  --text-secondary: var(--color-neutral-400);
+  --text-muted: var(--color-neutral-500);
+  --text-disabled: var(--color-neutral-600);
+  --text-inverse: var(--color-neutral-900);
+  --text-link: var(--color-brand-blue-400);
+  --text-link-hover: var(--color-brand-blue-300);
+
+  /* §8 Sidebar */
+  --sidebar: var(--color-neutral-850);
+  --sidebar-foreground: var(--color-neutral-50);
+  --sidebar-muted: var(--color-neutral-800);
+  --sidebar-muted-foreground: var(--color-neutral-400);
+  --sidebar-primary: var(--color-brand-blue-400);
+  --sidebar-primary-foreground: var(--color-neutral-900);
+  --sidebar-accent: rgba(0, 102, 178, 0.2);
+  --sidebar-accent-foreground: var(--color-brand-blue-300);
+  --sidebar-border: var(--color-neutral-700);
+  --sidebar-ring: var(--color-brand-blue-400);
+
+  /* §9 Header & Footer */
+  --header: var(--color-neutral-850);
+  --header-foreground: var(--color-neutral-50);
+  --header-border: var(--color-neutral-700);
+  --footer: var(--color-neutral-900);
+  --footer-foreground: var(--color-neutral-400);
+
+  /* §10 Charts — Brighter */
+  --chart-1: var(--color-brand-blue-400);
+  --chart-2: var(--color-brand-red-400);
+  --chart-3: var(--color-success-400);
+  --chart-4: var(--color-warning-400);
+  --chart-5: var(--color-info-400);
+  --chart-6: #06b6d4;
+  --chart-7: #ec4899;
+  --chart-8: #84cc16;
+  --chart-9: #f97316;
+  --chart-10: #14b8a6;
+
+  /* §11 Overlays */
+  --overlay: rgb(0 0 0 / 0.7);
+  --overlay-light: rgb(0 0 0 / 0.5);
+  --overlay-heavy: rgb(0 0 0 / 0.85);
+
+  /* §12 Skeleton */
+  --skeleton: var(--color-neutral-800);
+  --skeleton-shine: var(--color-neutral-700);
+
+  /* §13 Scrollbar */
+  --scrollbar-thumb: var(--color-neutral-600);
+  --scrollbar-thumb-hover: var(--color-neutral-500);
+
+  /* §15 Gradients */
+  --gradient-surface: linear-gradient(
+    180deg,
+    var(--color-neutral-850) 0%,
+    var(--color-neutral-900) 100%
+  );
+  --gradient-shimmer: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(255 255 255 / 0.1) 50%,
+    transparent 100%
+  );
+
+  /* §16 Focus & Selection */
+  --selection-bg: rgb(83 110 243 / 0.3);
+  --selection-text: var(--color-brand-blue-100);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SYSTEM PREFERENCE DETECTION
+
+   Automatically applies dark theme when user's OS preference is dark,
+   unless explicitly overridden with .light class.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: var(--color-neutral-900);
+    --foreground: var(--color-neutral-50);
+    --card: var(--color-neutral-850);
+    --card-foreground: var(--color-neutral-50);
+    --popover: var(--color-neutral-800);
+    --popover-foreground: var(--color-neutral-50);
+    --muted: var(--color-neutral-800);
+    --muted-foreground: var(--color-neutral-400);
+    --primary: var(--color-brand-blue-400);
+    --primary-foreground: var(--color-neutral-900);
+    --secondary: var(--color-brand-red-400);
+    --secondary-foreground: var(--color-neutral-900);
+    --border: var(--color-neutral-700);
+    --input: var(--color-neutral-800);
+    --ring: var(--color-brand-blue-400);
+    --sidebar: var(--color-neutral-850);
+    --sidebar-foreground: var(--color-neutral-50);
+    --sidebar-border: var(--color-neutral-700);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   §M MOTION TOKENS — CSS Custom Properties
+
+   Mirrors the JS `motion` export from @hki/ui for CSS-only contexts.
+   Use these for transition-duration, animation-duration, etc.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+:root {
+  --motion-instant: 100ms;
+  --motion-fast: 150ms;
+  --motion-normal: 200ms;
+  --motion-slow: 300ms;
+  --motion-slower: 400ms;
+  --motion-ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-ease-swift: cubic-bezier(0.4, 0, 0.2, 1);
+}

@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1620 620" role="img" aria-labelledby="title desc">
+  <title id="title">HKI request flow</title>
+  <desc id="desc">A step-by-step request flow under HKI where the gateway resolves one active domain, ambiguous scope fails closed, and a signed scope envelope propagates through the orchestrator, knowledge service, and domain-scoped store.</desc>
+  <defs>
+    <style>
+      :root { color-scheme: light dark; }
+      svg {
+        --page: #f8fafc; --surface: #ffffff; --surface-2: #f1f5f9;
+        --text: #0f172a; --muted: #475569; --rule: #cbd5e1; --line: #64748b; --arrow: #64748b;
+        --safe-fill: #ecfdf5; --safe-stroke: #059669; --safe-text: #065f46;
+        --policy-fill: #eef2ff; --policy-stroke: #4f46e5; --policy-text: #3730a3;
+        --warn-fill: #fff7ed; --warn-stroke: #ea580c; --warn-text: #9a3412;
+        --danger-fill: #fef2f2; --danger-stroke: #dc2626; --danger-text: #991b1b;
+        --glow-warn: rgba(234,88,12,0.18); --glow-danger: rgba(220,38,38,0.18);
+        --glow-safe: rgba(5,150,105,0.18); --glow-policy: rgba(79,70,229,0.18);
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        svg {
+          --page: #09111a; --surface: #0f172a; --surface-2: #111c2d;
+          --text: #e2e8f0; --muted: #94a3b8; --rule: #334155; --line: #7dd3fc; --arrow: #7dd3fc;
+          --safe-fill: #0e2c28; --safe-stroke: #34d399; --safe-text: #bbf7d0;
+          --policy-fill: #1f2451; --policy-stroke: #a78bfa; --policy-text: #ddd6fe;
+          --warn-fill: #3a220b; --warn-stroke: #fb923c; --warn-text: #fed7aa;
+          --danger-fill: #3a1618; --danger-stroke: #f87171; --danger-text: #fecaca;
+          --glow-warn: rgba(251,146,60,0.22); --glow-danger: rgba(248,113,113,0.22);
+          --glow-safe: rgba(52,211,153,0.22); --glow-policy: rgba(167,139,250,0.22);
+        }
+      }
+      .page { fill: var(--page); }
+      .heading { fill: var(--text); font-size: 38px; font-weight: 800; }
+      .subheading { fill: var(--muted); font-size: 17px; }
+      .card { stroke-width: 2.5; }
+      .safe { fill: var(--safe-fill); stroke: var(--safe-stroke); filter: url(#glow-safe); }
+      .policy { fill: var(--policy-fill); stroke: var(--policy-stroke); filter: url(#glow-policy); }
+      .warn { fill: var(--warn-fill); stroke: var(--warn-stroke); filter: url(#glow-warn); }
+      .danger { fill: var(--danger-fill); stroke: var(--danger-stroke); filter: url(#glow-danger); }
+      .surface { fill: var(--surface); stroke: var(--rule); stroke-width: 2; filter: url(#panel-shadow); }
+      .safe-text { fill: var(--safe-text); } .policy-text { fill: var(--policy-text); }
+      .warn-text { fill: var(--warn-text); } .danger-text { fill: var(--danger-text); }
+      .title { fill: var(--text); font-size: 19px; font-weight: 700; }
+      .body { fill: var(--muted); font-size: 14px; }
+      .step { fill: var(--muted); font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+      .flow { fill: none; stroke: var(--line); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .flow.block { stroke: var(--danger-stroke); stroke-dasharray: 12 8; marker-end: url(#block-arrow); }
+      .fail-label { fill: var(--danger-text); font-size: 14px; font-weight: 700; }
+      .num { font-size: 14px; font-weight: 800; fill: #fff; }
+      .num-bg { fill: var(--line); }
+    </style>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--arrow)" />
+    </marker>
+    <marker id="block-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--danger-stroke)" />
+    </marker>
+    <filter id="panel-shadow" x="-4%" y="-4%" width="110%" height="112%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <filter id="glow-warn" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-warn)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-danger" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-danger)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-safe" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-safe)" flood-opacity="1"/>
+    </filter>
+    <filter id="glow-policy" x="-12%" y="-18%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-policy)" flood-opacity="1"/>
+    </filter>
+    <pattern id="dot-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#8090a0" opacity="0.06"/>
+    </pattern>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1620" height="620" rx="36" />
+  <rect x="0" y="0" width="1620" height="620" rx="36" fill="url(#dot-grid)"/>
+
+  <!-- Decorative accent -->
+  <rect x="70" y="26" width="100" height="5" rx="3" fill="var(--safe-stroke)" opacity="0.6" />
+  <rect x="180" y="26" width="50" height="5" rx="3" fill="var(--policy-stroke)" opacity="0.4" />
+
+  <text class="heading" x="70" y="76">Request flow under HKI</text>
+  <text class="subheading" x="70" y="108">
+    <tspan x="70" dy="0">The request becomes executable only after the system resolves one active domain.</tspan>
+    <tspan x="70" dy="20">From that point on, the scope envelope is part of runtime, not an afterthought.</tspan>
+  </text>
+
+  <rect class="surface" x="50" y="162" width="1520" height="430" rx="28" />
+
+  <!-- Step 1: Request arrives -->
+  <g transform="translate(90 226)">
+    <circle class="num-bg" cx="90" cy="-18" r="14" />
+    <text class="num" x="90" y="-13" text-anchor="middle">1</text>
+    <rect class="card warn" x="0" y="0" width="190" height="108" rx="22" />
+    <text class="step warn-text" x="24" y="28">Request</text>
+    <text class="title warn-text" x="95" y="54" text-anchor="middle">Request arrives</text>
+    <text class="body" x="95" y="76" text-anchor="middle">
+      <tspan x="95" dy="0">User intent, identity, and</tspan>
+      <tspan x="95" dy="16">tenant context enter.</tspan>
+    </text>
+  </g>
+
+  <!-- Step 2: Gateway resolves domain -->
+  <g transform="translate(332 226)">
+    <circle class="num-bg" cx="105" cy="-18" r="14" />
+    <text class="num" x="105" y="-13" text-anchor="middle">2</text>
+    <rect class="card safe" x="0" y="0" width="220" height="108" rx="22" />
+    <text class="step safe-text" x="24" y="28">Gateway</text>
+    <text class="title safe-text" x="110" y="54" text-anchor="middle">Resolves one domain</text>
+    <text class="body" x="110" y="76" text-anchor="middle">
+      <tspan x="110" dy="0">Exactly one active domain</tspan>
+      <tspan x="110" dy="16">must be selected here.</tspan>
+    </text>
+  </g>
+
+  <!-- Step 3: Signed scope envelope -->
+  <g transform="translate(604 226)">
+    <circle class="num-bg" cx="116" cy="-18" r="14" />
+    <text class="num" x="116" y="-13" text-anchor="middle">3</text>
+    <rect class="card policy" x="0" y="0" width="240" height="108" rx="22" />
+    <text class="step policy-text" x="24" y="28">Scope</text>
+    <text class="title policy-text" x="120" y="54" text-anchor="middle">Signed scope envelope</text>
+    <text class="body" x="120" y="76" text-anchor="middle">
+      <tspan x="120" dy="0">The active label is bound</tspan>
+      <tspan x="120" dy="16">to the request payload.</tspan>
+    </text>
+  </g>
+
+  <!-- Step 4: Orchestrator -->
+  <g transform="translate(896 226)">
+    <circle class="num-bg" cx="110" cy="-18" r="14" />
+    <text class="num" x="110" y="-13" text-anchor="middle">4</text>
+    <rect class="card safe" x="0" y="0" width="228" height="108" rx="22" />
+    <text class="step safe-text" x="24" y="28">Orchestrator</text>
+    <text class="title safe-text" x="114" y="54" text-anchor="middle">Orchestrator</text>
+    <text class="body" x="114" y="76" text-anchor="middle">
+      <tspan x="114" dy="0">Every downstream call</tspan>
+      <tspan x="114" dy="16">carries the same label.</tspan>
+    </text>
+  </g>
+
+  <!-- Step 5: Knowledge service -->
+  <g transform="translate(1176 226)">
+    <circle class="num-bg" cx="110" cy="-18" r="14" />
+    <text class="num" x="110" y="-13" text-anchor="middle">5</text>
+    <rect class="card safe" x="0" y="0" width="228" height="108" rx="22" />
+    <text class="step safe-text" x="24" y="28">Knowledge</text>
+    <text class="title safe-text" x="114" y="54" text-anchor="middle">Knowledge service</text>
+    <text class="body" x="114" y="76" text-anchor="middle">
+      <tspan x="114" dy="0">Retrieval, cache, and graph</tspan>
+      <tspan x="114" dy="16">stay label-preserving.</tspan>
+    </text>
+  </g>
+
+  <!-- Step 6: Domain-scoped store -->
+  <g transform="translate(1280 478)">
+    <circle class="num-bg" cx="105" cy="-18" r="14" />
+    <text class="num" x="105" y="-13" text-anchor="middle">6</text>
+    <rect class="card safe" x="0" y="0" width="220" height="108" rx="22" />
+    <text class="step safe-text" x="24" y="28">Store</text>
+    <text class="title safe-text" x="110" y="54" text-anchor="middle">Domain-scoped store</text>
+    <text class="body" x="110" y="76" text-anchor="middle">
+      <tspan x="110" dy="0">Only matching labels</tspan>
+      <tspan x="110" dy="16">can return artifacts.</tspan>
+    </text>
+    <text x="110" y="100" text-anchor="middle" font-size="16">✓</text>
+  </g>
+
+  <!-- Fail-closed branch -->
+  <g transform="translate(360 478)">
+    <text x="125" y="-22" text-anchor="middle" font-size="18">🚫</text>
+    <rect class="card danger" x="0" y="0" width="260" height="108" rx="22" />
+    <text class="step danger-text" x="24" y="28">Fail-closed</text>
+    <text class="title danger-text" x="130" y="54" text-anchor="middle">Ambiguous scope</text>
+    <text class="body" x="130" y="76" text-anchor="middle">
+      <tspan x="130" dy="0">If the gateway cannot resolve</tspan>
+      <tspan x="130" dy="16">one domain, the request stops.</tspan>
+    </text>
+  </g>
+
+  <!-- Flow arrows: horizontal chain -->
+  <path class="flow" d="M 280 280 L 332 280" />
+  <path class="flow" d="M 552 280 L 604 280" />
+  <path class="flow" d="M 844 280 L 896 280" />
+  <path class="flow" d="M 1124 280 L 1176 280" />
+  <!-- Step 5 → Step 6 curve down-right -->
+  <path class="flow" d="M 1404 310 C 1450 360, 1460 420, 1420 478" />
+  <!-- Step 2 → Fail-closed down -->
+  <path class="flow block" d="M 442 334 L 442 430 L 460 456" />
+
+  <text class="fail-label" x="460" y="420">No silent fallback.</text>
+  <text class="fail-label" x="460" y="438">No null scope. No global retry.</text>
+</svg>

@@ -1,0 +1,67 @@
+# Dependencies
+**/node_modules/
+.pnpm-store/
+
+# Python virtual environments
+**/.venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.egg-info/
+
+# Build outputs
+**/dist/
+**/build/
+**/.next/
+**/*.tsbuildinfo
+
+# Environment variables — never commit secrets
+.env
+.env.*
+!.env.example
+!.env.deploy.example
+*/.env
+*/.env.*
+!*/.env.example
+
+# Dev runtime artifacts
+.dev/
+
+# Lock files (keep committed for reproducible installs — uncomment to ignore)
+# pnpm-lock.yaml
+# **/uv.lock
+
+# Tooling caches
+**/.turbo/
+**/.ruff_cache/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.eslintcache
+
+# GCP credentials
+docker-compose/creds/
+**/gcp_creds.json
+**/service-account*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and pids
+*.log
+*.pid
+*.pid.lock
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Storybook
+.storybook-out/
+
+# Misc
+*.tmp
+*.bak
+*.swp
+*.swo

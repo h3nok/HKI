@@ -1,0 +1,27 @@
+# Build context: apps/ai-platform (repository root for this path is ai-platform/)
+# From apps/ai-platform:
+#   gcloud builds submit --config=knowledge-api/cloudbuild.yaml --project=PROJECT_ID .
+#
+substitutions:
+  _REGION: us-west1
+  _REGISTRY: cilab
+  _IMAGE: knowledge-api
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - knowledge-api/Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:$COMMIT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:latest
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:$COMMIT_SHA
+  - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY

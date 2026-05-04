@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tests (run in CI, not in container)
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Dev files
+.env
+.env.local
+*.log
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Docs
+*.md
+
+# OS
+.DS_Store
+Thumbs.db

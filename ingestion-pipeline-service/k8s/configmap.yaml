@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingestion-pipeline-config
+  namespace: platform
+data:
+  SERVICE_NAME: "knowledge-pipeline-service"
+  SERVICE_PORT: "9508"
+  ENVIRONMENT: "production"
+  KB_HERMETIC_ISOLATION: "true"
+  LOG_LEVEL: "INFO"
+
+  # Downstream services
+  KNOWLEDGE_API_URL: "http://knowledge-api:9509"
+  ANALYTICS_SERVICE_URL: "http://analytics:9512"
+
+  # Redis — Memorystore (job persistence)
+  REDIS_URL: "redis://10.64.180.68:6379/2"
+  REDIS_JOB_TTL_HOURS: "72"
+  REDIS_JOB_PREFIX: "kp:job:"
+
+  # Processing limits
+  MAX_DOCUMENT_SIZE_MB: "50"
+  MAX_CONCURRENT_JOBS: "10"
+  DEFAULT_CHUNK_SIZE: "512"
+  DEFAULT_CHUNK_OVERLAP: "64"
+  DEFAULT_CHUNK_STRATEGY: "sentence"
+
+  # Retry
+  RETRY_MAX_ATTEMPTS: "3"
+  RETRY_BASE_DELAY: "1.0"
+  RETRY_MAX_DELAY: "30.0"
+
+  # LLM contextualization via Vertex AI direct (WIF + ADC)
+  LLM_ENABLED: "true"
+  LLM_GATEWAY_URL: ""
+  LLM_MODEL: "gemini-2.5-flash"
+  LLM_MAX_CONCURRENT: "5"
+  LLM_CONTEXT_MAX_TOKENS: "200"
+  VERTEX_AI_LOCATION: "us-central1"
+
+  # GCS landing zone — raw documents persisted before processing
+  GCS_ENABLED: "true"
+  GCS_BUCKET: "p-642-cilab-demo-knowledge-raw"
+  GCS_PREFIX: "knowledge/raw/"
+
+  # Document AI — optional OCR/layout parsing
+  DOCAI_ENABLED: "false"
+  DOCAI_PROCESSOR_ID: ""
+
+  # Pub/Sub durable ingestion queue
+  PUBSUB_ENABLED: "true"
+  PUBSUB_PROJECT_ID: "p-642-cilab-demo"
+  PUBSUB_TOPIC: "knowledge-ingestion"
+  PUBSUB_SUBSCRIPTION: "knowledge-ingestion-worker"
+  PUBSUB_DLQ_TOPIC: "knowledge-ingestion-dlq"
+  PUBSUB_ACK_DEADLINE_SEC: "600"
+  PUBSUB_MAX_DELIVERY_ATTEMPTS: "5"
+  PUBSUB_EMULATOR_HOST: ""
+
+  # Per-tenant concurrency
+  CONCURRENCY_MAX_PER_ORG: "5"
+  CONCURRENCY_KEY_PREFIX: "kp:concurrency:"
+  CONCURRENCY_SLOT_TTL: "3600"
+
+  # Auth
+  AUTH_ENABLED: "true"
+
+  # GCP
+  GCP_PROJECT_ID: "p-642-cilab-demo"
+  GCP_REGION: "us-central1"
+
+  # OTel — exports directly to Cloud Trace through the shared tracing module
+  OTEL_ENABLED: "true"
+  OTEL_EXPORTER_ENDPOINT: ""
+
+  # CORS
+  CORS_ORIGINS: '["https://agentic.cilabs.np.hki.com"]'
