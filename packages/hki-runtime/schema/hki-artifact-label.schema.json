@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hki:schema:artifact-label:1.0",
+  "title": "HKI Artifact Label",
+  "description": "Persistent organization and domain label for runtime-visible artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["org_id", "domain", "artifact_type", "artifact_id"],
+  "properties": {
+    "org_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![Gg][Ll][Oo][Bb][Aa][Ll]$)(?!\\*$).+"
+    },
+    "artifact_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

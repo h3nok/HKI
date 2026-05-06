@@ -31,7 +31,7 @@
    Agentic:   @import "@hki/ui/tokens";
               @import "@hki/ui/tokens/themes/agentic";
 
-   Brand Foundation: HKI Blue (#0066B2) + HKI Red (#E31837)
+   Brand Foundation: HKI Iris (#0E7C7B deep teal) + HKI Pulse (#E07A1F warm amber)
    Maintained by: HKI Innovation Platform Team
    ═══════════════════════════════════════════════════════════════════════════════ */
 
@@ -42,57 +42,85 @@
 @import "./semantic.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   LEGACY COMPATIBILITY — Brand color aliases
-   These exist for backward compatibility with existing code.
-   New code should use --color-brand-* from primitives.css
+   BRAND COLOR ALIASES — Aurora palette (Iris + Pulse)
+   --hki-iris-* / --hki-pulse-* are the canonical names.
+   --hki-blue-* / --hki-red-* are kept for backward compatibility.
+   New code should use --color-brand-iris-* / --color-brand-pulse-* directly.
    ═══════════════════════════════════════════════════════════════════════════ */
 :root {
-  --hki-blue-25: var(--color-brand-blue-25);
-  --hki-blue-50: var(--color-brand-blue-50);
-  --hki-blue-100: var(--color-brand-blue-100);
-  --hki-blue-200: var(--color-brand-blue-200);
-  --hki-blue-300: var(--color-brand-blue-300);
-  --hki-blue-400: var(--color-brand-blue-400);
-  --hki-blue-500: var(--color-brand-blue-500);
-  --hki-blue-600: var(--color-brand-blue-600);
-  --hki-blue-700: var(--color-brand-blue-700);
-  --hki-blue-800: var(--color-brand-blue-800);
-  --hki-blue-900: var(--color-brand-blue-900);
+  /* Canonical iris aliases */
+  --hki-iris-25: var(--color-brand-iris-25);
+  --hki-iris-50: var(--color-brand-iris-50);
+  --hki-iris-100: var(--color-brand-iris-100);
+  --hki-iris-200: var(--color-brand-iris-200);
+  --hki-iris-300: var(--color-brand-iris-300);
+  --hki-iris-400: var(--color-brand-iris-400);
+  --hki-iris-500: var(--color-brand-iris-500);
+  --hki-iris-600: var(--color-brand-iris-600);
+  --hki-iris-700: var(--color-brand-iris-700);
+  --hki-iris-800: var(--color-brand-iris-800);
+  --hki-iris-900: var(--color-brand-iris-900);
 
-  --hki-red-25: var(--color-brand-red-25);
-  --hki-red-50: var(--color-brand-red-50);
-  --hki-red-100: var(--color-brand-red-100);
-  --hki-red-200: var(--color-brand-red-200);
-  --hki-red-300: var(--color-brand-red-300);
-  --hki-red-400: var(--color-brand-red-400);
-  --hki-red-500: var(--color-brand-red-500);
-  --hki-red-600: var(--color-brand-red-600);
-  --hki-red-700: var(--color-brand-red-700);
-  --hki-red-800: var(--color-brand-red-800);
-  --hki-red-900: var(--color-brand-red-900);
+  /* Canonical pulse aliases */
+  --hki-pulse-25: var(--color-brand-pulse-25);
+  --hki-pulse-50: var(--color-brand-pulse-50);
+  --hki-pulse-100: var(--color-brand-pulse-100);
+  --hki-pulse-200: var(--color-brand-pulse-200);
+  --hki-pulse-300: var(--color-brand-pulse-300);
+  --hki-pulse-400: var(--color-brand-pulse-400);
+  --hki-pulse-500: var(--color-brand-pulse-500);
+  --hki-pulse-600: var(--color-brand-pulse-600);
+  --hki-pulse-700: var(--color-brand-pulse-700);
+  --hki-pulse-800: var(--color-brand-pulse-800);
+  --hki-pulse-900: var(--color-brand-pulse-900);
+
+  /* Backward-compat aliases — point at iris/pulse */
+  --hki-blue-25: var(--hki-iris-25);
+  --hki-blue-50: var(--hki-iris-50);
+  --hki-blue-100: var(--hki-iris-100);
+  --hki-blue-200: var(--hki-iris-200);
+  --hki-blue-300: var(--hki-iris-300);
+  --hki-blue-400: var(--hki-iris-400);
+  --hki-blue-500: var(--hki-iris-500);
+  --hki-blue-600: var(--hki-iris-600);
+  --hki-blue-700: var(--hki-iris-700);
+  --hki-blue-800: var(--hki-iris-800);
+  --hki-blue-900: var(--hki-iris-900);
+
+  --hki-red-25: var(--hki-pulse-25);
+  --hki-red-50: var(--hki-pulse-50);
+  --hki-red-100: var(--hki-pulse-100);
+  --hki-red-200: var(--hki-pulse-200);
+  --hki-red-300: var(--hki-pulse-300);
+  --hki-red-400: var(--hki-pulse-400);
+  --hki-red-500: var(--hki-pulse-500);
+  --hki-red-600: var(--hki-pulse-600);
+  --hki-red-700: var(--hki-pulse-700);
+  --hki-red-800: var(--hki-pulse-800);
+  --hki-red-900: var(--hki-pulse-900);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SECTION 2: NEUTRAL SCALE — WARM NEUTRALS (No-Washout)
-     Warm-tinted gray scale to avoid sterile white and create depth
-     Stone/cream undertones for premium light theme feel
+     SECTION 2: NEUTRAL SCALE — CLEAN SYSTEM GRAY
+     High-contrast scale for productivity interfaces.
+     Cooler undertone for screen clarity.
      ═══════════════════════════════════════════════════════════════════════ */
-  --neutral-0: #ffffff; /* Pure white - use sparingly */
-  --neutral-25: #fdfdfb; /* Warm off-white */
-  --neutral-50: #faf9f7; /* App background - warm cream */
-  --neutral-75: #f7f6f3; /* Subtle surface step */
-  --neutral-100: #f3f2ef; /* Cards, panels - 1 step up */
-  --neutral-150: #eae9e6; /* Interactive surfaces */
-  --neutral-200: #e0dfdc; /* Borders - visible but quiet */
-  --neutral-300: #d1d0cd; /* Stronger borders */
-  --neutral-400: #a3a29f; /* Placeholder text */
-  --neutral-500: #6f6e6b; /* Secondary text */
-  --neutral-600: #525150; /* Body text */
-  --neutral-700: #3f3e3d; /* Headings */
-  --neutral-800: #292827; /* Dark surfaces */
-  --neutral-850: #1f1e1d; /* Darker */
-  --neutral-900: #171716; /* Near black */
-  --neutral-925: #121211; /* Deeper */
-  --neutral-950: #0a0a09; /* True dark */
+  --neutral-0: #ffffff;
+  --neutral-25: #fafafa;
+  --neutral-50: #f5f5f5;
+  --neutral-75: #f0f0f0;
+  --neutral-100: #e8e8e8;
+  --neutral-150: #dfdfdf;
+  --neutral-200: #d4d4d4;
+  --neutral-300: #b5b5b5;
+  --neutral-400: #8c8c8c;
+  --neutral-500: #636363;
+  --neutral-600: #4a4a4a;
+  --neutral-700: #363636;
+  --neutral-800: #262626;
+  --neutral-850: #1c1c1c;
+  --neutral-900: #141414;
+  --neutral-925: #0f0f0f;
+  --neutral-950: #0a0a0a;
 
   /* ═══════════════════════════════════════════════════════════════════════
      SECTION 3: SEMANTIC STATUS COLORS
@@ -144,8 +172,8 @@
      Carefully selected colors for charts, graphs, and analytics
      Optimized for colorblind accessibility (Deuteranopia, Protanopia)
      ═══════════════════════════════════════════════════════════════════════ */
-  --chart-blue: var(--hki-blue-500);
-  --chart-red: var(--hki-red-500);
+  --chart-iris: var(--hki-blue-500);
+  --chart-pulse: var(--hki-red-500);
   --chart-emerald: #10b981;
   --chart-amber: #f59e0b;
   --chart-violet: #8b5cf6;
@@ -166,36 +194,35 @@
   --data-8: #84cc16;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SECTION 5: SEMANTIC SURFACE TOKENS — NO-WASHOUT SYSTEM
-     5-level surface ladder for depth and hierarchy
-     RULE: Background ≠ Card value — never white-on-white
+     SECTION 5: SEMANTIC SURFACE TOKENS — HIGH-CONTRAST SYSTEM
+     Clear separation between layers. No ambiguity.
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Level 0: App Background — warm neutral base (NOT pure white) */
-  --background: var(--neutral-50); /* Warm cream base */
-  --foreground: var(--neutral-700); /* Strong readable text */
+  /* Level 0: App Background */
+  --background: var(--neutral-25);
+  --foreground: var(--neutral-800);
 
-  /* Surface Ladder (bottom to top, each +1 value step) */
-  --surface-ground: var(--neutral-75); /* Level 1: Recessed areas, table rows */
-  --surface-base: var(--neutral-0); /* Level 2: Cards, panels (+1 brighter than bg) */
-  --surface-raised: var(--neutral-0); /* Level 3: Hover cards, dropdowns */
-  --surface-overlay: var(--neutral-0); /* Level 4: Modals, popovers, tooltips */
+  /* Surface Ladder */
+  --surface-ground: var(--neutral-50);
+  --surface-base: var(--neutral-0);
+  --surface-raised: var(--neutral-0);
+  --surface-overlay: var(--neutral-0);
 
   /* Interactive surface states */
-  --surface-hover: var(--neutral-75); /* Hover on base surfaces */
-  --surface-active: var(--neutral-100); /* Active/pressed state */
-  --surface-selected: var(--hki-blue-25); /* Selected items - subtle accent tint */
-  --surface-input: var(--neutral-0); /* Input fields - placed "on top" of cards */
+  --surface-hover: var(--neutral-75);
+  --surface-active: var(--neutral-100);
+  --surface-selected: var(--hki-blue-25);
+  --surface-input: var(--neutral-0);
 
   /* Muted content */
-  --muted: var(--neutral-100); /* Muted backgrounds */
-  --muted-foreground: var(--neutral-500); /* Secondary text */
+  --muted: var(--neutral-75);
+  --muted-foreground: var(--neutral-600);
 
-  /* Text hierarchy */
-  --text-primary: var(--neutral-700); /* Body text */
-  --text-secondary: var(--neutral-500); /* Secondary labels */
-  --text-muted: var(--neutral-400); /* Placeholders, hints */
-  --text-heading: var(--neutral-900); /* Headings - maximum contrast */
+  /* Text hierarchy — high contrast */
+  --text-primary: var(--neutral-800);
+  --text-secondary: var(--neutral-600);
+  --text-muted: var(--neutral-500);
+  --text-heading: var(--neutral-950);
 
   /* ═══════════════════════════════════════════════════════════════════════
      SECTION 6: BORDER TOKENS — QUIET DEPTH SYSTEM
@@ -221,22 +248,22 @@
      ═══════════════════════════════════════════════════════════════════════ */
 
   /* Primary (Blue) accent scale */
-  --accent-blue-subtle: var(--hki-blue-25);
-  --accent-blue-muted: var(--hki-blue-50);
-  --accent-blue-light: var(--hki-blue-100);
-  --accent-blue-default: var(--hki-blue-500);
-  --accent-blue-emphasis: var(--hki-blue-600);
-  --accent-blue-strong: var(--hki-blue-700);
-  --accent-blue-contrast: var(--neutral-0);
+  --accent-iris-subtle: var(--hki-blue-25);
+  --accent-iris-muted: var(--hki-blue-50);
+  --accent-iris-light: var(--hki-blue-100);
+  --accent-iris-default: var(--hki-blue-500);
+  --accent-iris-emphasis: var(--hki-blue-600);
+  --accent-iris-strong: var(--hki-blue-700);
+  --accent-iris-contrast: var(--neutral-0);
 
   /* Secondary (Red) accent scale */
-  --accent-red-subtle: var(--hki-red-25);
-  --accent-red-muted: var(--hki-red-50);
-  --accent-red-light: var(--hki-red-100);
-  --accent-red-default: var(--hki-red-500);
-  --accent-red-emphasis: var(--hki-red-600);
-  --accent-red-strong: var(--hki-red-700);
-  --accent-red-contrast: var(--neutral-0);
+  --accent-pulse-subtle: var(--hki-red-25);
+  --accent-pulse-muted: var(--hki-red-50);
+  --accent-pulse-light: var(--hki-red-100);
+  --accent-pulse-default: var(--hki-red-500);
+  --accent-pulse-emphasis: var(--hki-red-600);
+  --accent-pulse-strong: var(--hki-red-700);
+  --accent-pulse-contrast: var(--neutral-0);
 
   /* Semantic interactive tokens */
   --accent-primary: var(--hki-blue-500);
@@ -262,7 +289,8 @@
 
   /* Font families */
   --font-sans:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
   --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", "Consolas", monospace;
   --font-display: "Inter", var(--font-sans);
 
@@ -361,9 +389,12 @@
   --shadow-none: none;
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 1px 3px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 4px 6px -1px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 10px 10px -5px rgba(0, 0, 0, 0.03), 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+  --shadow-md:
+    0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+  --shadow-lg:
+    0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --shadow-xl:
+    0 10px 10px -5px rgba(0, 0, 0, 0.03), 0 20px 25px -5px rgba(0, 0, 0, 0.08);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
 
   /* Legacy aliases for backward compatibility */
@@ -382,30 +413,17 @@
   --elevation-inset-sm: var(--shadow-inset-sm);
   --elevation-inset-md: var(--shadow-inset-md);
 
-  /* Brand glow effects - Using official HKI Blue #0066B2 and Red #E31837 */
-  --glow-blue-sm:
-    0 0 0 1px rgba(0, 102, 178, 0.08), 0 2px 8px -2px rgba(0, 102, 178, 0.12),
-    0 4px 12px -4px rgba(0, 102, 178, 0.08);
-  --glow-blue-md:
-    0 0 0 1px rgba(0, 102, 178, 0.12), 0 4px 16px -4px rgba(0, 102, 178, 0.18),
-    0 8px 24px -8px rgba(0, 102, 178, 0.12);
-  --glow-blue-lg:
-    0 0 0 1px rgba(0, 102, 178, 0.16), 0 8px 32px -8px rgba(0, 102, 178, 0.24),
-    0 16px 48px -16px rgba(0, 102, 178, 0.16);
-
-  --glow-red-sm:
-    0 0 0 1px rgba(227, 24, 55, 0.08), 0 2px 8px -2px rgba(227, 24, 55, 0.12),
-    0 4px 12px -4px rgba(227, 24, 55, 0.08);
-  --glow-red-md:
-    0 0 0 1px rgba(227, 24, 55, 0.12), 0 4px 16px -4px rgba(227, 24, 55, 0.18),
-    0 8px 24px -8px rgba(227, 24, 55, 0.12);
-  --glow-red-lg:
-    0 0 0 1px rgba(227, 24, 55, 0.16), 0 8px 32px -8px rgba(227, 24, 55, 0.24),
-    0 16px 48px -16px rgba(227, 24, 55, 0.16);
+  /* Brand glow effects — minimal, functional only */
+  --glow-iris-sm: 0 0 0 1px rgba(14, 124, 123, 0.18);
+  --glow-iris-md:
+    0 0 0 1px rgba(14, 124, 123, 0.22), 0 2px 8px -2px rgba(14, 124, 123, 0.18);
+  --glow-pulse-sm: 0 0 0 1px rgba(224, 122, 31, 0.18);
+  --glow-pulse-md:
+    0 0 0 1px rgba(224, 122, 31, 0.22), 0 2px 8px -2px rgba(224, 122, 31, 0.18);
 
   /* Focus rings */
-  --ring-blue: 0 0 0 3px rgba(0, 102, 178, 0.25);
-  --ring-red: 0 0 0 3px rgba(227, 24, 55, 0.25);
+  --ring-iris: 0 0 0 2px rgba(14, 124, 123, 0.4);
+  --ring-pulse: 0 0 0 2px rgba(224, 122, 31, 0.4);
   --ring-offset: 0 0 0 2px var(--background);
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -513,7 +531,11 @@
      ═══════════════════════════════════════════════════════════════════════ */
 
   /* Primary brand gradient (Blue → Red diagonal) */
-  --gradient-brand: linear-gradient(135deg, var(--hki-blue-500) 0%, var(--hki-red-500) 100%);
+  --gradient-brand: linear-gradient(
+    135deg,
+    var(--hki-blue-500) 0%,
+    var(--hki-red-500) 100%
+  );
   --gradient-brand-reverse: linear-gradient(
     135deg,
     var(--hki-red-500) 0%,
@@ -533,8 +555,8 @@
   /* Subtle brand gradients (for backgrounds) */
   --gradient-brand-subtle: linear-gradient(
     135deg,
-    rgba(43, 69, 194, 0.06) 0%,
-    rgba(220, 38, 38, 0.06) 100%
+    rgba(14, 124, 123, 0.06) 0%,
+    rgba(224, 122, 31, 0.06) 100%
   );
   --gradient-brand-light: linear-gradient(
     135deg,
@@ -543,13 +565,21 @@
   );
 
   /* Monochromatic gradients */
-  --gradient-blue: linear-gradient(135deg, var(--hki-blue-400) 0%, var(--hki-blue-600) 100%);
+  --gradient-blue: linear-gradient(
+    135deg,
+    var(--hki-blue-400) 0%,
+    var(--hki-blue-600) 100%
+  );
   --gradient-blue-light: linear-gradient(
     135deg,
     var(--hki-blue-50) 0%,
     var(--hki-blue-100) 100%
   );
-  --gradient-red: linear-gradient(135deg, var(--hki-red-400) 0%, var(--hki-red-600) 100%);
+  --gradient-red: linear-gradient(
+    135deg,
+    var(--hki-red-400) 0%,
+    var(--hki-red-600) 100%
+  );
   --gradient-red-light: linear-gradient(
     135deg,
     var(--hki-red-50) 0%,
@@ -557,8 +587,16 @@
   );
 
   /* Neutral gradients */
-  --gradient-subtle: linear-gradient(180deg, var(--neutral-50) 0%, var(--neutral-100) 100%);
-  --gradient-elevated: linear-gradient(180deg, var(--neutral-0) 0%, var(--neutral-50) 100%);
+  --gradient-subtle: linear-gradient(
+    180deg,
+    var(--neutral-50) 0%,
+    var(--neutral-100) 100%
+  );
+  --gradient-elevated: linear-gradient(
+    180deg,
+    var(--neutral-0) 0%,
+    var(--neutral-50) 100%
+  );
 
   /* Shimmer/loading gradient */
   --gradient-shimmer: linear-gradient(
@@ -622,7 +660,7 @@
 
   --surface-hover: var(--neutral-800);
   --surface-active: var(--neutral-700);
-  --surface-selected: rgba(0, 102, 178, 0.2);
+  --surface-selected: rgba(14, 124, 123, 0.18);
 
   --muted: var(--neutral-800);
   --muted-foreground: var(--neutral-400);
@@ -633,34 +671,34 @@
   --border-subtle: var(--neutral-900);
   --border-hover: var(--neutral-700);
 
-  /* Accent adjustments for dark mode (lighter tints) - Official HKI Blue #0066B2 */
-  --accent-blue-subtle: rgba(0, 102, 178, 0.08);
-  --accent-blue-muted: rgba(0, 102, 178, 0.15);
-  --accent-blue-light: var(--hki-blue-900);
-  --accent-blue-default: var(--hki-blue-400);
-  --accent-blue-emphasis: var(--hki-blue-300);
-  --accent-blue-strong: var(--hki-blue-200);
+  /* Accent adjustments for dark mode (lighter tints) — HKI Iris #0E7C7B (deep teal) */
+  --accent-iris-subtle: rgba(14, 124, 123, 0.12);
+  --accent-iris-muted: rgba(14, 124, 123, 0.2);
+  --accent-iris-light: var(--hki-iris-900);
+  --accent-iris-default: var(--hki-iris-400);
+  --accent-iris-emphasis: var(--hki-iris-300);
+  --accent-iris-strong: var(--hki-iris-200);
 
-  --accent-red-subtle: rgba(227, 24, 55, 0.08);
-  --accent-red-muted: rgba(227, 24, 55, 0.15);
-  --accent-red-light: var(--hki-red-900);
-  --accent-red-default: var(--hki-red-400);
-  --accent-red-emphasis: var(--hki-red-300);
-  --accent-red-strong: var(--hki-red-200);
+  --accent-pulse-subtle: rgba(224, 122, 31, 0.1);
+  --accent-pulse-muted: rgba(224, 122, 31, 0.18);
+  --accent-pulse-light: var(--hki-pulse-900);
+  --accent-pulse-default: var(--hki-pulse-400);
+  --accent-pulse-emphasis: var(--hki-pulse-300);
+  --accent-pulse-strong: var(--hki-pulse-200);
 
-  --accent-primary: var(--hki-blue-400);
-  --accent-primary-hover: var(--hki-blue-300);
-  --accent-primary-active: var(--hki-blue-200);
-  --accent-primary-light: rgba(0, 102, 178, 0.15);
+  --accent-primary: var(--hki-iris-400);
+  --accent-primary-hover: var(--hki-iris-300);
+  --accent-primary-active: var(--hki-iris-200);
+  --accent-primary-light: rgba(14, 124, 123, 0.18);
 
-  --accent-secondary: var(--hki-red-400);
-  --accent-secondary-hover: var(--hki-red-300);
-  --accent-secondary-active: var(--hki-red-200);
-  --accent-secondary-light: rgba(227, 24, 55, 0.15);
+  --accent-secondary: var(--hki-pulse-400);
+  --accent-secondary-hover: var(--hki-pulse-300);
+  --accent-secondary-active: var(--hki-pulse-200);
+  --accent-secondary-light: rgba(224, 122, 31, 0.14);
 
-  --link: var(--hki-blue-400);
-  --link-hover: var(--hki-blue-300);
-  --link-visited: var(--hki-blue-500);
+  --link: var(--hki-iris-400);
+  --link-hover: var(--hki-iris-300);
+  --link-visited: var(--hki-iris-500);
 
   /* Dark mode status colors */
   --success-500: #22c55e;
@@ -668,40 +706,39 @@
   --info-500: #0ea5e9;
 
   /* Enhanced dark mode shadows */
-  --elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 3px 0 rgba(0, 0, 0, 0.35);
-  --elevation-2: 0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 4px 6px -1px rgba(0, 0, 0, 0.45);
-  --elevation-3: 0 4px 6px -2px rgba(0, 0, 0, 0.25), 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-  --elevation-4: 0 10px 10px -5px rgba(0, 0, 0, 0.2), 0 20px 25px -5px rgba(0, 0, 0, 0.55);
+  --elevation-1:
+    0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 3px 0 rgba(0, 0, 0, 0.35);
+  --elevation-2:
+    0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 4px 6px -1px rgba(0, 0, 0, 0.45);
+  --elevation-3:
+    0 4px 6px -2px rgba(0, 0, 0, 0.25), 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --elevation-4:
+    0 10px 10px -5px rgba(0, 0, 0, 0.2), 0 20px 25px -5px rgba(0, 0, 0, 0.55);
   --elevation-5: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
 
-  /* Dark mode glow effects (more vibrant) */
-  --glow-blue-sm:
-    0 0 0 1px rgba(83, 110, 243, 0.12), 0 2px 8px -2px rgba(83, 110, 243, 0.2),
-    0 4px 12px -4px rgba(83, 110, 243, 0.15);
-  --glow-blue-md:
-    0 0 0 1px rgba(83, 110, 243, 0.18), 0 4px 16px -4px rgba(83, 110, 243, 0.28),
-    0 8px 24px -8px rgba(83, 110, 243, 0.2);
-  --glow-blue-lg:
-    0 0 0 1px rgba(83, 110, 243, 0.24), 0 8px 32px -8px rgba(83, 110, 243, 0.36),
-    0 16px 48px -16px rgba(83, 110, 243, 0.24);
-
-  --glow-red-sm:
-    0 0 0 1px rgba(248, 113, 113, 0.12), 0 2px 8px -2px rgba(248, 113, 113, 0.2),
-    0 4px 12px -4px rgba(248, 113, 113, 0.15);
-  --glow-red-md:
-    0 0 0 1px rgba(248, 113, 113, 0.18), 0 4px 16px -4px rgba(248, 113, 113, 0.28),
-    0 8px 24px -8px rgba(248, 113, 113, 0.2);
-  --glow-red-lg:
-    0 0 0 1px rgba(248, 113, 113, 0.24), 0 8px 32px -8px rgba(248, 113, 113, 0.36),
-    0 16px 48px -16px rgba(248, 113, 113, 0.24);
+  /* Dark mode glow effects (functional only) — teal (300) + amber (300) */
+  --glow-iris-sm: 0 0 0 1px rgba(61, 203, 198, 0.22);
+  --glow-iris-md:
+    0 0 0 1px rgba(61, 203, 198, 0.28), 0 2px 8px -2px rgba(61, 203, 198, 0.22);
+  --glow-pulse-sm: 0 0 0 1px rgba(244, 158, 59, 0.18);
+  --glow-pulse-md:
+    0 0 0 1px rgba(244, 158, 59, 0.24), 0 2px 8px -2px rgba(244, 158, 59, 0.18);
 
   /* Dark mode focus rings */
-  --ring-blue: 0 0 0 3px rgba(83, 110, 243, 0.35);
-  --ring-red: 0 0 0 3px rgba(248, 113, 113, 0.35);
+  --ring-iris: 0 0 0 2px rgba(61, 203, 198, 0.5);
+  --ring-pulse: 0 0 0 2px rgba(244, 158, 59, 0.45);
 
   /* Dark mode gradients */
-  --gradient-subtle: linear-gradient(180deg, var(--neutral-900) 0%, var(--neutral-925) 100%);
-  --gradient-elevated: linear-gradient(180deg, var(--neutral-850) 0%, var(--neutral-900) 100%);
+  --gradient-subtle: linear-gradient(
+    180deg,
+    var(--neutral-900) 0%,
+    var(--neutral-925) 100%
+  );
+  --gradient-elevated: linear-gradient(
+    180deg,
+    var(--neutral-850) 0%,
+    var(--neutral-900) 100%
+  );
   --gradient-shimmer: linear-gradient(
     90deg,
     transparent 0%,

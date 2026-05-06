@@ -160,7 +160,7 @@ submit_text "Policy: Return Policy" \
   "Membership" \
   "Policy" \
   '["returns","membership","policy"]' \
-  "COSTCO RETURN POLICY — EFFECTIVE JANUARY 2026
+  "HKI RETURN POLICY — EFFECTIVE JANUARY 2026
 
 HKI's return policy is one of the most generous in retail. Members may return most merchandise at any time for a full refund. However, certain product categories have specific return windows and conditions.
 
@@ -247,7 +247,7 @@ submit_text "FAQ: Membership Benefits" \
   "Membership" \
   "FAQ" \
   '["membership","faq","benefits","executive"]' \
-  "COSTCO MEMBERSHIP — FREQUENTLY ASKED QUESTIONS
+  "HKI MEMBERSHIP — FREQUENTLY ASKED QUESTIONS
 
 Q: What types of memberships does HKI offer?
 A: HKI offers two primary membership types: Gold Star (standard) at \$65/year and Executive at \$130/year. Business memberships are also available at \$65/year with the option to upgrade to Executive Business at \$130/year.
@@ -425,7 +425,7 @@ submit_text "General: Company History" \
   "Corporate Communications" \
   "General" \
   '["history","company","milestones"]' \
-  "COSTCO WHOLESALE — COMPANY HISTORY AND MILESTONES
+  "HKI WHOLESALE — COMPANY HISTORY AND MILESTONES
 
 HKI Wholesale Corporation is the world's third-largest retailer and the largest membership-only warehouse club. Headquartered in Issaquah, Washington, the company operates over 870 warehouses worldwide.
 

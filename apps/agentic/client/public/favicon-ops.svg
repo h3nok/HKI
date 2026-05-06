@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <defs>
+    <linearGradient id="g" x1="3" y1="3" x2="37" y2="37" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0E7C7B"/>
+      <stop offset="100%" stop-color="#E07A1F"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square bg -->
+  <rect x="1" y="1" width="38" height="38" rx="9" fill="url(#g)" opacity="0.12"/>
+  <rect x="1" y="1" width="38" height="38" rx="9" fill="none" stroke="url(#g)" stroke-width="1"/>
+  <!-- Shield outline with pulse accent -->
+  <path d="M20 8 L32 13 L32 23 C32 31 26 36 20 38 C14 36 8 31 8 23 L8 13 Z"
+        fill="none" stroke="url(#g)" stroke-width="1.8" stroke-linejoin="round"/>
+  <!-- Command bars -->
+  <rect x="14" y="19" width="12" height="2" rx="1" fill="url(#g)" opacity="0.9"/>
+  <rect x="14" y="23" width="9"  height="2" rx="1" fill="url(#g)" opacity="0.6"/>
+  <rect x="14" y="27" width="6"  height="2" rx="1" fill="url(#g)" opacity="0.35"/>
+  <!-- Status node -->
+  <circle cx="27" cy="14" r="2.5" fill="url(#g)"/>
+</svg>

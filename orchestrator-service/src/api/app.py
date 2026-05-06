@@ -210,12 +210,9 @@ def _is_expected_hostname(url: str, expected_hostname: str) -> bool:
 
 def _is_iap_auth_redirect(resp: httpx.Response) -> bool:
     location = resp.headers.get("location", "").lower()
-    return (
-        resp.status_code in {302, 303, 307, 308}
-        and (
-            _is_expected_hostname(location, "accounts.google.com")
-            or resp.headers.get("x-goog-iap-generated-response", "").lower() == "true"
-        )
+    return resp.status_code in {302, 303, 307, 308} and (
+        _is_expected_hostname(location, "accounts.google.com")
+        or resp.headers.get("x-goog-iap-generated-response", "").lower() == "true"
     )
 
 
@@ -241,7 +238,13 @@ async def readiness() -> dict[str, typing.Any]:
     # No LLM gateway health check needed
     if settings.LLM_GATEWAY_URL:
         try:
-            resp: httpx.Response = await client.get(f"{settings.LLM_GATEWAY_URL}/models")
+            headers = (
+                {"Authorization": f"Bearer {settings.LLM_API_KEY}"} if settings.LLM_API_KEY else {}
+            )
+            resp: httpx.Response = await client.get(
+                f"{settings.LLM_GATEWAY_URL}/models",
+                headers=headers,
+            )
             checks["llm_gateway"] = _gateway_probe_status(resp)
         except Exception as exc:
             checks["llm_gateway"] = f"error:{type(exc).__name__}"

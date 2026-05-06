@@ -51,15 +51,15 @@ function SidebarProvider({
   );
 }
 
-// --- Sidebar ---
+// --- Sidebar (Atelier) — single hairline right border, no shadow ---
 const sidebarVariants = cva(
-  "flex flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out",
+  "flex flex-col border-r border-border/70 bg-sidebar transition-[width] duration-150 ease-out",
   {
     variants: {
       variant: {
         default: "bg-sidebar",
         inset: "bg-sidebar",
-        floating: "bg-sidebar m-2 rounded-xl shadow-lg border",
+        floating: "bg-sidebar m-2 rounded-md border border-border/70",
       },
     },
     defaultVariants: {
@@ -79,8 +79,8 @@ interface SidebarProps
 function Sidebar({
   className,
   variant,
-  width = "16rem",
-  collapsedWidth = "4rem",
+  width = "14rem",
+  collapsedWidth = "3.5rem",
   children,
   ...props
 }: SidebarProps) {
@@ -171,7 +171,7 @@ function SidebarGroupLabel({
   return (
     <div
       className={cn(
-        "px-2 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+        "px-3 mb-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-muted-foreground",
         className,
       )}
       {...props}
@@ -220,21 +220,21 @@ function SidebarMenuItem({
   );
 }
 
-// --- SidebarMenuButton ---
+// --- SidebarMenuButton (Atelier) — hairline left accent on active, no filled pill ---
 const sidebarMenuButtonVariants = cva(
-  "flex items-center w-full rounded-lg text-sm font-medium transition-colors",
+  "relative flex items-center w-full rounded-r text-sm font-medium transition-colors duration-150 ease-out",
   {
     variants: {
       variant: {
         default:
-          "text-neutral-700 dark:text-neutral-300 hover:bg-accent hover:text-neutral-900 dark:hover:text-neutral-100",
+          "text-muted-foreground hover:text-foreground hover:bg-muted/30",
         active:
-          "bg-hki-blue-50 dark:bg-hki-blue-950 text-hki-blue-700 dark:text-hki-blue-300",
+          "text-foreground bg-muted/50 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-px before:bg-primary",
       },
       size: {
-        default: "px-3 py-2 gap-3",
-        sm: "px-2 py-1.5 gap-2 text-xs",
-        lg: "px-4 py-3 gap-3",
+        default: "pl-3 pr-2 h-8 gap-2.5",
+        sm: "pl-2.5 pr-2 h-7 gap-2 text-xs",
+        lg: "pl-3.5 pr-2.5 h-9 gap-3",
       },
     },
     defaultVariants: {
@@ -347,10 +347,10 @@ const SidebarMenuSubButton = React.forwardRef<
     <button
       ref={ref}
       className={cn(
-        "flex items-center w-full px-3 py-1.5 text-sm rounded-lg transition-colors",
+        "flex items-center w-full pl-3 pr-2 h-7 text-sm rounded-r transition-colors duration-150 ease-out",
         active
-          ? "text-hki-blue-700 dark:text-hki-blue-300 bg-hki-blue-50 dark:bg-hki-blue-950"
-          : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-accent",
+          ? "text-foreground bg-muted/40"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
         className,
       )}
       {...props}
@@ -377,7 +377,7 @@ const SidebarTrigger = React.forwardRef<HTMLButtonElement, SidebarTriggerProps>(
         ref={ref}
         onClick={() => setCollapsed(!collapsed)}
         className={cn(
-          "flex items-center gap-2 p-2 rounded-lg text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-accent transition-colors",
+          "inline-flex items-center justify-center w-8 h-8 rounded text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors duration-150 ease-out",
           className,
         )}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -465,13 +465,7 @@ function SidebarSeparator({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={cn(
-        "h-px mx-3 my-2 bg-neutral-200 dark:bg-neutral-800",
-        className,
-      )}
-      {...props}
-    />
+    <div className={cn("h-px mx-3 my-2 bg-border/70", className)} {...props} />
   );
 }
 

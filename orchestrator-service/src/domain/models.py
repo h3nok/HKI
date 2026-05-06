@@ -12,6 +12,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+DEFAULT_RUNTIME_SCOPE = "default"
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Chat / Message types
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -215,8 +217,8 @@ class OrchestrateRequest(BaseModel):
     user_id: str
     history: list[ChatMessage] = Field(default_factory=list)
     config: OrchestrateConfig = Field(default_factory=lambda: OrchestrateConfig())
-    scope: str = "global"  # Primary value-stream scope (e.g. "pharmacy", "warehouse")
-    scopes: list[str] = Field(default_factory=lambda: ["global"])  # All user scopes
+    scope: str = DEFAULT_RUNTIME_SCOPE  # Primary value-stream scope (e.g. "pharmacy", "warehouse")
+    scopes: list[str] = Field(default_factory=lambda: [DEFAULT_RUNTIME_SCOPE])  # All user scopes
     stream_config: StreamConfig | None = None  # Per-stream agent overrides from DB
 
 

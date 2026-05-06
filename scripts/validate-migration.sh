@@ -12,6 +12,7 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
+MIGRATION_DIR="apps/agentic/drizzle"
 
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
@@ -82,7 +83,7 @@ validate_migration_file() {
 validate_migration_sequence() {
     log_info "Checking migration file sequence..."
 
-    local migration_files=($(ls agentic/drizzle/0*.sql 2>/dev/null | sort || true))
+    local migration_files=($(ls "${MIGRATION_DIR}"/0*.sql 2>/dev/null | sort || true))
 
     if [[ ${#migration_files[@]} -eq 0 ]]; then
         log_warn "No migration files found"
@@ -127,12 +128,12 @@ main() {
         echo ""
         echo "Usage: $0 [migration_file]"
         echo ""
-        echo "Without arguments: validates all migration files in agentic/drizzle/"
+        echo "Without arguments: validates all migration files in ${MIGRATION_DIR}/"
         echo "With file argument: validates specific migration file"
         echo ""
         echo "Examples:"
         echo "  $0                                    # Validate all migrations"
-        echo "  $0 agentic/drizzle/0001_initial.sql   # Validate specific file"
+        echo "  $0 ${MIGRATION_DIR}/0001_initial.sql  # Validate specific file"
         exit 0
     fi
 
@@ -141,8 +142,8 @@ main() {
     echo "========================================="
 
     # Check we're in the right directory
-    if [[ ! -d "agentic/drizzle" ]]; then
-        log_error "Migration directory agentic/drizzle not found. Run from apps/ai-platform directory."
+    if [[ ! -d "${MIGRATION_DIR}" ]]; then
+        log_error "Migration directory ${MIGRATION_DIR} not found. Run from the repository root."
         exit 1
     fi
 
@@ -156,10 +157,10 @@ main() {
         fi
     else
         # Validate all migration files
-        migration_files=($(ls agentic/drizzle/0*.sql 2>/dev/null | sort || true))
+        migration_files=($(ls "${MIGRATION_DIR}"/0*.sql 2>/dev/null | sort || true))
 
         if [[ ${#migration_files[@]} -eq 0 ]]; then
-            log_warn "No migration files found in agentic/drizzle/"
+            log_warn "No migration files found in ${MIGRATION_DIR}/"
             exit 1
         fi
 

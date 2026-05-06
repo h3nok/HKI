@@ -2,7 +2,7 @@
 # AI Platform — Master Deployment Makefile
 # Canonical production deployment path is GKE. Cloud Run paths are legacy-only.
 #
-# Usage (from apps/ai-platform directory):
+# Usage (from the repository root):
 #   make                                # Show help (default)
 #   make gke-deploy                      # Deploy the production stack to GKE
 #   make gke-status                      # Show current GKE rollout status
@@ -32,13 +32,13 @@ ORCHESTRATOR_IMAGE ?=
 INGESTION_PIPELINE_IMAGE ?=
 ANALYTICS_IMAGE ?=
 AGENTIC_IMAGE ?=
-CI_PORTAL_IMAGE ?=
 ALLOW_LEGACY_CLOUD_RUN ?= false
 AGENTIC_PUBLIC_URL ?= https://agentic.cilabs.np.cc-hki.com
 
 REGISTRY   := $(REGION)-docker.pkg.dev/$(SPOKE_PROJECT_ID)/$(REGISTRY_NAME)
 URLS_FILE  := $(CURDIR)/deployed-urls.env
 AI_PLATFORM_DIR := $(CURDIR)
+AGENTIC_DIR := $(CURDIR)/apps/agentic
 BUILD_IMAGE_SCRIPT := $(CURDIR)/scripts/build-and-push-image.sh
 DEV_STACK_SCRIPT := $(CURDIR)/scripts/dev-stack.sh
 GKE_TERRAFORM_SCRIPT := $(CURDIR)/scripts/gke-terraform.sh
@@ -52,14 +52,12 @@ LEGACY_CLOUD_RUN_TARGETS := \
 	plan-ingestion-pipeline \
 	plan-analytics \
 	plan-agentic \
-	plan-ci-portal \
 	deploy-all \
 	deploy-knowledge-api \
 	deploy-orchestrator \
 	deploy-ingestion-pipeline \
 	deploy-analytics \
 	deploy-agentic \
-	deploy-ci-portal \
 	rollout-runtime \
 	rollout-knowledge-api-runtime \
 	rollout-orchestrator-runtime \
@@ -75,7 +73,7 @@ endif
 
 export RELEASE_TAG SKIP_IMAGE_BUILD
 export KNOWLEDGE_API_IMAGE ORCHESTRATOR_IMAGE INGESTION_PIPELINE_IMAGE
-export ANALYTICS_IMAGE AGENTIC_IMAGE CI_PORTAL_IMAGE
+export ANALYTICS_IMAGE AGENTIC_IMAGE
 
 # Load previously deployed URLs (no error if file doesn't exist)
 -include $(URLS_FILE)
@@ -157,7 +155,6 @@ endef
 	rollout-ingestion-pipeline-runtime \
 	rollout-analytics-runtime \
 	rollout-agentic-runtime \
-        deploy-ci-portal \
 		gke-deploy gke-plan gke-infra gke-import gke-status gke-build gke-apply \
 		gke-tf-bootstrap gke-validate observability-bootstrap observability-validate \
 		observability-plan observability-apply \
@@ -167,7 +164,7 @@ endef
         audit security-audit security-fix audit-python \
         add-user list-users \
         plan-knowledge-api plan-orchestrator plan-ingestion-pipeline \
-        plan-analytics plan-agentic plan-ci-portal plan-all plan-prod \
+		plan-analytics plan-agentic plan-all plan-prod \
         release-prod \
 		db-migrate db-migrate-local db-migrate-prod db-migrate-status db-push \
 		init-env validate-env install bootstrap clean-workspace \
@@ -176,7 +173,8 @@ endef
         dev-kb-auth dev-kb-auth-stop \
         dev-stop dev-status dev-restart dev-reset \
         infra-up infra-down infra-reset \
-        test-services lint-services e2e-test test-prod \
+        test-services lint-services hki-check hki-audit hki-runtime-check \
+        hki-runtime-py-check hki-conformance-check e2e-test test-prod \
 		kb-test-setup kb-test-run kb-test-search kb-acl-smoke kb-ui-e2e kb-user-cleanup \
         kb-reset \
         reset-test-db \
@@ -274,6 +272,8 @@ help-test: ## Show curated testing commands
 	@echo ""
 	@echo "  make test-services"
 	@echo "  make lint-services"
+	@echo "  make hki-check"
+	@echo "  make hki-runtime-py-check"
 	@echo "  make e2e-test"
 	@echo "  make kb-test-run"
 	@echo "  make kb-acl-smoke"
@@ -388,7 +388,7 @@ add-user: check-auth ## [DEPRECATED] Legacy Cloud Run invoker grants — use IAP
 	@echo "  Project: $(SPOKE_PROJECT_ID)"
 	@echo "  Region:  $(REGION)"
 	@echo ""
-	@SERVICES=("agentic-bff" "ci-portal" "demo" "analytics-service" "knowledge-api" "orchestrator-service" "ingestion-pipeline-service"); \
+	@SERVICES=("agentic-bff" "demo" "analytics-service" "knowledge-api" "orchestrator-service" "ingestion-pipeline-service"); \
 	for user_email in $(USER); do \
 		echo "Adding user: $$user_email"; \
 		for service in "$${SERVICES[@]}"; do \
@@ -415,7 +415,7 @@ list-users: check-auth ## [DEPRECATED] Legacy Cloud Run invoker visibility — u
 	@echo "  Project: $(SPOKE_PROJECT_ID)"
 	@echo "  Region:  $(REGION)"
 	@echo ""
-	@SERVICES=("agentic-bff" "ci-portal" "demo" "analytics-service" "knowledge-api" "orchestrator-service" "ingestion-pipeline-service"); \
+	@SERVICES=("agentic-bff" "demo" "analytics-service" "knowledge-api" "orchestrator-service" "ingestion-pipeline-service"); \
 	for service in "$${SERVICES[@]}"; do \
 		echo "Service: $$service"; \
 		gcloud run services get-iam-policy "$$service" \
@@ -746,60 +746,8 @@ rollout-agentic-runtime: check-auth ## Agentic Cloud Run runtime rollout removed
 	$(call save-static-url,AGENTIC_URL,$(AGENTIC_PUBLIC_URL))
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 5 — CI Portal
-# ═══════════════════════════════════════════════════════════════════════════════
-plan-ci-portal: check-auth ## [DEPRECATED] Legacy Cloud Run plan — do not use
-	@echo ""
-	@echo "━━━ PLAN 6: ci-portal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@if [ -z "$(AGENTIC_URL)" ]; then \
-		echo "ERROR: AGENTIC_URL not set. Run 'make plan-agentic' first or load $(URLS_FILE)."; exit 1; \
-	fi
-	@$(call tf-plan,$(CURDIR)/../ci-portal/tf,\
-		$(if $(strip $(CI_PORTAL_IMAGE)),-var="container_image=$(CI_PORTAL_IMAGE)") \
-		-var="agentic_platform_url=$(AGENTIC_URL)")
-	$(call save-url,CI_PORTAL_URL,ci-portal)
-
-deploy-ci-portal: check-auth ## [DEPRECATED] Legacy Cloud Run deploy — do not use
-	@echo ""
-	@echo "━━━ STEP 6: Deploying ci-portal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@if [ -z "$(AGENTIC_URL)" ]; then \
-		echo "ERROR: AGENTIC_URL not set. Run 'make deploy-agentic' first or set the var."; exit 1; \
-	fi
-	@if [ ! -f $(CURDIR)/../ci-portal/tf/terraform.tfvars ]; then \
-		echo "ERROR: apps/ci-portal/tf/terraform.tfvars not found."; \
-		echo "       Copy apps/ci-portal/tf/terraform.tfvars.example and fill in values."; exit 1; \
-	fi
-ifeq ($(DRY_RUN),true)
-	@echo "[DRY RUN] Would build and deploy ci-portal"
-	@echo "[DRY RUN]   AGENTIC_URL=$(AGENTIC_URL)"
-	@echo "[DRY RUN]   RELEASE_TAG=$(RELEASE_TAG)"
-	@echo "[DRY RUN]   CI_PORTAL_IMAGE=$(CI_PORTAL_IMAGE)"
-else
-	@IMAGE="$(CI_PORTAL_IMAGE)"; \
-	if [ -z "$$IMAGE" ] && [ "$(SKIP_IMAGE_BUILD)" != "true" ]; then \
-		echo "  Building ci-portal image for release tag $(RELEASE_TAG)..."; \
-		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" ci-portal ci-portal/Dockerfile "$(CURDIR)/.." "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
-	elif [ "$(SKIP_IMAGE_BUILD)" = "true" ]; then \
-		echo "  Skipping ci-portal image build (SKIP_IMAGE_BUILD=true)"; \
-	fi; \
-	if [ -n "$$IMAGE" ]; then \
-		echo "  Using ci-portal image: $$IMAGE"; \
-		$(call tf-apply,$(CURDIR)/../ci-portal/tf,\
-			-var="container_image=$$IMAGE" \
-			-var="agentic_platform_url=$(AGENTIC_URL)"); \
-	else \
-		echo "  Using ci-portal Terraform default image reference"; \
-		$(call tf-apply,$(CURDIR)/../ci-portal/tf,\
-			-var="agentic_platform_url=$(AGENTIC_URL)"); \
-	fi
-	$(call wait-ready,ci-portal)
-	$(call save-url,CI_PORTAL_URL,ci-portal)
-	@echo "  ci-portal deployed successfully"
-endif
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # LOCAL DEVELOPMENT
-# Run from apps/ai-platform/ directory
+# Run from the repository root
 #
 # Ports:
 #   knowledge-api       :9509   ingestion-pipeline  :9508
@@ -816,7 +764,8 @@ endif
         dev-kb-auth dev-kb-auth-stop \
         dev-stop dev-status \
         infra-up infra-down infra-reset \
-        test-services lint-services \
+        test-services lint-services hki-check hki-audit hki-runtime-check \
+        hki-runtime-py-check hki-conformance-check \
         e2e-test \
 	kb-test-setup kb-test-run kb-test-search kb-acl-smoke kb-ui-e2e kb-user-cleanup \
         doctor-dev \
@@ -835,8 +784,7 @@ validate-env: ## Validate required local .env files and common port mismatches
 
 install: bootstrap ## Install all dependencies (Python + Node) — alias for full setup
 	@echo "Installing Node dependencies..."
-	cd agentic && pnpm install
-	cd ../ci-portal && pnpm install
+	cd "$(AGENTIC_DIR)" && pnpm install
 	@echo ""
 	@echo "All dependencies installed. Run 'make dev-full' to start the stack."
 
@@ -851,8 +799,8 @@ bootstrap: ## Install Python dependencies for all ai-platform services (uv sync)
 clean-workspace: ## Remove safe local caches, generated metadata, and stray OS files
 	@find "$(CURDIR)" -type d \( -name '__pycache__' -o -name '.pytest_cache' -o -name '.mypy_cache' -o -name '.ruff_cache' -o -name '.turbo' -o -name '*.egg-info' \) -prune -exec rm -rf {} +
 	@find "$(CURDIR)" -type f \( -name '.DS_Store' -o -name '*.pyc' -o -name '*.pyo' -o -name '*.pyd' \) -delete
-	@rm -rf "$(CURDIR)/orchestrator-service/build" "$(CURDIR)/.tmp" "$(CURDIR)/.dev" "$(CURDIR)/agentic/.dev"
-	@echo "Removed local caches and generated metadata under apps/ai-platform"
+	@rm -rf "$(CURDIR)/orchestrator-service/build" "$(CURDIR)/.tmp" "$(CURDIR)/.dev" "$(AGENTIC_DIR)/.dev"
+	@echo "Removed local caches and generated metadata under the repository"
 
 # ── Local Infrastructure ───────────────────────────────────────────────────────
 infra-up: ## Start local dev infrastructure (PostgreSQL, Redis, MySQL, LiteLLM)
@@ -978,7 +926,7 @@ db-migrate-status: ## Check database migration status and show applied migration
 	@if [ -z "$(DATABASE_URL)" ]; then \
 		echo "Checking local Docker MySQL migration status..."; \
 		if docker ps | grep -q retail-agentic-mysql; then \
-			cd agentic && DATABASE_URL=mysql://root:root@localhost:9306/retail_agentic pnpm db:migrate:status; \
+			cd "$(AGENTIC_DIR)" && DATABASE_URL=mysql://root:root@localhost:9306/retail_agentic pnpm db:migrate:status; \
 		else \
 			echo "ERROR: No DATABASE_URL provided and local MySQL not running."; \
 			echo "Examples:"; \
@@ -987,14 +935,14 @@ db-migrate-status: ## Check database migration status and show applied migration
 			exit 1; \
 		fi; \
 	else \
-		cd agentic && DATABASE_URL="$(DATABASE_URL)" pnpm db:migrate:status; \
+		cd "$(AGENTIC_DIR)" && DATABASE_URL="$(DATABASE_URL)" pnpm db:migrate:status; \
 	fi
 
 db-migrate-preflight: ## Validate migration state and auto-apply pending migrations
 	@if [ -z "$(DATABASE_URL)" ]; then \
 		echo "Checking local Docker MySQL migration preflight..."; \
 		if docker ps | grep -q retail-agentic-mysql; then \
-			cd agentic && DATABASE_URL=mysql://root:root@localhost:9306/retail_agentic pnpm db:migrate:preflight; \
+			cd "$(AGENTIC_DIR)" && DATABASE_URL=mysql://root:root@localhost:9306/retail_agentic pnpm db:migrate:preflight; \
 		else \
 			echo "ERROR: No DATABASE_URL provided and local MySQL not running."; \
 			echo "Examples:"; \
@@ -1003,7 +951,7 @@ db-migrate-preflight: ## Validate migration state and auto-apply pending migrati
 			exit 1; \
 		fi; \
 	else \
-		cd agentic && DATABASE_URL="$(DATABASE_URL)" pnpm db:migrate:preflight; \
+		cd "$(AGENTIC_DIR)" && DATABASE_URL="$(DATABASE_URL)" pnpm db:migrate:preflight; \
 	fi
 
 db-migrate-local: ## Run migrations against local Docker MySQL (auto-detects connection)
@@ -1022,7 +970,7 @@ db-migrate: ## Run tracked schema migrations against DATABASE_URL
 		echo "  Or use: make db-migrate-local (auto-detects local Docker)"; \
 		exit 1; \
 	fi
-	@cd agentic && DATABASE_URL="$(DATABASE_URL)" pnpm db:migrate
+	@cd "$(AGENTIC_DIR)" && DATABASE_URL="$(DATABASE_URL)" pnpm db:migrate
 
 db-migrate-prod: ## Run migrations against production database with safety checks
 	@echo "🚨 PRODUCTION MIGRATION - Please confirm the following:"
@@ -1047,7 +995,7 @@ db-push: ## Run drizzle-kit push to sync schema to DATABASE_URL (interactive)
 	@if [ -z "$(DATABASE_URL)" ]; then \
 		echo "ERROR: DATABASE_URL is required."; exit 1; \
 	fi
-	cd agentic && DATABASE_URL=$(DATABASE_URL) pnpm db:push
+	cd "$(AGENTIC_DIR)" && DATABASE_URL=$(DATABASE_URL) pnpm db:push
 
 # ── Service Dev Targets ────────────────────────────────────────────────────────
 dev-knowledge-api: ## Run Knowledge API on :9509 (requires infra-up)
@@ -1087,7 +1035,7 @@ dev-analytics: ## Run Analytics Service on :9510
 		ENVIRONMENT=development \
 		uv run uvicorn src.api.app:app --reload --port 9510 --reload-dir src
 
-dev-services: ## Restart local background services (infra + Python services + ci-portal)
+dev-services: ## Restart local background services (infra + Python services)
 	@bash "$(DEV_STACK_SCRIPT)" start-services
 
 dev-kb-auth: ## Start isolated auth-enabled KB validation stack on :9608/:9609
@@ -1112,7 +1060,7 @@ dev-full: ## Restart local stack and launch agentic UI in foreground
 	@echo "  Agentic landing :9001"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo ""
-	cd agentic && \
+	cd "$(AGENTIC_DIR)" && \
 		SERVICE_AUTH_SECRET="$${SERVICE_AUTH_SECRET:-local-dev-secret-key-12345}" \
 		JWT_SECRET="$${JWT_SECRET:-local-dev-jwt-secret-67890}" \
 		KB_HERMETIC_ISOLATION=true \
@@ -1152,6 +1100,24 @@ lint-services: ## Run ruff linter on all ai-platform services
 	done; \
 	exit $$status
 
+hki-check: hki-audit hki-runtime-check hki-runtime-py-check hki-conformance-check ## Run HKI package, conformance, and audit gates
+
+hki-audit: ## Run HKI conformance debt audit
+	pnpm audit:hki
+
+hki-runtime-check: ## Typecheck and test the TypeScript HKI runtime package
+	pnpm typecheck:hki-runtime
+	pnpm test:hki-runtime
+
+hki-runtime-py-check: ## Test and lint the Python HKI runtime package
+	pnpm test:hki-runtime-py
+	pnpm lint:hki-runtime-py
+
+hki-conformance-check: ## Typecheck, test, and verify the HKI conformance kit
+	pnpm typecheck:hki-conformance
+	pnpm test:hki-conformance
+	pnpm verify:hki-conformance
+
 e2e-test: ## Run end-to-end ingestion test (requires dev-services running)
 	@echo "Running E2E ingestion test..."
 	bash tests/e2e_ingestion_test.sh
@@ -1187,7 +1153,7 @@ kb-ui-e2e: ## Run browser e2e for value-stream creation and ingest UX
 	@bash scripts/kb-ui-e2e.sh
 
 kb-user-cleanup: ## Preview or clean synthetic/duplicate KB users (pass ARGS="--apply --delete-synthetic-users --delete-smoke-streams")
-	@cd agentic && pnpm kb:user:cleanup -- $(ARGS)
+	@cd "$(AGENTIC_DIR)" && pnpm kb:user:cleanup -- $(ARGS)
 
 # ── Dev Status ─────────────────────────────────────────────────────────────────
 dev-status: ## Show local service port status
@@ -1230,7 +1196,6 @@ plan-all: check-auth ## [DEPRECATED] Legacy Cloud Run Terraform plan — use gke
 	$(MAKE) plan-ingestion-pipeline
 	$(MAKE) plan-analytics
 	$(MAKE) plan-agentic
-	$(MAKE) plan-ci-portal
 	@echo ""
 	@echo "━━━ PLAN COMPLETE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo ""
@@ -1258,7 +1223,6 @@ endif
 	$(MAKE) deploy-ingestion-pipeline
 	$(MAKE) deploy-analytics
 	$(MAKE) deploy-agentic
-	$(MAKE) deploy-ci-portal
 	@echo ""
 	@echo "━━━ DEPLOYMENT COMPLETE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo ""
@@ -1320,7 +1284,7 @@ gke-import: check-auth ## Import manually-provisioned GKE resources into Terrafo
 	@$(TF_GKE_DIR)/import.sh
 
 gke-build: check-auth ## Build and push all service images to Artifact Registry via Cloud Build
-	@for svc in knowledge-api orchestrator-service ingestion-pipeline-service analytics-service agentic; do \
+	@for svc in knowledge-api orchestrator-service ingestion-pipeline-service analytics-service apps/agentic; do \
 		echo "Building $$svc..."; \
 		gcloud builds submit $(CURDIR) \
 			--config=$(CURDIR)/$$svc/cloudbuild.yaml \

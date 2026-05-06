@@ -901,7 +901,7 @@ def main() -> int:
 
     print("")
     print("=" * 72)
-    print("COSTCO AI PLATFORM - DEPLOYED E2E TEST SUITE")
+    print("HKI AI PLATFORM - DEPLOYED E2E TEST SUITE")
     print(time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()))
     print("=" * 72)
 

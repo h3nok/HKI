@@ -1,89 +1,41 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   SHARED VISUAL EFFECTS — Grain Texture + Ambient Glow + Glass Dark Mode
+   SHARED VISUAL EFFECTS — Dark Mode Elevation & Glass Tokens
 
-   These effects are shared across all apps that use the glassmorphic dark
-   mode. Import this file AFTER your app's theme override.
+   Functional system: no ambient glow, no grain. Pure structure.
 
    Usage:
      @import "@hki/ui/tokens/effects.css";
-
-   Provides:
-     - body::before grain texture (light: 2%, dark: 3.5%)
-     - :root.dark body ambient glow (blue orbs for glass depth)
-     - Dark mode glass surface tokens (chrome, floating, card)
-     - Dark mode sidebar + elevation shadows
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Grain texture — prevents color banding, adds tactile depth ────────── */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 180px;
-  opacity: 0.02;
-}
-
-.dark body::before {
-  opacity: 0.035;
-}
-
-/* ── Ambient glow — gradient mesh behind glass surfaces (dark mode) ───── */
-:root.dark body {
-  background:
-    radial-gradient(
-      ellipse 60% 50% at 10% 15%,
-      rgba(0, 80, 180, 0.15) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 50% 60% at 85% 75%,
-      rgba(30, 64, 175, 0.1) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 80% 40% at 50% 105%,
-      rgba(0, 50, 140, 0.12) 0%,
-      transparent 70%
-    ),
-    var(--background, #0b0e18);
-  background-attachment: fixed;
-}
-
-/* ── Dark mode shared elevation + glass tokens ────────────────────────── */
+/* ── Dark mode elevation + glass tokens ────────────────────────────────── */
 :root.dark {
-  /* Sidebar depth shadow — stronger + blue glow */
+  /* Sidebar depth shadow */
   --sidebar-shadow:
-    4px 0 32px -4px rgba(0, 0, 0, 0.4),
-    4px 0 16px -8px rgba(0, 102, 178, 0.15);
+    4px 0 24px -4px rgba(0, 0, 0, 0.5), 1px 0 0 rgba(255, 255, 255, 0.04);
 
-  /* Elevation shadows — glass-aware */
+  /* Elevation shadows — sharper for dark mode */
   --shadow-card:
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    0 0 1px rgba(255, 255, 255, 0.06);
+    0 1px 3px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.05);
   --shadow-popover:
-    0 8px 32px rgba(0, 0, 0, 0.5),
-    0 0 1px rgba(255, 255, 255, 0.08);
-  --border-card: rgba(255, 255, 255, 0.06);
+    0 4px 24px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.06);
+  --border-card: rgba(255, 255, 255, 0.08);
 
-  /* Glass surface tokens */
-  --glass-blur: 20px;
-  --glass-saturate: 180%;
-  --glass-card-bg: rgba(255, 255, 255, 0.08);
+  /* Glass surface tokens (functional backdrop blur only) */
+  --glass-blur: 16px;
+  --glass-saturate: 150%;
+  --glass-card-bg: rgba(255, 255, 255, 0.06);
   --glass-card-border: rgba(255, 255, 255, 0.08);
-  --glass-card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --glass-sidebar-bg: rgba(255, 255, 255, 0.06);
+  --glass-card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --glass-sidebar-bg: rgba(255, 255, 255, 0.04);
   --glass-sidebar-border: rgba(255, 255, 255, 0.06);
 
   /* Glass utility overrides */
-  --glass-chrome-bg: rgba(255, 255, 255, 0.08);
-  --glass-chrome-border: rgba(255, 255, 255, 0.06);
-  --glass-chrome-blur: 20px;
-  --glass-chrome-saturate: 180%;
-  --glass-floating-bg: rgba(255, 255, 255, 0.10);
+  --glass-chrome-bg: rgba(255, 255, 255, 0.06);
+  --glass-chrome-border: rgba(255, 255, 255, 0.08);
+  --glass-chrome-blur: 16px;
+  --glass-chrome-saturate: 150%;
+  --glass-floating-bg: rgba(255, 255, 255, 0.08);
   --glass-floating-border: rgba(255, 255, 255, 0.1);
-  --glass-floating-blur: 28px;
-  --glass-floating-saturate: 200%;
+  --glass-floating-blur: 20px;
+  --glass-floating-saturate: 160%;
 }

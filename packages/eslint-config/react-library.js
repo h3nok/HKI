@@ -12,16 +12,14 @@ module.exports = {
   ],
   plugins: ["react", "react-hooks", "jsx-a11y"],
   settings: {
-    react: {
-      version: "detect",
-    },
+    react: { version: "detect" },
   },
   env: {
     browser: true,
     es2022: true,
   },
   rules: {
-    // React rules
+    // React correctness
     "react/prop-types": "off",
     "react/jsx-no-target-blank": "error",
     "react/jsx-key": "error",
@@ -32,18 +30,31 @@ module.exports = {
     ],
     "react/display-name": "error",
 
-    // React Hooks rules
+    // React hooks — exhaustive-deps is an error: missing deps = stale closures
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/exhaustive-deps": "error",
+
+    // Performance: avoid creating new references on every render
+    "react/jsx-no-bind": [
+      "warn",
+      {
+        allowArrowFunctions: false,
+        allowBind: false,
+        allowFunctions: false,
+        ignoreDOMComponents: true,
+        ignoreRefs: true,
+      },
+    ],
 
     // Library best practices
-    "import/no-default-export": "warn", // Prefer named exports in libraries
+    "import/no-default-export": "warn",
   },
   overrides: [
     {
-      files: ["*.stories.tsx", "*.test.tsx"],
+      files: ["*.stories.tsx", "*.test.tsx", "*.test.ts"],
       rules: {
         "import/no-default-export": "off",
+        "react/jsx-no-bind": "off",
       },
     },
   ],

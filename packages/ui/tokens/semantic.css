@@ -3,7 +3,7 @@
    ╚═╗║╣ ║║║╠═╣║║║ ║ ║║
    ╚═╝╚═╝╩ ╩╩ ╩╝╚╝ ╩ ╩╚═╝
 
-   COSTCO INNOVATIONS DESIGN SYSTEM — SEMANTIC TOKENS v3.0
+   HKI PLATFORM DESIGN SYSTEM — SEMANTIC TOKENS v4.0
 
    ┌─────────────────────────────────────────────────────────────────────────────┐
    │  LAYER 2: MEANING-BASED TOKENS                                             │
@@ -28,56 +28,56 @@
      Each level is visually distinct for clear hierarchy.
      ═══════════════════════════════════════════════════════════════════════════ */
 
-  /* Level 0: App Background (Canvas) */
+  /* Level 0: App Background (Canvas) — clearly tinted; cards float on top */
   --background: var(--color-neutral-50);
-  --foreground: var(--color-neutral-700);
+  --foreground: var(--color-neutral-950);
 
-  /* Level 1: Cards & Panels */
+  /* Level 1: Cards & Panels — true white paper above the canvas */
   --card: var(--color-neutral-0);
-  --card-foreground: var(--color-neutral-700);
+  --card-foreground: var(--color-neutral-950);
 
   /* Level 2: Popovers, Dropdowns, Tooltips */
   --popover: var(--color-neutral-0);
-  --popover-foreground: var(--color-neutral-700);
+  --popover-foreground: var(--color-neutral-950);
 
   /* Level 3: Modals & Dialogs */
   --modal: var(--color-neutral-0);
-  --modal-foreground: var(--color-neutral-700);
+  --modal-foreground: var(--color-neutral-950);
 
   /* Surface States */
-  --surface-hover: var(--color-neutral-75);
-  --surface-active: var(--color-neutral-100);
-  --surface-selected: var(--color-brand-blue-50);
+  --surface-hover: var(--color-neutral-100);
+  --surface-active: var(--color-neutral-150);
+  --surface-selected: var(--color-brand-iris-50);
   --surface-disabled: var(--color-neutral-100);
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §2 MUTED — Subdued Backgrounds & Secondary Content
      ═══════════════════════════════════════════════════════════════════════════ */
   --muted: var(--color-neutral-100);
-  --muted-foreground: var(--color-neutral-500);
+  --muted-foreground: var(--color-neutral-600);
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §3 BRAND COLORS — Interactive Elements
      ═══════════════════════════════════════════════════════════════════════════ */
 
-  /* Primary — HKI Blue (main actions, links) */
-  --primary: var(--color-brand-blue-500);
-  --primary-hover: var(--color-brand-blue-600);
-  --primary-active: var(--color-brand-blue-700);
+  /* Primary — HKI Iris (main actions, links) */
+  --primary: var(--color-brand-iris-500);
+  --primary-hover: var(--color-brand-iris-600);
+  --primary-active: var(--color-brand-iris-700);
   --primary-foreground: var(--color-neutral-0);
-  --primary-muted: var(--color-brand-blue-50);
+  --primary-muted: var(--color-brand-iris-50);
 
-  /* Secondary — HKI Red (emphasis, alerts) */
-  --secondary: var(--color-brand-red-500);
-  --secondary-hover: var(--color-brand-red-600);
-  --secondary-active: var(--color-brand-red-700);
+  /* Secondary — HKI Pulse (emphasis, AI signal) */
+  --secondary: var(--color-brand-pulse-500);
+  --secondary-hover: var(--color-brand-pulse-600);
+  --secondary-active: var(--color-brand-pulse-700);
   --secondary-foreground: var(--color-neutral-0);
-  --secondary-muted: var(--color-brand-red-50);
+  --secondary-muted: var(--color-brand-pulse-50);
 
   /* Accent — Highlighted/selected states */
-  --accent: var(--color-brand-blue-50);
-  --accent-hover: var(--color-brand-blue-100);
-  --accent-foreground: var(--color-brand-blue-700);
+  --accent: var(--color-brand-iris-50);
+  --accent-hover: var(--color-brand-iris-100);
+  --accent-foreground: var(--color-brand-iris-700);
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §4 STATUS COLORS — Semantic Feedback
@@ -111,8 +111,8 @@
      §5 BORDERS & DIVIDERS
      ═══════════════════════════════════════════════════════════════════════════ */
   --border: var(--color-neutral-200);
-  --border-hover: var(--color-neutral-300);
-  --border-focus: var(--color-brand-blue-500);
+  --border-hover: var(--color-neutral-400);
+  --border-focus: var(--color-brand-iris-500);
   --border-muted: var(--color-neutral-150);
   --border-subtle: var(--color-neutral-100);
 
@@ -122,25 +122,25 @@
   --input: var(--color-neutral-0);
   --input-border: var(--color-neutral-200);
   --input-border-hover: var(--color-neutral-300);
-  --input-border-focus: var(--color-brand-blue-500);
+  --input-border-focus: var(--color-brand-iris-500);
   --input-placeholder: var(--color-neutral-400);
   --input-disabled: var(--color-neutral-100);
 
   /* Focus Ring */
-  --ring: var(--color-brand-blue-500);
+  --ring: var(--color-brand-iris-500);
   --ring-offset: var(--color-neutral-0);
 
   /* ═══════════════════════════════════════════════════════════════════════════
-     §7 TEXT HIERARCHY
+     §7 TEXT HIERARCHY — High contrast for productivity
      ═══════════════════════════════════════════════════════════════════════════ */
-  --text-heading: var(--color-neutral-900);
-  --text-body: var(--color-neutral-700);
-  --text-secondary: var(--color-neutral-500);
-  --text-muted: var(--color-neutral-400);
+  --text-heading: var(--color-neutral-950);
+  --text-body: var(--color-neutral-900);
+  --text-secondary: var(--color-neutral-600);
+  --text-muted: var(--color-neutral-500);
   --text-disabled: var(--color-neutral-300);
   --text-inverse: var(--color-neutral-0);
-  --text-link: var(--color-brand-blue-500);
-  --text-link-hover: var(--color-brand-blue-600);
+  --text-link: var(--color-brand-iris-600);
+  --text-link-hover: var(--color-brand-iris-700);
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §8 SIDEBAR — Navigation Panel
@@ -149,12 +149,12 @@
   --sidebar-foreground: var(--color-neutral-700);
   --sidebar-muted: var(--color-neutral-100);
   --sidebar-muted-foreground: var(--color-neutral-500);
-  --sidebar-primary: var(--color-brand-blue-500);
+  --sidebar-primary: var(--color-brand-iris-500);
   --sidebar-primary-foreground: var(--color-neutral-0);
   --sidebar-accent: var(--color-neutral-100);
   --sidebar-accent-foreground: var(--color-neutral-700);
   --sidebar-border: var(--color-neutral-200);
-  --sidebar-ring: var(--color-brand-blue-500);
+  --sidebar-ring: var(--color-brand-iris-500);
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §9 HEADER & FOOTER
@@ -213,13 +213,21 @@
   /* ═══════════════════════════════════════════════════════════════════════════
      §15 GRADIENTS
      ═══════════════════════════════════════════════════════════════════════════ */
-  --gradient-brand: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  --gradient-brand: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--secondary) 100%
+  );
   --gradient-brand-subtle: linear-gradient(
     135deg,
     var(--primary-muted) 0%,
     var(--secondary-muted) 100%
   );
-  --gradient-surface: linear-gradient(180deg, var(--background) 0%, var(--muted) 100%);
+  --gradient-surface: linear-gradient(
+    180deg,
+    var(--background) 0%,
+    var(--muted) 100%
+  );
   --gradient-shimmer: linear-gradient(
     90deg,
     transparent 0%,
@@ -231,8 +239,8 @@
      §16 FOCUS & SELECTION
      ═══════════════════════════════════════════════════════════════════════════ */
   --focus-ring: 0 0 0 2px var(--ring-offset), 0 0 0 4px var(--ring);
-  --selection-bg: var(--color-brand-blue-100);
-  --selection-text: var(--color-brand-blue-900);
+  --selection-bg: var(--color-brand-iris-100);
+  --selection-text: var(--color-brand-iris-900);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -242,44 +250,44 @@
    Uses lighter brand colors for accessibility on dark backgrounds.
    ═══════════════════════════════════════════════════════════════════════════════ */
 .dark {
-  /* §1 Surfaces — Inverted hierarchy */
-  --background: var(--color-neutral-900);
-  --foreground: var(--color-neutral-50);
+  /* §1 Surfaces — Deep canvas, paper cards float clearly above */
+  --background: var(--color-neutral-950);
+  --foreground: var(--color-neutral-0);
 
   --card: var(--color-neutral-850);
-  --card-foreground: var(--color-neutral-50);
+  --card-foreground: var(--color-neutral-0);
 
   --popover: var(--color-neutral-800);
-  --popover-foreground: var(--color-neutral-50);
+  --popover-foreground: var(--color-neutral-0);
 
   --modal: var(--color-neutral-850);
-  --modal-foreground: var(--color-neutral-50);
+  --modal-foreground: var(--color-neutral-0);
 
   --surface-hover: var(--color-neutral-800);
   --surface-active: var(--color-neutral-700);
-  --surface-selected: rgb(43 69 194 / 0.2);
+  --surface-selected: rgb(14 124 123 / 0.2);
   --surface-disabled: var(--color-neutral-800);
 
   /* §2 Muted */
   --muted: var(--color-neutral-800);
-  --muted-foreground: var(--color-neutral-400);
+  --muted-foreground: var(--color-neutral-300);
 
   /* §3 Brand Colors — Lighter for dark backgrounds */
-  --primary: var(--color-brand-blue-400);
-  --primary-hover: var(--color-brand-blue-300);
-  --primary-active: var(--color-brand-blue-200);
+  --primary: var(--color-brand-iris-400);
+  --primary-hover: var(--color-brand-iris-300);
+  --primary-active: var(--color-brand-iris-200);
   --primary-foreground: var(--color-neutral-900);
-  --primary-muted: rgb(43 69 194 / 0.15);
+  --primary-muted: rgb(14 124 123 / 0.15);
 
-  --secondary: var(--color-brand-red-400);
-  --secondary-hover: var(--color-brand-red-300);
-  --secondary-active: var(--color-brand-red-200);
+  --secondary: var(--color-brand-pulse-400);
+  --secondary-hover: var(--color-brand-pulse-300);
+  --secondary-active: var(--color-brand-pulse-200);
   --secondary-foreground: var(--color-neutral-900);
-  --secondary-muted: rgb(220 38 38 / 0.15);
+  --secondary-muted: rgb(224 122 31 / 0.12);
 
-  --accent: rgb(83 110 243 / 0.15);
-  --accent-hover: rgb(83 110 243 / 0.25);
-  --accent-foreground: var(--color-brand-blue-300);
+  --accent: rgb(14 124 123 / 0.15);
+  --accent-hover: rgb(14 124 123 / 0.25);
+  --accent-foreground: var(--color-brand-iris-300);
 
   /* §4 Status Colors — Brighter for visibility */
   --destructive: var(--color-error-400);
@@ -305,7 +313,7 @@
   /* §5 Borders */
   --border: var(--color-neutral-700);
   --border-hover: var(--color-neutral-600);
-  --border-focus: var(--color-brand-blue-400);
+  --border-focus: var(--color-brand-iris-400);
   --border-muted: var(--color-neutral-800);
   --border-subtle: var(--color-neutral-850);
 
@@ -313,34 +321,34 @@
   --input: var(--color-neutral-800);
   --input-border: var(--color-neutral-700);
   --input-border-hover: var(--color-neutral-600);
-  --input-border-focus: var(--color-brand-blue-400);
+  --input-border-focus: var(--color-brand-iris-400);
   --input-placeholder: var(--color-neutral-500);
   --input-disabled: var(--color-neutral-850);
 
-  --ring: var(--color-brand-blue-400);
+  --ring: var(--color-brand-iris-400);
   --ring-offset: var(--color-neutral-900);
 
   /* §7 Text */
   --text-heading: var(--color-neutral-0);
-  --text-body: var(--color-neutral-100);
-  --text-secondary: var(--color-neutral-400);
-  --text-muted: var(--color-neutral-500);
+  --text-body: var(--color-neutral-25);
+  --text-secondary: var(--color-neutral-300);
+  --text-muted: var(--color-neutral-400);
   --text-disabled: var(--color-neutral-600);
   --text-inverse: var(--color-neutral-900);
-  --text-link: var(--color-brand-blue-400);
-  --text-link-hover: var(--color-brand-blue-300);
+  --text-link: var(--color-brand-iris-400);
+  --text-link-hover: var(--color-brand-iris-300);
 
   /* §8 Sidebar */
   --sidebar: var(--color-neutral-850);
   --sidebar-foreground: var(--color-neutral-50);
   --sidebar-muted: var(--color-neutral-800);
   --sidebar-muted-foreground: var(--color-neutral-400);
-  --sidebar-primary: var(--color-brand-blue-400);
+  --sidebar-primary: var(--color-brand-iris-400);
   --sidebar-primary-foreground: var(--color-neutral-900);
-  --sidebar-accent: rgba(0, 102, 178, 0.2);
-  --sidebar-accent-foreground: var(--color-brand-blue-300);
+  --sidebar-accent: rgba(14, 124, 123, 0.2);
+  --sidebar-accent-foreground: var(--color-brand-iris-300);
   --sidebar-border: var(--color-neutral-700);
-  --sidebar-ring: var(--color-brand-blue-400);
+  --sidebar-ring: var(--color-brand-iris-400);
 
   /* §9 Header & Footer */
   --header: var(--color-neutral-850);
@@ -350,8 +358,8 @@
   --footer-foreground: var(--color-neutral-400);
 
   /* §10 Charts — Brighter */
-  --chart-1: var(--color-brand-blue-400);
-  --chart-2: var(--color-brand-red-400);
+  --chart-1: var(--color-brand-iris-400);
+  --chart-2: var(--color-brand-pulse-400);
   --chart-3: var(--color-success-400);
   --chart-4: var(--color-warning-400);
   --chart-5: var(--color-info-400);
@@ -388,8 +396,8 @@
   );
 
   /* §16 Focus & Selection */
-  --selection-bg: rgb(83 110 243 / 0.3);
-  --selection-text: var(--color-brand-blue-100);
+  --selection-bg: rgb(14 124 123 / 0.3);
+  --selection-text: var(--color-brand-iris-100);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -408,13 +416,13 @@
     --popover-foreground: var(--color-neutral-50);
     --muted: var(--color-neutral-800);
     --muted-foreground: var(--color-neutral-400);
-    --primary: var(--color-brand-blue-400);
+    --primary: var(--color-brand-iris-400);
     --primary-foreground: var(--color-neutral-900);
-    --secondary: var(--color-brand-red-400);
+    --secondary: var(--color-brand-pulse-400);
     --secondary-foreground: var(--color-neutral-900);
     --border: var(--color-neutral-700);
     --input: var(--color-neutral-800);
-    --ring: var(--color-brand-blue-400);
+    --ring: var(--color-brand-iris-400);
     --sidebar: var(--color-neutral-850);
     --sidebar-foreground: var(--color-neutral-50);
     --sidebar-border: var(--color-neutral-700);

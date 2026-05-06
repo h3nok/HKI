@@ -1,0 +1,54 @@
+{
+  "name": "@hki/runtime",
+  "version": "0.1.0",
+  "description": "Hermetic Knowledge Isolation runtime envelope, cache, gateway, and telemetry helpers.",
+  "license": "MIT",
+  "sideEffects": false,
+  "keywords": [
+    "agent-security",
+    "agentic-ai",
+    "ai-governance",
+    "conformance",
+    "hki",
+    "isolation",
+    "mcp",
+    "rag",
+    "zero-trust"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "schema",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./schema/hki-envelope.schema.json": "./schema/hki-envelope.schema.json",
+    "./schema/hki-artifact-label.schema.json": "./schema/hki-artifact-label.schema.json"
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "prepack": "pnpm build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "@hki/typescript-config": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "4.1.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

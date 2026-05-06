@@ -35,6 +35,8 @@ EXPECTED_ISSUERS: set[str] = {EXPECTED_ISSUER}
 EXPECTED_AUDIENCE = "internal-services"
 ALGORITHM = "HS256"
 GLOBAL_SCOPE = "global"
+DEFAULT_DEV_RUNTIME_SCOPE = "dev"
+DEV_RUNTIME_SCOPE_ENV = "HKI_DEV_RUNTIME_SCOPE"
 HKI_RUNTIME_SCOPE_ERROR = (
     "KB_HERMETIC_ISOLATION requires an explicit non-global request scope"
 )
@@ -133,7 +135,13 @@ def _normalize_scope_claims(payload: dict[str, typing.Any]) -> tuple[str, list[s
         seen.add(scope_key)
         scopes.append(normalized_scope)
 
-    scope: str = raw_scope or (scopes[0] if scopes else GLOBAL_SCOPE)
+    if not raw_scope and not scopes:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
+            detail=HKI_RUNTIME_SCOPE_ERROR,
+        )
+
+    scope: str = raw_scope or scopes[0]
     scope_key: str = scope.lower()
     scopes = [scope, *[candidate for candidate in scopes if candidate.lower() != scope_key]]
 
@@ -172,16 +180,21 @@ _DEV_IDENTITY = RequestIdentity(
     user_id="0",
     name="dev-user",
     role="admin",
-    scope="global",
-    scopes=["global"],
+    scope=DEFAULT_DEV_RUNTIME_SCOPE,
+    scopes=[DEFAULT_DEV_RUNTIME_SCOPE],
     org_id="default",
     groups=["role:admin"],
 )
 
 
 def _dev_identity() -> RequestIdentity:
-    _enforce_hki_runtime_scope(_DEV_IDENTITY.scope, _DEV_IDENTITY.scopes)
-    return _DEV_IDENTITY
+    scope: str | None = _normalize_scope(os.environ.get(DEV_RUNTIME_SCOPE_ENV))
+    if not scope and _kb_hermetic_isolation_enabled():
+        _enforce_hki_runtime_scope("", [])
+    scope = scope or DEFAULT_DEV_RUNTIME_SCOPE
+    scopes: list[str] = [scope]
+    _enforce_hki_runtime_scope(scope, scopes)
+    return dataclasses.replace(_DEV_IDENTITY, scope=scope, scopes=scopes)
 
 
 def _extract_bearer_token(request: fastapi.Request) -> str:

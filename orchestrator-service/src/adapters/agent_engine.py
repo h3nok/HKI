@@ -34,6 +34,7 @@ from src.core.config import settings
 from src.core.logging import logger as _root_logger
 
 logger = _root_logger.getChild("agent_engine")
+DEFAULT_RUNTIME_SCOPE = "default"
 
 
 class AgentEngineWrapper:
@@ -94,7 +95,7 @@ class AgentEngineWrapper:
         *,
         message: str,
         session_id: str = "default",
-        scope: str = "global",
+        scope: str = DEFAULT_RUNTIME_SCOPE,
         stream_config: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
@@ -121,7 +122,7 @@ class AgentEngineWrapper:
         *,
         message: str,
         session_id: str = "default",
-        scope: str = "global",
+        scope: str = DEFAULT_RUNTIME_SCOPE,
         stream_config: dict[str, Any] | None = None,
     ) -> AsyncIterator[dict[str, Any]]:
         """
@@ -249,7 +250,7 @@ class AgentEngineWrapper:
         *,
         message: str,
         session_id: str = "default",
-        scope: str = "global",
+        scope: str = DEFAULT_RUNTIME_SCOPE,
         stream_config: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """

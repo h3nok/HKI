@@ -44,6 +44,8 @@ import src.core.config
 import src.core.logging
 import src.domain.models
 
+UNSCOPED_INGEST_ANALYTICS_SCOPE = "unscoped-ingest"
+
 _KB_SOURCE_ID_PATTERN: re.Pattern[str] = re.compile(r"\bKB\d{7}\b", re.IGNORECASE)
 _SHORT_SIGNAL_PATTERN: re.Pattern[str] = re.compile(r"\b(?:[A-Z]{1,4}\d{0,2}|\d{2,3})\b")
 _IGNORED_SIGNAL_TOKENS: set[str] = {
@@ -158,10 +160,11 @@ class IngestionPipeline:
         """Fire a kb.ingest event on successful pipeline completion."""
         if not self._analytics:
             return
+        analytics_scope: str = str(job.stream_id or "").strip() or UNSCOPED_INGEST_ANALYTICS_SCOPE
         self._analytics.fire(
             "kb.ingest",
             org_id=job.org_id,
-            scope=job.stream_id or "global",
+            scope=analytics_scope,
             payload={
                 "job_id": job.id,
                 "source_type": job.source_type.value,
@@ -180,10 +183,11 @@ class IngestionPipeline:
         """Fire a kb.ingest event on pipeline failure."""
         if not self._analytics:
             return
+        analytics_scope: str = str(job.stream_id or "").strip() or UNSCOPED_INGEST_ANALYTICS_SCOPE
         self._analytics.fire(
             "kb.ingest",
             org_id=job.org_id,
-            scope=job.stream_id or "global",
+            scope=analytics_scope,
             payload={
                 "job_id": job.id,
                 "source_type": job.source_type.value,

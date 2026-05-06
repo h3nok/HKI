@@ -1,8 +1,28 @@
+// Section Header (Atelier)
+export { SectionHeader } from "./section-header";
+export type { SectionHeaderProps } from "./section-header";
+
+// Atelier Icon wrapper — HKI custom registry + lazy Lucide
+export { Icon as AtelierIcon, HKI_ICON_REGISTRY } from "./icon";
+export type {
+  IconProps as AtelierIconProps,
+  IconSize,
+  IconTone,
+  HkiIconName,
+} from "./icon";
+
 // Core UI Components
 export { Button, buttonVariants } from "./button";
 export type { ButtonProps } from "./button";
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "./card";
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "./card";
 
 export { Input } from "./input";
 export type { InputProps } from "./input";
@@ -63,7 +83,12 @@ export {
 } from "./select";
 
 // Tooltip
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./tooltip";
+export {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "./tooltip";
 
 // Icon Action
 export { IconAction } from "./icon-action";
@@ -219,7 +244,12 @@ export {
 export { ScrollArea, ScrollBar } from "./scroll-area";
 
 // Popover
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "./popover";
+export {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverAnchor,
+} from "./popover";
 
 // Command
 export {
@@ -284,14 +314,23 @@ export {
 } from "./form";
 
 // Collapsible
-export { Collapsible, CollapsibleTrigger, CollapsibleContent } from "./collapsible";
+export {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "./collapsible";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // INNOVATION PLATFORM PATTERNS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // Stage Badge
-export { StageBadge, stageBadgeVariants, STAGE_LABELS, STAGE_ICONS } from "./stage-badge";
+export {
+  StageBadge,
+  stageBadgeVariants,
+  STAGE_LABELS,
+  STAGE_ICONS,
+} from "./stage-badge";
 export type { StageBadgeProps } from "./stage-badge";
 
 // Priority Badge
@@ -320,28 +359,68 @@ export { InitiativeCard, InitiativeCardGrid } from "./initiative-card";
 export type { InitiativeCardProps } from "./initiative-card";
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// COSTCO PRIMITIVES (Card, Badge, Stat, EmptyState)
+// HERMETIC PRIMITIVES (Card, Badge, Stat, EmptyState)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export { HkiCard, HkiBadge, HkiStat, HkiEmptyState } from "./glass";
+export {
+  HermeticCard,
+  HermeticBadge,
+  HermeticStat,
+  HermeticEmptyState,
+  // Legacy aliases — deprecated, kept for in-flight migrations
+  HkiCard,
+  HkiBadge,
+  HkiStat,
+  HkiEmptyState,
+} from "./glass";
 export type {
+  HermeticCardProps,
+  HermeticBadgeProps,
+  HermeticBadgeTone,
+  HermeticStatProps,
+  HermeticEmptyStateProps,
   HkiCardProps,
   HkiBadgeProps,
+  HkiBadgeTone,
   HkiStatProps,
   HkiEmptyStateProps,
 } from "./glass";
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// COSTCO INNOVATION BRANDING
+// HKI BRAND SYSTEM
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export { Logo, HkiIcon, HkiInnovationLogo, HkiInnovationIcon, ChipIcon, Branding } from "./branding";
+export {
+  HkiMark,
+  HkiWordmark,
+  HkiLogo,
+  // backward-compat aliases
+  HkiIcon,
+  HkiInnovationLogo,
+  HkiInnovationIcon,
+  Logo,
+  Icon,
+  Branding,
+} from "./branding";
+export type {
+  HkiMarkProps,
+  HkiWordmarkProps,
+  HkiLogoProps,
+  HkiIconProps,
+  BrandVariant,
+  MarkSize,
+  LogoLayout,
+} from "./branding";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // AUTHENTICATION
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export { LoginPage, PLATFORM_PRESETS, AUTH_PROVIDER_PRESETS } from "./login-page";
+export {
+  LoginPage,
+  PLATFORM_PRESETS,
+  AUTH_PROVIDER_PRESETS,
+} from "./login-page";
 export type {
   LoginPageProps,
   AuthProvider,
@@ -365,7 +444,10 @@ export {
 } from "./agentic/guardrails";
 
 // Tool Use
-export { ToolExecutionCard, type ToolExecutionCardProps } from "./agentic/tool-use";
+export {
+  ToolExecutionCard,
+  type ToolExecutionCardProps,
+} from "./agentic/tool-use";
 
 // Thought Trace
 export {
@@ -442,7 +524,12 @@ export {
 } from "./alert-dialog";
 
 // Accordion
-export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./accordion";
+export {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "./accordion";
 
 // Aspect Ratio
 export { AspectRatio } from "./aspect-ratio";
@@ -497,7 +584,12 @@ export {
 export { HoverCard, HoverCardTrigger, HoverCardContent } from "./hover-card";
 
 // Input OTP
-export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "./input-otp";
+export {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+} from "./input-otp";
 
 // Menubar
 export {
@@ -531,7 +623,11 @@ export {
 } from "./pagination";
 
 // Resizable
-export { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./resizable";
+export {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "./resizable";
 
 // Kbd
 export { Kbd, KbdGroup } from "./kbd";
@@ -621,7 +717,10 @@ export type { WizardProps, WizardStep } from "./wizard";
 
 // ComboboxPicker
 export { ComboboxPicker } from "./combobox-picker";
-export type { ComboboxPickerProps, ComboboxPickerOption } from "./combobox-picker";
+export type {
+  ComboboxPickerProps,
+  ComboboxPickerOption,
+} from "./combobox-picker";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GAMIFICATION PRIMITIVES
@@ -703,4 +802,7 @@ export {
   ChartIcon,
   BuildingIcon,
 } from "./icons/value-stream-icons";
-export type { ValueStreamIconId, StreamIconOption } from "./icons/value-stream-icons";
+export type {
+  ValueStreamIconId,
+  StreamIconOption,
+} from "./icons/value-stream-icons";

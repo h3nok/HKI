@@ -130,7 +130,7 @@ class TestExecutionPolicy:
             ["search_knowledge", "search_products"],
         )
 
-        assert [step.tool_name for step: src.domain.agent.PlanStep in plan.steps] == ["compose_response"]
+        assert [step.tool_name for step in plan.steps] == ["compose_response"]
 
     def test_information_request_still_defaults_to_knowledge_step(self) -> None:
         agent = src.domain.agent.AdkAgent()
@@ -140,7 +140,7 @@ class TestExecutionPolicy:
             ["search_knowledge"],
         )
 
-        assert [step.tool_name for step: src.domain.agent.PlanStep in plan.steps] == [
+        assert [step.tool_name for step in plan.steps] == [
             "search_knowledge",
             "compose_response",
         ]
@@ -221,7 +221,7 @@ class TestConversationalFastPath:
         memory_manager = unittest.mock.AsyncMock()
         agent = src.domain.agent.AdkAgent(memory_manager=memory_manager)
 
-        with unittest.mock.patch("src.domain.adk_agent.build_adk_agent") as mock_build_agent: unittest.mock.MagicMock | unittest.mock.AsyncMock:
+        with unittest.mock.patch("src.domain.adk_agent.build_adk_agent") as mock_build_agent:
             events = [
                 event
                 async for event in agent.chat_stream(

@@ -1,0 +1,62 @@
+{
+  "name": "@hki/conformance",
+  "version": "0.1.0",
+  "description": "Hermetic Knowledge Isolation conformance fixtures, adapter contract, and certification runner.",
+  "license": "MIT",
+  "sideEffects": false,
+  "keywords": [
+    "agent-security",
+    "agentic-ai",
+    "ai-governance",
+    "certification",
+    "conformance",
+    "hki",
+    "isolation",
+    "mcp",
+    "zero-trust"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "templates",
+    "README.md"
+  ],
+  "bin": {
+    "hki-conformance": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "conformance": "node dist/cli.js",
+    "prepack": "pnpm build",
+    "pretest": "pnpm --dir ../hki-runtime build",
+    "pretypecheck": "pnpm --dir ../hki-runtime build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@hki/runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "@hki/typescript-config": "workspace:*",
+    "@types/node": "^25.3.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "4.1.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

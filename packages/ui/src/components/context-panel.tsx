@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { X, PanelRightClose, PanelRight } from 'lucide-react';
-import { cn } from '../utils';
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { X, PanelRightClose, PanelRight } from "lucide-react";
+import { cn } from "../utils";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTEXT PANEL COMPONENT
@@ -24,15 +24,18 @@ import { cn } from '../utils';
 interface ContextPanelContextValue {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  mode: 'inline' | 'overlay';
+  mode: "inline" | "overlay";
 }
 
-const ContextPanelContext = React.createContext<ContextPanelContextValue | null>(null);
+const ContextPanelContext =
+  React.createContext<ContextPanelContextValue | null>(null);
 
 export function useContextPanel() {
   const context = React.useContext(ContextPanelContext);
   if (!context) {
-    throw new Error('useContextPanel must be used within a ContextPanelProvider');
+    throw new Error(
+      "useContextPanel must be used within a ContextPanelProvider",
+    );
   }
   return context;
 }
@@ -42,30 +45,30 @@ interface ContextPanelProviderProps {
   children: React.ReactNode;
   defaultOpen?: boolean;
   /** 'inline' shows panel alongside content, 'overlay' shows as overlay */
-  defaultMode?: 'inline' | 'overlay';
+  defaultMode?: "inline" | "overlay";
 }
 
 export function ContextPanelProvider({
   children,
   defaultOpen = true,
-  defaultMode = 'inline',
+  defaultMode = "inline",
 }: ContextPanelProviderProps) {
   const [open, setOpen] = React.useState(defaultOpen);
-  const [mode, setMode] = React.useState<'inline' | 'overlay'>(defaultMode);
+  const [mode, setMode] = React.useState<"inline" | "overlay">(defaultMode);
 
   // Handle responsive mode changes
   React.useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1280) {
-        setMode('inline');
+        setMode("inline");
       } else {
-        setMode('overlay');
+        setMode("overlay");
       }
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
@@ -75,32 +78,33 @@ export function ContextPanelProvider({
   );
 }
 
-// --- Panel Variants ---
+// --- Panel Variants (Atelier — hairline left, no shadow) ---
 const contextPanelVariants = cva(
-  'flex flex-col bg-background border-l border-border transition-all duration-300',
+  "flex flex-col bg-background border-l border-border/70 transition-[width] duration-150 ease-out",
   {
     variants: {
       mode: {
-        inline: 'relative h-full',
-        overlay: 'fixed inset-y-0 right-0 z-overlay shadow-xl',
+        inline: "relative h-full",
+        overlay: "fixed inset-y-0 right-0 z-overlay border-l border-border/70",
       },
     },
     defaultVariants: {
-      mode: 'inline',
+      mode: "inline",
     },
-  }
+  },
 );
 
 // --- Context Panel ---
 interface ContextPanelProps
-  extends React.HTMLAttributes<HTMLElement>,
+  extends
+    React.HTMLAttributes<HTMLElement>,
     VariantProps<typeof contextPanelVariants> {
   width?: string;
 }
 
 export function ContextPanel({
   className,
-  width = '320px',
+  width = "304px",
   children,
   ...props
 }: ContextPanelProps) {
@@ -111,7 +115,7 @@ export function ContextPanel({
   return (
     <>
       {/* Backdrop for overlay mode */}
-      {mode === 'overlay' && (
+      {mode === "overlay" && (
         <div
           className="fixed inset-0 bg-black/20 dark:bg-black/40 z-overlay animate-fade-in"
           onClick={() => setOpen(false)}
@@ -121,8 +125,8 @@ export function ContextPanel({
       <aside
         className={cn(
           contextPanelVariants({ mode }),
-          mode === 'overlay' && 'animate-slide-left',
-          className
+          mode === "overlay" && "animate-slide-left",
+          className,
         )}
         style={{ width, minWidth: width }}
         {...props}
@@ -151,13 +155,13 @@ export function ContextPanelHeader({
   return (
     <div
       className={cn(
-        'flex items-center justify-between h-14 px-4 border-b border-border flex-shrink-0',
-        className
+        "flex items-center justify-between h-12 px-4 border-b border-border/70 flex-shrink-0",
+        className,
       )}
       {...props}
     >
       {title ? (
-        <h3 className="font-semibold text-foreground">
+        <h3 className="text-sm font-semibold text-foreground tracking-[-0.005em]">
           {title}
         </h3>
       ) : (
@@ -166,7 +170,7 @@ export function ContextPanelHeader({
       {showClose && (
         <button
           onClick={() => setOpen(false)}
-          className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-accent transition-colors"
+          className="inline-flex items-center justify-center w-7 h-7 rounded text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors duration-150 ease-out"
           aria-label="Close panel"
         >
           <X className="h-4 w-4" />
@@ -183,10 +187,7 @@ export function ContextPanelContent({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={cn('flex-1 overflow-y-auto p-4', className)}
-      {...props}
-    >
+    <div className={cn("flex-1 overflow-y-auto p-4", className)} {...props}>
       {children}
     </div>
   );
@@ -200,10 +201,7 @@ export function ContextPanelFooter({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        'flex-shrink-0 p-4 border-t border-border',
-        className
-      )}
+      className={cn("flex-shrink-0 p-4 border-t border-border/70", className)}
       {...props}
     >
       {children}
@@ -229,13 +227,13 @@ export function ContextPanelSection({
   const [isOpen, setIsOpen] = React.useState(defaultOpen);
 
   return (
-    <div className={cn('mb-6 last:mb-0', className)} {...props}>
+    <div className={cn("mb-6 last:mb-0", className)} {...props}>
       {title && (
         <button
           onClick={() => collapsible && setIsOpen(!isOpen)}
           className={cn(
-            'flex items-center justify-between w-full mb-3',
-            collapsible && 'cursor-pointer'
+            "flex items-center justify-between w-full mb-3",
+            collapsible && "cursor-pointer",
           )}
           disabled={!collapsible}
         >
@@ -245,8 +243,8 @@ export function ContextPanelSection({
           {collapsible && (
             <span
               className={cn(
-                'text-neutral-400 transition-transform duration-200',
-                isOpen && 'rotate-180'
+                "text-neutral-400 transition-transform duration-200",
+                isOpen && "rotate-180",
               )}
             >
               ▼
@@ -264,33 +262,34 @@ interface ContextPanelTriggerProps extends React.ButtonHTMLAttributes<HTMLButton
   showLabel?: boolean;
 }
 
-export const ContextPanelTrigger = React.forwardRef<HTMLButtonElement, ContextPanelTriggerProps>(
-  ({ className, showLabel, ...props }, ref) => {
-    const { open, setOpen } = useContextPanel();
+export const ContextPanelTrigger = React.forwardRef<
+  HTMLButtonElement,
+  ContextPanelTriggerProps
+>(({ className, showLabel, ...props }, ref) => {
+  const { open, setOpen } = useContextPanel();
 
-    return (
-      <button
-        ref={ref}
-        onClick={() => setOpen(!open)}
-        className={cn(
-          'flex items-center gap-2 p-2 rounded-lg text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-accent transition-colors',
-          className
-        )}
-        aria-label={open ? 'Close context panel' : 'Open context panel'}
-        {...props}
-      >
-        {open ? (
-          <PanelRightClose className="h-5 w-5" />
-        ) : (
-          <PanelRight className="h-5 w-5" />
-        )}
-        {showLabel && (
-          <span className="text-sm">{open ? 'Hide' : 'Show'} Panel</span>
-        )}
-      </button>
-    );
-  }
-);
-ContextPanelTrigger.displayName = 'ContextPanelTrigger';
+  return (
+    <button
+      ref={ref}
+      onClick={() => setOpen(!open)}
+      className={cn(
+        "flex items-center gap-2 p-2 rounded-lg text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-accent transition-colors",
+        className,
+      )}
+      aria-label={open ? "Close context panel" : "Open context panel"}
+      {...props}
+    >
+      {open ? (
+        <PanelRightClose className="h-5 w-5" />
+      ) : (
+        <PanelRight className="h-5 w-5" />
+      )}
+      {showLabel && (
+        <span className="text-sm">{open ? "Hide" : "Show"} Panel</span>
+      )}
+    </button>
+  );
+});
+ContextPanelTrigger.displayName = "ContextPanelTrigger";
 
 export { contextPanelVariants };

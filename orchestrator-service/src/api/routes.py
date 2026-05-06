@@ -32,7 +32,7 @@ class ChatRequest(BaseModel):
     user_id: str | None = None
     org_id: str | None = None
     history: list[dict[str, Any]] | None = None
-    scope: str = "global"
+    scope: str | None = None
     scopes: list[str] | None = None
     stream_config: StreamConfig | None = None
 

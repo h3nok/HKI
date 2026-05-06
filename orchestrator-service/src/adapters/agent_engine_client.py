@@ -32,6 +32,7 @@ import src.core.config
 import src.core.logging
 
 logger = src.core.logging.logger.getChild("agent_engine_client")
+DEFAULT_RUNTIME_SCOPE = "default"
 
 try:
     import vertexai
@@ -83,7 +84,7 @@ class AgentEngineClient:
         self,
         session_id: str,
         message: str,
-        scope: str = "global",
+        scope: str = DEFAULT_RUNTIME_SCOPE,
         stream_config: typing.Any | None = None,
     ) -> collections.abc.AsyncIterator[dict[str, typing.Any]]:
         """

@@ -128,15 +128,15 @@ class TestProxyFlow:
 
         assert result == []
 
-    async def test_default_scope_is_global(self, patched_client):
-        """scope defaults to 'global' when not supplied."""
+    async def test_default_scope_is_non_global(self, patched_client):
+        """scope defaults to a non-global development domain when not supplied."""
         client, _ = patched_client
         client._remote = _make_remote([])
 
         await _collect(client.chat_stream(session_id="s-1", message="Hi"))
 
         _, kwargs = client._remote.query.call_args
-        assert kwargs["scope"] == "global"
+        assert kwargs["scope"] == "default"
 
 
 # ═══════════════════════════════════════════════════════════════════════════

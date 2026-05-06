@@ -218,7 +218,7 @@ analytics-service):
    ambiguous sessions; add publication workflow; domain-keyed caches
    at Gateway and Bus.
 6. **Phase 5 — Dangerous-action flow.** Propose/approve/commit wrapper
-   at the Gateway, tied to `ci-portal` for human approval.
+   at the Gateway, tied to the Agentic admin approval flow.
 7. **Phase 6 — Federation.** Self-service onboarding for MCP servers
    and Bus adapters (same pattern as `lab/app_onboarding.tf`) with
    review gates.

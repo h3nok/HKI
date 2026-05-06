@@ -60,8 +60,8 @@ async def test_dev_bypass_without_token_returns_dev_identity(
     )
 
     assert identity.user_id == "0"
-    assert identity.scope == "global"
-    assert identity.scopes == ["global"]
+    assert identity.scope == "dev"
+    assert identity.scopes == ["dev"]
 
 
 @pytest.mark.asyncio
@@ -123,8 +123,8 @@ async def test_dev_bypass_invalid_forwarded_token_falls_back_to_dev_identity(
     assert identity.user_id == "0"
     assert identity.name == "dev-user"
     assert identity.role == "admin"
-    assert identity.scope == "global"
-    assert identity.scopes == ["global"]
+    assert identity.scope == "dev"
+    assert identity.scopes == ["dev"]
     assert identity.org_id == "default"
 
 
@@ -157,8 +157,8 @@ async def test_dev_bypass_missing_secret_falls_back_to_dev_identity(
     assert identity.user_id == "0"
     assert identity.name == "dev-user"
     assert identity.role == "admin"
-    assert identity.scope == "global"
-    assert identity.scopes == ["global"]
+    assert identity.scope == "dev"
+    assert identity.scopes == ["dev"]
     assert identity.org_id == "default"
 
 

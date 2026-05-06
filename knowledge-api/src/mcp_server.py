@@ -240,7 +240,7 @@ class SearchInput(pydantic.BaseModel):
     )
     value_streams: list[str] = pydantic.Field(
         default_factory=list,
-        description="Allowed value-stream scopes; omit to access only org-global documents",
+        description="Allowed value-stream scopes; omit to deny runtime document access",
     )
     mode: str = pydantic.Field(default="hybrid", description="Search mode: vector, keyword, or hybrid")
     top_k: int = pydantic.Field(default=5, description="Number of results to return")
@@ -426,9 +426,9 @@ class IngestInput(pydantic.BaseModel):
         default_factory=src.domain.models.DocumentAccessControl,
         description="Per-document ACLs for users and groups",
     )
-    stream_id: str | None = pydantic.Field(
-        default=None,
-        description="Value stream scope for the document; null means org-global",
+    stream_id: str = pydantic.Field(
+        min_length=1,
+        description="Required value stream scope for the document",
     )
 
 
@@ -590,7 +590,7 @@ class ListDocumentsInput(pydantic.BaseModel):
     caller_principals: list[str] = pydantic.Field(default_factory=list, description="Caller ACL principals")
     value_streams: list[str] = pydantic.Field(
         default_factory=list,
-        description="Allowed value-stream scopes; omit to access only org-global documents",
+        description="Allowed value-stream scopes; omit to deny runtime document access",
     )
     limit: int = pydantic.Field(default=50, description="Max documents to return")
     offset: int = pydantic.Field(default=0, description="Pagination offset")
@@ -672,7 +672,7 @@ class GetDocumentInput(pydantic.BaseModel):
     caller_principals: list[str] = pydantic.Field(default_factory=list, description="Caller ACL principals")
     value_streams: list[str] = pydantic.Field(
         default_factory=list,
-        description="Allowed value-stream scopes; omit to access only org-global documents",
+        description="Allowed value-stream scopes; omit to deny runtime document access",
     )
 
 
@@ -747,7 +747,7 @@ class DeleteDocumentInput(pydantic.BaseModel):
     caller_principals: list[str] = pydantic.Field(default_factory=list, description="Caller ACL principals")
     value_streams: list[str] = pydantic.Field(
         default_factory=list,
-        description="Allowed value-stream scopes; omit to access only org-global documents",
+        description="Allowed value-stream scopes; omit to deny runtime document access",
     )
 
 
@@ -821,7 +821,7 @@ class GraphNeighborsInput(pydantic.BaseModel):
     caller_principals: list[str] = pydantic.Field(default_factory=list, description="Caller ACL principals")
     value_streams: list[str] = pydantic.Field(
         default_factory=list,
-        description="Allowed value-stream scopes; omit to access only org-global documents",
+        description="Allowed value-stream scopes; omit to deny runtime document access",
     )
     max_depth: int = pydantic.Field(default=2, description="Maximum relationship depth")
     limit: int = pydantic.Field(default=10, description="Max neighbors to return")
@@ -919,7 +919,7 @@ class StatsInput(pydantic.BaseModel):
     org_id: str = pydantic.Field(description="Organization ID")
     value_streams: list[str] = pydantic.Field(
         default_factory=list,
-        description="Allowed value-stream scopes; omit to access only org-global documents",
+        description="Allowed value-stream scopes; omit to deny runtime document access",
     )
 
 
@@ -1277,7 +1277,7 @@ class AutoEvaluateInput(pydantic.BaseModel):
     caller_principals: list[str] = pydantic.Field(default_factory=list, description="Caller ACL principals")
     value_streams: list[str] = pydantic.Field(
         default_factory=list,
-        description="Allowed value-stream scopes; omit to access only org-global documents",
+        description="Allowed value-stream scopes; omit to deny runtime document access",
     )
     suite_name: str = pydantic.Field(default="auto-eval", description="Suite name")
     queries: list[str] = pydantic.Field(description="Queries to test")

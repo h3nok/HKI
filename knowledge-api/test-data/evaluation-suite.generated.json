@@ -7,7 +7,7 @@
     {
       "id": "controlled-substance-policy",
       "query": "What does the Controlled Substance Dispensing Policy document say?",
-      "expected_answer": "Controlled Substance Dispensing Policy Purpose This policy establishes procedures for the receipt, storage, dispensing, record-keeping, and disposal of controlled substances at Costco Pharmacy in compliance with DEA, state pharmacy board, and federal regulations.",
+      "expected_answer": "Controlled Substance Dispensing Policy Purpose This policy establishes procedures for the receipt, storage, dispensing, record-keeping, and disposal of controlled substances at HKI Pharmacy in compliance with DEA, state pharmacy board, and federal regulations.",
       "source_documents": [
         "controlled-substance-policy.md"
       ],
@@ -16,7 +16,7 @@
     {
       "id": "drug-interaction-guidelines",
       "query": "What does the High-Risk Drug Interaction Guidelines document say?",
-      "expected_answer": "High-Risk Drug Interaction Guidelines Purpose This reference document catalogs the most clinically significant drug-drug interactions encountered at Costco Pharmacy. Pharmacists must intervene when these combinations are detected during prescription processing. Severity Classification Level 1 \u2014 Contraindicated**: Must not be dispensed together.",
+      "expected_answer": "High-Risk Drug Interaction Guidelines Purpose This reference document catalogs the most clinically significant drug-drug interactions encountered at HKI Pharmacy. Pharmacists must intervene when these combinations are detected during prescription processing. Severity Classification Level 1 \u2014 Contraindicated**: Must not be dispensed together.",
       "source_documents": [
         "drug-interaction-guidelines.md"
       ],
@@ -24,8 +24,8 @@
     },
     {
       "id": "immunization-program",
-      "query": "What does the Costco Pharmacy Immunization Program document say?",
-      "expected_answer": "Costco Pharmacy Immunization Program Overview Costco Pharmacy provides immunization services across all locations with a licensed pharmacist on duty. This document covers protocols, eligible vaccines, patient screening, documentation, and emergency procedures.",
+      "query": "What does the HKI Pharmacy Immunization Program document say?",
+      "expected_answer": "HKI Pharmacy Immunization Program Overview HKI Pharmacy provides immunization services across all locations with a licensed pharmacist on duty. This document covers protocols, eligible vaccines, patient screening, documentation, and emergency procedures.",
       "source_documents": [
         "immunization-program.md"
       ],
@@ -34,7 +34,7 @@
     {
       "id": "prescription-fulfillment-sop",
       "query": "What does the Prescription Fulfillment Standard Operating Procedure document say?",
-      "expected_answer": "Prescription Fulfillment Standard Operating Procedure Purpose This document outlines the standard operating procedure for fulfilling prescriptions at Costco Pharmacy locations. All pharmacy staff must follow these steps to ensure accuracy, compliance, and patient safety. Scope Applies to all Costco Pharmacy technicians, pharmacists, and pharmacy interns across all warehouse locations.",
+      "expected_answer": "Prescription Fulfillment Standard Operating Procedure Purpose This document outlines the standard operating procedure for fulfilling prescriptions at HKI Pharmacy locations. All pharmacy staff must follow these steps to ensure accuracy, compliance, and patient safety. Scope Applies to all HKI Pharmacy technicians, pharmacists, and pharmacy interns across all warehouse locations.",
       "source_documents": [
         "prescription-fulfillment-sop.md"
       ],
@@ -42,8 +42,8 @@
     },
     {
       "id": "test-contradictory-dosing",
-      "query": "What does the Metformin Dosing Guidelines \u2014 Costco Pharmacy document say?",
-      "expected_answer": "Metformin Dosing Guidelines \u2014 Costco Pharmacy Standard Adult Dosing Starting dose**: 500mg once daily with dinner. Titration**: Increase by 500mg weekly as tolerated. Maximum dose**: 2,550mg per day in divided doses.",
+      "query": "What does the Metformin Dosing Guidelines \u2014 HKI Pharmacy document say?",
+      "expected_answer": "Metformin Dosing Guidelines \u2014 HKI Pharmacy Standard Adult Dosing Starting dose**: 500mg once daily with dinner. Titration**: Increase by 500mg weekly as tolerated. Maximum dose**: 2,550mg per day in divided doses.",
       "source_documents": [
         "test-contradictory-dosing.md"
       ],
@@ -97,7 +97,7 @@
     {
       "id": "test-near-duplicate-a",
       "query": "What does the Pharmacy Hours and Contact Information document say?",
-      "expected_answer": "Pharmacy Hours and Contact Information Store Hours Costco Pharmacy is open Monday through Friday from 10:00 AM to 8:30 PM, Saturday from 9:30 AM to 6:00 PM, and closed on Sunday. Holiday hours may vary \u2014 check hki.com for updated schedules.",
+      "expected_answer": "Pharmacy Hours and Contact Information Store Hours HKI Pharmacy is open Monday through Friday from 10:00 AM to 8:30 PM, Saturday from 9:30 AM to 6:00 PM, and closed on Sunday. Holiday hours may vary \u2014 check hki.com for updated schedules.",
       "source_documents": [
         "test-near-duplicate-a.md"
       ],
@@ -106,7 +106,7 @@
     {
       "id": "test-near-duplicate-b",
       "query": "What does the Pharmacy Hours & Contact Info document say?",
-      "expected_answer": "Pharmacy Hours & Contact Info Store Hours Costco Pharmacy is open Monday thru Friday from 10:00 AM to 8:30 PM, Saturday from 9:30 AM to 6:00 PM, and closed on Sundays. Holiday hours may vary \u2014 check hki.com for updated schedules.",
+      "expected_answer": "Pharmacy Hours & Contact Info Store Hours HKI Pharmacy is open Monday thru Friday from 10:00 AM to 8:30 PM, Saturday from 9:30 AM to 6:00 PM, and closed on Sundays. Holiday hours may vary \u2014 check hki.com for updated schedules.",
       "source_documents": [
         "test-near-duplicate-b.md"
       ],
@@ -123,8 +123,8 @@
     },
     {
       "id": "test-stale-outdated-2019",
-      "query": "What does the Costco Pharmacy COVID-19 Response Protocol document say?",
-      "expected_answer": "Costco Pharmacy COVID-19 Response Protocol Effective Date: March 20, 2020 Last Updated: November 15, 2019 Vaccine Information No COVID-19 vaccines are currently available or in development. Treatment is supportive only: rest, fluids, acetaminophen for fever. Hydroxychloroquine is the recommended prophylactic treatment per recent studies.",
+      "query": "What does the HKI Pharmacy COVID-19 Response Protocol document say?",
+      "expected_answer": "HKI Pharmacy COVID-19 Response Protocol Effective Date: March 20, 2020 Last Updated: November 15, 2019 Vaccine Information No COVID-19 vaccines are currently available or in development. Treatment is supportive only: rest, fluids, acetaminophen for fever. Hydroxychloroquine is the recommended prophylactic treatment per recent studies.",
       "source_documents": [
         "test-stale-outdated-2019.md"
       ],

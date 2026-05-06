@@ -122,12 +122,12 @@ async def test_runtime_error_after_kb_retrieval_uses_grounded_fallback() -> None
 
     final_text: str = "".join(
         str(event["content"])
-        for event: dict[str, object] in events
+        for event in events
         if isinstance(event, dict) and event.get("type") == "final_response_chunk"
     )
     metadata: object = next(
         event["metadata"]
-        for event: dict[str, object] in events
+        for event in events
         if isinstance(event, dict) and event.get("type") == "response_metadata"
     )
 
@@ -154,12 +154,12 @@ async def test_missing_final_response_uses_grounded_fallback() -> None:
 
     final_text: str = "".join(
         str(event["content"])
-        for event: dict[str, object] in events
+        for event in events
         if isinstance(event, dict) and event.get("type") == "final_response_chunk"
     )
     metadata: object = next(
         event["metadata"]
-        for event: dict[str, object] in events
+        for event in events
         if isinstance(event, dict) and event.get("type") == "response_metadata"
     )
 
@@ -181,7 +181,7 @@ async def test_partial_response_does_not_append_internal_error() -> None:
 
     final_text: str = "".join(
         str(event["content"])
-        for event: dict[str, object] in events
+        for event in events
         if isinstance(event, dict) and event.get("type") == "final_response_chunk"
     )
 

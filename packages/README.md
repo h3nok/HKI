@@ -1,117 +1,148 @@
-# Shared Packages
+# HKI Packages
 
-This directory contains shared frontend packages used across multiple applications in the monorepo.
+This directory contains the reusable HKI framework packages plus shared
+frontend packages used by the reference Agentic app. Treat the runtime and
+conformance packages as the public framework surface; treat the UI packages as
+public-preview until the token audit debt is burned down or legacy/demo
+surfaces are carved out.
 
-## Packages
+## Public Framework Packages
+
+### [@hki/runtime](./hki-runtime)
+
+TypeScript runtime helpers for the HKI envelope, artifact visibility, cache-key
+derivation, gateway target decisions, telemetry attributes, and JSON Schemas.
+
+### [hki-runtime](./hki-runtime-py)
+
+Python runtime helpers that mirror `@hki/runtime` for FastAPI services, Python
+gateways, retrieval adapters, caches, and MCP tool routers.
+
+### [@hki/conformance](./hki-conformance)
+
+Runnable HKI conformance cases, adapter contract, CLI runner, and evidence
+report for HKI-compatible gateways and agent runtimes.
+
+### [@hki/sdk](./sdk)
+
+Single TypeScript entry point for HKI runtime primitives and the conformance
+runner. Use this when you want one dependency for implementing and verifying
+HKI boundaries.
+
+**What's included:**
+
+- Runtime exports from `@hki/runtime`
+- Conformance exports from `@hki/conformance`
+- Subpath imports for `@hki/sdk/runtime` and `@hki/sdk/conformance`
+
+## Public-Preview Frontend Packages
 
 ### [@hki/chat](./chat)
 
-Shared React components and hooks for chat interfaces.
+Shared React components, hooks, adapters, and types for chat interfaces in
+HKI-compatible apps.
 
-**What's included:**
-
-- Chat UI components (MessageList, ChatContainer, MessageInput)
-- Custom hooks (useChat, useMessages, useTypingIndicator)
-- tRPC and WebSocket adapters
-- TypeScript type definitions
-
-**Used by:** `apps/ai-platform/agentic`, `apps/ci-portal`
+**Used by:** `apps/agentic`
 
 ### [@hki/ui](./ui)
 
-Production-ready component library built with Tailwind CSS and Radix UI.
+HKI component library built with Tailwind CSS and Radix UI.
 
 **What's included:**
 
-- 50+ accessible React components (Button, Card, Dialog, etc.)
-- Complete design token system (primitives, semantic)
-- Agentic theme for AI Platform
-- Glass effect styles for modern UI
+- Accessible React primitives such as Button, Card, Dialog, and Input
+- Design token system with primitive and semantic token layers
+- Agentic theme for the HKI reference app
 - Storybook documentation
 - Exportable Tailwind config
 
-**Used by:** `apps/ai-platform/agentic`, `apps/ci-portal`, `@hki/chat`
+**Status:** `pnpm audit:ui-tokens` is currently a ratchet. Do not treat this as
+a final public design-system release until the hardcoded color findings are
+zero or legacy/demo surfaces are excluded from the published package.
+
+## Internal Tooling Packages
 
 ### [@hki/typescript-config](./typescript-config)
 
-Shared TypeScript configurations for consistency across all TypeScript projects.
-
-**Configurations:**
-
-- `base.json` - Base config for all projects
-- `nextjs.json` - Next.js specific settings
-- `react-library.json` - React library config
-
-**Used by:** All TypeScript apps and packages
+Shared TypeScript configurations for consistency across TypeScript projects.
 
 ### [@hki/eslint-config](./eslint-config)
 
 Shared ESLint rules and configurations for code quality.
-
-**Used by:** All TypeScript/JavaScript apps and packages
 
 ## Development
 
 ### Installing Dependencies
 
 ```bash
-# Install all dependencies for the monorepo
 pnpm install
 ```
 
 ### Building Packages
 
 ```bash
-# Build all packages
-pnpm run build
+# Build every workspace package
+pnpm build:framework
 
-# Build specific package
-turbo run build --filter=@hki/ui
+# Build one package
+pnpm --dir packages/hki-runtime build
+pnpm --dir packages/hki-conformance build
+pnpm --dir packages/sdk build
+```
 
-# Build packages in watch mode
-cd packages/ui && pnpm run dev
+### Verifying HKI Conformance
+
+```bash
+pnpm audit:hki
+pnpm verify:hki-conformance
 ```
 
 ### Using Packages in Apps
 
-Packages are referenced using the `workspace:*` protocol in `package.json`:
+Packages are referenced using the `workspace:*` protocol in local
+`package.json` files:
 
 ```json
 {
   "dependencies": {
-    "@hki/chat": "workspace:*",
-    "@hki/ui": "workspace:*",
-    "@hki/typescript-config": "workspace:*"
+    "@hki/runtime": "workspace:*",
+    "@hki/conformance": "workspace:*",
+    "@hki/sdk": "workspace:*"
   }
 }
 ```
 
 ### Package Structure
 
-Each package follows this structure:
+Most packages follow this structure:
 
-```
+```text
 package/
-├── src/              # Source code
-├── dist/             # Built output (gitignored)
-├── package.json      # Package configuration
-├── tsconfig.json     # TypeScript config
-├── tsup.config.ts    # Build config (tsup)
-└── README.md         # Package documentation
+├── src/
+├── dist/
+├── package.json
+├── tsconfig.json
+├── tsup.config.ts
+└── README.md
 ```
 
 ## Monorepo Setup
 
 This monorepo uses:
 
-- **pnpm workspaces** - Package management and linking
-- **Turbo** - Build system with caching and parallel execution
-- **tsup** - TypeScript package bundler
+- **pnpm workspaces** for package management and linking
+- **Turbo** for cached package tasks
+- **tsup** for TypeScript package bundling
 
 See the root `pnpm-workspace.yaml` and `turbo.json` for configuration.
 
-## Notes
+## Publishing Notes
 
-- All packages are currently `private: true` (not published to npm)
-- Packages are built before apps that depend on them (via `dependsOn: ["^build"]` in turbo.json)
-- Shared packages reduce code duplication and ensure consistency across apps
+- The monorepo root is private, but publishable framework packages use
+  `publishConfig.access = "public"`.
+- `@hki/runtime`, `@hki/conformance`, `@hki/sdk`, and `hki-runtime` are the
+  primary open-source framework packages.
+- `@hki/ui` and `@hki/chat` are available for reference-app development, but
+  remain public-preview until the UI token audit is clean.
+- Packages are built before dependents through Turbo's `dependsOn: ["^build"]`
+  configuration.

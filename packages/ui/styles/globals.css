@@ -1,11 +1,37 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COSTCO INNOVATIONS DESIGN SYSTEM — GLOBAL UTILITIES
+   HKI INNOVATIONS DESIGN SYSTEM — GLOBAL UTILITIES
    Signature Platform — Enterprise Security & Intelligence
    
    Utility classes and component primitives built on the design token foundation
    ═══════════════════════════════════════════════════════════════════════════ */
 
-@import '../tokens/index.css';
+@import "../tokens/index.css";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ATELIER — Editorial typography defaults
+   Body weight 380 (Inter Variable), tabular numerals globally,
+   stylistic alternates on display-class headings.
+   ═══════════════════════════════════════════════════════════════════════════ */
+body {
+  font-weight: var(--font-weight-body);
+  font-feature-settings: var(--font-feature-display);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: var(--font-weight-heading);
+  font-feature-settings: var(--font-feature-display);
+}
+
+.tabular,
+.numerals {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: var(--font-feature-tabular);
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 1: BRAND GRADIENTS
@@ -253,13 +279,17 @@
   border: none;
   border-radius: var(--radius-lg);
   padding: var(--space-2-5) var(--space-4);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.08);
   transition: all var(--duration-fast) var(--ease-smooth);
 }
 
 .hki-button-gradient:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(43, 69, 194, 0.25), 0 2px 4px rgba(220, 38, 38, 0.15);
+  box-shadow:
+    0 4px 12px rgba(43, 69, 194, 0.25),
+    0 2px 4px rgba(220, 38, 38, 0.15);
 }
 
 .hki-button-gradient:active {
@@ -375,17 +405,33 @@
    Brand-colored glow effects for emphasis
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.glow-blue-sm { box-shadow: var(--glow-blue-sm); }
-.glow-blue-md { box-shadow: var(--glow-blue-md); }
-.glow-blue-lg { box-shadow: var(--glow-blue-lg); }
+.glow-blue-sm {
+  box-shadow: var(--glow-blue-sm);
+}
+.glow-blue-md {
+  box-shadow: var(--glow-blue-md);
+}
+.glow-blue-lg {
+  box-shadow: var(--glow-blue-lg);
+}
 
-.glow-red-sm { box-shadow: var(--glow-red-sm); }
-.glow-red-md { box-shadow: var(--glow-red-md); }
-.glow-red-lg { box-shadow: var(--glow-red-lg); }
+.glow-red-sm {
+  box-shadow: var(--glow-red-sm);
+}
+.glow-red-md {
+  box-shadow: var(--glow-red-md);
+}
+.glow-red-lg {
+  box-shadow: var(--glow-red-lg);
+}
 
 /* Hover glow effects */
-.hover-glow-blue:hover { box-shadow: var(--glow-blue-md); }
-.hover-glow-red:hover { box-shadow: var(--glow-red-md); }
+.hover-glow-blue:hover {
+  box-shadow: var(--glow-blue-md);
+}
+.hover-glow-red:hover {
+  box-shadow: var(--glow-red-md);
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 7: ANIMATED UNDERLINES
@@ -397,7 +443,7 @@
 }
 
 .hover-line-blue::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -416,7 +462,7 @@
 }
 
 .hover-line-red::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -435,7 +481,7 @@
 }
 
 .hover-line-gradient::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -524,7 +570,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
-  box-shadow: var(--shadow-sm);  /* Always include subtle shadow */
+  box-shadow: var(--shadow-sm); /* Always include subtle shadow */
 }
 
 .card-raised {
@@ -548,7 +594,7 @@
 .card-interactive:hover {
   border-color: var(--border-hover);
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);  /* Subtle lift, not dramatic */
+  transform: translateY(-1px); /* Subtle lift, not dramatic */
 }
 
 .card-interactive:active {
@@ -561,7 +607,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
-  box-shadow: none;  /* No shadow variant */
+  box-shadow: none; /* No shadow variant */
 }
 
 .card-blue {
@@ -599,7 +645,9 @@
 
 .input-surface:focus {
   border-color: var(--border-input-focus);
-  box-shadow: var(--shadow-inset-sm), 0 0 0 3px var(--accent-blue-subtle);
+  box-shadow:
+    var(--shadow-inset-sm),
+    0 0 0 3px var(--accent-blue-subtle);
   outline: none;
 }
 
@@ -648,104 +696,135 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes slideUp {
-  from { 
-    opacity: 0; 
-    transform: translateY(16px); 
+  from {
+    opacity: 0;
+    transform: translateY(16px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes slideDown {
-  from { 
-    opacity: 0; 
-    transform: translateY(-16px); 
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes slideLeft {
-  from { 
-    opacity: 0; 
-    transform: translateX(16px); 
+  from {
+    opacity: 0;
+    transform: translateX(16px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateX(0); 
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
 @keyframes slideRight {
-  from { 
-    opacity: 0; 
-    transform: translateX(-16px); 
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateX(0); 
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
 @keyframes scaleIn {
-  from { 
-    opacity: 0; 
-    transform: scale(0.95); 
+  from {
+    opacity: 0;
+    transform: scale(0.95);
   }
-  to { 
-    opacity: 1; 
-    transform: scale(1); 
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
 @keyframes scaleOut {
-  from { 
-    opacity: 1; 
-    transform: scale(1); 
+  from {
+    opacity: 1;
+    transform: scale(1);
   }
-  to { 
-    opacity: 0; 
-    transform: scale(0.95); 
+  to {
+    opacity: 0;
+    transform: scale(0.95);
   }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes shimmer {
-  from { background-position: -200% 0; }
-  to { background-position: 200% 0; }
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: var(--glow-blue-sm); }
-  50% { box-shadow: var(--glow-blue-md); }
+  0%,
+  100% {
+    box-shadow: var(--glow-blue-sm);
+  }
+  50% {
+    box-shadow: var(--glow-blue-md);
+  }
 }
 
 /* Animation utility classes */
@@ -803,11 +882,21 @@
 }
 
 /* Staggered animation delays */
-.animate-delay-1 { animation-delay: 50ms; }
-.animate-delay-2 { animation-delay: 100ms; }
-.animate-delay-3 { animation-delay: 150ms; }
-.animate-delay-4 { animation-delay: 200ms; }
-.animate-delay-5 { animation-delay: 250ms; }
+.animate-delay-1 {
+  animation-delay: 50ms;
+}
+.animate-delay-2 {
+  animation-delay: 100ms;
+}
+.animate-delay-3 {
+  animation-delay: 150ms;
+}
+.animate-delay-4 {
+  animation-delay: 200ms;
+}
+.animate-delay-5 {
+  animation-delay: 250ms;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 12: SCROLLBAR STYLING
@@ -950,14 +1039,14 @@
 }
 
 .border-gradient::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   padding: 1px;
   background: var(--gradient-brand);
   border-radius: inherit;
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -970,7 +1059,7 @@
 }
 
 .accent-stripe-left::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;

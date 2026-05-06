@@ -32,7 +32,7 @@ def _mint_token(
     sub: str = "42",
     name: str = "Test User",
     role: str = "viewer",
-    scope: str = "global",
+    scope: str = "pharmacy",
     scopes: list[str] | None = None,
     secret: str = TEST_SECRET,
     exp_offset: int = 30,
@@ -45,7 +45,7 @@ def _mint_token(
         "name": name,
         "role": role,
         "scope": scope,
-        "scopes": scopes or ["global"],
+        "scopes": scopes or [scope],
         "iss": iss,
         "aud": aud,
         "exp": int(time.time()) + exp_offset,
@@ -125,10 +125,10 @@ class TestValidToken:
         assert data["scope"] == "halpr"
 
     def test_scopes_array_preserved(self, client):
-        token = _mint_token(scopes=["global", "halpr", "pharmacy"])
+        token = _mint_token(scope="pharmacy", scopes=["halpr", "pharmacy"])
         resp = client.get("/protected", headers={"Authorization": f"Bearer {token}"})
         assert resp.status_code == 200
-        assert resp.json()["scopes"] == ["global", "halpr", "pharmacy"]
+        assert resp.json()["scopes"] == ["pharmacy", "halpr"]
 
 
 # ── Rejection Cases ───────────────────────────────────────────────────────

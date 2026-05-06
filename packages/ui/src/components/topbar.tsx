@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { Menu, Search, Command as CommandIcon } from 'lucide-react';
-import { cn } from '../utils';
-import { Avatar, AvatarFallback, AvatarImage } from './avatar';
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { Menu, Search, Command as CommandIcon } from "lucide-react";
+import { cn } from "../utils";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,35 +12,32 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './dropdown-menu';
+} from "./dropdown-menu";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TOPBAR COMPONENT
-   
-   Height: 60px (fixed)
-   Contains: Navigation toggle, Search, Actions, User Menu
-   
-   Based on Layout Patterns & Grid System spec
+   TOPBAR — Atelier
+   Height: 52px, hairline bottom only, no blur, no shadow.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const topbarVariants = cva(
-  'flex items-center justify-between h-[60px] px-4 lg:px-6 border-b bg-background sticky top-0 z-sticky',
+  "flex items-center justify-between h-[52px] px-4 lg:px-6 border-b bg-background sticky top-0 z-sticky",
   {
     variants: {
       variant: {
-        default: 'border-border',
-        transparent: 'bg-transparent border-transparent',
-        blur: 'bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border-neutral-200/50 dark:border-neutral-800/50',
+        default: "border-border/70",
+        transparent: "bg-transparent border-transparent",
+        blur: "bg-background/85 border-border/60 backdrop-blur",
       },
     },
     defaultVariants: {
-      variant: 'default',
+      variant: "default",
     },
-  }
+  },
 );
 
 export interface TopbarProps
-  extends React.HTMLAttributes<HTMLElement>,
+  extends
+    React.HTMLAttributes<HTMLElement>,
     VariantProps<typeof topbarVariants> {
   /** Show mobile menu trigger */
   showMenuTrigger?: boolean;
@@ -108,22 +105,24 @@ export function Topbar({
         {user && (
           <>
             <div className="h-6 w-px bg-neutral-200 dark:bg-neutral-700 mx-2 hidden md:block" />
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-accent transition-colors">
-                  <Avatar className="h-8 w-8 border border-neutral-200 dark:border-neutral-700">
-                    {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
-                    <AvatarFallback className="bg-hki-blue-500 text-white text-xs font-medium">
+                <button className="flex items-center gap-2.5 px-1 h-9 rounded hover:bg-muted/40 transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary">
+                  <Avatar className="h-7 w-7 border border-border/70">
+                    {user.avatar && (
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                    )}
+                    <AvatarFallback className="bg-primary text-primary-foreground text-[0.6875rem] font-medium">
                       {user.initials || user.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="hidden lg:flex flex-col items-start">
+                  <div className="hidden lg:flex flex-col items-start leading-tight">
                     <span className="text-sm font-medium text-foreground">
                       {user.name}
                     </span>
                     {user.email && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-[0.6875rem] text-muted-foreground">
                         {user.email}
                       </span>
                     )}
@@ -135,7 +134,9 @@ export function Topbar({
                   <div className="flex flex-col">
                     <span className="font-medium">{user.name}</span>
                     {user.email && (
-                      <span className="text-xs text-neutral-500 font-normal">{user.email}</span>
+                      <span className="text-xs text-neutral-500 font-normal">
+                        {user.email}
+                      </span>
                     )}
                   </div>
                 </DropdownMenuLabel>
@@ -144,7 +145,7 @@ export function Topbar({
                 {onSignOut && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={onSignOut}
                       className="text-red-600 dark:text-red-400 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950"
                     >
@@ -174,17 +175,17 @@ export function TopbarSearch({ className, onCommandClick }: TopbarSearchProps) {
     <button
       onClick={onCommandClick}
       className={cn(
-        'flex items-center gap-3 w-full px-4 py-2 rounded-lg',
-        'bg-muted',
-        'text-muted-foreground',
-        'hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors',
-        'text-sm',
-        className
+        "flex items-center gap-3 w-full h-9 px-2.5",
+        "bg-transparent text-muted-foreground",
+        "border-b border-transparent hover:border-border/70",
+        "transition-colors duration-150 ease-out",
+        "text-sm",
+        className,
       )}
     >
       <Search className="h-4 w-4" />
-      <span className="flex-1 text-left">Search...</span>
-      <kbd className="hidden lg:flex items-center gap-1 px-2 py-0.5 rounded bg-background border border-neutral-200 dark:border-neutral-700 text-xs font-mono">
+      <span className="flex-1 text-left">Search…</span>
+      <kbd className="hidden lg:flex items-center gap-1 px-1.5 h-5 rounded border border-border/70 text-[0.6875rem] font-mono text-muted-foreground">
         <CommandIcon className="h-3 w-3" />
         <span>K</span>
       </kbd>
@@ -202,28 +203,28 @@ interface TopbarActionProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   label: string;
 }
 
-export function TopbarAction({ 
-  icon, 
-  badge, 
-  label, 
-  className, 
-  ...props 
+export function TopbarAction({
+  icon,
+  badge,
+  label,
+  className,
+  ...props
 }: TopbarActionProps) {
   return (
     <button
       className={cn(
-        'relative p-2 rounded-lg text-muted-foreground',
-        'hover:text-neutral-900 dark:hover:text-neutral-100',
-        'hover:bg-accent',
-        'transition-colors',
-        className
+        "relative inline-flex items-center justify-center w-8 h-8 rounded text-muted-foreground",
+        "hover:text-foreground hover:bg-muted/40",
+        "transition-colors duration-150 ease-out",
+        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+        className,
       )}
       aria-label={label}
       {...props}
     >
       {icon}
       {badge && (
-        <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-hki-red-500" />
+        <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-destructive" />
       )}
     </button>
   );

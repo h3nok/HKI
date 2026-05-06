@@ -10,6 +10,7 @@ Run these from `apps/ai-platform`:
 | -------------------- | ------------------------------------------------------------------------------------- |
 | `make test-services` | You changed Python service logic and want the default pytest sweep                    |
 | `make lint-services` | You changed Python code and want the default Ruff sweep                               |
+| `make hki-check`     | You changed HKI runtime packages, conformance cases, or isolation audit rules         |
 | `make e2e-test`      | You changed ingestion or document storage behavior                                    |
 | `make kb-test-run`   | You changed retrieval quality or KB evaluation logic                                  |
 | `make kb-acl-smoke`  | You changed auth, ACL, or validate-access behavior                                    |
@@ -19,7 +20,7 @@ Run these from `apps/ai-platform`:
 ## GitHub QA companions
 
 - Use the GitHub issue template `KB File Upload QA Run` when you want a durable task list, evidence links, and release-gate sign-off in GitHub.
-- `AI Platform Quality` runs on AI Platform pushes and pull requests. It enforces `pnpm --dir agentic test` plus `make test-services`. The Python Ruff sweep still runs as advisory visibility while the remaining legacy lint debt is burned down.
+- `AI Platform Quality` runs on AI Platform pushes and pull requests. It enforces `pnpm --dir apps/agentic test` plus `make test-services`. The Python Ruff sweep still runs as advisory visibility while the remaining legacy lint debt is burned down.
 - Use the GitHub Actions workflow `KB QA Smoke` with `workflow_dispatch` for the hosted GKE smoke subset.
 - `KB QA Smoke` is aimed at hosted checks such as `make test-prod` and `pnpm --dir apps/ai-platform/agentic run test:kb-gke-hvsi-smoke`.
 - Local-stack scripts such as `make kb-ui-e2e` and `make kb-acl-smoke` remain developer-run unless you wire a self-hosted runner with the required local stack setup.

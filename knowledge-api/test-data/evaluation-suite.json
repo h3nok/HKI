@@ -6,8 +6,8 @@
   "cases": [
     {
       "id": "return-policy-basic",
-      "query": "What is Costco's return policy?",
-      "expected_answer": "Costco accepts returns on most items at any time if the customer is not satisfied. Electronics have a 90-day return window. Special rules apply for certain items like tires and major appliances.",
+      "query": "What is HKI's return policy?",
+      "expected_answer": "HKI accepts returns on most items at any time if the customer is not satisfied. Electronics have a 90-day return window. Special rules apply for certain items like tires and major appliances.",
       "departments": ["customer-service"],
       "document_types": ["policy"],
       "notes": "Basic factual recall - foundational knowledge"
@@ -15,15 +15,15 @@
     {
       "id": "membership-executive-benefits",
       "query": "What are the benefits of Executive membership?",
-      "expected_answer": "Executive members receive 2% annual reward on qualified Costco purchases, exclusive offers, and additional savings on Costco services. The annual fee is $120.",
+      "expected_answer": "Executive members receive 2% annual reward on qualified HKI purchases, exclusive offers, and additional savings on HKI services. The annual fee is $120.",
       "departments": ["membership"],
       "document_types": ["policy", "benefits"],
       "notes": "Multi-faceted answer requiring synthesis"
     },
     {
       "id": "pharmacy-prescription-refill",
-      "query": "How do I refill a prescription at Costco Pharmacy?",
-      "expected_answer": "Prescriptions can be refilled online via Costco.com, through the Costco mobile app, by calling the pharmacy, or in person at any Costco Pharmacy location. Auto-refill is available for maintenance medications.",
+      "query": "How do I refill a prescription at HKI Pharmacy?",
+      "expected_answer": "Prescriptions can be refilled online via HKI.com, through the HKI mobile app, by calling the pharmacy, or in person at any HKI Pharmacy location. Auto-refill is available for maintenance medications.",
       "departments": ["pharmacy"],
       "document_types": ["sop"],
       "notes": "Procedural knowledge - step-by-step process"
@@ -38,15 +38,15 @@
     },
     {
       "id": "store-hours-holiday",
-      "query": "Are Costco warehouses open on major holidays?",
-      "expected_answer": "Costco warehouses are closed on New Year's Day, Easter, Memorial Day, Independence Day, Labor Day, Thanksgiving, and Christmas. Holiday hours may vary by location for other holidays.",
+      "query": "Are HKI warehouses open on major holidays?",
+      "expected_answer": "HKI warehouses are closed on New Year's Day, Easter, Memorial Day, Independence Day, Labor Day, Thanksgiving, and Christmas. Holiday hours may vary by location for other holidays.",
       "departments": ["operations"],
       "document_types": ["policy"],
       "notes": "Temporal/schedule-based information"
     },
     {
       "id": "employee-benefits-health",
-      "query": "What health insurance benefits do Costco employees receive?",
+      "query": "What health insurance benefits do HKI employees receive?",
       "expected_answer": "Eligible employees receive comprehensive health insurance including medical, dental, vision, and prescription drug coverage. Coverage begins after a short waiting period for full-time and part-time employees.",
       "departments": ["hr"],
       "document_types": ["benefits", "internal"],
@@ -78,15 +78,15 @@
     },
     {
       "id": "sustainability-packaging",
-      "query": "What is Costco's policy on sustainable packaging?",
-      "expected_answer": "Costco prioritizes reducing packaging waste through right-sizing, recyclable materials, and eliminating unnecessary packaging layers. The company works with suppliers to minimize environmental impact while maintaining product protection.",
+      "query": "What is HKI's policy on sustainable packaging?",
+      "expected_answer": "HKI prioritizes reducing packaging waste through right-sizing, recyclable materials, and eliminating unnecessary packaging layers. The company works with suppliers to minimize environmental impact while maintaining product protection.",
       "departments": ["sustainability", "procurement"],
       "document_types": ["policy"],
       "notes": "Corporate initiative knowledge"
     },
     {
       "id": "edge-case-digital-vs-physical",
-      "query": "Can I return a digital product purchased on Costco.com?",
+      "query": "Can I return a digital product purchased on HKI.com?",
       "expected_answer": "Digital products including software downloads, e-books, and digital subscriptions are generally non-refundable once accessed. Physical software in boxes follows standard return policy.",
       "departments": ["customer-service", "e-commerce"],
       "document_types": ["policy"],
@@ -102,7 +102,7 @@
     },
     {
       "id": "contradictory-alcohol-sales",
-      "query": "Can I purchase alcohol without a Costco membership?",
+      "query": "Can I purchase alcohol without a HKI membership?",
       "expected_answer": "In some states, you can purchase alcohol without a membership due to state liquor laws. This varies by location. Check with your local warehouse for specific regulations.",
       "departments": ["legal", "operations"],
       "document_types": ["policy", "compliance"],
@@ -111,15 +111,15 @@
     {
       "id": "multi-hop-price-adjustment",
       "query": "If I bought an item yesterday and the price dropped today, can I get a refund for the difference?",
-      "expected_answer": "Yes, Costco offers a price adjustment within 30 days of purchase. Bring your receipt to the membership counter for a refund of the difference. This applies to warehouse purchases; online orders have separate policies.",
+      "expected_answer": "Yes, HKI offers a price adjustment within 30 days of purchase. Bring your receipt to the membership counter for a refund of the difference. This applies to warehouse purchases; online orders have separate policies.",
       "departments": ["customer-service"],
       "document_types": ["policy"],
       "notes": "Multi-condition procedural requiring policy linkage"
     },
     {
       "id": "technical-optical-prescription",
-      "query": "Does Costco Optical accept prescriptions from other providers?",
-      "expected_answer": "Yes, Costco Optical accepts valid prescriptions from any licensed eye care professional. The prescription must be current (within 1-2 years depending on state law) and include all required measurements.",
+      "query": "Does HKI Optical accept prescriptions from other providers?",
+      "expected_answer": "Yes, HKI Optical accepts valid prescriptions from any licensed eye care professional. The prescription must be current (within 1-2 years depending on state law) and include all required measurements.",
       "departments": ["optical", "compliance"],
       "document_types": ["sop", "compliance"],
       "notes": "Technical requirement with regulatory aspects"

@@ -3,9 +3,9 @@
  * Eliminates duplication across dashboard pages.
  */
 
-/** HKI Blue — matches COSTCO_BLUE from root */
+/** HKI Blue — matches HKI_IRIS from root */
 const BLUE = "#0066B2";
-/** HKI Red — matches COSTCO_RED from root */
+/** HKI Red — matches HKI_PULSE from root */
 const RED = "#E31837";
 
 /** Blue → Red duotone gradient */
@@ -43,10 +43,22 @@ export const cardPop = {
 
 /** Priority badge styles — reused across initiative cards */
 export const PRIORITY_STYLES: Record<string, { bg: string; text: string }> = {
-  CRITICAL: { bg: "bg-[#fef2f2] dark:bg-[#7f1d1d]/20", text: "text-[#991b1b] dark:text-[#fca5a5]" },
-  HIGH: { bg: "bg-[#fff7ed] dark:bg-[#78350f]/20", text: "text-[#9a3412] dark:text-[#fdba74]" },
-  MEDIUM: { bg: "bg-[#eff6ff] dark:bg-[#1e3a5f]/20", text: "text-[#1e40af] dark:text-[#93c5fd]" },
-  LOW: { bg: "bg-[#f3f2ef] dark:bg-[#1e1e1e]", text: "text-[#525150] dark:text-[#a3a29f]" },
+  CRITICAL: {
+    bg: "bg-[#fef2f2] dark:bg-[#7f1d1d]/20",
+    text: "text-[#991b1b] dark:text-[#fca5a5]",
+  },
+  HIGH: {
+    bg: "bg-[#fff7ed] dark:bg-[#78350f]/20",
+    text: "text-[#9a3412] dark:text-[#fdba74]",
+  },
+  MEDIUM: {
+    bg: "bg-[#eff6ff] dark:bg-[#1e3a5f]/20",
+    text: "text-[#1e40af] dark:text-[#93c5fd]",
+  },
+  LOW: {
+    bg: "bg-[#f3f2ef] dark:bg-[#1e1e1e]",
+    text: "text-[#525150] dark:text-[#a3a29f]",
+  },
 };
 
 /** Stage colors for initiative statuses */

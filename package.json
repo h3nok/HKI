@@ -2,6 +2,7 @@
   "name": "hki",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -18,18 +19,48 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "test": "turbo run test",
     "test:all": "turbo run test && make test",
+    "build:framework": "turbo run build --filter='./packages/*' --ui=stream",
+    "build:hki-runtime": "pnpm --dir packages/hki-runtime build",
+    "build:hki-conformance": "pnpm --dir packages/hki-conformance build",
+    "build:hki-sdk": "pnpm --dir packages/sdk build",
+    "audit:ui-tokens": "node scripts/audit-ui-tokens.mjs",
+    "audit:ui-tokens:strict": "node scripts/audit-ui-tokens.mjs --strict",
+    "audit:hki": "node scripts/audit-hki-conformance.mjs",
+    "audit:hki:strict": "node scripts/audit-hki-conformance.mjs --strict",
+    "test:hki-runtime": "pnpm --dir packages/hki-runtime test",
+    "typecheck:hki-runtime": "pnpm --dir packages/hki-runtime typecheck",
+    "test:hki-runtime-py": "cd packages/hki-runtime-py && uv run --extra dev pytest -q",
+    "lint:hki-runtime-py": "cd packages/hki-runtime-py && uv run --extra dev ruff check .",
+    "test:hki-conformance": "pnpm --dir packages/hki-conformance test",
+    "typecheck:hki-conformance": "pnpm --dir packages/hki-conformance typecheck",
+    "verify:hki-conformance": "pnpm build:hki-runtime && pnpm build:hki-conformance && pnpm --dir packages/hki-conformance conformance",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish"
+    "changeset:publish": "changeset publish",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
     "turbo": "^2.8.19"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --max-warnings=0 --fix",
+      "prettier --write"
+    ],
+    "*.{js,jsx,mjs,cjs}": [
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
   },
   "pnpm": {
     "allowedDeprecatedVersions": {

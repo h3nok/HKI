@@ -7,8 +7,9 @@
    Apps should NEVER redefine semantic tokens like --background, --card, etc.
    Instead, override the PRIMITIVES that feed into them.
 
-   LIGHT: Blue-gray canvas (#e4e8f0, L≈91%) + white cards (#fff, L≈100%) —
-          ~9% lightness gap. Cool tint for professional tech feel.
+   LIGHT: Defined blue-gray canvas + white cards with an intentionally wider
+          surface gap. The app is operational software, so the light theme
+          favors crisp edges, readable hierarchy, and subdued contrast.
    DARK:  Navy-shifted neutrals with wide gaps for clear depth.
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -16,22 +17,22 @@
   /* ─────────────────────────────────────────────────────────────────────────
      AGENTIC LIGHT MODE — Cool Blue-Tint Canvas
 
-     Background has a subtle bluish-gray (#e4e8f0, L≈91%) so white cards
-     (#fff, L≈100%) have a clear ~9% lightness gap. Cards float.
-     Cool blue undertone gives a professional, tech-forward feel.
+     The canvas is cool and visibly recessed so white panels do not wash into
+     the page. Muted and border steps are strong enough to hold shape on
+     high-DPI displays.
      ───────────────────────────────────────────────────────────────────────── */
   --color-neutral-0: #ffffff; /* Pure white — card / popover / modal surface */
-  --color-neutral-25: #f7f8fb; /* Near-white — elevated cards */
-  --color-neutral-50: #dde2ed; /* App background — cool blue-gray canvas */
-  --color-neutral-75: #d4d9e6; /* Recessed — table rows, sidebar wells */
-  --color-neutral-100: #c9cfdd; /* Muted — code blocks, inset surfaces */
-  --color-neutral-150: #b3bace; /* Interactive bg / border-muted — visible */
-  --color-neutral-200: #8e96a8; /* Borders — visible even at 60% opacity */
-  --color-neutral-300: #64748b; /* Borders (medium) / border-hover */
-  --color-neutral-400: #475569; /* Placeholder text */
-  --color-neutral-500: #334155; /* Secondary text — WCAG AA on white */
-  --color-neutral-600: #1e293b; /* Body text — strong slate */
-  --color-neutral-700: #0f172a; /* Headings — near-black blue-slate */
+  --color-neutral-25: #f3f6fa; /* Near-white — lifted cards */
+  --color-neutral-50: #d2dae7; /* App background — recessed blue-gray canvas */
+  --color-neutral-75: #c2ccdb; /* Recessed — table rows, sidebar wells */
+  --color-neutral-100: #b5c0d0; /* Muted — code blocks, inset surfaces */
+  --color-neutral-150: #9ca8ba; /* Interactive bg / border-muted — visible */
+  --color-neutral-200: #7f8b9f; /* Borders — visible even at 60% opacity */
+  --color-neutral-300: #5f6d82; /* Borders (medium) / border-hover */
+  --color-neutral-400: #415066; /* Placeholder text */
+  --color-neutral-500: #2f3d52; /* Secondary text — WCAG AA on white */
+  --color-neutral-600: #1d2a3d; /* Body text — strong slate */
+  --color-neutral-700: #0d1727; /* Headings — near-black blue-slate */
   --color-neutral-800: #1a1f2e; /* Dark surfaces */
   --color-neutral-850: #151a26;
   --color-neutral-900: #0e1219; /* Near black */

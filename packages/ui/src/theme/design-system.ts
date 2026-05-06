@@ -7,14 +7,14 @@
  * **Source of Truth**: tokens/index.css — this file mirrors those CSS variables.
  *
  * @packageDocumentation
- * @module @signature/ui/design-system
+ * @module @hki/ui/design-system
  *
  * @example Basic Usage
  * ```tsx
- * import { colors, spacing, ui, cn } from '@signature/ui';
+ * import { colors, spacing, ui, cn } from '@hki/ui';
  *
  * // Access tokens directly
- * <div style={{ color: colors.brand.blue[500] }} />
+ * <div style={{ color: colors.brand.iris[500] }} />
  *
  * // Use pre-built utility classes
  * <div className={cn(ui.card, ui.focusRing)} />
@@ -22,7 +22,7 @@
  *
  * @example Status Colors
  * ```tsx
- * import { getStatusColors } from '@signature/ui';
+ * import { getStatusColors } from '@hki/ui';
  *
  * const { bg, text, border, icon } = getStatusColors('success');
  * ```
@@ -199,7 +199,7 @@ export type SizeVariant = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 /**
  * Glow intensity levels for brand accent effects.
  */
-export type GlowIntensity = "sm" | "md" | "lg";
+export type GlowIntensity = "sm" | "md";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SECTION 2: COLOR SYSTEM
@@ -210,7 +210,7 @@ export type GlowIntensity = "sm" | "md" | "lg";
  *
  * @remarks
  * Colors are organized into:
- * - **brand**: HKI Blue & Red — primary identity colors
+ * - **brand**: HKI Iris & Pulse — primary identity colors
  * - **neutral**: Warm gray scale — No-Washout palette
  * - **status**: Semantic colors for success/warning/error/info states
  * - **chart**: Data visualization palette (colorblind-safe)
@@ -219,8 +219,8 @@ export type GlowIntensity = "sm" | "md" | "lg";
  * @example
  * ```tsx
  * // Brand colors
- * colors.brand.blue[500]  // #2b45c2 — Core Blue
- * colors.brand.red[500]   // #dc2626 — Core Red
+ * colors.brand.iris[500]   // #0E7C7B — HKI Iris (deep teal)
+ * colors.brand.pulse[500]  // #E07A1F — HKI Pulse (warm amber)
  *
  * // Status colors
  * colors.status.success[500]
@@ -230,69 +230,67 @@ export type GlowIntensity = "sm" | "md" | "lg";
  * colors.data[1]  // First series
  * ```
  *
- * @see CSS: --hki-blue-*, --hki-red-*, --neutral-*, --success-*, etc.
+ * @see CSS: --color-brand-iris-*, --color-brand-pulse-*, --neutral-*, --success-*, etc.
  */
 export const colors = {
   /**
-   * Brand Colors — Official HKI Blue & Red
-   * - Blue: #0066B2 - Trust, authority, technology
-   * - Red: #E31837 - Energy, urgency, action
-   * Source: AI Platform design tokens.
+   * Brand Colors — HKI Iris & Pulse
+   * - Iris:  #0E7C7B — deep teal, depth, focus
+   * - Pulse: #E07A1F — warm amber, signal, warmth
    */
   brand: {
-    blue: {
-      25: "#F0F7FC",
-      50: "#E6F2FA",
-      100: "#CCE5F5",
-      200: "#99CBEB",
-      300: "#66B1E1",
-      400: "#3397D7",
-      500: "#0066B2", // ★ Official HKI Blue
-      600: "#00528E",
-      700: "#003E6B",
-      800: "#002A47",
-      900: "#001624",
-      950: "#000B12",
+    iris: {
+      25: "#ECFDFC",
+      50: "#D5F8F5",
+      100: "#A8F0EB",
+      200: "#6EE0DA",
+      300: "#3DCBC6",
+      400: "#1FA9A5",
+      500: "#0E7C7B", // ★ HKI Iris (deep teal — Pharos)
+      600: "#0B6261",
+      700: "#094948",
+      800: "#063030",
+      900: "#031818",
+      950: "#010C0C",
     },
-    red: {
-      25: "#FEF5F6",
-      50: "#FCE8EC",
-      100: "#F9D1D9",
-      200: "#F3A3B3",
-      300: "#ED758D",
-      400: "#E74767",
-      500: "#E31837", // ★ Official HKI Red
-      600: "#B6132C",
-      700: "#880E21",
-      800: "#5B0916",
-      900: "#2D050B",
-      950: "#170305",
+    pulse: {
+      25: "#FFF8EE",
+      50: "#FEEBCC",
+      100: "#FDD49A",
+      200: "#FBBA68",
+      300: "#F49E3B",
+      400: "#ED8A28",
+      500: "#E07A1F", // ★ HKI Pulse (warm amber — Pharos)
+      600: "#B8611A",
+      700: "#8C4A14",
+      800: "#5E320D",
+      900: "#2F1907",
+      950: "#170C03",
     },
   },
 
   /**
-   * Warm Neutrals — No-Washout Palette
-   * Stone/cream undertones for premium feel. Avoids sterile white.
-   * Extended scale with half-steps for precise control.
+   * System Neutrals — High-contrast scale
+   * Clean gray for screen clarity. No warm tint.
    */
   neutral: {
-    0: "#ffffff", // Pure white — use sparingly
-    25: "#fdfdfb", // Warm off-white
-    50: "#faf9f7", // ★ App background — warm cream
-    75: "#f7f6f3", // Subtle surface step
-    100: "#f3f2ef", // Cards, panels — 1 step up
-    150: "#eae9e6", // Interactive surfaces
-    200: "#e0dfdc", // ★ Borders — visible but quiet
-    300: "#d1d0cd", // Stronger borders
-    400: "#a3a29f", // Placeholder text
-    500: "#6f6e6b", // ★ Secondary text
-    600: "#525150", // Body text
-    700: "#3f3e3d", // ★ Primary text / headings
-    800: "#292827", // Dark surfaces
-    850: "#1f1e1d", // Darker
-    900: "#171716", // ★ Near black (dark mode bg)
-    925: "#121211", // Deeper
-    950: "#0a0a09", // True dark
+    0: "#ffffff",
+    25: "#fafafa",
+    50: "#f5f5f5",
+    75: "#f0f0f0",
+    100: "#e8e8e8",
+    150: "#dfdfdf",
+    200: "#d4d4d4",
+    300: "#b5b5b5",
+    400: "#8c8c8c",
+    500: "#636363",
+    600: "#4a4a4a",
+    700: "#363636",
+    800: "#262626",
+    850: "#1c1c1c",
+    900: "#141414",
+    925: "#0f0f0f",
+    950: "#0a0a0a",
   },
 
   /**
@@ -337,7 +335,7 @@ export const colors = {
       200: "#fecaca",
       300: "#fca5a5",
       400: "#f87171",
-      500: "#dc2626", // ★ Primary error (same as brand red)
+      500: "#dc2626", // ★ Primary error
       600: "#b91c1c",
       700: "#991b1b",
       800: "#7f1d1d",
@@ -366,8 +364,8 @@ export const colors = {
    * @see CSS: --chart-*
    */
   chart: {
-    blue: "#2b45c2",
-    red: "#dc2626",
+    iris: "#0E7C7B",
+    pulse: "#E07A1F",
     emerald: "#10b981",
     amber: "#f59e0b",
     violet: "#8b5cf6",
@@ -384,8 +382,8 @@ export const colors = {
    * @see CSS: --data-1 through --data-8
    */
   data: {
-    1: "#2b45c2", // Brand blue
-    2: "#f87171", // Red-400
+    1: "#0E7C7B", // HKI Iris (deep teal)
+    2: "#E07A1F", // HKI Pulse (warm amber)
     3: "#10b981", // Emerald
     4: "#f59e0b", // Amber
     5: "#8b5cf6", // Violet
@@ -413,7 +411,7 @@ export const surfaces = {
   // Interactive states
   hover: colors.neutral[75],
   active: colors.neutral[100],
-  selected: colors.brand.blue[25],
+  selected: colors.brand.iris[25],
   input: colors.neutral[0],
 
   // Muted
@@ -425,13 +423,13 @@ export const surfaces = {
  * Text Colors — Hierarchy System
  */
 export const text = {
-  primary: colors.neutral[700], // Body text
-  secondary: colors.neutral[500], // Secondary labels
-  muted: colors.neutral[400], // Placeholders, hints
-  heading: colors.neutral[900], // Headings - maximum contrast
-  inverse: colors.neutral[0], // Text on dark backgrounds
-  link: colors.brand.blue[500],
-  linkHover: colors.brand.blue[600],
+  primary: colors.neutral[800],
+  secondary: colors.neutral[600],
+  muted: colors.neutral[500],
+  heading: colors.neutral[950],
+  inverse: colors.neutral[0],
+  link: colors.brand.iris[600],
+  linkHover: colors.brand.iris[700],
 } as const;
 
 /**
@@ -443,14 +441,13 @@ export const borders = {
   default: colors.neutral[200],
   muted: colors.neutral[150],
   subtle: "rgba(0, 0, 0, 0.06)",
-  hover: colors.neutral[300],
-  focus: colors.brand.blue[500],
+  hover: colors.neutral[400],
+  focus: colors.brand.iris[500],
   error: colors.status.error[500],
   success: colors.status.success[500],
-  /** Input-specific borders */
   input: colors.neutral[200],
-  inputHover: colors.neutral[300],
-  inputFocus: colors.brand.blue[400],
+  inputHover: colors.neutral[400],
+  inputFocus: colors.brand.iris[500],
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -463,45 +460,45 @@ export const borders = {
  * @see CSS: --accent-blue-*, --accent-red-*, --accent-primary-*, --link-*
  */
 export const accent = {
-  /** Blue accent scale (primary actions) */
-  blue: {
-    subtle: colors.brand.blue[25],
-    muted: colors.brand.blue[50],
-    light: colors.brand.blue[100],
-    default: colors.brand.blue[500],
-    emphasis: colors.brand.blue[600],
-    strong: colors.brand.blue[700],
+  /** Iris accent scale (primary actions) */
+  iris: {
+    subtle: colors.brand.iris[25],
+    muted: colors.brand.iris[50],
+    light: colors.brand.iris[100],
+    default: colors.brand.iris[500],
+    emphasis: colors.brand.iris[600],
+    strong: colors.brand.iris[700],
     contrast: colors.neutral[0],
   },
-  /** Red accent scale (destructive/secondary) */
-  red: {
-    subtle: colors.brand.red[25],
-    muted: colors.brand.red[50],
-    light: colors.brand.red[100],
-    default: colors.brand.red[500],
-    emphasis: colors.brand.red[600],
-    strong: colors.brand.red[700],
+  /** Pulse accent scale (secondary/highlight) */
+  pulse: {
+    subtle: colors.brand.pulse[25],
+    muted: colors.brand.pulse[50],
+    light: colors.brand.pulse[100],
+    default: colors.brand.pulse[500],
+    emphasis: colors.brand.pulse[600],
+    strong: colors.brand.pulse[700],
     contrast: colors.neutral[0],
   },
   /** Primary interactive tokens */
   primary: {
-    default: colors.brand.blue[500],
-    hover: colors.brand.blue[600],
-    active: colors.brand.blue[700],
-    light: colors.brand.blue[50],
+    default: colors.brand.iris[500],
+    hover: colors.brand.iris[600],
+    active: colors.brand.iris[700],
+    light: colors.brand.iris[50],
   },
   /** Secondary interactive tokens */
   secondary: {
-    default: colors.brand.red[500],
-    hover: colors.brand.red[600],
-    active: colors.brand.red[700],
-    light: colors.brand.red[50],
+    default: colors.brand.pulse[500],
+    hover: colors.brand.pulse[600],
+    active: colors.brand.pulse[700],
+    light: colors.brand.pulse[50],
   },
   /** Link colors */
   link: {
-    default: colors.brand.blue[500],
-    hover: colors.brand.blue[600],
-    visited: colors.brand.blue[700],
+    default: colors.brand.iris[500],
+    hover: colors.brand.iris[600],
+    visited: colors.brand.iris[700],
   },
 } as const;
 
@@ -587,31 +584,23 @@ export const shadows = {
 /**
  * Brand Glow Effects
  * Subtle colored shadows for emphasis on interactive elements.
- * @see CSS: --glow-blue-*, --glow-red-*
+ * @see CSS: --glow-iris-*, --glow-pulse-*
  */
 export const glows = {
-  blue: {
-    sm: "0 0 0 1px rgba(43, 69, 194, 0.08), 0 2px 8px -2px rgba(43, 69, 194, 0.12), 0 4px 12px -4px rgba(43, 69, 194, 0.08)",
-    md: "0 0 0 1px rgba(43, 69, 194, 0.12), 0 4px 16px -4px rgba(43, 69, 194, 0.18), 0 8px 24px -8px rgba(43, 69, 194, 0.12)",
-    lg: "0 0 0 1px rgba(43, 69, 194, 0.16), 0 8px 32px -8px rgba(43, 69, 194, 0.24), 0 16px 48px -16px rgba(43, 69, 194, 0.16)",
+  iris: {
+    sm: "0 0 0 1px rgba(14, 124, 123, 0.18)",
+    md: "0 0 0 1px rgba(14, 124, 123, 0.22), 0 2px 8px -2px rgba(14, 124, 123, 0.18)",
   },
-  red: {
-    sm: "0 0 0 1px rgba(220, 38, 38, 0.08), 0 2px 8px -2px rgba(220, 38, 38, 0.12), 0 4px 12px -4px rgba(220, 38, 38, 0.08)",
-    md: "0 0 0 1px rgba(220, 38, 38, 0.12), 0 4px 16px -4px rgba(220, 38, 38, 0.18), 0 8px 24px -8px rgba(220, 38, 38, 0.12)",
-    lg: "0 0 0 1px rgba(220, 38, 38, 0.16), 0 8px 32px -8px rgba(220, 38, 38, 0.24), 0 16px 48px -16px rgba(220, 38, 38, 0.16)",
+  pulse: {
+    sm: "0 0 0 1px rgba(224, 122, 31, 0.18)",
+    md: "0 0 0 1px rgba(224, 122, 31, 0.22), 0 2px 8px -2px rgba(224, 122, 31, 0.18)",
   },
 } as const;
 
-/**
- * Focus Ring System
- * Accessible focus indicators for keyboard navigation.
- * @see CSS: --ring-blue, --ring-red, --ring-offset
- */
 export const focusRings = {
-  blue: "0 0 0 3px rgba(43, 69, 194, 0.25)",
-  red: "0 0 0 3px rgba(220, 38, 38, 0.25)",
-  /** Ring with offset (for elements on dark backgrounds) */
-  offset: (bgColor: string = colors.neutral[50]) => `0 0 0 2px ${bgColor}`,
+  iris: "0 0 0 2px rgba(14, 124, 123, 0.4)",
+  pulse: "0 0 0 2px rgba(224, 122, 31, 0.4)",
+  offset: (bgColor: string = colors.neutral[25]) => `0 0 0 2px ${bgColor}`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -884,30 +873,16 @@ export const layout = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const gradients = {
-  /** Primary brand gradient (Blue → Red) */
-  brand: "linear-gradient(135deg, #2b45c2 0%, #dc2626 100%)",
-  brandReverse: "linear-gradient(135deg, #dc2626 0%, #2b45c2 100%)",
-  brandVertical: "linear-gradient(180deg, #2b45c2 0%, #dc2626 100%)",
-  brandHorizontal: "linear-gradient(90deg, #2b45c2 0%, #dc2626 100%)",
-
-  /** Subtle gradients (for backgrounds) */
+  brand: "linear-gradient(135deg, #0E7C7B 0%, #E07A1F 100%)",
+  brandReverse: "linear-gradient(135deg, #E07A1F 0%, #0E7C7B 100%)",
+  brandVertical: "linear-gradient(180deg, #0E7C7B 0%, #E07A1F 100%)",
+  brandHorizontal: "linear-gradient(90deg, #0E7C7B 0%, #E07A1F 100%)",
   brandSubtle:
-    "linear-gradient(135deg, rgba(43, 69, 194, 0.06) 0%, rgba(220, 38, 38, 0.06) 100%)",
-  brandLight: "linear-gradient(135deg, #ebeffe 0%, #fef2f2 100%)",
-
-  /** Monochromatic */
-  blue: "linear-gradient(135deg, #536ef3 0%, #2339a8 100%)",
-  blueLight: "linear-gradient(135deg, #ebeffe 0%, #d4dbfc 100%)",
-  red: "linear-gradient(135deg, #f87171 0%, #b91c1c 100%)",
-  redLight: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
-
-  /** Neutral */
-  subtle: "linear-gradient(180deg, #faf9f7 0%, #f3f2ef 100%)",
-  elevated: "linear-gradient(180deg, #ffffff 0%, #faf9f7 100%)",
-
-  /** Shimmer/loading */
-  shimmer:
-    "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
+    "linear-gradient(135deg, rgba(14, 124, 123, 0.06) 0%, rgba(224, 122, 31, 0.06) 100%)",
+  iris: "linear-gradient(135deg, #1FA9A5 0%, #094948 100%)",
+  pulse: "linear-gradient(135deg, #F49E3B 0%, #8C4A14 100%)",
+  subtle: "linear-gradient(180deg, #f5f5f5 0%, #e8e8e8 100%)",
+  elevated: "linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%)",
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -979,7 +954,7 @@ export function transition(
  *
  * @example
  * ```tsx
- * import { designTokens } from '@signature/ui';
+ * import { designTokens } from '@hki/ui';
  *
  * const { colors, spacing, shadows } = designTokens;
  * ```

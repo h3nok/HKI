@@ -26,6 +26,7 @@ import src.domain.tools
 logger = src.core.logging.logger.getChild("adk_agent")
 Agent = google.adk.agents.Agent
 settings = src.core.config.settings
+DEFAULT_RUNTIME_SCOPE = "default"
 
 _PLATFORM_CONSTITUTION = (
     "You are HKI's Agent.\n"
@@ -224,7 +225,7 @@ def build_prompt_stack(
     *,
     domain_prompt: str | None = None,
     enabled_tools: list[str] | None = None,
-    scope: str = "global",
+    scope: str = DEFAULT_RUNTIME_SCOPE,
     scopes: list[str] | None = None,
     retrieval_strategy: str = "hybrid",
     planning_enabled: bool = True,
@@ -327,7 +328,7 @@ def build_system_instruction(
     *,
     domain_prompt: str | None = None,
     enabled_tools: list[str] | None = None,
-    scope: str = "global",
+    scope: str = DEFAULT_RUNTIME_SCOPE,
     scopes: list[str] | None = None,
     retrieval_strategy: str = "hybrid",
     planning_enabled: bool = True,

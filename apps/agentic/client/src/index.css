@@ -1,0 +1,6014 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AGENTIC AI PLATFORM — Conversational AI Interface
+
+   Uses the unified HKI Innovation Design System for consistent branding
+   across all platform apps (same look and feel as IPMS Hub).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Import unified design system - same as IPMS for consistent branding */
+@import "@hki/ui/tokens";
+/* Agentic-specific neutral scale: warm stone light + blue-shifted dark */
+@import "@hki/ui/tokens/themes/agentic";
+
+/* Scan @hki/ui source so Tailwind generates its utility classes */
+@source "../../../../packages/ui/src";
+
+/* Tailwind v4 dark mode variant */
+@custom-variant dark (&:is(.dark *));
+
+/* Map CSS variables to Tailwind theme */
+@theme inline {
+  /* Radius scale */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Surface colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  /* Brand colors */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  /* Muted & accent */
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* Status colors */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  /* Borders & inputs */
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Data visualization */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AGENTIC APP-SPECIFIC OVERRIDES
+   Only contains values not covered by the shared token system
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --radius: 0.375rem;
+  --kb-brand-red: #e31837;
+  --warning: var(--primary);
+}
+:root:not(.dark) {
+  --agentic-light-canvas: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--background) 96%, #b9c5d6) 0%,
+    color-mix(in srgb, var(--background) 88%, #c1cad8) 52%,
+    color-mix(in srgb, var(--background) 92%, var(--primary) 3%) 100%
+  );
+  --agentic-light-panel: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card) 98%, white) 0%,
+    color-mix(in srgb, var(--card) 94%, var(--background) 6%) 100%
+  );
+  --agentic-light-panel-strong: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    color-mix(in srgb, var(--card) 90%, var(--background) 10%) 100%
+  );
+  --agentic-light-line: color-mix(
+    in srgb,
+    var(--border) 74%,
+    var(--foreground) 16%
+  );
+  --agentic-light-shadow:
+    0 1px 2px color-mix(in srgb, var(--foreground) 14%, transparent),
+    0 14px 26px -24px color-mix(in srgb, var(--foreground) 34%, transparent),
+    0 28px 56px -44px color-mix(in srgb, var(--primary) 24%, transparent);
+
+  --sidebar: color-mix(in srgb, var(--card) 94%, var(--background) 6%);
+  --sidebar-accent: color-mix(in srgb, var(--primary) 8%, var(--muted) 92%);
+  --sidebar-border: color-mix(
+    in srgb,
+    var(--border) 76%,
+    var(--foreground) 12%
+  );
+
+  /* ── Sidebar depth shadow — subtle edge, co-planar with content cards ── */
+  --sidebar-shadow:
+    1px 0 0 color-mix(in srgb, var(--foreground) 12%, transparent),
+    16px 0 34px -30px color-mix(in srgb, var(--foreground) 32%, transparent),
+    22px 0 52px -48px color-mix(in srgb, var(--primary) 30%, transparent);
+
+  /* ── Prompt Input Capsule ─────────────────────────────────────────────── */
+  /* Opaque white capsule with strong border on gray canvas */
+  --capsule-bg: #ffffff;
+  --capsule-bg-hover: #ffffff;
+  --capsule-bg-focus: #ffffff;
+  --capsule-border: color-mix(
+    in srgb,
+    var(--border) 44%,
+    var(--foreground) 34%
+  );
+  --capsule-border-hover: color-mix(
+    in srgb,
+    var(--primary) 30%,
+    var(--foreground) 18%
+  );
+  --capsule-shadow-idle:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 0 0 1px color-mix(in srgb, var(--foreground) 8%, transparent),
+    0 2px 4px color-mix(in srgb, var(--foreground) 18%, transparent),
+    0 16px 30px -22px color-mix(in srgb, var(--foreground) 36%, transparent),
+    0 34px 70px -52px color-mix(in srgb, var(--primary) 34%, transparent);
+  --capsule-shadow-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 1px color-mix(in srgb, var(--primary) 12%, transparent),
+    0 2px 4px color-mix(in srgb, var(--foreground) 18%, transparent),
+    0 22px 40px -28px color-mix(in srgb, var(--foreground) 38%, transparent),
+    0 40px 76px -54px color-mix(in srgb, var(--primary) 40%, transparent);
+  --capsule-shadow-focus:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent),
+    0 2px 4px color-mix(in srgb, var(--foreground) 16%, transparent),
+    0 24px 48px -32px color-mix(in srgb, var(--primary) 40%, transparent);
+  --capsule-inner-focus: color-mix(in srgb, var(--primary) 8%, white);
+}
+
+/* Dark mode — translucent dark glass with subtle light borders */
+:root.dark {
+  /* Dark mode sidebar — subtle glass rim, not overpowering cards */
+  --sidebar-shadow:
+    1px 0 0 rgba(255, 255, 255, 0.03), 2px 0 12px -4px rgba(0, 0, 0, 0.5);
+  --capsule-bg: rgba(24, 24, 27, 0.85); /* zinc-800 approx */
+  --capsule-bg-hover: rgba(39, 39, 42, 0.9); /* zinc-700 approx */
+  --capsule-bg-focus: rgba(39, 39, 42, 0.95);
+  --capsule-border: rgba(255, 255, 255, 0.08);
+  --capsule-border-hover: rgba(255, 255, 255, 0.14);
+  --capsule-shadow-idle: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --capsule-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.8);
+  --capsule-shadow-focus:
+    0 0 0 1px rgba(0, 102, 178, 0.6), 0 0 24px -4px rgba(0, 102, 178, 0.4),
+    0 8px 32px rgba(0, 0, 0, 0.8);
+  --capsule-inner-focus: color-mix(in srgb, var(--muted) 20%, transparent);
+
+  /* ── Glass surfaces — dark mode overrides ─────────────────────────────── */
+  /* Using neutral transparent white for true black aesthetics */
+  --glass-chrome-bg: rgba(255, 255, 255, 0.03);
+  --glass-chrome-border: rgba(255, 255, 255, 0.06);
+  --glass-chrome-blur: 20px;
+  --glass-chrome-saturate: 140%;
+
+  --glass-floating-bg: rgba(255, 255, 255, 0.04);
+  --glass-floating-border: rgba(255, 255, 255, 0.08);
+  --glass-floating-blur: 28px;
+  --glass-floating-saturate: 160%;
+
+  --glass-card-bg: rgba(255, 255, 255, 0.03);
+  --glass-card-border: rgba(255, 255, 255, 0.06);
+  --glass-card-highlight: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --glass-blur: 12px;
+  --glass-saturate: 130%;
+}
+
+/* ── Background grain texture — prevents color banding, adds tactile depth ── */
+/* Light mode: very subtle grain makes the warm stone bg feel like paper/linen.
+   Required for glass surfaces — glass without texture behind it looks empty. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+/* Dark mode: slightly stronger grain for depth on dark surfaces */
+.dark body::before {
+  opacity: 0.03;
+}
+
+/* Glass utility classes — shared from @hki/ui */
+@import "@hki/ui/tokens/glass.css";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AMBIENT CANVAS — Subtle radial gradient behind main content
+   Creates a soft spotlight effect that draws the eye center and adds
+   depth to the otherwise flat background. Light: warm halo. Dark: blue vignette.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ambient-canvas {
+  position: relative;
+}
+.ambient-canvas::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 70% 50% at 50% 40%,
+    color-mix(in srgb, var(--primary) 6%, transparent) 0%,
+    transparent 60%
+  );
+}
+.dark .ambient-canvas::before {
+  background:
+    radial-gradient(
+      ellipse 70% 50% at 50% 40%,
+      rgba(255, 255, 255, 0.03) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 90% 80% at 50% 100%,
+      rgba(0, 0, 0, 0.15) 0%,
+      transparent 50%
+    );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HERO GLOW — Warm ambient radiance behind welcome brand icon
+   Layered radials: HKI Blue center + Red accent + soft vignette.
+   Only visible on the welcome screen, fades behind content.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.hero-glow {
+  position: relative;
+}
+.hero-glow::before {
+  content: "";
+  position: absolute;
+  width: 480px;
+  height: 360px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -60%);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      ellipse 100% 100% at 50% 50%,
+      rgba(0, 93, 170, 0.1) 0%,
+      rgba(0, 93, 170, 0.04) 40%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 60% 30%,
+      rgba(227, 24, 55, 0.03) 0%,
+      transparent 60%
+    );
+  filter: blur(40px);
+}
+.dark .hero-glow::before {
+  background:
+    radial-gradient(
+      ellipse 100% 100% at 50% 50%,
+      rgba(0, 93, 170, 0.14) 0%,
+      rgba(0, 93, 170, 0.05) 40%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 60% 30%,
+      rgba(227, 24, 55, 0.04) 0%,
+      transparent 60%
+    );
+  filter: blur(50px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SURFACE VARIANTS — Unique card treatments for visual variety
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Raised surface — for suggestion tiles, action cards */
+.surface-raised {
+  background: color-mix(in srgb, var(--card) 97%, var(--primary));
+  border: 1px solid color-mix(in srgb, var(--primary) 10%, var(--border) 40%);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 3px 8px -2px rgba(0, 0, 0, 0.06),
+    0 12px 28px -8px color-mix(in srgb, var(--primary) 15%, rgba(0, 0, 0, 0.1));
+  backdrop-filter: blur(12px);
+}
+.surface-raised:hover {
+  border-color: color-mix(in srgb, var(--primary) 18%, var(--border));
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 12px -2px rgba(0, 0, 0, 0.08),
+    0 16px 36px -8px color-mix(in srgb, var(--primary) 20%, rgba(0, 0, 0, 0.12));
+}
+.dark .surface-raised {
+  background: var(--card);
+  border: 1px solid
+    color-mix(in srgb, var(--primary) 12%, rgba(255, 255, 255, 0.08));
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 4px 12px -4px rgba(0, 0, 0, 0.15),
+    0 1px 0 rgba(255, 255, 255, 0.04) inset;
+}
+.dark .surface-raised:hover {
+  background: color-mix(in srgb, var(--card) 90%, white);
+  border-color: color-mix(
+    in srgb,
+    var(--primary) 20%,
+    rgba(255, 255, 255, 0.1)
+  );
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 8px 20px -6px rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset;
+}
+
+/* Inset surface — for sidebar empty state, recessed panels */
+.surface-inset {
+  background: color-mix(in srgb, var(--muted) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) inset;
+}
+.dark .surface-inset {
+  background: color-mix(in srgb, var(--background) 80%, var(--card));
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) inset;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANTI-WASHOUT SURFACE PATTERNS — Depth & Accent System
+
+   The cool gray background (#f4f5f7) against white cards now has
+   ~4% luminance contrast. These utility classes add visual anchors,
+   accent edges, and tinted surfaces for additional depth and brand
+   presence beyond the base surface hierarchy.
+
+   Patterns:
+     .surface-accent-left   — 3px left-edge brand stripe (emphasis cards)
+     .surface-accent-top    — 2px top-edge colored accent (stat/category cards)
+     .surface-section       — subtle tinted section header background
+     .surface-recessed      — panel that sits BELOW canvas (sidebar, code blocks)
+     .surface-tinted-blue   — subtle blue tint (info, primary context)
+     .surface-tinted-red    — subtle red tint (alerts, emphasis)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Accent-edge card — 3px left stripe draws the eye without noise */
+.surface-accent-left {
+  border-left: 3px solid var(--primary);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    -1px 0 8px -2px color-mix(in srgb, var(--primary) 8%, transparent);
+}
+.dark .surface-accent-left {
+  background: var(--card);
+  border-top-color: rgba(255, 255, 255, 0.07);
+  border-right-color: rgba(255, 255, 255, 0.07);
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    -1px 0 8px -2px rgba(0, 102, 178, 0.12);
+}
+
+/* Top-edge accent — colored top border for stat/category cards */
+.surface-accent-top {
+  border-top: 2px solid var(--primary);
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 -1px 6px -2px color-mix(in srgb, var(--primary) 10%, transparent);
+}
+.surface-accent-top[data-accent="red"] {
+  border-top-color: var(--secondary);
+}
+.surface-accent-top[data-accent="green"] {
+  border-top-color: var(--success, #16a34a);
+}
+.surface-accent-top[data-accent="yellow"] {
+  border-top-color: var(--warning, var(--primary));
+}
+.dark .surface-accent-top {
+  background: var(--card);
+  border-left-color: rgba(255, 255, 255, 0.07);
+  border-right-color: rgba(255, 255, 255, 0.07);
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    0 -1px 6px -2px rgba(0, 102, 178, 0.14);
+}
+
+/* Section header — subtle tinted background for visual rhythm */
+.surface-section {
+  background: color-mix(in srgb, var(--muted) 50%, var(--background));
+  border-bottom: 1px solid var(--border);
+}
+.dark .surface-section {
+  background: color-mix(in srgb, var(--card) 80%, var(--background));
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+}
+
+/* Recessed panel — sits BELOW canvas level (sidebar wells, code blocks) */
+.surface-recessed {
+  background: color-mix(in srgb, var(--muted) 30%, var(--background));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) inset;
+  border: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+.dark .surface-recessed {
+  background: color-mix(in srgb, var(--background) 90%, var(--card));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) inset;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Tinted surfaces — subtle brand color washes */
+.surface-tinted-blue {
+  background: color-mix(in srgb, var(--primary) 4%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--primary) 10%, var(--border));
+}
+.dark .surface-tinted-blue {
+  background: rgba(0, 102, 178, 0.12);
+  border-color: rgba(0, 102, 178, 0.2);
+}
+.surface-tinted-red {
+  background: color-mix(in srgb, var(--secondary) 4%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--secondary) 10%, var(--border));
+}
+.dark .surface-tinted-red {
+  background: rgba(227, 24, 55, 0.08);
+  border-color: rgba(227, 24, 55, 0.15);
+}
+
+/* Custom animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+/* Float animation for decorative elements */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Nav swipe click feedback — solid fill slides in from left, covers full item, fades out */
+@keyframes nav-swipe {
+  0% {
+    transform: translateX(-100%);
+    opacity: 1;
+  }
+  55% {
+    transform: translateX(0%);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateX(0%);
+    opacity: 0;
+  }
+}
+
+/* Subtle shimmer animation for premium feel */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MINIMAL SCROLLBARS — Modern app style (Slack, Linear, VS Code)
+   Thin, auto-hiding, unobtrusive
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-500);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-neutral-300) transparent;
+}
+
+.dark * {
+  scrollbar-color: var(--color-neutral-500) transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM CUSTOM SCROLLBARS
+   Replaces jarring default browser tracks with elegant, translucent pills
+   that conform perfectly to the Obsidian mode lighting.
+   ═══════════════════════════════════════════════════════════════════════════ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--muted);
+  border-radius: 99px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--muted) 40%,
+    var(--muted-foreground)
+  );
+}
+
+/* Maintain backwards compatibility for existing overrides */
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-on-hover {
+  scrollbar-width: thin;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RETINA / HIGH-DPI ELEVATION BOOST
+
+   On 2x+ displays (MacBook Pro, iMac, 4K monitors), low-opacity shadows
+   and borders fall below the perceptual threshold due to sub-pixel
+   anti-aliasing and P3 gamut precision. Everything looks flat.
+
+   This layer strengthens depth cues specifically for high-DPI screens:
+   - Sidebar shadow:     0.06 → 0.14  (2.3x)
+   - Glass chrome border: 0.06 → 0.12  (2x)
+   - Card shadow:        0.06 → 0.10  (1.7x)
+   - Capsule border:     0.06 → 0.10  (1.7x)
+
+   Standard-DPI monitors (your HP 27") are unaffected.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+  :root:not(.dark) {
+    /* Sidebar edge — subtle on Retina, co-planar with cards */
+    --sidebar-shadow:
+      1px 0 0 rgba(0, 0, 0, 0.06), 2px 0 10px -2px rgba(0, 0, 0, 0.07);
+
+    /* Glass chrome — the sidebar/header glass surface border */
+    --glass-chrome-border: rgba(0, 102, 178, 0.16);
+
+    /* Card depth — stronger on Retina */
+    --shadow-card:
+      0 1px 3px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    /* Capsule — stronger on Retina (base is already 0.22/0.30) */
+    --capsule-border: rgba(0, 0, 0, 0.26);
+    --capsule-border-hover: rgba(0, 0, 0, 0.35);
+
+    /* Brand-tinted card hairline */
+    --border-card: rgba(0, 102, 178, 0.14);
+  }
+
+  :root.dark {
+    /* Dark mode shadows are already stronger, just bump glass border */
+    --glass-chrome-border: rgba(0, 102, 178, 0.16);
+    --glass-floating-border: rgba(0, 102, 178, 0.18);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KNOWLEDGE BASE — Surface Scoping
+   Knowledge page now inherits the shared agentic neutral token system.
+   HKI Blue is the accent color (buttons, highlights) — not the surface.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Dark mode — welcome page bg fallback ── */
+.dark {
+  --welcome-bg: var(--background);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  /**
+   * Custom container utility that centers content and adds responsive padding.
+   *
+   * This overrides Tailwind's default container behavior to:
+   * - Auto-center content (mx-auto)
+   * - Add responsive horizontal padding
+   * - Set max-width for large screens
+   *
+   * Usage: <div className="container">...</div>
+   *
+   * For custom widths, use max-w-* utilities directly:
+   * <div className="max-w-6xl mx-auto px-4">...</div>
+   */
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem; /* 16px - mobile padding */
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  .dashboard-shell {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(
+        96rem 34rem at 50% -18%,
+        rgba(255, 255, 255, 0.22) 0%,
+        transparent 58%
+      ),
+      linear-gradient(
+        115deg,
+        color-mix(in srgb, var(--primary) 2.5%, transparent) 0%,
+        transparent 34%,
+        color-mix(in srgb, var(--secondary) 1%, transparent) 100%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--muted) 42%, white) 0%,
+        color-mix(in srgb, var(--muted) 52%, var(--background) 48%) 26%,
+        color-mix(in srgb, var(--muted) 60%, var(--background) 40%) 68%,
+        color-mix(in srgb, var(--muted) 66%, var(--primary) 4%) 100%
+      );
+  }
+
+  .dashboard-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-repeat: no-repeat;
+    opacity: 0.9;
+  }
+
+  .dashboard-shell::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(
+        132deg,
+        rgba(255, 255, 255, 0.42) 0%,
+        rgba(255, 255, 255, 0.14) 18%,
+        transparent 42%,
+        color-mix(in srgb, var(--primary) 4%, transparent) 70%,
+        transparent 100%
+      ),
+      radial-gradient(
+        72rem 24rem at 50% -4%,
+        rgba(255, 255, 255, 0.22) 0%,
+        transparent 70%
+      );
+    background-size:
+      100% 100%,
+      100% 100%;
+    mask-image: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.34),
+      rgba(0, 0, 0, 0.1) 18%,
+      transparent 74%
+    );
+    opacity: 0.46;
+  }
+
+  .dashboard-shell > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dashboard-shell--admin::before {
+    background: none;
+  }
+
+  /*
+   * Control Plane surfaces — scoped HKI primitives.
+   * Primary drives lift, edges, and ambient tone. The card material stays
+   * quiet so the admin shell keeps HKI personality without becoming washed out.
+   */
+  .dashboard-shell.admin-control-plane-canvas {
+    background:
+      radial-gradient(
+        60rem 28rem at 10% 12%,
+        color-mix(in srgb, var(--primary) 5%, transparent) 0%,
+        transparent 72%
+      ),
+      radial-gradient(
+        42rem 22rem at 96% 18%,
+        color-mix(in srgb, var(--secondary) 3.5%, transparent) 0%,
+        transparent 74%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 96%, var(--primary) 4%) 0%,
+        color-mix(in srgb, var(--background) 98%, var(--secondary) 2%) 100%
+      );
+  }
+
+  .dark .dashboard-shell.admin-control-plane-canvas {
+    background:
+      radial-gradient(
+        48rem 22rem at 12% 18%,
+        color-mix(in srgb, var(--primary) 6%, transparent) 0%,
+        transparent 78%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 92%, var(--primary) 8%) 0%,
+        color-mix(in srgb, var(--background) 96%, var(--secondary) 4%) 100%
+      );
+  }
+
+  .dashboard-shell.admin-control-plane-canvas::before {
+    background-image:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 6%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--primary) 5%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 28px 28px;
+    mask-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--foreground) 22%, transparent) 0%,
+      color-mix(in srgb, var(--foreground) 8%, transparent) 22%,
+      transparent 58%
+    );
+    opacity: 0.22;
+  }
+
+  .dashboard-shell--knowledge::before {
+    background:
+      radial-gradient(
+        48rem 26rem at -6% -6%,
+        color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+        transparent 62%
+      ),
+      radial-gradient(
+        34rem 18rem at 78% -2%,
+        color-mix(in srgb, var(--primary) 6%, transparent) 0%,
+        transparent 70%
+      ),
+      radial-gradient(
+        20rem 16rem at 88% 92%,
+        color-mix(in srgb, var(--secondary) 5%, transparent) 0%,
+        transparent 72%
+      );
+  }
+
+  .dark .dashboard-shell {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 86%, black) 0%,
+      color-mix(in srgb, var(--background) 92%, black) 100%
+    );
+  }
+
+  .dark .dashboard-shell::after {
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.03) 0%,
+        rgba(255, 255, 255, 0.015) 14%,
+        transparent 34%
+      ),
+      radial-gradient(
+        56rem 18rem at 50% -6%,
+        color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+        transparent 72%
+      );
+    background-size:
+      100% 100%,
+      100% 100%;
+    opacity: 0.16;
+  }
+
+  .dark .dashboard-shell--admin::before {
+    background: none;
+  }
+
+  .dark .dashboard-shell.admin-control-plane-canvas {
+    background: var(--admin-dashboard-canvas-bg);
+  }
+
+  .dark .dashboard-shell.admin-control-plane-canvas::before {
+    background-image:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--foreground) 2%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--foreground) 2%, transparent) 1px,
+        transparent 1px
+      );
+    opacity: 0.07;
+  }
+
+  .dark .dashboard-shell--knowledge::before {
+    background:
+      radial-gradient(
+        42rem 24rem at -4% -8%,
+        color-mix(in srgb, var(--primary) 14%, transparent) 0%,
+        transparent 62%
+      ),
+      radial-gradient(
+        26rem 16rem at 82% 0%,
+        color-mix(in srgb, var(--primary) 8%, transparent) 0%,
+        transparent 70%
+      ),
+      radial-gradient(
+        18rem 14rem at 88% 92%,
+        color-mix(in srgb, var(--secondary) 8%, transparent) 0%,
+        transparent 74%
+      );
+  }
+
+  .dashboard-breadcrumb {
+    position: sticky;
+    top: 0;
+    overflow: hidden;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--primary) 10%, var(--border) 90%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 94%, white) 0%,
+      color-mix(in srgb, var(--card) 90%, white) 56%,
+      color-mix(in srgb, var(--card) 82%, var(--primary) 4%) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 1px 0 rgba(255, 255, 255, 0.38),
+      0 16px 28px -28px rgba(15, 23, 42, 0.16),
+      0 16px 28px -30px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+
+  .dashboard-breadcrumb::before {
+    content: none;
+  }
+
+  .dark .dashboard-breadcrumb {
+    background: linear-gradient(
+      180deg,
+      rgba(10, 13, 18, 0.94) 0%,
+      rgba(10, 13, 18, 0.88) 100%
+    );
+    border-bottom-color: color-mix(
+      in srgb,
+      var(--primary) 10%,
+      rgba(255, 255, 255, 0.06)
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025),
+      0 14px 24px -28px rgba(0, 0, 0, 0.6);
+  }
+
+  .dashboard-breadcrumb.admin-breadcrumb-bar {
+    border-bottom-color: color-mix(
+      in srgb,
+      var(--primary) 12%,
+      var(--border) 88%
+    );
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 94%, white) 0%,
+        color-mix(in srgb, var(--card) 90%, white) 58%,
+        color-mix(in srgb, var(--card) 84%, var(--primary) 4%) 100%
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 4%, transparent) 0%,
+        transparent 28%,
+        color-mix(in srgb, var(--secondary) 3%, transparent) 100%
+      );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.84),
+      0 1px 0 rgba(255, 255, 255, 0.34),
+      0 18px 30px -32px rgba(15, 23, 42, 0.18),
+      0 18px 32px -34px color-mix(in srgb, var(--primary) 20%, transparent);
+  }
+
+  .dark .dashboard-breadcrumb.admin-breadcrumb-bar {
+    background: linear-gradient(180deg, var(--background) 0%, var(--card) 100%);
+    border-bottom-color: color-mix(
+      in srgb,
+      var(--primary) 12%,
+      rgba(255, 255, 255, 0.08)
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.02),
+      0 10px 18px -24px rgba(0, 0, 0, 0.46);
+  }
+
+  .dashboard-breadcrumb.kb-page-header {
+    border-bottom-color: color-mix(in srgb, var(--border) 78%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 97%, white) 0%,
+      color-mix(in srgb, var(--card) 95%, white) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      0 12px 20px -28px rgba(15, 23, 42, 0.12);
+  }
+
+  .dashboard-breadcrumb.kb-page-header::before {
+    content: none;
+  }
+
+  .dark .dashboard-breadcrumb.kb-page-header {
+    background: linear-gradient(
+      180deg,
+      rgba(10, 13, 18, 0.94) 0%,
+      rgba(10, 13, 18, 0.9) 100%
+    );
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025),
+      0 12px 20px -28px rgba(0, 0, 0, 0.54);
+  }
+
+  .dashboard-breadcrumb [data-breadcrumb-nav] {
+    min-height: 2.5rem;
+  }
+
+  .dashboard-breadcrumb [data-breadcrumb-segment="interactive"] {
+    border-radius: 9999px;
+    padding: 0.4rem 0.72rem;
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .dashboard-breadcrumb [data-breadcrumb-segment="interactive"]:hover {
+    background: color-mix(in srgb, var(--primary) 5%, transparent);
+    color: var(--foreground);
+  }
+
+  .dashboard-breadcrumb [data-breadcrumb-segment="active"] {
+    border-radius: 9999px;
+    padding: 0.42rem 0.82rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 14%, var(--border) 86%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 94%, white) 0%,
+      color-mix(in srgb, var(--card) 88%, var(--primary) 2%) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.78),
+      0 2px 4px rgba(0, 0, 0, 0.05),
+      0 12px 20px -22px color-mix(in srgb, var(--primary) 22%, transparent);
+  }
+
+  .dark .dashboard-breadcrumb [data-breadcrumb-segment="active"] {
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 14%,
+      rgba(255, 255, 255, 0.08)
+    );
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 70%, black) 0%,
+      color-mix(in srgb, var(--card) 78%, var(--primary) 8%) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.03),
+      0 10px 16px -22px rgba(0, 0, 0, 0.46);
+  }
+
+  .dashboard-breadcrumb.kb-page-header
+    [data-breadcrumb-segment="interactive"]:hover {
+    background: color-mix(in srgb, var(--card) 64%, transparent);
+  }
+
+  .dashboard-breadcrumb.kb-page-header [data-breadcrumb-segment="active"] {
+    border-color: color-mix(in srgb, var(--border) 82%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 96%, white) 0%,
+      color-mix(in srgb, var(--card) 94%, white) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.76),
+      0 10px 16px -24px rgba(15, 23, 42, 0.08);
+  }
+
+  .dark
+    .dashboard-breadcrumb.kb-page-header
+    [data-breadcrumb-segment="active"] {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 72%, black) 0%,
+      color-mix(in srgb, var(--card) 78%, black) 100%
+    );
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .dashboard-toolbar-button {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--primary) 10%, var(--border) 90%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 92%, white) 0%,
+      color-mix(in srgb, var(--card) 86%, var(--primary) 2%) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.78),
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 12px 18px -18px rgba(15, 23, 42, 0.12);
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  .dashboard-toolbar-button:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 94%, white) 0%,
+      color-mix(in srgb, var(--card) 84%, var(--primary) 3%) 100%
+    );
+    border-color: color-mix(in srgb, var(--primary) 14%, var(--border) 86%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 14px 22px -20px rgba(15, 23, 42, 0.16);
+    color: var(--foreground);
+    transform: translateY(-1px);
+  }
+
+  .dashboard-toolbar-button--icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .admin-toolbar-button {
+    position: relative;
+    overflow: hidden;
+    border: 0;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 96%, white) 0%,
+        color-mix(in srgb, var(--card) 90%, var(--primary) 3%) 100%
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 4%, transparent) 0%,
+        transparent 36%,
+        color-mix(in srgb, var(--secondary) 2.5%, transparent) 100%
+      );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 1px 2px rgba(15, 23, 42, 0.05),
+      0 14px 24px -22px rgba(15, 23, 42, 0.16);
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-toolbar-button:hover {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 98%, white) 0%,
+        color-mix(in srgb, var(--card) 90%, var(--primary) 4%) 100%
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 5%, transparent) 0%,
+        transparent 32%,
+        color-mix(in srgb, var(--secondary) 3%, transparent) 100%
+      );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.86),
+      0 18px 28px -24px rgba(15, 23, 42, 0.18),
+      0 16px 24px -28px color-mix(in srgb, var(--primary) 24%, transparent);
+    color: var(--foreground);
+    transform: translateY(-1px);
+  }
+
+  .admin-toolbar-button--icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .admin-toolbar-button:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent),
+      0 0 0 4px color-mix(in srgb, var(--primary) 8%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  }
+
+  .dark .admin-toolbar-button {
+    border: 0;
+    background: linear-gradient(180deg, #151b24 0%, #131922 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.02),
+      0 10px 16px -22px rgba(0, 0, 0, 0.34);
+  }
+
+  .dark .admin-toolbar-button:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, #151b24 92%, var(--primary) 8%) 0%,
+      color-mix(in srgb, #131922 88%, var(--primary) 12%) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025),
+      0 12px 18px -24px rgba(0, 0, 0, 0.36);
+    transform: none;
+  }
+
+  .dark .dashboard-toolbar-button {
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 10%,
+      rgba(255, 255, 255, 0.08)
+    );
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 70%, black) 0%,
+      color-mix(in srgb, var(--card) 78%, black) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025),
+      0 10px 16px -22px rgba(0, 0, 0, 0.46);
+  }
+
+  .dark .dashboard-toolbar-button:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 72%, black) 0%,
+      color-mix(in srgb, var(--card) 78%, var(--primary) 8%) 100%
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 16%,
+      rgba(255, 255, 255, 0.08)
+    );
+  }
+
+  .dashboard-breadcrumb.kb-page-header .dashboard-toolbar-button {
+    border-color: color-mix(in srgb, var(--border) 82%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 95%, white) 0%,
+      color-mix(in srgb, var(--card) 93%, white) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.76),
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 10px 16px -22px rgba(15, 23, 42, 0.08);
+  }
+
+  .dashboard-breadcrumb.kb-page-header .dashboard-toolbar-button:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 97%, white) 0%,
+      color-mix(in srgb, var(--card) 94%, white) 100%
+    );
+    border-color: color-mix(in srgb, var(--border) 74%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      0 12px 18px -24px rgba(15, 23, 42, 0.12);
+  }
+
+  .dark .dashboard-breadcrumb.kb-page-header .dashboard-toolbar-button {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 72%, black) 0%,
+      color-mix(in srgb, var(--card) 79%, black) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025),
+      0 10px 16px -22px rgba(0, 0, 0, 0.42);
+  }
+
+  .dark .dashboard-breadcrumb.kb-page-header .dashboard-toolbar-button:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 74%, black) 0%,
+      color-mix(in srgb, var(--card) 80%, black) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .sidebar-section-label {
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--muted-foreground) 80%, transparent);
+  }
+
+  .admin-sidebar-section-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--primary) 36%, var(--muted-foreground) 64%);
+  }
+
+  /* ── Platform nav link — breadcrumb / header cross-workspace links ─── */
+  .platform-nav-link {
+    position: relative;
+    overflow: hidden;
+    color: color-mix(in srgb, var(--muted-foreground) 80%, transparent);
+    transition:
+      color 200ms ease,
+      transform 200ms ease;
+  }
+
+  .platform-nav-link::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+      color-mix(in srgb, var(--primary) 6%, transparent) 100%
+    );
+    opacity: 0;
+    transform: translateX(-100%);
+    transition:
+      opacity 260ms ease,
+      transform 260ms ease;
+  }
+
+  .platform-nav-link:hover {
+    color: var(--primary);
+    transform: translateY(-0.5px);
+  }
+
+  .platform-nav-link:hover::before {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .dark .platform-nav-link:hover::before {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 14%, transparent) 0%,
+      color-mix(in srgb, var(--primary) 8%, transparent) 100%
+    );
+  }
+
+  :root:not(.dark) .agentic-chat-shell {
+    position: relative;
+    isolation: isolate;
+    background: var(--agentic-light-canvas);
+  }
+
+  :root:not(.dark) .agentic-chat-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 7%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--primary) 6%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        135deg,
+        transparent 0 56%,
+        color-mix(in srgb, var(--foreground) 8%, transparent) 56% 56.35%,
+        transparent 56.35% 100%
+      );
+    background-position:
+      left top,
+      left top,
+      right -8rem top 4.25rem;
+    background-size:
+      2.75rem 2.75rem,
+      2.75rem 2.75rem,
+      42rem 22rem;
+    mask-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, black 34%, transparent),
+      color-mix(in srgb, black 18%, transparent) 44%,
+      transparent 100%
+    );
+    opacity: 0.9;
+  }
+
+  :root:not(.dark) .agentic-chat-shell > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  :root:not(.dark) .agentic-chat-main {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, transparent 82%, white) 0%,
+        transparent 24%
+      ),
+      transparent !important;
+  }
+
+  :root:not(.dark) .agentic-chat-header {
+    border-bottom: 1px solid var(--agentic-light-line);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 94%, transparent) 0%,
+        color-mix(in srgb, var(--card) 82%, var(--background) 18%) 100%
+      ),
+      color-mix(in srgb, var(--card) 88%, transparent);
+    backdrop-filter: blur(18px) saturate(1.08);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 70%, transparent),
+      0 1px 2px color-mix(in srgb, var(--foreground) 10%, transparent),
+      0 16px 30px -28px color-mix(in srgb, var(--foreground) 30%, transparent);
+  }
+
+  :root:not(.dark) .agentic-chat-header .platform-nav-link,
+  :root:not(.dark) .agentic-chat-header [data-slot="button"] {
+    border: 1px solid transparent;
+  }
+
+  :root:not(.dark) .agentic-chat-header .platform-nav-link:hover,
+  :root:not(.dark) .agentic-chat-header [data-slot="button"]:hover {
+    border-color: color-mix(in srgb, var(--primary) 18%, var(--border));
+    background: color-mix(in srgb, var(--primary) 8%, var(--card)) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 48%, transparent),
+      0 8px 16px -18px color-mix(in srgb, var(--primary) 28%, transparent);
+  }
+
+  :root:not(.dark) .agentic-task-sidebar {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 96%, white) 0%,
+      color-mix(in srgb, var(--card) 88%, var(--background) 12%) 100%
+    ) !important;
+    border-right: 1px solid var(--agentic-light-line) !important;
+    box-shadow: var(--sidebar-shadow) !important;
+  }
+
+  :root:not(.dark) .agentic-task-sidebar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 5%, transparent),
+      transparent 34%
+    );
+  }
+
+  :root:not(.dark) .agentic-task-sidebar > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  :root:not(.dark) .agentic-chat-input-dock {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--background) 58%, transparent) 30%,
+      color-mix(in srgb, var(--background) 86%, transparent) 100%
+    );
+  }
+
+  :root:not(.dark) .agentic-chat-welcome-card {
+    position: relative;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  :root:not(.dark) .agentic-chat-welcome-card::before {
+    content: none;
+  }
+
+  :root:not(.dark) .agentic-chat-welcome-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  :root:not(.dark) .agentic-suggestion-tile {
+    border-color: color-mix(
+      in srgb,
+      var(--border) 62%,
+      var(--foreground) 16%
+    ) !important;
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        color-mix(in srgb, var(--card) 92%, var(--background) 8%) 100%
+      ),
+      var(--card) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.78),
+      0 1px 2px color-mix(in srgb, var(--foreground) 12%, transparent),
+      0 14px 24px -22px color-mix(in srgb, var(--foreground) 30%, transparent),
+      0 24px 46px -38px color-mix(in srgb, var(--primary) 26%, transparent);
+  }
+
+  :root:not(.dark) .agentic-suggestion-tile:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 24%,
+      var(--foreground) 12%
+    ) !important;
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        color-mix(in srgb, var(--card) 90%, var(--primary) 6%) 100%
+      ),
+      var(--card) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.84),
+      0 2px 4px color-mix(in srgb, var(--foreground) 14%, transparent),
+      0 20px 36px -26px color-mix(in srgb, var(--foreground) 32%, transparent),
+      0 32px 62px -46px color-mix(in srgb, var(--primary) 34%, transparent);
+  }
+
+  :root:not(.dark) .agentic-message-frame {
+    border-bottom-color: color-mix(
+      in srgb,
+      var(--border) 68%,
+      var(--foreground) 10%
+    ) !important;
+  }
+
+  .agentic-message-frame[data-author="user"] {
+    margin-block: 0.125rem 0.375rem;
+    align-items: flex-end;
+    border-bottom-width: 0 !important;
+  }
+
+  .agentic-message-bubble {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .agentic-message-bubble-agent {
+    width: 100%;
+  }
+
+  .agentic-message-bubble-user {
+    width: fit-content;
+    max-width: min(44rem, 76%);
+    overflow: hidden;
+    border-radius: 1.25rem 1.25rem 0.45rem 1.25rem;
+    color: var(--primary-foreground);
+  }
+
+  .agentic-message-bubble-user .agentic-message-body,
+  .agentic-message-bubble-user .agentic-user-message-text {
+    position: relative;
+    z-index: 1;
+    color: color-mix(
+      in srgb,
+      var(--primary-foreground) 94%,
+      transparent
+    ) !important;
+  }
+
+  .agentic-message-frame[data-author="user"] .agentic-message-meta {
+    width: 100%;
+    max-width: min(44rem, 76%);
+  }
+
+  .agentic-message-frame[data-author="user"] .agentic-message-actions {
+    max-width: min(44rem, 76%);
+    opacity: 0.46;
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease;
+  }
+
+  .agentic-message-frame[data-author="user"]:hover .agentic-message-actions,
+  .agentic-message-frame[data-author="user"]:focus-within
+    .agentic-message-actions {
+    opacity: 1;
+  }
+
+  .agentic-message-frame[data-author="user"] .agentic-message-action-button {
+    border: 1px solid transparent;
+    color: color-mix(in srgb, var(--muted-foreground) 74%, transparent);
+  }
+
+  .agentic-message-frame[data-author="user"]
+    .agentic-message-action-button:hover {
+    border-color: color-mix(in srgb, var(--primary) 18%, var(--border));
+    background: color-mix(in srgb, var(--primary) 8%, var(--card));
+    color: var(--foreground);
+  }
+
+  :root:not(.dark) .agentic-message-bubble-user {
+    border: 1px solid
+      color-mix(in srgb, var(--primary) 62%, var(--foreground) 12%) !important;
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary) 96%, white 4%) 0%,
+        color-mix(in srgb, var(--primary) 86%, var(--foreground) 14%) 58%,
+        color-mix(in srgb, var(--primary) 74%, black 26%) 100%
+      ),
+      var(--primary);
+    padding: 0.875rem 1rem;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, black 14%, transparent),
+      0 1px 2px color-mix(in srgb, var(--foreground) 12%, transparent),
+      0 12px 24px -18px color-mix(in srgb, var(--foreground) 32%, transparent),
+      0 28px 52px -38px color-mix(in srgb, var(--primary) 52%, transparent);
+  }
+
+  :root:not(.dark) .agentic-message-bubble-user::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    z-index: 0;
+    height: 46%;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, white 18%, transparent),
+      transparent
+    );
+  }
+
+  .dark .agentic-message-bubble-user {
+    border: 1px solid color-mix(in srgb, var(--primary) 54%, white 10%);
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary) 88%, white 6%) 0%,
+        color-mix(in srgb, var(--primary) 72%, black 28%) 100%
+      ),
+      var(--primary);
+    padding: 0.875rem 1rem;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 18px 38px -28px color-mix(in srgb, var(--primary) 48%, transparent);
+  }
+
+  @media (max-width: 640px) {
+    .agentic-message-bubble-user,
+    .agentic-message-frame[data-author="user"] .agentic-message-meta,
+    .agentic-message-frame[data-author="user"] .agentic-message-actions {
+      max-width: 88%;
+    }
+  }
+
+  :root:not(.dark) .agentic-traces-sidebar {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 96%, white) 0%,
+      color-mix(in srgb, var(--card) 84%, var(--background) 16%) 100%
+    ) !important;
+    border-left-color: var(--agentic-light-line) !important;
+    box-shadow:
+      -1px 0 0 color-mix(in srgb, white 52%, transparent),
+      -16px 0 34px -30px color-mix(in srgb, var(--foreground) 32%, transparent),
+      -24px 0 58px -50px color-mix(in srgb, var(--primary) 28%, transparent);
+  }
+
+  :root:not(.dark) .agentic-traces-sidebar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--primary) 5%, transparent),
+        transparent 30%
+      ),
+      linear-gradient(
+        90deg,
+        transparent 0 78%,
+        color-mix(in srgb, var(--primary) 10%, transparent) 78% 78.4%,
+        transparent 78.4% 100%
+      );
+    background-size:
+      100% 100%,
+      18rem 100%;
+    opacity: 0.88;
+  }
+
+  :root:not(.dark) .agentic-traces-sidebar > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dashboard-nav-button {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+    background: transparent;
+    transition:
+      transform 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      color 180ms ease;
+  }
+
+  .dashboard-nav-button::before {
+    content: "";
+    position: absolute;
+    left: 0.8rem;
+    top: 0.72rem;
+    bottom: 0.72rem;
+    width: 3px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      180deg,
+      var(--primary),
+      color-mix(in srgb, var(--primary) 50%, transparent)
+    );
+    opacity: 0;
+    transform: scaleY(0.6);
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+  .dashboard-nav-button[data-active="true"] {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, white 86%, var(--primary) 14%) 0%,
+      color-mix(in srgb, var(--card) 76%, var(--primary) 12%) 100%
+    );
+    border-color: color-mix(in srgb, var(--primary) 24%, var(--border) 76%);
+    color: var(--foreground);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 80%, var(--primary) 20%),
+      0 2px 4px rgba(0, 0, 0, 0.04),
+      0 14px 22px -20px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+
+  .dashboard-nav-button[data-active="true"]::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .dashboard-nav-button[data-active="false"] {
+    color: var(--muted-foreground);
+  }
+
+  .dashboard-nav-button[data-active="false"]:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 91%, white) 0%,
+      color-mix(in srgb, var(--card) 84%, var(--primary) 2%) 100%
+    );
+    border-color: color-mix(in srgb, var(--primary) 10%, var(--border) 90%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.62),
+      0 12px 18px -24px rgba(15, 23, 42, 0.12);
+    color: var(--foreground);
+    transform: none;
+  }
+
+  .dashboard-nav-icon {
+    display: inline-flex;
+    height: 1.8rem;
+    width: 1.8rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 9%, var(--border) 91%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, white 92%, var(--card)) 0%,
+      color-mix(in srgb, var(--card) 88%, var(--primary) 2%) 100%
+    );
+    color: var(--muted-foreground);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.56),
+      0 10px 14px -16px rgba(15, 23, 42, 0.1);
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      transform 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .dashboard-nav-button[data-active="true"] .dashboard-nav-icon {
+    border-color: color-mix(in srgb, var(--primary) 24%, var(--border) 76%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, white 82%, var(--primary) 18%) 0%,
+      color-mix(in srgb, var(--card) 78%, var(--primary) 14%) 100%
+    );
+    color: var(--primary);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 82%, var(--primary) 18%),
+      0 14px 18px -20px color-mix(in srgb, var(--primary) 28%, transparent);
+  }
+
+  .dashboard-nav-button[data-active="false"]:hover .dashboard-nav-icon {
+    border-color: color-mix(in srgb, var(--primary) 12%, var(--border) 88%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, white 90%, var(--card)) 0%,
+      color-mix(in srgb, var(--card) 84%, var(--primary) 3%) 100%
+    );
+    color: var(--primary);
+  }
+
+  .dark .dashboard-nav-button[data-active="true"] {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 62%, var(--primary) 16%) 0%,
+      color-mix(in srgb, var(--card) 66%, var(--primary) 18%) 100%
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 28%,
+      rgba(255, 255, 255, 0.08)
+    );
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--primary) 12%, transparent),
+      0 14px 20px -26px rgba(0, 0, 0, 0.58);
+  }
+
+  .dark .dashboard-nav-button[data-active="false"]:hover {
+    background: color-mix(in srgb, var(--card) 76%, var(--primary) 4%);
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 12%,
+      rgba(255, 255, 255, 0.08)
+    );
+  }
+
+  .dark .dashboard-nav-button[data-active="false"]:hover .dashboard-nav-icon {
+    background: color-mix(in srgb, var(--card) 68%, var(--primary) 8%);
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 14%,
+      rgba(255, 255, 255, 0.1)
+    );
+  }
+
+  .dark .dashboard-nav-icon {
+    border-color: rgba(255, 255, 255, 0.06);
+    background: color-mix(in srgb, var(--card) 72%, black);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .dark .dashboard-nav-button[data-active="true"] .dashboard-nav-icon {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 58%, var(--primary) 18%) 0%,
+      color-mix(in srgb, var(--card) 62%, var(--primary) 22%) 100%
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 30%,
+      rgba(255, 255, 255, 0.08)
+    );
+    color: var(--primary);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--primary) 10%, transparent),
+      0 10px 14px -20px rgba(0, 0, 0, 0.48);
+  }
+
+  .kb-sidebar-shell [data-slot="sidebar-inner"] {
+    position: relative;
+    isolation: isolate;
+  }
+
+  :root:not(.dark) .kb-sidebar-shell [data-slot="sidebar-inner"] {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 96%, white) 0%,
+      color-mix(in srgb, var(--card) 93%, var(--primary) 1%) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--primary) 6%, var(--border) 58%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      8px 0 24px -28px rgba(15, 23, 42, 0.18);
+  }
+
+  :root:not(.dark) .kb-sidebar-shell [data-slot="sidebar-inner"]::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 44%, white) 0%,
+      color-mix(in srgb, var(--primary) 24%, transparent) 58%,
+      transparent 100%
+    );
+    z-index: -1;
+  }
+
+  :root:not(.dark) .kb-sidebar-shell [data-slot="sidebar-inner"]::after {
+    display: none;
+  }
+
+  .dark .kb-sidebar-shell [data-slot="sidebar-inner"] {
+    background: linear-gradient(
+      180deg,
+      rgba(11, 14, 18, 0.92) 0%,
+      rgba(9, 12, 16, 0.97) 100%
+    );
+    border: 1px solid
+      color-mix(in srgb, var(--primary) 5%, rgba(255, 255, 255, 0.05));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.015),
+      8px 0 24px -20px rgba(0, 0, 0, 0.36);
+  }
+
+  /* Override sidebar accent for KB sidebar — HKI Blue */
+  .kb-sidebar-shell {
+    --sidebar-accent: rgba(0, 102, 178, 0.12);
+    --sidebar-accent-foreground: var(--primary);
+    --kb-brand-red: #e31837;
+  }
+
+  .dark .kb-sidebar-shell {
+    --sidebar-accent: rgba(0, 102, 178, 0.22);
+    --sidebar-accent-foreground: #cce5f5;
+  }
+
+  .kb-sidebar-shell .dashboard-nav-button {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    transition:
+      background-color 140ms ease,
+      border-color 140ms ease,
+      color 140ms ease;
+  }
+
+  .kb-sidebar-shell .dashboard-nav-button::before {
+    left: 0.9rem;
+    top: 0.78rem;
+    bottom: 0.78rem;
+    width: 2px;
+  }
+
+  .kb-sidebar-shell .dashboard-nav-icon,
+  .dark .kb-sidebar-shell .dashboard-nav-icon {
+    height: 1.7rem;
+    width: 1.7rem;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    color: var(--primary);
+  }
+
+  /* KB active nav — restrained blue tint; left accent bar is the primary cue */
+  :root:not(.dark) .kb-sidebar-shell .dashboard-nav-button[data-active="true"] {
+    background: color-mix(in srgb, var(--primary) 8%, var(--card));
+    border-color: color-mix(in srgb, var(--primary) 20%, var(--border));
+    color: var(--foreground);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--primary) 8%, transparent);
+  }
+
+  :root:not(.dark)
+    .kb-sidebar-shell
+    .dashboard-nav-button[data-active="true"]::before {
+    background: var(--primary);
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  :root:not(.dark)
+    .kb-sidebar-shell
+    .dashboard-nav-button[data-active="false"]:hover {
+    background: color-mix(in srgb, var(--primary) 5%, var(--card));
+    border-color: color-mix(in srgb, var(--primary) 12%, var(--border));
+  }
+
+  .dark .kb-sidebar-shell .dashboard-nav-button[data-active="true"] {
+    background: color-mix(in srgb, var(--primary) 16%, var(--card));
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 28%,
+      rgba(255, 255, 255, 0.12)
+    );
+    color: var(--foreground);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  /* Suppress the default gray :active flash on sidebar nav buttons */
+  .kb-sidebar-shell .dashboard-nav-button:active,
+  .dark .kb-sidebar-shell .dashboard-nav-button:active {
+    background: transparent;
+  }
+  .kb-sidebar-shell .dashboard-nav-button[data-active="true"]:active {
+    background: inherit;
+  }
+  .dark .kb-sidebar-shell .dashboard-nav-button[data-active="true"]:active {
+    background: inherit;
+  }
+
+  .admin-sidebar-shell {
+    --sidebar: hsl(var(--background));
+    --sidebar-foreground: hsl(var(--foreground));
+    --sidebar-border: hsl(var(--border));
+    --sidebar-accent: hsl(var(--primary));
+    --sidebar-accent-foreground: hsl(var(--primary-foreground));
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+    --sidebar-ring: hsl(var(--ring));
+    position: relative;
+    isolation: isolate;
+  }
+
+  .admin-sidebar-shell::after {
+    content: "";
+    position: absolute;
+    top: 1rem;
+    bottom: 1rem;
+    right: 0;
+    width: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 28%, transparent) 0%,
+      color-mix(in srgb, var(--border) 72%, transparent) 12%,
+      color-mix(in srgb, var(--border) 68%, transparent) 88%,
+      transparent 100%
+    );
+    opacity: 0.82;
+  }
+
+  .admin-sidebar-shell [data-slot="sidebar-inner"] {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  :root:not(.dark) .admin-sidebar-shell [data-slot="sidebar-inner"] {
+    background:
+      radial-gradient(
+        28rem 20rem at 0% 0%,
+        color-mix(in srgb, var(--primary) 7%, transparent) 0%,
+        transparent 74%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 97%, white) 0%,
+        color-mix(in srgb, var(--card) 92%, var(--primary) 4%) 100%
+      );
+    border: 1px solid color-mix(in srgb, var(--primary) 10%, var(--border) 90%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.76),
+      8px 0 24px -28px rgba(15, 23, 42, 0.16),
+      0 20px 40px -42px color-mix(in srgb, var(--primary) 16%, transparent);
+  }
+
+  .dark .admin-sidebar-shell [data-slot="sidebar-inner"] {
+    background:
+      radial-gradient(
+        26rem 16rem at 0% 0%,
+        color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+        transparent 76%
+      ),
+      linear-gradient(180deg, #10161f 0%, #0e141c 100%);
+    border: 1px solid
+      color-mix(in srgb, var(--primary) 10%, rgba(255, 255, 255, 0.08));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.02),
+      8px 0 20px -22px rgba(0, 0, 0, 0.4),
+      0 22px 36px -38px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+
+  .admin-sidebar-shell [data-slot="sidebar-inner"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        28rem 16rem at 0% 0%,
+        color-mix(in srgb, var(--primary) 5%, transparent) 0%,
+        transparent 72%
+      ),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 22%);
+    opacity: 0.75;
+  }
+
+  .admin-sidebar-shell [data-slot="sidebar-inner"]::after {
+    content: "";
+    position: absolute;
+    top: 1rem;
+    bottom: 1rem;
+    left: 0;
+    width: 2px;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 88%, transparent) 0%,
+      color-mix(in srgb, var(--primary) 34%, transparent) 24%,
+      color-mix(in srgb, var(--primary) 10%, transparent) 72%,
+      transparent 100%
+    );
+    opacity: 0.62;
+  }
+
+  .admin-sidebar-section-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .admin-sidebar-section-index {
+    display: inline-flex;
+    min-width: 1.65rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--primary) 10%, var(--border) 90%);
+    background: color-mix(in srgb, var(--muted) 72%, transparent);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: color-mix(in srgb, var(--muted-foreground) 82%, transparent);
+  }
+
+  .admin-sidebar-section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 14%, transparent) 0%,
+      color-mix(in srgb, var(--border) 70%, transparent) 100%
+    );
+    opacity: 0.9;
+  }
+
+  .admin-sidebar-shell .dashboard-nav-button {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+    background: transparent;
+    box-shadow: none;
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-sidebar-shell .dashboard-nav-button::before {
+    content: none;
+    position: absolute;
+    left: 0.7rem;
+    top: 0.7rem;
+    bottom: 0.7rem;
+    width: 2px;
+    border-radius: 999px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 96%, white) 0%,
+      color-mix(in srgb, var(--primary) 46%, transparent) 100%
+    );
+    opacity: 0;
+    transform: scaleY(0.72);
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-sidebar-shell .dashboard-nav-button::after {
+    content: none;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+      transparent 64%
+    );
+    opacity: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    transition: opacity 180ms ease;
+  }
+
+  .admin-sidebar-shell .dashboard-nav-button:active::after {
+    animation: none;
+    opacity: 1;
+  }
+
+  .admin-sidebar-shell .dashboard-nav-badge,
+  .admin-sidebar-shell .dashboard-nav-shortcut,
+  .admin-sidebar-shell .dashboard-nav-external,
+  .admin-sidebar-shell .dashboard-nav-icon {
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .admin-sidebar-nav-button {
+    align-items: center;
+  }
+
+  .admin-sidebar-nav-copy {
+    display: grid;
+    min-width: 0;
+    gap: 0.15rem;
+  }
+
+  .admin-sidebar-nav-label {
+    font-size: 13px;
+    line-height: 1.15;
+    color: inherit;
+    font-weight: 600;
+  }
+
+  .admin-sidebar-nav-meta {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--muted-foreground) 74%, transparent);
+  }
+
+  .admin-sidebar-nav-rail {
+    display: none;
+  }
+
+  .admin-sidebar-nav-badge,
+  .admin-sidebar-nav-shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 0;
+    background: transparent;
+    color: color-mix(in srgb, var(--muted-foreground) 84%, transparent);
+    padding: 0;
+  }
+
+  .admin-sidebar-nav-external {
+    color: color-mix(in srgb, var(--muted-foreground) 72%, transparent);
+  }
+
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="false"]:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 94%, white) 0%,
+      color-mix(in srgb, var(--card) 88%, var(--primary) 6%) 100%
+    );
+    border-color: color-mix(in srgb, var(--primary) 16%, var(--border));
+    color: var(--foreground);
+    box-shadow:
+      inset 0 1px 0
+        color-mix(in srgb, var(--primary-foreground) 64%, transparent),
+      0 12px 18px -24px rgba(15, 23, 42, 0.12),
+      0 16px 24px -30px color-mix(in srgb, var(--primary) 22%, transparent);
+  }
+
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"] {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, white 80%, var(--primary) 20%) 0%,
+      color-mix(in srgb, var(--card) 72%, var(--primary) 18%) 100%
+    );
+    border-color: color-mix(in srgb, var(--primary) 28%, var(--border) 72%);
+    color: var(--foreground);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 78%, var(--primary) 22%),
+      0 14px 20px -24px color-mix(in srgb, var(--primary) 26%, transparent);
+  }
+
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="false"]:hover::before,
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]::before {
+    opacity: 0;
+    transform: none;
+  }
+
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="false"]:hover::after,
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]::after {
+    opacity: 0;
+  }
+
+  .admin-sidebar-shell .dashboard-nav-icon,
+  .dark .admin-sidebar-shell .dashboard-nav-icon {
+    background: color-mix(in srgb, var(--muted) 72%, transparent);
+    border-color: color-mix(in srgb, var(--primary) 8%, transparent);
+    box-shadow: none;
+    color: color-mix(in srgb, var(--muted-foreground) 82%, transparent);
+  }
+
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="false"]:hover
+    .dashboard-nav-icon {
+    background: color-mix(in srgb, white 74%, var(--primary) 26%);
+    border-color: color-mix(in srgb, var(--primary) 18%, var(--border) 82%);
+    color: color-mix(in srgb, var(--primary) 88%, var(--foreground) 12%);
+  }
+
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .dashboard-nav-icon {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, white 68%, var(--primary) 32%) 0%,
+      color-mix(in srgb, var(--card) 58%, var(--primary) 42%) 100%
+    );
+    border-color: color-mix(in srgb, var(--primary) 26%, var(--border) 74%);
+    color: var(--primary);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.42),
+      0 10px 16px -18px color-mix(in srgb, var(--primary) 24%, transparent);
+  }
+
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .admin-sidebar-nav-meta {
+    color: color-mix(in srgb, var(--primary) 74%, var(--muted-foreground) 26%);
+  }
+
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .admin-sidebar-nav-rail {
+    opacity: 0;
+  }
+
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .dashboard-nav-badge {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--primary);
+    box-shadow: none;
+  }
+
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .dashboard-nav-shortcut,
+  :root:not(.dark)
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .dashboard-nav-external {
+    color: color-mix(in srgb, var(--primary) 82%, transparent);
+  }
+
+  .admin-sidebar-shell .dashboard-nav-button:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--primary) 24%, transparent),
+      0 0 0 4px color-mix(in srgb, var(--primary) 10%, transparent);
+  }
+
+  .dark .admin-sidebar-shell .dashboard-nav-button:focus-visible {
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent),
+      0 0 0 4px rgba(255, 255, 255, 0.06);
+  }
+
+  .dark .admin-sidebar-shell .dashboard-nav-button[data-active="false"]:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, #141a22 94%, var(--primary) 6%) 0%,
+      color-mix(in srgb, #121821 90%, var(--primary) 10%) 100%
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 12%,
+      rgba(255, 255, 255, 0.08)
+    );
+    color: color-mix(in srgb, var(--foreground) 94%, var(--primary) 6%);
+    box-shadow: 0 10px 16px -24px rgba(0, 0, 0, 0.28);
+  }
+
+  .dark .admin-sidebar-shell .dashboard-nav-button[data-active="true"] {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, #131a23 88%, var(--primary) 12%) 0%,
+      color-mix(in srgb, #121821 74%, var(--primary) 26%) 100%
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 28%,
+      rgba(255, 255, 255, 0.1)
+    );
+    color: color-mix(in srgb, white 92%, var(--primary) 8%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 12px 18px -24px rgba(0, 0, 0, 0.32);
+  }
+
+  .dark
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="false"]:hover::before,
+  .dark .admin-sidebar-shell .dashboard-nav-button[data-active="true"]::before {
+    opacity: 0;
+    transform: none;
+  }
+
+  .dark
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="false"]:hover::after,
+  .dark .admin-sidebar-shell .dashboard-nav-button[data-active="true"]::after {
+    opacity: 0;
+  }
+
+  .dark .admin-sidebar-shell .dashboard-nav-icon {
+    background: color-mix(in srgb, var(--card) 88%, white 12%);
+    border-color: rgba(255, 255, 255, 0.05);
+    color: var(--muted-foreground);
+    box-shadow: none;
+  }
+
+  .dark
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="false"]:hover
+    .admin-sidebar-nav-rail {
+    opacity: 0;
+  }
+
+  .dark
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .admin-sidebar-nav-rail {
+    opacity: 0;
+  }
+
+  .dark
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="false"]:hover
+    .dashboard-nav-icon {
+    background: color-mix(in srgb, var(--card) 82%, var(--primary) 18%);
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 18%,
+      rgba(255, 255, 255, 0.08)
+    );
+    color: color-mix(in srgb, var(--foreground) 86%, var(--primary) 14%);
+  }
+
+  .dark
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .dashboard-nav-icon {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 74%, #16324b 26%) 0%,
+      color-mix(in srgb, var(--primary) 58%, #12263a 42%) 100%
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 34%,
+      rgba(255, 255, 255, 0.14)
+    );
+    color: #f7fbff;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 12px 18px -20px color-mix(in srgb, var(--primary) 42%, transparent);
+  }
+
+  .dark .admin-sidebar-nav-badge,
+  .dark .admin-sidebar-nav-shortcut {
+    background: color-mix(in srgb, var(--card) 90%, var(--background) 10%);
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 10%,
+      rgba(255, 255, 255, 0.08)
+    );
+    color: var(--muted-foreground);
+  }
+
+  .dark
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .dashboard-nav-badge {
+    background: color-mix(in srgb, var(--primary) 18%, transparent);
+    color: white;
+    box-shadow: none;
+  }
+
+  .dark
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .dashboard-nav-shortcut,
+  .dark
+    .admin-sidebar-shell
+    .dashboard-nav-button[data-active="true"]
+    .dashboard-nav-external {
+    color: color-mix(in srgb, white 82%, var(--primary) 18%);
+  }
+
+  .admin-sidebar-shell {
+    --sidebar: color-mix(in srgb, var(--primary) 5%, var(--background));
+    --sidebar-foreground: var(--foreground);
+    --sidebar-accent: transparent;
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-ring: var(--primary);
+  }
+
+  .admin-sidebar-shell [data-slot="sidebar-inner"] {
+    border: 0 !important;
+    background: linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--primary) 13%, white) 0%,
+      color-mix(in srgb, var(--background) 88%, white) 42%,
+      color-mix(in srgb, var(--primary) 7%, var(--card)) 100%
+    );
+    backdrop-filter: blur(20px) saturate(1.08);
+    box-shadow:
+      inset -1px 0 0 color-mix(in srgb, white 68%, transparent),
+      10px 0 34px -30px color-mix(in srgb, var(--primary) 44%, transparent),
+      18px 0 50px -44px rgba(15, 23, 42, 0.22);
+  }
+
+  .dark .admin-sidebar-shell [data-slot="sidebar-inner"] {
+    border: 0 !important;
+    background: linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--primary) 20%, #0d141d) 0%,
+      #0f151e 44%,
+      color-mix(in srgb, var(--primary) 10%, #0b1119) 100%
+    );
+    box-shadow:
+      inset -1px 0 0 rgba(255, 255, 255, 0.025),
+      12px 0 30px -26px rgba(0, 0, 0, 0.54),
+      18px 0 54px -46px color-mix(in srgb, var(--primary) 34%, black);
+  }
+
+  .admin-sidebar-brand {
+    min-height: 4.9rem;
+    border: 0;
+    overflow: hidden;
+    color: white;
+    background:
+      radial-gradient(
+        120% 100% at 0% 0%,
+        rgba(255, 255, 255, 0.16) 0%,
+        rgba(255, 255, 255, 0) 58%
+      ),
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary) 86%, #063a3c) 0%,
+        color-mix(in srgb, var(--primary) 74%, #243d35) 58%,
+        color-mix(in srgb, var(--primary) 68%, var(--secondary) 32%) 100%
+      );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 16px 28px -24px color-mix(in srgb, var(--primary) 70%, transparent),
+      0 20px 42px -36px color-mix(in srgb, var(--secondary) 38%, transparent);
+  }
+
+  .admin-sidebar-brand:hover {
+    background:
+      radial-gradient(
+        120% 100% at 0% 0%,
+        rgba(255, 255, 255, 0.19) 0%,
+        rgba(255, 255, 255, 0) 58%
+      ),
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary) 92%, #063a3c) 0%,
+        color-mix(in srgb, var(--primary) 72%, #243d35) 58%,
+        color-mix(in srgb, var(--primary) 64%, var(--secondary) 36%) 100%
+      );
+  }
+
+  .admin-sidebar-brand-mark-shell {
+    background: rgba(255, 255, 255, 0.13);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+      0 14px 22px -20px rgba(0, 0, 0, 0.44);
+  }
+
+  .admin-sidebar-brand-mark {
+    --ops-icon-iris: rgba(255, 255, 255, 0.92);
+    --ops-icon-pulse: color-mix(in srgb, var(--secondary) 92%, white);
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22));
+  }
+
+  .admin-sidebar-brand-status {
+    position: absolute;
+    right: 0.18rem;
+    bottom: 0.18rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.82),
+      0 7px 12px -10px rgba(0, 0, 0, 0.48);
+  }
+
+  .admin-sidebar-brand-status.is-healthy {
+    background: color-mix(in srgb, var(--primary) 70%, white);
+  }
+
+  .admin-sidebar-brand-status.is-warning {
+    background: color-mix(in srgb, var(--warning) 86%, white);
+  }
+
+  .admin-sidebar-brand-eyebrow {
+    color: rgba(255, 255, 255, 0.78);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
+  }
+
+  .admin-sidebar-brand-title {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+  }
+
+  .admin-sidebar-nav-button {
+    isolation: isolate;
+    border: 0 !important;
+    background: transparent !important;
+    color: color-mix(in srgb, var(--foreground) 72%, var(--muted-foreground));
+    box-shadow: none !important;
+    transition:
+      color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-sidebar-nav-button::before {
+    content: "";
+    position: absolute;
+    inset: 0.15rem;
+    z-index: 0;
+    border-radius: 0.72rem;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--primary) 12%, transparent) 0%,
+      color-mix(in srgb, var(--secondary) 6%, transparent) 100%
+    );
+    opacity: 0;
+    transform: scaleX(0.96);
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-sidebar-nav-button > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .admin-sidebar-nav-button:hover::before,
+  .admin-sidebar-nav-button[data-active="true"]::before {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .admin-sidebar-nav-button:hover {
+    color: color-mix(in srgb, var(--primary) 42%, var(--foreground)) !important;
+    transform: translateX(2px);
+  }
+
+  .admin-sidebar-nav-button[data-active="true"] {
+    color: color-mix(in srgb, var(--primary) 54%, var(--foreground)) !important;
+    transform: translateX(2px);
+  }
+
+  .admin-sidebar-nav-button:active {
+    background: transparent !important;
+    color: color-mix(in srgb, var(--primary) 58%, var(--foreground)) !important;
+  }
+
+  .admin-sidebar-nav-text {
+    min-width: 0;
+    letter-spacing: 0;
+  }
+
+  .admin-sidebar-nav-icon {
+    background: color-mix(in srgb, var(--primary) 9%, transparent);
+    color: color-mix(in srgb, var(--primary) 74%, var(--muted-foreground));
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--foreground) 10%, transparent);
+  }
+
+  .admin-sidebar-nav-button:hover .admin-sidebar-nav-icon,
+  .admin-sidebar-nav-button[data-active="true"] .admin-sidebar-nav-icon {
+    background: linear-gradient(
+      135deg,
+      color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 92%,
+          var(--foreground)
+        )
+        0%,
+      color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 58%,
+          var(--admin-duotone-b, var(--secondary)) 42%
+        )
+        100%
+    );
+    color: var(--background);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--background) 22%, transparent),
+      0 10px 18px -15px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 54%,
+          transparent
+        );
+  }
+
+  .admin-sidebar-nav-button[data-active="true"] .admin-sidebar-nav-shortcut,
+  .admin-sidebar-nav-button[data-active="true"] .admin-sidebar-nav-count {
+    color: var(--primary);
+  }
+
+  .admin-sidebar-nav-count {
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+  }
+
+  .admin-sidebar-nav-shortcut {
+    color: color-mix(in srgb, var(--muted-foreground) 54%, transparent);
+  }
+
+  :root:not(.dark) .admin-sidebar-shell [data-slot="sidebar-inner"] {
+    background:
+      radial-gradient(
+        28rem 20rem at 0% 0%,
+        color-mix(in srgb, var(--primary) 9%, transparent) 0%,
+        transparent 74%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 96%, transparent) 0%,
+        color-mix(in srgb, var(--background) 92%, var(--card)) 100%
+      );
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
+      8px 0 24px -28px color-mix(in srgb, var(--foreground) 16%, transparent),
+      0 20px 40px -42px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 18%,
+          transparent
+        );
+  }
+
+  :root:not(.dark) .admin-sidebar-nav-button::before {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--primary) 11%, transparent) 0%,
+      color-mix(in srgb, var(--secondary) 5%, transparent) 100%
+    );
+  }
+
+  :root:not(.dark) .admin-sidebar-nav-button[data-active="true"] {
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-a, var(--primary)) 62%,
+      var(--foreground)
+    ) !important;
+  }
+
+  :root:not(.dark) .admin-sidebar-nav-icon {
+    background: color-mix(
+      in srgb,
+      var(--admin-duotone-a, var(--primary)) 8%,
+      var(--card)
+    );
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-a, var(--primary)) 76%,
+      var(--foreground)
+    );
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
+      0 10px 18px -18px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 22%,
+          transparent
+        );
+  }
+
+  :root:not(.dark) .admin-metric-card {
+    background:
+      radial-gradient(
+        17rem 12rem at 0% 0%,
+        color-mix(in srgb, var(--primary) 5%, transparent) 0%,
+        transparent 76%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 93%, transparent) 0%,
+        color-mix(in srgb, var(--card) 84%, var(--background)) 100%
+      ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
+      0 14px 24px -24px color-mix(in srgb, var(--foreground) 20%, transparent),
+      0 28px 54px -44px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 28%,
+          transparent
+        ) !important;
+  }
+
+  :root:not(.dark) .admin-metric-card:hover {
+    filter: saturate(1.09);
+    transform: translateY(-3px);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 9%, transparent),
+      0 20px 34px -30px color-mix(in srgb, var(--foreground) 24%, transparent),
+      0 36px 72px -52px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 34%,
+          transparent
+        ),
+      0 40px 82px -68px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 22%,
+          transparent
+        ) !important;
+  }
+
+  :root:not(.dark) .admin-surface-card {
+    background:
+      radial-gradient(
+        34rem 18rem at 0% 0%,
+        color-mix(in srgb, var(--primary) 6%, transparent) 0%,
+        transparent 76%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 92%, transparent) 0%,
+        color-mix(in srgb, var(--card) 84%, var(--background)) 100%
+      ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
+      0 16px 28px -28px color-mix(in srgb, var(--foreground) 20%, transparent),
+      0 30px 62px -50px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 28%,
+          transparent
+        ),
+      0 34px 70px -62px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 20%,
+          transparent
+        ) !important;
+  }
+
+  :root:not(.dark) .admin-surface-card:hover {
+    filter: saturate(1.08);
+    transform: translateY(-3px);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 9%, transparent),
+      0 22px 38px -32px color-mix(in srgb, var(--foreground) 24%, transparent),
+      0 40px 78px -54px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 34%,
+          transparent
+        ),
+      0 44px 90px -68px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 24%,
+          transparent
+        ) !important;
+  }
+
+  :root:not(.dark) .admin-surface-hero {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 94%, transparent) 0%,
+      color-mix(in srgb, var(--card) 86%, var(--background)) 100%
+    );
+    box-shadow:
+      0 18px 32px -30px color-mix(in srgb, var(--foreground) 20%, transparent),
+      0 30px 58px -50px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 28%,
+          transparent
+        ),
+      0 34px 70px -60px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 18%,
+          transparent
+        );
+  }
+
+  :root:not(.dark) .admin-surface-hero:hover {
+    filter: saturate(1.08);
+    transform: translateY(-2px);
+    box-shadow:
+      0 24px 40px -32px color-mix(in srgb, var(--foreground) 24%, transparent),
+      0 42px 80px -58px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 36%,
+          transparent
+        ),
+      0 46px 92px -72px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 24%,
+          transparent
+        ) !important;
+  }
+
+  .admin-sidebar-soft-button,
+  .admin-sidebar-user-trigger {
+    border: 0 !important;
+    background: transparent !important;
+    color: color-mix(in srgb, var(--muted-foreground) 82%, transparent);
+  }
+
+  .admin-sidebar-soft-button:hover,
+  .admin-sidebar-user-trigger:hover,
+  .admin-sidebar-user-trigger[data-state="open"] {
+    background: color-mix(in srgb, var(--primary) 9%, transparent) !important;
+    color: var(--foreground);
+  }
+
+  .dark .admin-sidebar-nav-button {
+    color: color-mix(in srgb, var(--foreground) 70%, var(--muted-foreground));
+  }
+
+  .dark .admin-sidebar-nav-button::before {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--primary) 22%, transparent) 0%,
+      color-mix(in srgb, var(--secondary) 9%, transparent) 100%
+    );
+  }
+
+  .dark .admin-sidebar-nav-button[data-active="true"] {
+    color: color-mix(
+      in srgb,
+      var(--foreground) 86%,
+      var(--admin-duotone-a, var(--primary)) 14%
+    ) !important;
+  }
+
+  .dark .admin-sidebar-nav-icon {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-a, var(--primary)) 78%,
+      var(--foreground) 22%
+    );
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--foreground) 4%, transparent);
+  }
+
+  .dark
+    .admin-sidebar-nav-button[data-active="true"]
+    .admin-sidebar-nav-shortcut,
+  .dark .admin-sidebar-nav-button[data-active="true"] .admin-sidebar-nav-count {
+    color: color-mix(
+      in srgb,
+      var(--foreground) 78%,
+      var(--admin-duotone-a, var(--primary)) 22%
+    );
+  }
+
+  .dark .admin-sidebar-soft-button:hover,
+  .dark .admin-sidebar-user-trigger:hover,
+  .dark .admin-sidebar-user-trigger[data-state="open"] {
+    background: color-mix(in srgb, var(--primary) 14%, transparent) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas,
+  .admin-sidebar-shell {
+    --admin-duotone-a: var(--primary);
+    --admin-duotone-b: color-mix(
+      in srgb,
+      var(--primary) 42%,
+      var(--muted-foreground)
+    );
+    --admin-duotone-canvas-a: 6%;
+    --admin-duotone-canvas-b: 3%;
+    --admin-duotone-surface-a: 5%;
+    --admin-duotone-surface-b: 2%;
+    --admin-duotone-surface-base-a: 95%;
+    --admin-duotone-surface-base-b: 98%;
+    --admin-duotone-sidebar-a: 8%;
+    --admin-duotone-sidebar-b: 3%;
+    --admin-duotone-brand-a: 24%;
+    --admin-duotone-brand-hover-a: 30%;
+    --admin-duotone-brand-b: 14%;
+    --admin-logo-base: var(--foreground);
+    --admin-logo-ink: var(--background);
+    --admin-dashboard-canvas-bg:
+      radial-gradient(
+        60rem 28rem at 10% 12%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a) var(--admin-duotone-canvas-a),
+            transparent
+          )
+          0%,
+        transparent 72%
+      ),
+      radial-gradient(
+        42rem 22rem at 96% 18%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-b) var(--admin-duotone-canvas-b),
+            transparent
+          )
+          0%,
+        transparent 74%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(
+            in srgb,
+            var(--background) var(--admin-duotone-surface-base-a),
+            var(--admin-duotone-a)
+          )
+          0%,
+        color-mix(
+            in srgb,
+            var(--background) var(--admin-duotone-surface-base-b),
+            var(--admin-duotone-b)
+          )
+          100%
+      );
+    --admin-sidebar-shell-bg: linear-gradient(
+      165deg,
+      color-mix(
+          in srgb,
+          var(--admin-duotone-a) var(--admin-duotone-sidebar-a),
+          var(--background)
+        )
+        0%,
+      color-mix(in srgb, var(--background) 92%, var(--card)) 48%,
+      color-mix(
+          in srgb,
+          var(--admin-duotone-b) var(--admin-duotone-sidebar-b),
+          var(--card)
+        )
+        100%
+    );
+    --admin-sidebar-shell-shadow:
+      inset -1px 0 0 color-mix(in srgb, var(--foreground) 8%, transparent),
+      10px 0 32px -30px
+        color-mix(in srgb, var(--admin-duotone-a) 34%, transparent),
+      18px 0 46px -42px color-mix(in srgb, var(--foreground) 18%, transparent);
+    --admin-sidebar-brand-bg:
+      radial-gradient(
+        88% 100% at 8% 0%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a) var(--admin-duotone-brand-a),
+            transparent
+          )
+          0%,
+        transparent 64%
+      ),
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--admin-logo-base) 88%, var(--admin-duotone-a))
+          0%,
+        color-mix(in srgb, var(--admin-logo-base) 82%, var(--admin-duotone-a))
+          58%,
+        color-mix(in srgb, var(--admin-logo-base) 78%, var(--admin-duotone-b))
+          100%
+      );
+    --admin-sidebar-brand-bg-hover:
+      radial-gradient(
+        88% 100% at 8% 0%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a) var(--admin-duotone-brand-hover-a),
+            transparent
+          )
+          0%,
+        transparent 64%
+      ),
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--admin-logo-base) 84%, var(--admin-duotone-a))
+          0%,
+        color-mix(in srgb, var(--admin-logo-base) 78%, var(--admin-duotone-a))
+          58%,
+        color-mix(in srgb, var(--admin-logo-base) 74%, var(--admin-duotone-b))
+          100%
+      );
+    --admin-sidebar-brand-shadow:
+      0 18px 32px -28px
+        color-mix(in srgb, var(--admin-duotone-a) 42%, transparent),
+      0 24px 46px -40px
+        color-mix(in srgb, var(--admin-duotone-b) 20%, transparent);
+    --admin-sidebar-brand-label-bg: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--admin-logo-base) 84%, transparent) 0%,
+      color-mix(in srgb, var(--admin-logo-base) 68%, transparent) 100%
+    );
+    --admin-sidebar-brand-label-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--admin-logo-ink) 10%, transparent),
+      0 12px 24px -20px
+        color-mix(in srgb, var(--admin-logo-base) 50%, transparent);
+    --admin-sidebar-brand-eyebrow-color: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 34%,
+      var(--admin-logo-ink)
+    );
+    --admin-sidebar-brand-title-color: var(--admin-logo-ink);
+    --admin-sidebar-brand-mark-bg: color-mix(
+      in srgb,
+      var(--admin-logo-ink) 10%,
+      transparent
+    );
+    --admin-sidebar-brand-mark-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--admin-logo-ink) 12%, transparent),
+      0 14px 24px -22px
+        color-mix(in srgb, var(--admin-logo-base) 56%, transparent);
+    --admin-sidebar-brand-status-ring: color-mix(
+      in srgb,
+      var(--admin-logo-base) 76%,
+      transparent
+    );
+    --admin-sidebar-brand-status-bg: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 82%,
+      var(--admin-logo-ink)
+    );
+  }
+
+  .dark .dashboard-shell.admin-control-plane-canvas,
+  .dark .admin-sidebar-shell {
+    --admin-logo-base: var(--background);
+    --admin-logo-ink: var(--foreground);
+  }
+
+  .dashboard-shell.admin-control-plane-canvas {
+    background: var(--admin-dashboard-canvas-bg) !important;
+  }
+
+  .admin-sidebar-shell [data-slot="sidebar-inner"] {
+    background: var(--admin-sidebar-shell-bg) !important;
+    box-shadow: var(--admin-sidebar-shell-shadow) !important;
+  }
+
+  .admin-sidebar-brand {
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--admin-sidebar-brand-bg) !important;
+    box-shadow: var(--admin-sidebar-brand-shadow) !important;
+    color: var(--admin-sidebar-brand-title-color);
+    transition:
+      background 180ms ease,
+      box-shadow 180ms ease,
+      filter 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-sidebar-brand::before {
+    content: "";
+    position: absolute;
+    inset: -18% -10% -18% -22%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      conic-gradient(
+        from 218deg at 23% 50%,
+        transparent 0deg,
+        color-mix(in srgb, var(--primary) 22%, transparent) 38deg,
+        transparent 72deg,
+        transparent 182deg,
+        color-mix(in srgb, var(--secondary) 16%, transparent) 222deg,
+        transparent 264deg,
+        transparent 360deg
+      ),
+      radial-gradient(
+        circle at 23% 50%,
+        color-mix(in srgb, var(--admin-logo-ink) 12%, transparent) 0 11%,
+        transparent 12% 18%,
+        color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) 19% 20%,
+        transparent 21% 100%
+      );
+    opacity: 0.82;
+    mix-blend-mode: screen;
+    transform: rotate(-4deg);
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-sidebar-brand:hover::before {
+    opacity: 1;
+    transform: rotate(-1deg) scale(1.02);
+  }
+
+  .admin-sidebar-brand > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .admin-sidebar-brand:hover {
+    background: var(--admin-sidebar-brand-bg-hover) !important;
+    filter: saturate(1.04);
+    transform: translateY(-1px);
+  }
+
+  .admin-sidebar-brand-copy {
+    max-width: 100%;
+    border-radius: 0.78rem;
+    background: var(--admin-sidebar-brand-label-bg);
+    padding: 0.38rem 0.58rem;
+    box-shadow: var(--admin-sidebar-brand-label-shadow);
+    backdrop-filter: blur(14px) saturate(1.06);
+  }
+
+  .admin-sidebar-brand-seal {
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 38%,
+      var(--admin-logo-ink)
+    );
+    text-shadow: 0 1px 0
+      color-mix(in srgb, var(--admin-logo-base) 22%, transparent);
+  }
+
+  .admin-sidebar-brand-seal svg {
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-b) 54%,
+      var(--admin-logo-ink)
+    );
+    filter: drop-shadow(
+      0 0 8px color-mix(in srgb, var(--admin-duotone-b) 16%, transparent)
+    );
+  }
+
+  .admin-sidebar-brand-mark-shell {
+    background: var(--admin-sidebar-brand-mark-bg) !important;
+    box-shadow: var(--admin-sidebar-brand-mark-shadow) !important;
+    backdrop-filter: blur(12px) saturate(1.08);
+  }
+
+  .admin-sidebar-brand-mark {
+    --ops-icon-iris: color-mix(
+      in srgb,
+      var(--admin-logo-ink) 84%,
+      var(--admin-duotone-a) 16%
+    );
+    --ops-icon-pulse: color-mix(
+      in srgb,
+      var(--admin-duotone-b) 72%,
+      var(--admin-logo-ink)
+    );
+    filter: drop-shadow(
+      0 1px 1px color-mix(in srgb, var(--admin-logo-base) 24%, transparent)
+    );
+  }
+
+  .admin-sidebar-brand-status {
+    box-shadow:
+      0 0 0 2px var(--admin-sidebar-brand-status-ring),
+      0 8px 14px -11px
+        color-mix(in srgb, var(--admin-logo-base) 55%, transparent) !important;
+  }
+
+  .admin-sidebar-brand-status.is-healthy {
+    background: var(--admin-sidebar-brand-status-bg) !important;
+  }
+
+  .admin-sidebar-brand-eyebrow {
+    color: var(--admin-sidebar-brand-eyebrow-color) !important;
+    text-shadow: none !important;
+  }
+
+  .admin-sidebar-brand-title {
+    color: var(--admin-sidebar-brand-title-color) !important;
+    text-shadow: none !important;
+  }
+
+  .kb-sidebar-brand-card,
+  .kb-sidebar-user-card {
+    position: relative;
+    isolation: isolate;
+    border: 1px solid transparent;
+  }
+
+  .kb-sidebar-brand-card {
+    border-radius: 0;
+  }
+
+  :root:not(.dark) .kb-sidebar-brand-card {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 95%, var(--background)) 0%,
+        color-mix(in srgb, var(--card) 93%, var(--primary) 1%) 100%
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 3%, transparent) 0%,
+        transparent 32%
+      );
+    border-width: 0 0 1px;
+    border-color: transparent transparent
+      color-mix(in srgb, var(--primary) 8%, var(--border) 54%) transparent;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.88),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.24);
+  }
+
+  :root:not(.dark) .kb-sidebar-brand-card::before {
+    content: "";
+    position: absolute;
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 28%, transparent),
+      color-mix(in srgb, var(--primary) 14%, transparent),
+      transparent
+    );
+  }
+
+  :root:not(.dark) .kb-sidebar-brand-card:hover {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 96%, white) 0%,
+        color-mix(in srgb, var(--card) 93%, var(--primary) 2%) 100%
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 4%, transparent) 0%,
+        transparent 32%
+      );
+    border-color: transparent transparent
+      color-mix(in srgb, var(--primary) 10%, var(--border) 50%) transparent;
+  }
+
+  :root:not(.dark) .kb-sidebar-user-card {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.74) 0%,
+      rgba(255, 255, 255, 0.66) 100%
+    );
+    border-color: color-mix(in srgb, var(--primary) 6%, var(--border) 56%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  }
+
+  :root:not(.dark) .kb-sidebar-user-card:hover {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.8) 0%,
+      rgba(255, 255, 255, 0.7) 100%
+    );
+    border-color: color-mix(in srgb, var(--primary) 8%, var(--border) 52%);
+  }
+
+  .dark .kb-sidebar-brand-card,
+  .dark .kb-sidebar-user-card {
+    background: color-mix(in srgb, var(--card) 76%, black);
+    border-color: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .dark .kb-sidebar-brand-card {
+    border-width: 0 0 1px;
+    border-color: transparent transparent rgba(255, 255, 255, 0.08) transparent;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.03),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .dark .kb-sidebar-brand-card::before {
+    content: "";
+    position: absolute;
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--primary) 16%, transparent),
+      transparent
+    );
+  }
+
+  /* Knowledge Domains duotone primitives — neutral surface + HKI blue accent */
+  /* Knowledge page canvas — duotone: neutral + HKI blue accent */
+  .kb-surface-ground {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 96%, #b9c5d6) 0%,
+        color-mix(in srgb, var(--background) 90%, var(--primary) 3%) 100%
+      ),
+      var(--background);
+  }
+
+  .dark .kb-surface-ground {
+    background: var(--background);
+  }
+
+  /* Section container — BETWEEN ground and card (L*≈95 light, card in dark) */
+  .kb-surface-section {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 94%, white) 0%,
+      color-mix(in srgb, var(--card) 82%, var(--background) 18%) 48%,
+      color-mix(in srgb, var(--card) 74%, var(--background) 26%) 100%
+    );
+    border: 1px solid
+      color-mix(in srgb, var(--border) 74%, var(--foreground) 14%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 1px 2px color-mix(in srgb, var(--foreground) 12%, transparent),
+      0 16px 28px -24px color-mix(in srgb, var(--foreground) 28%, transparent),
+      0 24px 46px -38px color-mix(in srgb, var(--primary) 24%, transparent);
+  }
+
+  .dark .kb-surface-section {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 74%, black) 0%,
+      color-mix(in srgb, var(--card) 82%, black) 100%
+    );
+    border: 1px solid
+      color-mix(in srgb, var(--primary) 10%, rgba(255, 255, 255, 0.08));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025),
+      0 14px 24px -24px rgba(0, 0, 0, 0.5);
+  }
+
+  .kb-surface-card {
+    background: linear-gradient(
+      180deg,
+      #ffffff 0%,
+      color-mix(in srgb, var(--card) 96%, var(--background) 4%) 42%,
+      color-mix(in srgb, var(--card) 90%, var(--primary) 5%) 100%
+    );
+    border: 1px solid
+      color-mix(in srgb, var(--border) 68%, var(--foreground) 16%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.88),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.22),
+      0 1px 3px color-mix(in srgb, var(--foreground) 14%, transparent),
+      0 14px 28px -22px color-mix(in srgb, var(--foreground) 32%, transparent),
+      0 28px 54px -42px color-mix(in srgb, var(--primary) 28%, transparent);
+  }
+
+  .dark .kb-surface-card {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 76%, black) 0%,
+      color-mix(in srgb, var(--card) 84%, black) 100%
+    );
+    border: 1px solid
+      color-mix(in srgb, var(--primary) 10%, rgba(255, 255, 255, 0.08));
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.03) inset,
+      0 2px 6px rgba(0, 0, 0, 0.22),
+      0 16px 24px -24px rgba(0, 0, 0, 0.52);
+  }
+
+  .kb-surface-inset {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 72%, white) 0%,
+      color-mix(in srgb, var(--background) 82%, var(--card) 18%) 100%
+    );
+    border: 1px solid
+      color-mix(in srgb, var(--border) 78%, var(--foreground) 10%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.48),
+      inset 0 1px 3px color-mix(in srgb, var(--foreground) 8%, transparent),
+      0 1px 0 rgba(255, 255, 255, 0.42);
+  }
+
+  .dark .kb-surface-inset {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--muted) 74%, black) 0%,
+      color-mix(in srgb, var(--muted) 82%, black) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025),
+      inset 0 1px 3px rgba(0, 0, 0, 0.14);
+  }
+
+  :root:not(.dark) .kb-workflow-banner {
+    border-color: color-mix(
+      in srgb,
+      var(--border) 66%,
+      var(--foreground) 14%
+    ) !important;
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        color-mix(in srgb, var(--card) 91%, var(--background) 9%) 50%,
+        color-mix(in srgb, var(--card) 88%, var(--primary) 5%) 100%
+      ),
+      var(--card) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.84),
+      0 1px 3px color-mix(in srgb, var(--foreground) 14%, transparent),
+      0 18px 34px -26px color-mix(in srgb, var(--foreground) 34%, transparent),
+      0 34px 68px -54px color-mix(in srgb, var(--primary) 30%, transparent) !important;
+  }
+
+  :root:not(.dark) .kb-workflow-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(
+        90deg,
+        transparent 0 68%,
+        color-mix(in srgb, var(--primary) 10%, transparent) 68% 68.35%,
+        transparent 68.35% 100%
+      ),
+      linear-gradient(
+        135deg,
+        transparent 0 58%,
+        color-mix(in srgb, var(--foreground) 7%, transparent) 58% 58.28%,
+        transparent 58.28% 100%
+      );
+    background-position:
+      right -3rem top 0,
+      right -5rem bottom -2rem;
+    background-size:
+      26rem 100%,
+      24rem 14rem;
+    opacity: 0.78;
+  }
+
+  :root:not(.dark) .kb-workflow-banner > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  :root:not(.dark) .kb-workflow-eyebrow,
+  :root:not(.dark) .kb-workflow-status-pill,
+  :root:not(.dark) .kb-workflow-metric {
+    border-color: color-mix(
+      in srgb,
+      var(--border) 64%,
+      var(--foreground) 12%
+    ) !important;
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        color-mix(in srgb, var(--card) 88%, var(--background) 12%) 100%
+      ),
+      var(--card) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.78),
+      0 1px 2px color-mix(in srgb, var(--foreground) 9%, transparent);
+  }
+
+  :root:not(.dark) .kb-workflow-action-secondary {
+    border-color: color-mix(
+      in srgb,
+      var(--border) 66%,
+      var(--foreground) 12%
+    ) !important;
+    background: #ffffff !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 1px 2px color-mix(in srgb, var(--foreground) 10%, transparent) !important;
+  }
+
+  :root:not(.dark) .kb-info-banner {
+    border-color: color-mix(
+      in srgb,
+      var(--border) 62%,
+      var(--primary) 18%
+    ) !important;
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        color-mix(in srgb, var(--card) 90%, var(--primary) 7%) 100%
+      ),
+      var(--card) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 1px 2px color-mix(in srgb, var(--foreground) 10%, transparent),
+      0 14px 26px -24px color-mix(in srgb, var(--primary) 28%, transparent);
+  }
+
+  :root:not(.dark) .kb-next-step-banner {
+    border-top-color: color-mix(
+      in srgb,
+      var(--border) 64%,
+      var(--foreground) 12%
+    ) !important;
+    border-right-color: color-mix(
+      in srgb,
+      var(--border) 64%,
+      var(--foreground) 12%
+    ) !important;
+    border-bottom-color: color-mix(
+      in srgb,
+      var(--border) 64%,
+      var(--foreground) 12%
+    ) !important;
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        color-mix(in srgb, var(--card) 90%, var(--primary) 6%) 100%
+      ),
+      var(--card) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 1px 3px color-mix(in srgb, var(--foreground) 13%, transparent),
+      0 18px 34px -28px color-mix(in srgb, var(--primary) 30%, transparent);
+  }
+
+  :root:not(.dark) .kb-overview-hero {
+    border-color: color-mix(
+      in srgb,
+      var(--border) 62%,
+      var(--foreground) 16%
+    ) !important;
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        color-mix(in srgb, var(--card) 90%, var(--background) 10%) 52%,
+        color-mix(in srgb, var(--card) 86%, var(--primary) 6%) 100%
+      ),
+      var(--card) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.86),
+      0 2px 4px color-mix(in srgb, var(--foreground) 14%, transparent),
+      0 22px 42px -30px color-mix(in srgb, var(--foreground) 34%, transparent),
+      0 44px 84px -66px color-mix(in srgb, var(--primary) 34%, transparent) !important;
+  }
+
+  .kb-duotone-accent-text {
+    @apply text-primary;
+  }
+
+  .kb-brand-red-text {
+    color: var(--primary);
+  }
+
+  .kb-status-positive-surface {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--primary);
+  }
+
+  .kb-status-positive-badge {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--primary);
+    border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+  }
+
+  .kb-status-positive-text {
+    color: var(--primary);
+  }
+
+  .kb-status-positive-dot {
+    background: var(--primary);
+  }
+
+  .kb-status-positive-bar {
+    background: var(--primary);
+  }
+
+  .kb-status-warning-surface {
+    background: color-mix(in srgb, var(--primary) 9%, transparent);
+    color: color-mix(in srgb, var(--primary) 72%, var(--muted-foreground));
+  }
+
+  .kb-status-warning-badge {
+    background: color-mix(in srgb, var(--primary) 9%, transparent);
+    color: color-mix(in srgb, var(--primary) 72%, var(--muted-foreground));
+    border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  }
+
+  .kb-status-warning-text {
+    color: color-mix(in srgb, var(--primary) 72%, var(--muted-foreground));
+  }
+
+  .kb-status-warning-dot {
+    background: color-mix(in srgb, var(--primary) 70%, var(--muted-foreground));
+  }
+
+  .kb-status-warning-bar {
+    background: color-mix(in srgb, var(--primary) 70%, var(--muted-foreground));
+  }
+
+  .kb-status-critical-surface {
+    background: color-mix(in srgb, var(--destructive) 9%, transparent);
+    color: var(--destructive);
+  }
+
+  .kb-status-critical-badge {
+    background: color-mix(in srgb, var(--destructive) 9%, transparent);
+    color: var(--destructive);
+    border: 1px solid color-mix(in srgb, var(--destructive) 20%, transparent);
+  }
+
+  .kb-status-critical-text {
+    color: var(--destructive);
+  }
+
+  .kb-status-critical-dot {
+    background: var(--destructive);
+  }
+
+  .kb-status-critical-bar {
+    background: var(--destructive);
+  }
+
+  .kb-status-neutral-surface {
+    background: color-mix(in srgb, var(--muted) 72%, transparent);
+    color: var(--muted-foreground);
+  }
+
+  .kb-status-neutral-badge {
+    background: color-mix(in srgb, var(--muted) 72%, transparent);
+    color: var(--muted-foreground);
+    border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  }
+
+  .kb-status-neutral-text {
+    color: var(--muted-foreground);
+  }
+
+  .kb-status-neutral-dot {
+    background: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
+  }
+
+  .admin-surface-card {
+    --admin-pointer-x: 50%;
+    --admin-pointer-y: 50%;
+    border: 0 !important;
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a, var(--primary)) 5%,
+            transparent
+          )
+          0%,
+        transparent 48%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-b, var(--secondary)) 3%,
+            transparent
+          )
+          100%
+      ),
+      color-mix(in srgb, var(--card) 86%, transparent) !important;
+    backdrop-filter: blur(18px) saturate(1.08);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 9%, transparent),
+      0 8px 18px -16px color-mix(in srgb, var(--foreground) 22%, transparent),
+      0 22px 46px -36px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 30%,
+          transparent
+        ),
+      0 30px 60px -50px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 22%,
+          transparent
+        ) !important;
+    transition:
+      box-shadow 180ms ease,
+      filter 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-surface-card:hover {
+    filter: saturate(1.06);
+    transform: translateY(-3px);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 9%, transparent),
+      0 18px 30px -28px color-mix(in srgb, var(--foreground) 22%, transparent),
+      0 34px 70px -50px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 34%,
+          transparent
+        ),
+      0 36px 78px -58px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 26%,
+          transparent
+        ) !important;
+  }
+
+  .dark .admin-surface-card {
+    background:
+      radial-gradient(
+        30rem 18rem at 0% 0%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a, var(--primary)) 7%,
+            transparent
+          )
+          0%,
+        transparent 72%
+      ),
+      linear-gradient(
+        180deg,
+        var(--card) 0%,
+        color-mix(in srgb, var(--card) 90%, var(--background)) 100%
+      ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 2%, transparent),
+      0 14px 24px -28px color-mix(in srgb, var(--background) 46%, transparent),
+      0 24px 44px -42px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 24%,
+          var(--background)
+        ) !important;
+  }
+
+  .dark .admin-surface-card:hover {
+    filter: saturate(1.08);
+    transform: translateY(-3px);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
+      0 20px 36px -30px color-mix(in srgb, var(--background) 62%, transparent),
+      0 34px 70px -56px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 38%,
+          var(--background)
+        ),
+      0 36px 78px -64px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 18%,
+          var(--background)
+        ) !important;
+  }
+
+  .admin-surface-inset {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 94%, white) 0%,
+        color-mix(in srgb, var(--muted) 84%, var(--background) 16%) 100%
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 4%, transparent) 0%,
+        color-mix(in srgb, var(--secondary) 3%, transparent) 100%
+      );
+    border: 0;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition:
+      background-color 160ms ease,
+      box-shadow 160ms ease,
+      color 160ms ease,
+      transform 160ms ease;
+  }
+
+  .admin-surface-inset:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.48),
+      0 12px 18px -24px color-mix(in srgb, var(--primary) 24%, transparent);
+  }
+
+  .dark .admin-surface-inset {
+    background: color-mix(in srgb, var(--card) 88%, var(--background));
+    border: 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  }
+
+  .admin-panel-primary {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 9%, white) 0%,
+      color-mix(in srgb, var(--card) 95%, white) 18%,
+      color-mix(in srgb, var(--card) 90%, var(--primary) 7%) 72%,
+      color-mix(in srgb, var(--card) 91%, var(--secondary) 5%) 100%
+    );
+    border: 0;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      0 10px 18px -20px color-mix(in srgb, var(--primary) 18%, transparent),
+      0 16px 24px -28px rgba(15, 23, 42, 0.12),
+      0 18px 30px -34px color-mix(in srgb, var(--secondary) 18%, transparent);
+  }
+
+  .dark .admin-panel-primary {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 94%, var(--primary) 6%) 0%,
+      color-mix(in srgb, var(--card) 88%, var(--primary) 12%) 100%
+    );
+    border: 0;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.02),
+      0 8px 14px -20px rgba(0, 0, 0, 0.28);
+  }
+
+  .admin-field {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 94%, white) 0%,
+      color-mix(in srgb, var(--muted) 84%, white) 26%,
+      color-mix(in srgb, var(--muted) 82%, var(--background) 18%) 100%
+    );
+    border: 0;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.52),
+      inset 0 1px 2px rgba(15, 23, 42, 0.04),
+      0 8px 12px -18px rgba(15, 23, 42, 0.08);
+  }
+
+  .dark .admin-field {
+    background: color-mix(in srgb, var(--card) 88%, var(--background));
+    border: 0;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.14);
+  }
+
+  .admin-select-content {
+    background: var(--card);
+    border: 0;
+    border-radius: 0.875rem;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      0 4px 16px -4px rgba(15, 23, 42, 0.14),
+      0 16px 32px -16px rgba(15, 23, 42, 0.12);
+    overflow: hidden;
+  }
+
+  .dark .admin-select-content {
+    background: var(--card);
+    border: 0;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.03),
+      0 4px 16px -4px rgba(0, 0, 0, 0.48),
+      0 16px 32px -16px rgba(0, 0, 0, 0.4);
+  }
+
+  .admin-select-content [role="option"] {
+    border-radius: 0.5rem;
+    margin-inline: 0.25rem;
+    font-size: 13px;
+  }
+
+  .admin-select-content [role="option"][data-highlighted] {
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--foreground);
+  }
+
+  .admin-select-content [role="option"][data-state="checked"] {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .admin-surface-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    --admin-pointer-x: 50%;
+    --admin-pointer-y: 50%;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 98%, var(--background)) 0%,
+      color-mix(in srgb, var(--card) 92%, var(--background)) 100%
+    );
+    backdrop-filter: blur(18px);
+    box-shadow:
+      0 1px 3px color-mix(in srgb, var(--foreground) 6%, transparent),
+      0 24px 40px -38px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 22%,
+          transparent
+        ),
+      0 28px 48px -44px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 18%,
+          transparent
+        );
+    transition:
+      box-shadow 180ms ease,
+      filter 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-surface-hero::before {
+    content: none;
+  }
+
+  .admin-surface-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      24rem 16rem at var(--admin-pointer-x) var(--admin-pointer-y),
+      color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 18%,
+          transparent
+        )
+        0%,
+      color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 9%,
+          transparent
+        )
+        36%,
+      transparent 72%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.98);
+    transition:
+      opacity 180ms ease,
+      transform 220ms ease;
+  }
+
+  .admin-surface-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .admin-surface-hero:hover {
+    filter: saturate(1.06);
+    transform: translateY(-2px);
+    box-shadow:
+      0 22px 36px -30px color-mix(in srgb, var(--foreground) 22%, transparent),
+      0 36px 70px -54px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 34%,
+          transparent
+        ),
+      0 38px 78px -62px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 24%,
+          transparent
+        );
+  }
+
+  .admin-surface-hero:hover::after {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .dark .admin-surface-hero {
+    background: linear-gradient(
+      180deg,
+      color-mix(
+          in srgb,
+          var(--card) 94%,
+          var(--admin-duotone-a, var(--primary)) 6%
+        )
+        0%,
+      color-mix(
+          in srgb,
+          var(--card) 91%,
+          var(--admin-duotone-b, var(--secondary)) 9%
+        )
+        100%
+    );
+    box-shadow:
+      0 18px 32px -26px color-mix(in srgb, var(--background) 56%, transparent),
+      0 24px 46px -42px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 34%,
+          var(--background)
+        );
+  }
+
+  .dark .admin-surface-hero::before {
+    content: none;
+  }
+
+  .dark .admin-surface-hero::after {
+    background: radial-gradient(
+      24rem 16rem at var(--admin-pointer-x) var(--admin-pointer-y),
+      color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 22%,
+          transparent
+        )
+        0%,
+      color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 8%,
+          transparent
+        )
+        36%,
+      transparent 72%
+    );
+  }
+
+  .dark .admin-surface-hero:hover {
+    filter: saturate(1.08);
+    transform: translateY(-2px);
+    box-shadow:
+      0 24px 42px -30px color-mix(in srgb, var(--background) 68%, transparent),
+      0 40px 82px -62px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 42%,
+          var(--background)
+        ),
+      0 44px 90px -72px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 20%,
+          var(--background)
+        ) !important;
+  }
+
+  .admin-card-header {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 94%, white) 0%,
+        color-mix(in srgb, var(--card) 90%, var(--primary) 2%) 100%
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 4%, transparent) 0%,
+        transparent 34%
+      ) !important;
+  }
+
+  .dark .admin-card-header {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 82%, var(--background)) 0%,
+      var(--card) 100%
+    ) !important;
+  }
+
+  .admin-data-panel {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 92%, white) 0%,
+      color-mix(in srgb, var(--card) 86%, var(--background) 14%) 72%,
+      color-mix(in srgb, var(--card) 88%, var(--secondary) 4%) 100%
+    );
+  }
+
+  .admin-tab-list {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--muted) 74%, var(--background)) 0%,
+        color-mix(in srgb, var(--muted) 66%, var(--background)) 100%
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 5%, transparent) 0%,
+        color-mix(in srgb, var(--secondary) 4%, transparent) 100%
+      );
+    border: 0;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 8px 14px -20px rgba(15, 23, 42, 0.08);
+  }
+
+  .dark .admin-tab-list {
+    background: color-mix(in srgb, var(--card) 90%, var(--background));
+    border: 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .admin-tab-trigger {
+    position: relative;
+    overflow: hidden;
+    border: 0;
+    background: transparent;
+    transition:
+      border-color 180ms ease,
+      background-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-tab-trigger:hover {
+    background: color-mix(in srgb, var(--background) 82%, transparent);
+  }
+
+  .admin-tab-trigger[data-state="active"] {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 96%, white) 0%,
+      color-mix(in srgb, var(--card) 94%, white) 42%,
+      color-mix(in srgb, var(--card) 92%, var(--primary) 5%) 76%,
+      color-mix(in srgb, var(--card) 92%, var(--secondary) 4%) 100%
+    );
+    border: 0;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      0 12px 18px -22px color-mix(in srgb, var(--primary) 22%, transparent),
+      0 16px 24px -28px color-mix(in srgb, var(--secondary) 18%, transparent);
+  }
+
+  .admin-tab-trigger[data-state="active"]::before {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    right: 0.5rem;
+    top: 0;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      var(--primary) 0%,
+      color-mix(in srgb, var(--primary) 60%, var(--secondary)) 54%,
+      var(--secondary) 100%
+    );
+    opacity: 0.9;
+  }
+
+  .dark .admin-tab-trigger[data-state="active"] {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 94%, var(--primary) 6%) 0%,
+      color-mix(in srgb, var(--card) 90%, var(--primary) 10%) 72%,
+      color-mix(in srgb, var(--card) 90%, var(--secondary) 6%) 100%
+    );
+    border: 0;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.03),
+      0 10px 16px -24px rgba(0, 0, 0, 0.34);
+  }
+
+  .dark .admin-data-panel {
+    background: var(--card);
+  }
+
+  .admin-preview-row {
+    position: relative;
+    overflow: hidden;
+    border: 0;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 95%, white) 0%,
+      color-mix(in srgb, var(--muted) 84%, var(--background) 16%) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.54),
+      0 12px 18px -24px rgba(15, 23, 42, 0.12);
+    transition:
+      box-shadow 180ms ease,
+      transform 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .admin-preview-row:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.58),
+      0 16px 22px -24px rgba(15, 23, 42, 0.14),
+      0 18px 24px -30px color-mix(in srgb, var(--primary) 20%, transparent);
+  }
+
+  .dark .admin-preview-row {
+    border: 0;
+    background: linear-gradient(
+      180deg,
+      var(--card) 0%,
+      color-mix(in srgb, var(--card) 88%, var(--background)) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.02),
+      0 8px 14px -22px rgba(0, 0, 0, 0.28);
+  }
+
+  .dark .admin-preview-row:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, #111821 94%, var(--primary) 6%) 0%,
+      color-mix(in srgb, #10161d 90%, var(--primary) 10%) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.02),
+      0 10px 16px -24px rgba(0, 0, 0, 0.3);
+    transform: none;
+  }
+
+  .admin-metric-card {
+    position: relative;
+    overflow: hidden;
+    border: 0 !important;
+    background:
+      radial-gradient(
+        17rem 11rem at 0% 0%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a, var(--primary)) 4%,
+            transparent
+          )
+          0%,
+        transparent 72%
+      ),
+      color-mix(in srgb, var(--card) 88%, transparent) !important;
+    backdrop-filter: blur(16px) saturate(1.06);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 9%, transparent),
+      0 8px 18px -16px color-mix(in srgb, var(--foreground) 20%, transparent),
+      0 22px 44px -38px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 26%,
+          transparent
+        ) !important;
+    transition:
+      box-shadow 180ms ease,
+      filter 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-metric-card::before {
+    content: "";
+    position: absolute;
+    inset: auto 1rem auto 1rem !important;
+    top: -0.55rem !important;
+    height: 1rem !important;
+    border-radius: 999px !important;
+    background: linear-gradient(
+      90deg,
+      color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 90%,
+          transparent
+        )
+        0%,
+      color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 46%,
+          var(--admin-duotone-b, var(--secondary))
+        )
+        56%,
+      color-mix(
+          in srgb,
+          var(--admin-duotone-b, var(--secondary)) 42%,
+          transparent
+        )
+        82%,
+      transparent 100%
+    );
+    transform: none !important;
+    transform-origin: center !important;
+    filter: blur(10px);
+    opacity: 0.4 !important;
+  }
+
+  .admin-metric-card:hover {
+    filter: saturate(1.08);
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
+      0 18px 28px -28px color-mix(in srgb, var(--foreground) 16%, transparent),
+      0 18px 28px -30px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 24%,
+          transparent
+        ) !important;
+  }
+
+  .dark .admin-metric-card {
+    background:
+      radial-gradient(
+        16rem 10rem at 0% 0%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a, var(--primary)) 7%,
+            transparent
+          )
+          0%,
+        transparent 72%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(
+            in srgb,
+            var(--card) 94%,
+            var(--admin-duotone-a, var(--primary)) 6%
+          )
+          0%,
+        color-mix(
+            in srgb,
+            var(--card) 92%,
+            var(--admin-duotone-b, var(--secondary)) 8%
+          )
+          100%
+      ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 2%, transparent),
+      0 10px 18px -26px color-mix(in srgb, var(--background) 36%, transparent),
+      0 22px 40px -38px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 22%,
+          var(--background)
+        ) !important;
+  }
+
+  .dark .admin-metric-card::before {
+    opacity: 0.55;
+  }
+
+  .dark .admin-metric-card:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(
+          in srgb,
+          var(--card) 94%,
+          var(--admin-duotone-a, var(--primary)) 6%
+        )
+        0%,
+      color-mix(
+          in srgb,
+          var(--card) 90%,
+          var(--admin-duotone-b, var(--secondary)) 10%
+        )
+        100%
+    ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 2%, transparent),
+      0 12px 18px -28px color-mix(in srgb, var(--background) 36%, transparent) !important;
+    transform: translateY(-2px);
+  }
+
+  .admin-metric-icon {
+    border: 0;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 10%, transparent),
+      0 10px 16px -18px
+        color-mix(
+          in srgb,
+          var(--admin-duotone-a, var(--primary)) 24%,
+          transparent
+        );
+  }
+
+  .dark .admin-metric-icon {
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--foreground) 3%, transparent);
+  }
+
+  .admin-metric-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--muted-foreground) 84%, transparent);
+  }
+
+  .admin-metric-value {
+    font-size: 2rem;
+    font-weight: 650;
+    letter-spacing: 0;
+    line-height: 1;
+    color: var(--foreground);
+  }
+
+  .dark .admin-metric-value {
+    color: color-mix(in srgb, var(--foreground) 90%, transparent);
+  }
+
+  .admin-section-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--primary) 74%, var(--muted-foreground) 26%);
+  }
+
+  .admin-pill-primary,
+  .admin-pill-positive {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--primary);
+    border: 0;
+  }
+
+  .admin-pill-warning {
+    background: color-mix(in srgb, var(--warning) 12%, transparent);
+    color: var(--warning);
+    border: 0;
+  }
+
+  .admin-pill-critical {
+    background: color-mix(in srgb, var(--destructive) 12%, transparent);
+    color: var(--destructive);
+    border: 0;
+  }
+
+  .admin-pill-neutral {
+    background: color-mix(in srgb, var(--muted) 72%, transparent);
+    color: var(--muted-foreground);
+    border: 0;
+  }
+
+  .admin-icon-primary,
+  .admin-icon-positive {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--primary);
+  }
+
+  .admin-icon-warning {
+    background: color-mix(in srgb, var(--warning) 12%, transparent);
+    color: var(--warning);
+  }
+
+  .admin-icon-critical {
+    background: color-mix(in srgb, var(--destructive) 12%, transparent);
+    color: var(--destructive);
+  }
+
+  .admin-icon-neutral {
+    background: color-mix(in srgb, var(--muted) 68%, transparent);
+    color: var(--muted-foreground);
+  }
+
+  .kb-status-neutral-bar {
+    background: color-mix(in srgb, var(--muted-foreground) 36%, transparent);
+  }
+
+  .kb-duotone-accent-solid {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .kb-duotone-accent-solid-hover {
+    @apply transition-colors hover:bg-primary/90 active:bg-primary/80;
+  }
+
+  .kb-duotone-fill {
+    @apply bg-primary/10 text-primary dark:bg-primary/14;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  }
+
+  .kb-duotone-shadow-soft {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.34),
+      0 4px 10px -8px rgba(0, 0, 0, 0.1),
+      0 10px 18px -18px color-mix(in srgb, var(--primary) 44%, transparent);
+  }
+
+  .kb-duotone-shadow-hover {
+    transition: box-shadow 180ms ease;
+  }
+
+  .kb-duotone-shadow-hover:hover {
+    box-shadow:
+      0 4px 12px -4px rgba(0, 0, 0, 0.12),
+      0 8px 20px -10px color-mix(in srgb, var(--primary) 48%, transparent);
+  }
+
+  .kb-duotone-surface-active {
+    @apply border border-primary/30 bg-primary text-primary-foreground shadow-sm dark:border-primary/40 dark:bg-primary;
+  }
+
+  .kb-duotone-text-hover {
+    @apply transition-colors hover:text-primary;
+  }
+
+  .kb-duotone-border-hover-soft {
+    @apply transition-colors hover:border-primary/20 dark:hover:border-primary/24;
+  }
+
+  .kb-duotone-border-hover {
+    @apply transition-colors hover:border-primary/30 dark:hover:border-primary/32;
+  }
+
+  .kb-duotone-border-hover-strong {
+    @apply transition-colors hover:border-primary/35 dark:hover:border-primary/38;
+  }
+
+  .kb-duotone-bg-hover {
+    @apply transition-colors hover:bg-primary/10 dark:hover:bg-primary/12;
+  }
+
+  .kb-duotone-bg-hover-soft {
+    @apply transition-colors hover:bg-primary/8 dark:hover:bg-primary/10;
+  }
+
+  .kb-duotone-bg-hover-strong {
+    @apply transition-colors hover:bg-primary/14 dark:hover:bg-primary/16;
+  }
+
+  .kb-duotone-hover {
+    @apply transition-colors hover:border-primary/30 hover:bg-primary/10 hover:text-primary dark:hover:border-primary/32 dark:hover:bg-primary/12;
+  }
+
+  .kb-duotone-hover-strong {
+    @apply transition-colors hover:border-primary/35 hover:bg-primary/14 hover:text-primary dark:hover:border-primary/38 dark:hover:bg-primary/16;
+  }
+
+  .kb-duotone-panel-hover {
+    @apply transition-all hover:border-primary/30 hover:bg-primary/8 hover:shadow-sm dark:hover:border-primary/32 dark:hover:bg-primary/10;
+    transform: translateZ(0);
+  }
+
+  .kb-duotone-panel-hover-strong {
+    @apply transition-all hover:border-primary/35 hover:bg-primary/12 hover:shadow-md dark:hover:border-primary/38 dark:hover:bg-primary/14;
+  }
+
+  .kb-duotone-icon-hover {
+    @apply transition-colors hover:bg-primary/12 hover:text-primary dark:hover:bg-primary/14;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+
+  .kb-duotone-chip {
+    @apply bg-primary/12 text-primary dark:bg-primary/14;
+  }
+
+  .kb-duotone-chip-border {
+    @apply border border-primary/25 bg-primary/12 text-primary dark:border-primary/30 dark:bg-primary/14;
+  }
+
+  .kb-duotone-chip-hover {
+    @apply transition-colors hover:bg-primary/18 hover:text-primary dark:hover:bg-primary/20;
+  }
+
+  .kb-duotone-chip-reactive {
+    @apply bg-primary/10 text-primary transition-colors;
+  }
+
+  .group:hover .kb-duotone-chip-reactive {
+    @apply bg-primary/18;
+  }
+
+  .kb-duotone-ping {
+    @apply bg-primary/40;
+  }
+
+  .kb-duotone-field {
+    @apply transition-colors hover:border-primary/30 focus:border-primary/35 focus:ring-primary/25 dark:hover:border-primary/32 dark:focus:border-primary/38;
+  }
+
+  .kb-duotone-select-item {
+    @apply transition-colors;
+  }
+
+  .kb-duotone-select-item:focus,
+  .kb-duotone-select-item[data-highlighted] {
+    @apply bg-primary/12 text-primary;
+  }
+
+  .kb-duotone-select-item[data-state="checked"] {
+    @apply bg-primary/14 text-primary;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas,
+  .admin-sidebar-shell {
+    --admin-duotone-a: var(--primary);
+    --admin-duotone-b: color-mix(
+      in srgb,
+      var(--primary) 42%,
+      var(--muted-foreground)
+    );
+    --admin-duotone-rail: linear-gradient(
+      90deg,
+      var(--admin-duotone-a) 0%,
+      color-mix(in srgb, var(--admin-duotone-a) 58%, var(--admin-duotone-b)) 52%,
+      var(--admin-duotone-b) 100%
+    );
+    --admin-duotone-canvas:
+      radial-gradient(
+        62rem 30rem at 8% 4%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a) var(--admin-duotone-canvas-a),
+            transparent
+          )
+          0%,
+        transparent 72%
+      ),
+      radial-gradient(
+        44rem 24rem at 100% 0%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-b) var(--admin-duotone-canvas-b),
+            transparent
+          )
+          0%,
+        transparent 76%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(
+            in srgb,
+            var(--background) var(--admin-duotone-surface-base-a),
+            var(--admin-duotone-a)
+          )
+          0%,
+        color-mix(
+            in srgb,
+            var(--background) var(--admin-duotone-surface-base-b),
+            var(--admin-duotone-b)
+          )
+          100%
+      );
+    --admin-duotone-surface:
+      radial-gradient(
+        30rem 18rem at 0% 0%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a) var(--admin-duotone-surface-a),
+            transparent
+          )
+          0%,
+        transparent 74%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 94%, var(--admin-duotone-a)) 0%,
+        color-mix(in srgb, var(--card) 92%, var(--admin-duotone-b)) 100%
+      );
+    --admin-duotone-surface-hover:
+      radial-gradient(
+        32rem 20rem at var(--admin-pointer-x, 0%) var(--admin-pointer-y, 0%),
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a) calc(var(--admin-duotone-surface-a) + 4%),
+            transparent
+          )
+          0%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-b) var(--admin-duotone-surface-b),
+            transparent
+          )
+          40%,
+        transparent 78%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 92%, var(--admin-duotone-a)) 0%,
+        color-mix(in srgb, var(--card) 90%, var(--admin-duotone-b)) 100%
+      );
+    --admin-duotone-panel: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 96%, var(--admin-duotone-a)) 0%,
+      color-mix(in srgb, var(--card) 94%, var(--admin-duotone-b)) 100%
+    );
+    --admin-duotone-inset: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--muted) 90%, var(--admin-duotone-a)) 0%,
+      color-mix(in srgb, var(--muted) 88%, var(--admin-duotone-b)) 100%
+    );
+    --admin-duotone-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 5%, transparent),
+      0 16px 30px -28px color-mix(in srgb, var(--foreground) 18%, transparent),
+      0 28px 58px -48px
+        color-mix(in srgb, var(--admin-duotone-a) 26%, transparent),
+      0 34px 70px -62px
+        color-mix(in srgb, var(--admin-duotone-b) 18%, transparent);
+    --admin-duotone-shadow-hover:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent),
+      0 20px 36px -30px color-mix(in srgb, var(--foreground) 20%, transparent),
+      0 38px 76px -54px
+        color-mix(in srgb, var(--admin-duotone-a) 32%, transparent),
+      0 44px 88px -68px
+        color-mix(in srgb, var(--admin-duotone-b) 22%, transparent);
+    --admin-duotone-active: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--admin-duotone-a) 16%, transparent) 0%,
+      color-mix(in srgb, var(--admin-duotone-b) 10%, transparent) 100%
+    );
+  }
+
+  :root:not(.dark) .dashboard-shell.admin-control-plane-canvas,
+  :root:not(.dark) .admin-sidebar-shell {
+    --admin-duotone-canvas: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 90%, var(--admin-duotone-a)) 0%,
+      color-mix(in srgb, var(--muted) 76%, var(--background)) 46%,
+      color-mix(in srgb, var(--background) 92%, var(--muted-foreground)) 100%
+    );
+    --admin-duotone-surface: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 96%, white) 0%,
+      color-mix(in srgb, var(--card) 92%, var(--muted)) 100%
+    );
+    --admin-duotone-surface-hover: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 95%, white) 0%,
+      color-mix(in srgb, var(--card) 88%, var(--admin-duotone-a)) 100%
+    );
+    --admin-duotone-panel: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 97%, white) 0%,
+      color-mix(in srgb, var(--card) 90%, var(--muted)) 100%
+    );
+    --admin-duotone-inset: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--muted) 90%, var(--background)) 0%,
+      color-mix(in srgb, var(--muted) 84%, var(--admin-duotone-a)) 100%
+    );
+    --admin-duotone-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 52%, transparent),
+      0 1px 2px -1px color-mix(in srgb, var(--foreground) 18%, transparent),
+      0 14px 26px -20px color-mix(in srgb, var(--foreground) 26%, transparent),
+      0 30px 58px -50px
+        color-mix(in srgb, var(--admin-duotone-a) 24%, transparent);
+    --admin-duotone-shadow-hover:
+      inset 0 1px 0 color-mix(in srgb, white 58%, transparent),
+      0 2px 4px -3px color-mix(in srgb, var(--foreground) 22%, transparent),
+      0 18px 34px -24px color-mix(in srgb, var(--foreground) 30%, transparent),
+      0 34px 64px -52px
+        color-mix(in srgb, var(--admin-duotone-a) 30%, transparent);
+    --admin-duotone-active: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--admin-duotone-a) 14%, transparent) 0%,
+      color-mix(in srgb, var(--muted-foreground) 6%, transparent) 100%
+    );
+  }
+
+  .dashboard-shell.admin-control-plane-canvas {
+    background: var(--admin-duotone-canvas) !important;
+  }
+
+  :root:not(.dark) .dashboard-shell.admin-control-plane-canvas::before {
+    background-image:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--admin-duotone-a) 10%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--admin-duotone-a) 8%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        135deg,
+        transparent 0 46%,
+        color-mix(in srgb, var(--admin-duotone-a) 11%, transparent) 46% 46.5%,
+        transparent 46.5% 100%
+      ),
+      linear-gradient(
+        45deg,
+        transparent 0 62%,
+        color-mix(in srgb, var(--foreground) 5%, transparent) 62% 62.35%,
+        transparent 62.35% 100%
+      );
+    background-position:
+      0 0,
+      0 0,
+      right -7rem top 1.5rem,
+      left -10rem bottom 2rem;
+    background-size:
+      32px 32px,
+      32px 32px,
+      28rem 16rem,
+      34rem 20rem;
+    mask-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, black 62%, transparent) 0%,
+      color-mix(in srgb, black 28%, transparent) 42%,
+      transparent 82%
+    );
+    opacity: 0.48;
+  }
+
+  :root:not(.dark) .dashboard-shell.admin-control-plane-canvas::after {
+    background-image:
+      linear-gradient(
+        120deg,
+        transparent 0 58%,
+        color-mix(in srgb, var(--admin-duotone-a) 10%, transparent) 58% 58.35%,
+        transparent 58.35% 100%
+      ),
+      linear-gradient(
+        72deg,
+        transparent 0 70%,
+        color-mix(in srgb, var(--foreground) 6%, transparent) 70% 70.35%,
+        transparent 70.35% 100%
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 3.1rem,
+        color-mix(in srgb, var(--admin-duotone-a) 7%, transparent) 3.1rem
+          3.16rem,
+        transparent 3.16rem 6.2rem
+      );
+    background-position:
+      right -9rem top 2rem,
+      left -9rem bottom -2rem,
+      0 0;
+    background-size:
+      34rem 18rem,
+      30rem 18rem,
+      100% 100%;
+    mask-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, black 32%, transparent) 0%,
+      color-mix(in srgb, black 16%, transparent) 34%,
+      transparent 76%
+    );
+    opacity: 0.5;
+  }
+
+  .admin-sidebar-shell [data-slot="sidebar-inner"] {
+    background: var(--admin-duotone-canvas) !important;
+    box-shadow:
+      inset -1px 0 0 color-mix(in srgb, var(--foreground) 5%, transparent),
+      18px 0 42px -42px
+        color-mix(in srgb, var(--admin-duotone-a) 28%, transparent) !important;
+  }
+
+  :root:not(.dark) .admin-sidebar-shell [data-slot="sidebar-inner"] {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 88%, var(--admin-duotone-a)) 0%,
+      color-mix(in srgb, var(--muted) 82%, var(--background)) 100%
+    ) !important;
+    box-shadow:
+      inset -1px 0 0
+        color-mix(in srgb, var(--border) 78%, var(--foreground) 10%),
+      14px 0 34px -30px color-mix(in srgb, var(--foreground) 40%, transparent),
+      22px 0 54px -48px
+        color-mix(in srgb, var(--admin-duotone-a) 34%, transparent) !important;
+  }
+
+  .admin-sidebar-brand {
+    min-height: 4.55rem;
+    border: 1px solid
+      color-mix(in srgb, var(--admin-duotone-a) 18%, var(--border)) !important;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card) 96%, var(--admin-duotone-a)) 0%,
+      color-mix(in srgb, var(--card) 94%, var(--muted-foreground)) 100%
+    ) !important;
+    color: var(--foreground) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 36%, transparent),
+      0 8px 18px -16px color-mix(in srgb, var(--foreground) 22%, transparent) !important;
+  }
+
+  .admin-sidebar-brand:hover {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card) 94%, var(--admin-duotone-a)) 0%,
+      color-mix(in srgb, var(--card) 93%, var(--muted-foreground)) 100%
+    ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
+      0 10px 20px -17px color-mix(in srgb, var(--foreground) 24%, transparent) !important;
+  }
+
+  :root:not(.dark) .admin-sidebar-brand {
+    border-color: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 18%,
+      var(--border)
+    ) !important;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card) 94%, white) 0%,
+      color-mix(in srgb, var(--card) 86%, var(--admin-duotone-a)) 100%
+    ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 58%, transparent),
+      0 1px 2px -1px color-mix(in srgb, var(--foreground) 18%, transparent),
+      0 12px 22px -18px color-mix(in srgb, var(--foreground) 18%, transparent) !important;
+  }
+
+  :root:not(.dark) .admin-sidebar-brand:hover {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card) 99%, var(--admin-duotone-a)) 0%,
+      color-mix(in srgb, var(--card) 98%, var(--muted-foreground)) 100%
+    ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 62%, transparent),
+      0 2px 4px -3px color-mix(in srgb, var(--foreground) 16%, transparent) !important;
+  }
+
+  .admin-sidebar-brand::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  .admin-sidebar-brand:hover::before {
+    opacity: 1;
+    transform: none;
+  }
+
+  .admin-sidebar-brand-copy {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    backdrop-filter: none !important;
+  }
+
+  .admin-sidebar-brand-eyebrow,
+  .admin-sidebar-brand-title {
+    color: var(--foreground) !important;
+  }
+
+  .admin-sidebar-brand-seal,
+  .admin-section-eyebrow,
+  .admin-sidebar-section-label {
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 62%,
+      var(--foreground)
+    ) !important;
+  }
+
+  .admin-sidebar-brand-seal svg {
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 70%,
+      var(--foreground)
+    ) !important;
+    filter: none !important;
+  }
+
+  .admin-sidebar-brand-mark-shell {
+    background: color-mix(
+      in srgb,
+      var(--card) 88%,
+      var(--admin-duotone-a)
+    ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent),
+      0 8px 16px -14px color-mix(in srgb, var(--foreground) 28%, transparent) !important;
+  }
+
+  :root:not(.dark) .admin-sidebar-brand-mark-shell {
+    background: color-mix(
+      in srgb,
+      var(--card) 96%,
+      var(--admin-duotone-a)
+    ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 56%, transparent),
+      0 1px 2px -1px color-mix(in srgb, var(--foreground) 16%, transparent) !important;
+  }
+
+  .admin-sidebar-brand-mark {
+    --ops-icon-iris: color-mix(
+      in srgb,
+      var(--foreground) 86%,
+      var(--admin-duotone-a)
+    );
+    --ops-icon-pulse: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 58%,
+      var(--foreground)
+    );
+    filter: none !important;
+  }
+
+  .admin-sidebar-brand {
+    min-height: 3.75rem !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--foreground) !important;
+  }
+
+  .admin-sidebar-brand:hover {
+    background: color-mix(
+      in srgb,
+      var(--foreground) 4%,
+      transparent
+    ) !important;
+    box-shadow: none !important;
+  }
+
+  :root:not(.dark) .admin-sidebar-brand,
+  :root:not(.dark) .admin-sidebar-brand:hover {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .admin-sidebar-brand-mark-shell,
+  :root:not(.dark) .admin-sidebar-brand-mark-shell {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .admin-sidebar-brand-mark {
+    --ops-icon-iris: color-mix(in srgb, var(--primary) 82%, var(--foreground));
+    --ops-icon-pulse: color-mix(in srgb, var(--primary) 56%, var(--foreground));
+  }
+
+  .admin-sidebar-brand-eyebrow {
+    color: color-mix(
+      in srgb,
+      var(--muted-foreground) 84%,
+      transparent
+    ) !important;
+    letter-spacing: 0.2em;
+  }
+
+  .admin-sidebar-brand-title {
+    color: var(--foreground) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    :is(
+      .admin-surface-card,
+      .admin-surface-hero,
+      .admin-metric-card,
+      .admin-panel-primary,
+      .admin-data-panel,
+      .admin-preview-row
+    ) {
+    border: 1px solid color-mix(in srgb, var(--border) 72%, transparent) !important;
+    border-radius: 0.875rem !important;
+    background: var(--admin-duotone-surface) !important;
+    box-shadow: var(--admin-duotone-shadow) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    :is(.admin-surface-card, .admin-surface-hero, .admin-metric-card) {
+    background-clip: padding-box;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    :is(
+      .admin-surface-card,
+      .admin-surface-hero,
+      .admin-metric-card,
+      .admin-preview-row
+    )
+    > * {
+    border-radius: inherit;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-card-header {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 94%, var(--background)) 0%,
+      color-mix(in srgb, var(--card) 88%, var(--muted)) 100%
+    ) !important;
+    box-shadow: inset 0 -1px 0
+      color-mix(in srgb, var(--border) 72%, transparent) !important;
+  }
+
+  .dark .dashboard-shell.admin-control-plane-canvas .admin-card-header {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 92%, var(--background)) 0%,
+      var(--card) 100%
+    ) !important;
+    box-shadow: inset 0 -1px 0
+      color-mix(in srgb, var(--border) 42%, transparent) !important;
+  }
+
+  :root:not(.dark)
+    .dashboard-shell.admin-control-plane-canvas
+    :is(
+      .admin-surface-card,
+      .admin-surface-hero,
+      .admin-metric-card,
+      .admin-panel-primary,
+      .admin-data-panel,
+      .admin-preview-row
+    ) {
+    border: 1px solid
+      color-mix(in srgb, var(--border) 78%, var(--foreground) 10%) !important;
+  }
+
+  :root:not(.dark)
+    .dashboard-shell.admin-control-plane-canvas
+    .admin-surface-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background-image:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--admin-duotone-a) 26%, transparent) 0 1px,
+        transparent 1px 3.2rem
+      ),
+      linear-gradient(
+        135deg,
+        transparent 0 50%,
+        color-mix(in srgb, var(--admin-duotone-a) 16%, transparent) 50% 50.45%,
+        transparent 50.45% 100%
+      ),
+      linear-gradient(
+        45deg,
+        transparent 0 64%,
+        color-mix(in srgb, var(--foreground) 8%, transparent) 64% 64.35%,
+        transparent 64.35% 100%
+      );
+    background-position:
+      right 2rem top 0,
+      right -3rem top 0,
+      right 2rem bottom -2rem;
+    background-size:
+      18rem 100%,
+      20rem 12rem,
+      18rem 10rem;
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, black 18%, transparent) 42%,
+      color-mix(in srgb, black 56%, transparent) 100%
+    );
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    :is(
+      .admin-surface-card,
+      .admin-surface-hero,
+      .admin-metric-card,
+      .admin-preview-row
+    ):hover {
+    background: var(--admin-duotone-surface-hover) !important;
+    box-shadow: var(--admin-duotone-shadow-hover) !important;
+    filter: saturate(1.04);
+    transform: translateY(-1px);
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    :is(
+      .admin-surface-inset,
+      .admin-field,
+      .admin-select-content,
+      .admin-tab-list
+    ) {
+    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent) !important;
+    border-radius: 0.75rem !important;
+    background: var(--admin-duotone-inset) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
+      0 12px 24px -24px
+        color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) !important;
+  }
+
+  :root:not(.dark)
+    .dashboard-shell.admin-control-plane-canvas
+    :is(
+      .admin-surface-inset,
+      .admin-field,
+      .admin-select-content,
+      .admin-tab-list
+    ) {
+    border: 1px solid
+      color-mix(in srgb, var(--border) 82%, var(--foreground) 6%) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 40%, transparent),
+      0 1px 2px -1px color-mix(in srgb, var(--foreground) 14%, transparent) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-surface-hero::after {
+    background: radial-gradient(
+      26rem 18rem at var(--admin-pointer-x, 50%) var(--admin-pointer-y, 50%),
+      color-mix(in srgb, var(--admin-duotone-a) 20%, transparent) 0%,
+      color-mix(in srgb, var(--admin-duotone-b) 10%, transparent) 40%,
+      transparent 76%
+    ) !important;
+  }
+
+  :root:not(.dark)
+    .dashboard-shell.admin-control-plane-canvas
+    .admin-surface-hero::after {
+    background: none !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-metric-card::before,
+  .dashboard-shell.admin-control-plane-canvas
+    .admin-tab-trigger[data-state="active"]::before {
+    background: var(--admin-duotone-rail) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-metric-icon,
+  .dashboard-shell.admin-control-plane-canvas
+    :is(
+      .admin-icon-primary,
+      .admin-icon-positive,
+      .admin-icon-warning,
+      .admin-icon-critical
+    ) {
+    background: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 12%,
+      transparent
+    ) !important;
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 74%,
+      var(--foreground)
+    ) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-icon-neutral {
+    background: color-mix(in srgb, var(--muted) 70%, transparent) !important;
+    color: var(--muted-foreground) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-knowledge-kpi-card {
+    border: 1px solid
+      color-mix(in srgb, var(--border) 78%, var(--foreground) 10%) !important;
+    border-radius: 0.875rem !important;
+    background: color-mix(
+      in srgb,
+      var(--card) 97%,
+      var(--background)
+    ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 50%, transparent),
+      0 1px 2px -1px color-mix(in srgb, var(--foreground) 18%, transparent),
+      0 10px 18px -18px color-mix(in srgb, var(--foreground) 20%, transparent) !important;
+    filter: none !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    .admin-knowledge-kpi-card::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-knowledge-kpi-card:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--border) 70%,
+      var(--foreground) 12%
+    ) !important;
+    background: color-mix(in srgb, var(--card) 98%, var(--muted)) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 54%, transparent),
+      0 2px 4px -3px color-mix(in srgb, var(--foreground) 20%, transparent) !important;
+    filter: none !important;
+    transform: none !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-knowledge-kpi-icon {
+    background: color-mix(in srgb, var(--muted) 78%, var(--card)) !important;
+    color: color-mix(
+      in srgb,
+      var(--foreground) 74%,
+      var(--muted-foreground)
+    ) !important;
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--border) 78%, transparent),
+      inset 0 1px 0 color-mix(in srgb, white 36%, transparent) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    :is(.admin-metric-icon, .admin-knowledge-kpi-icon) {
+    border-radius: 0.625rem !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    :is(
+      .admin-pill-primary,
+      .admin-pill-positive,
+      .admin-pill-warning,
+      .admin-pill-critical
+    ) {
+    background: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 12%,
+      transparent
+    ) !important;
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 76%,
+      var(--foreground)
+    ) !important;
+    border: 0 !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-pill-neutral {
+    background: color-mix(in srgb, var(--muted) 72%, transparent) !important;
+    color: var(--muted-foreground) !important;
+    border: 0 !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    :is(
+      .admin-toolbar-button,
+      .admin-breadcrumb-bar,
+      .admin-tab-trigger[data-state="active"]
+    ) {
+    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent) !important;
+    border-radius: 0.75rem !important;
+    background: var(--admin-duotone-panel) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
+      0 14px 24px -24px
+        color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) !important;
+  }
+
+  .admin-sidebar-nav-button::before,
+  .admin-sidebar-soft-button:hover,
+  .admin-sidebar-user-trigger:hover,
+  .admin-sidebar-user-trigger[data-state="open"] {
+    background: var(--admin-duotone-active) !important;
+  }
+
+  .admin-sidebar-nav-button:hover,
+  .admin-sidebar-nav-button[data-active="true"] {
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 56%,
+      var(--foreground)
+    ) !important;
+  }
+
+  .admin-sidebar-nav-icon {
+    border: 0 !important;
+    background: color-mix(
+      in srgb,
+      var(--card) 82%,
+      var(--admin-duotone-a)
+    ) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
+      0 10px 18px -20px
+        color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) !important;
+  }
+
+  .admin-sidebar-nav-button:hover .admin-sidebar-nav-icon,
+  .admin-sidebar-nav-button[data-active="true"] .admin-sidebar-nav-icon {
+    background: var(--admin-duotone-rail) !important;
+    color: var(--primary-foreground) !important;
+  }
+
+  .admin-sidebar-nav-count {
+    background: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 12%,
+      transparent
+    ) !important;
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 76%,
+      var(--foreground)
+    ) !important;
+  }
+
+  .admin-sidebar-soft-button:hover,
+  .admin-sidebar-user-trigger:hover,
+  .admin-sidebar-user-trigger[data-state="open"] {
+    color: var(--foreground) !important;
+  }
+
+  .kb-self-service-shell {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 94%, white) 0%,
+        color-mix(in srgb, var(--background) 88%, var(--primary) 4%) 48%,
+        color-mix(in srgb, var(--background) 91%, var(--foreground) 3%) 100%
+      ),
+      var(--background);
+  }
+
+  .dark .kb-self-service-shell {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 94%, var(--primary) 6%) 0%,
+        color-mix(in srgb, var(--background) 98%, black) 100%
+      ),
+      var(--background);
+  }
+
+  .kb-self-service-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(
+        color-mix(in srgb, var(--primary) 11%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 11%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        135deg,
+        transparent 0 46%,
+        color-mix(in srgb, var(--foreground) 8%, transparent) 46% 46.3%,
+        transparent 46.3% 100%
+      );
+    background-position:
+      center top,
+      center top,
+      right -4rem top 5rem;
+    background-size:
+      4rem 4rem,
+      4rem 4rem,
+      32rem 18rem;
+    mask-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, black 46%, transparent),
+      color-mix(in srgb, black 24%, transparent) 50%,
+      transparent 100%
+    );
+    opacity: 0.84;
+  }
+
+  .dark .kb-self-service-shell::before {
+    opacity: 0.42;
+  }
+
+  .kb-self-service-shell::after {
+    content: "";
+    position: absolute;
+    inset: auto -8rem 0 auto;
+    z-index: 0;
+    width: min(44rem, 82vw);
+    height: 20rem;
+    pointer-events: none;
+    background-image:
+      linear-gradient(
+        90deg,
+        transparent 0 12%,
+        color-mix(in srgb, var(--primary) 16%, transparent) 12% 12.4%,
+        transparent 12.4% 100%
+      ),
+      linear-gradient(
+        135deg,
+        transparent 0 58%,
+        color-mix(in srgb, var(--primary) 14%, transparent) 58% 58.3%,
+        transparent 58.3% 100%
+      ),
+      linear-gradient(
+        45deg,
+        transparent 0 42%,
+        color-mix(in srgb, var(--foreground) 7%, transparent) 42% 42.3%,
+        transparent 42.3% 100%
+      );
+    background-size:
+      100% 100%,
+      28rem 14rem,
+      24rem 16rem;
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, black 28%, transparent) 36%,
+      color-mix(in srgb, black 54%, transparent) 100%
+    );
+    opacity: 0.74;
+  }
+
+  .kb-self-service-nav {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    min-height: 4.25rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--border) 68%, var(--foreground) 16%);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 96%, white) 0%,
+        color-mix(in srgb, var(--card) 86%, var(--background) 14%) 100%
+      ),
+      var(--card);
+    padding: 0.875rem 1.25rem;
+    backdrop-filter: blur(16px) saturate(1.04);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 72%, transparent),
+      0 1px 2px color-mix(in srgb, var(--foreground) 12%, transparent),
+      0 16px 30px -28px color-mix(in srgb, var(--foreground) 32%, transparent);
+  }
+
+  .dark .kb-self-service-nav {
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+    background: color-mix(in srgb, var(--background) 84%, transparent);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.025) inset;
+  }
+
+  .kb-self-service-brand,
+  .kb-self-service-back {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--foreground);
+    font-size: 0.8125rem;
+    line-height: 1;
+    text-decoration: none;
+    transition:
+      color 160ms ease,
+      opacity 160ms ease;
+  }
+
+  .kb-self-service-back {
+    color: var(--muted-foreground);
+    font-weight: 600;
+  }
+
+  .kb-self-service-brand:hover,
+  .kb-self-service-back:hover {
+    color: var(--foreground);
+  }
+
+  .kb-self-service-icon-button {
+    display: inline-flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    border: 1px solid
+      color-mix(in srgb, var(--border) 78%, var(--foreground) 8%);
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    color: var(--muted-foreground);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
+      0 1px 2px color-mix(in srgb, var(--foreground) 8%, transparent);
+    transition:
+      background 160ms ease,
+      color 160ms ease,
+      transform 160ms ease;
+  }
+
+  .kb-self-service-icon-button:hover {
+    background: color-mix(in srgb, var(--card) 96%, var(--primary) 4%);
+    color: var(--foreground);
+    transform: translateY(-1px);
+  }
+
+  .dark .kb-self-service-icon-button {
+    border-color: rgba(255, 255, 255, 0.07);
+    background: color-mix(in srgb, var(--card) 82%, transparent);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .kb-self-service-footer {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid
+      color-mix(in srgb, var(--border) 68%, var(--foreground) 14%);
+    padding: 1rem 1.5rem;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 88%, var(--background) 12%) 0%,
+        color-mix(in srgb, var(--card) 96%, white) 100%
+      ),
+      var(--card);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 -12px 24px -24px
+      color-mix(in srgb, var(--foreground) 32%, transparent);
+  }
+
+  .dark .kb-self-service-footer {
+    border-top-color: rgba(255, 255, 255, 0.07);
+  }
+
+  .kb-self-service-panel {
+    position: relative;
+    border: 1px solid
+      color-mix(in srgb, var(--border) 60%, var(--foreground) 18%);
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        color-mix(in srgb, var(--card) 92%, var(--background) 8%) 54%,
+        color-mix(in srgb, var(--card) 88%, var(--primary) 5%) 100%
+      ),
+      var(--card);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 82%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, white 32%, transparent),
+      0 1px 3px color-mix(in srgb, var(--foreground) 16%, transparent),
+      0 22px 44px -32px color-mix(in srgb, var(--foreground) 34%, transparent),
+      0 42px 82px -62px color-mix(in srgb, var(--primary) 30%, transparent);
+  }
+
+  .dark .kb-self-service-panel {
+    border-color: rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 92%, var(--primary) 4%) 0%,
+        color-mix(in srgb, var(--card) 86%, black) 100%
+      ),
+      var(--card);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.025),
+      0 24px 52px -42px rgba(0, 0, 0, 0.76);
+  }
+
+  .kb-self-service-inset {
+    border: 1px solid
+      color-mix(in srgb, var(--border) 68%, var(--foreground) 14%);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 84%, white) 0%,
+        color-mix(in srgb, var(--background) 78%, var(--card) 22%) 100%
+      ),
+      var(--background);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 48%, transparent),
+      inset 0 1px 3px color-mix(in srgb, var(--foreground) 8%, transparent),
+      0 1px 0 color-mix(in srgb, white 38%, transparent);
+  }
+
+  .dark .kb-self-service-inset {
+    border-color: rgba(255, 255, 255, 0.07);
+    background: color-mix(in srgb, var(--background) 64%, var(--card) 36%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .kb-self-service-field {
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid
+      color-mix(in srgb, var(--border) 66%, var(--foreground) 16%);
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        color-mix(in srgb, var(--card) 92%, var(--background) 8%) 100%
+      ),
+      var(--card);
+    color: var(--foreground);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 64%, transparent),
+      0 1px 2px color-mix(in srgb, var(--foreground) 10%, transparent);
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      background 160ms ease;
+  }
+
+  .kb-self-service-field::placeholder {
+    color: color-mix(in srgb, var(--muted-foreground) 62%, transparent);
+  }
+
+  .kb-self-service-field:focus {
+    border-color: color-mix(in srgb, var(--primary) 44%, var(--border));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 46%, transparent),
+      0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
+    outline: none;
+  }
+
+  .dark .kb-self-service-field {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--background) 64%, var(--card) 36%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .kb-self-service-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border) 78%);
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        color-mix(in srgb, var(--card) 86%, var(--primary) 9%) 100%
+      ),
+      var(--card);
+    color: color-mix(in srgb, var(--primary) 72%, var(--foreground));
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    padding: 0.5rem 0.7rem;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.76),
+      0 1px 2px color-mix(in srgb, var(--foreground) 8%, transparent);
+    text-transform: uppercase;
+  }
+
+  .dark .kb-self-service-chip {
+    border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: color-mix(in srgb, var(--primary) 54%, white);
+  }
+
+  .kb-self-service-graphic {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background) 82%, white) 0%,
+      color-mix(in srgb, var(--background) 72%, var(--primary) 7%) 100%
+    );
+    border: 1px solid
+      color-mix(in srgb, var(--border) 66%, var(--foreground) 12%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.28),
+      0 14px 28px -24px color-mix(in srgb, var(--foreground) 28%, transparent);
+  }
+
+  .kb-self-service-graphic::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 18%, transparent) 0 1px,
+        transparent 1px 4rem
+      ),
+      linear-gradient(
+        color-mix(in srgb, var(--primary) 12%, transparent) 0 1px,
+        transparent 1px 3rem
+      );
+    background-size:
+      4rem 100%,
+      100% 3rem;
+    opacity: 0.66;
+  }
+
+  .kb-self-service-graphic::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(
+        135deg,
+        transparent 0 46%,
+        color-mix(in srgb, var(--foreground) 10%, transparent) 46% 46.32%,
+        transparent 46.32% 100%
+      ),
+      linear-gradient(
+        45deg,
+        transparent 0 58%,
+        color-mix(in srgb, var(--primary) 16%, transparent) 58% 58.32%,
+        transparent 58.32% 100%
+      );
+    background-position:
+      right -6rem top -2rem,
+      left -4rem bottom -2rem;
+    background-size:
+      24rem 14rem,
+      22rem 16rem;
+    opacity: 0.76;
+  }
+
+  .kb-self-service-graphic > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 640px) {
+    .kb-self-service-nav {
+      padding-inline: 1rem;
+    }
+
+    .kb-self-service-footer {
+      align-items: flex-start;
+      flex-direction: column;
+      padding-inline: 1rem;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem; /* 32px - desktop padding */
+      padding-right: 2rem;
+      max-width: 1280px; /* Standard content width */
+    }
+  }
+}
+
+/* Guided-tour spotlight for knowledge-base onboarding */
+.tour-spotlight {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 4px;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+  animation: tour-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tour-pulse {
+  0%,
+  100% {
+    outline-color: hsl(var(--primary) / 0.7);
+  }
+  50% {
+    outline-color: hsl(var(--primary));
+  }
+}

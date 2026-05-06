@@ -34,8 +34,6 @@ gcloud auth configure-docker us-west1-docker.pkg.dev
 3. Ingestion Pipeline (needs Knowledge API URL)
    ↓
 4. Agentic BFF (needs all above URLs)
-   ↓
-5. CI Portal (needs Agentic URL)
 ```
 
 ---
@@ -309,158 +307,6 @@ echo "AGENTIC_URL=$AGENTIC_URL" >> ~/deployment-urls.env
 
 ---
 
-## Step 5: Deploy CI Portal
-
-### A. Create Secrets
-
-```bash
-cd apps/ci-portal
-
-gcloud secrets create ci-portal-database-url \
-  --data-file=- <<EOF
-postgresql://user:password@10.0.0.8:5432/ci_portal
-EOF
-
-gcloud secrets create ci-portal-jwt-secret \
-  --data-file=- <<EOF
-your-jwt-secret
-EOF
-```
-
-### B. Create Terraform Config
-
-Create `apps/ci-portal/tf/cloud_run.tf`:
-
-```hcl
-resource "google_cloud_run_v2_service" "ci_portal" {
-  name     = "ci-portal"
-  location = var.region
-  project  = var.spoke_project_id
-
-  template {
-    containers {
-      image = var.image
-
-      env {
-        name  = "NODE_ENV"
-        value = "production"
-      }
-
-      env {
-        name  = "VITE_AGENTIC_PLATFORM_URL"
-        value = "https://agentic-abc123-uw.a.run.app"  # ← From Step 4
-      }
-
-      env {
-        name  = "DATABASE_URL"
-        value_source {
-          secret_key_ref {
-            secret  = "ci-portal-database-url"
-            version = "latest"
-          }
-        }
-      }
-
-      env {
-        name  = "JWT_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = "ci-portal-jwt-secret"
-            version = "latest"
-          }
-        }
-      }
-
-      ports {
-        container_port = 9002
-      }
-    }
-
-    service_account = google_service_account.ci_portal.email
-  }
-
-  traffic {
-    percent = 100
-    type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
-  }
-}
-
-resource "google_service_account" "ci_portal" {
-  account_id   = "ci-portal-sa"
-  display_name = "CI Portal Service Account"
-  project      = var.spoke_project_id
-}
-
-resource "google_secret_manager_secret_iam_member" "ci_portal_secrets" {
-  for_each = toset([
-    "ci-portal-database-url",
-    "ci-portal-jwt-secret",
-  ])
-
-  secret_id = each.key
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.ci_portal.email}"
-  project   = var.spoke_project_id
-}
-
-output "ci_portal_url" {
-  value       = google_cloud_run_v2_service.ci_portal.uri
-  description = "CI Portal URL"
-}
-```
-
-### C. Create deploy.sh
-
-```bash
-cat > apps/ci-portal/deploy.sh << 'EOF'
-#!/bin/bash
-set -e
-
-export SPOKE_PROJECT_ID="p-642-cilab-demo"
-export REGION="us-west1"
-export REGISTRY_NAME="demo-registry"
-export IMAGE_NAME="ci-portal"
-
-echo "🔨 Building CI Portal..."
-cd "$(dirname "$0")/../.."
-docker build -f apps/ci-portal/Dockerfile \
-  -t $REGION-docker.pkg.dev/$SPOKE_PROJECT_ID/$REGISTRY_NAME/$IMAGE_NAME:latest .
-
-echo "🚀 Pushing to Artifact Registry..."
-docker push $REGION-docker.pkg.dev/$SPOKE_PROJECT_ID/$REGISTRY_NAME/$IMAGE_NAME:latest
-
-echo "✅ Image: $REGION-docker.pkg.dev/$SPOKE_PROJECT_ID/$REGISTRY_NAME/$IMAGE_NAME:latest"
-echo ""
-echo "Next: cd apps/ci-portal/tf && terraform apply"
-EOF
-
-chmod +x apps/ci-portal/deploy.sh
-```
-
-### D. Build & Deploy
-
-```bash
-cd /Users/hghebrechristos/Innovation/innovationlab-monorepo
-./apps/ci-portal/deploy.sh
-
-cd apps/ci-portal/tf
-terraform init
-terraform apply
-```
-
-### E. **CAPTURE THE URL** ✅
-
-```bash
-export CI_PORTAL_URL=$(gcloud run services describe ci-portal \
-  --region=us-west1 \
-  --format='value(status.url)')
-
-echo "CI Portal URL: $CI_PORTAL_URL"
-echo "CI_PORTAL_URL=$CI_PORTAL_URL" >> ~/deployment-urls.env
-```
-
----
-
 ## 🎉 Deployment Complete!
 
 ### Review All URLs
@@ -476,19 +322,17 @@ KNOWLEDGE_API_URL=https://knowledge-api-abc123-uw.a.run.app
 ORCHESTRATOR_URL=https://orchestrator-service-def456-uw.a.run.app
 INGESTION_PIPELINE_URL=https://ingestion-pipeline-service-ghi789-uw.a.run.app
 AGENTIC_URL=https://agentic-jkl012-uw.a.run.app
-CI_PORTAL_URL=https://ci-portal-mno345-uw.a.run.app
 ```
 
 ### Test Navigation
 
 ```bash
-echo "Main entry point: $CI_PORTAL_URL"
+echo "Agentic entry point: $AGENTIC_URL"
 ```
 
-1. Open CI Portal URL in browser
+1. Open Agentic URL in browser
 2. Log in
-3. Click "Agentic AI" card → Should open Agentic URL
-4. Verify AI chat works (calls Orchestrator → Knowledge API)
+3. Verify AI chat works (calls Orchestrator -> Knowledge API)
 
 ---
 
@@ -497,9 +341,6 @@ echo "Main entry point: $CI_PORTAL_URL"
 ### Service Dependencies
 
 ```
-CI Portal (9002)
-├─► Links to Agentic BFF
-│
 Agentic BFF (9001)
 ├─► Orchestrator Service (9501)
 │   └─► Knowledge API (9509) via MCP
@@ -532,7 +373,6 @@ curl https://knowledge-api-abc123-uw.a.run.app/health
 curl https://orchestrator-service-def456-uw.a.run.app/health
 curl https://ingestion-pipeline-service-ghi789-uw.a.run.app/health
 curl https://agentic-jkl012-uw.a.run.app/health
-curl https://ci-portal-mno345-uw.a.run.app/health
 ```
 
 ### View Logs
@@ -559,7 +399,6 @@ Deploy in this order, capturing URLs after each step:
 1. **Knowledge API** → Get URL → Use in Steps 2, 3, 4
 2. **Orchestrator** → Get URL → Use in Step 4
 3. **Ingestion Pipeline** → Get URL → Use in Step 4
-4. **Agentic BFF** → Get URL → Use in Step 5
-5. **CI Portal** → Final deployment
+4. **Agentic BFF** → Final deployment
 
 Each service's Terraform config needs the URLs from services it depends on. By deploying in order and capturing URLs, you ensure all services can communicate correctly.

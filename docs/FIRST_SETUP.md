@@ -32,7 +32,7 @@ Use this when you want the backend stack running in the background and the Agent
 ```bash
 make infra-up
 make dev-services
-cd agentic && pnpm dev
+cd apps/agentic && pnpm dev
 ```
 
 This is the better option when you are iterating on frontend code and want to stop or restart only the UI process.
@@ -43,7 +43,6 @@ You are fully onboarded when all of the following are true:
 
 - `make dev-status` shows MySQL, Redis, PostgreSQL, and LiteLLM up
 - `http://localhost:9001` loads Agentic
-- `http://localhost:9002` loads CI Portal when `make dev-services` or `make dev-full` is running
 - `http://localhost:9501/health` returns orchestrator health
 - `http://localhost:9509/health` returns knowledge-api health
 - `http://localhost:9508/health` returns ingestion-pipeline health

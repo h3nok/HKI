@@ -1,0 +1,37 @@
+name: HKI conformance gap
+description: Report behavior that appears to violate HKI runtime or conformance expectations.
+title: "conformance: "
+labels: ["conformance", "needs-triage"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What boundary, adapter, package, or service appears non-conformant?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected HKI behavior
+      description: Describe the expected active-domain, envelope, cache, retrieval, tool, or visibility behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: Include command output, failing case names, or a minimal reproduction when possible.
+    validations:
+      required: true
+  - type: input
+    id: package
+    attributes:
+      label: Package or service
+      placeholder: "@hki/runtime, @hki/conformance, knowledge-api, orchestrator-service"
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Conformance evidence
+      description: Paste relevant `pnpm audit:hki`, `pnpm verify:hki-conformance`, or adapter output.
+      render: text

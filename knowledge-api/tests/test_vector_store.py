@@ -21,6 +21,17 @@ import src.adapters.vector_store
 import src.domain.chunking
 import src.domain.models
 
+TEST_VALUE_STREAM = "pharmacy"
+LEGAL_VALUE_STREAM = "legal"
+
+
+def _scoped_filters(
+    stream: str = TEST_VALUE_STREAM,
+    **kwargs: typing.Any,
+) -> src.domain.models.SearchFilters:
+    return src.domain.models.SearchFilters(value_streams=[stream], **kwargs)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Chunking Strategies
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -130,12 +141,14 @@ class TestVectorStore:
         # Document 1: HKI Return Policy
         doc1 = src.domain.models.Document(
             id="doc-1",
+            stream_id=TEST_VALUE_STREAM,
             content="HKI has a generous return policy. Most items can be returned at any time.",
             metadata=src.domain.models.DocumentMetadata(
                 title="Return Policy",
                 document_type=src.domain.models.DocumentType.POLICY,
                 department="Customer Service",
                 tags=["returns", "policy"],
+                stream_id=TEST_VALUE_STREAM,
             ),
             status=src.domain.models.DocumentStatus.INDEXED,
             chunk_count=1,
@@ -152,12 +165,14 @@ class TestVectorStore:
         # Document 2: Pharmacy SOP
         doc2 = src.domain.models.Document(
             id="doc-2",
+            stream_id=TEST_VALUE_STREAM,
             content="Pharmacy operations must comply with HIPAA. Controlled substances require verification.",
             metadata=src.domain.models.DocumentMetadata(
                 title="Pharmacy Operations Guide",
                 document_type=src.domain.models.DocumentType.SOP,
                 department="Pharmacy",
                 tags=["pharmacy", "compliance", "hipaa"],
+                stream_id=TEST_VALUE_STREAM,
             ),
             status=src.domain.models.DocumentStatus.INDEXED,
             chunk_count=1,
@@ -174,12 +189,14 @@ class TestVectorStore:
         # Document 3: Kirkland Product Standards (using PRODUCT type)
         doc3 = src.domain.models.Document(
             id="doc-3",
+            stream_id=TEST_VALUE_STREAM,
             content="Kirkland Signature products must meet or exceed national brand quality.",
             metadata=src.domain.models.DocumentMetadata(
                 title="Kirkland Signature Standards",
                 document_type=src.domain.models.DocumentType.PRODUCT,
                 department="Merchandising",
                 tags=["kirkland", "quality"],
+                stream_id=TEST_VALUE_STREAM,
             ),
             status=src.domain.models.DocumentStatus.INDEXED,
             chunk_count=1,
@@ -221,6 +238,7 @@ class TestVectorStore:
             query="return policy",
             mode=src.domain.models.SearchMode.KEYWORD,
             top_k=5,
+            filters=_scoped_filters(),
         )
         result = await seeded_store.search(query, query_embedding=None)
         assert result.total_results > 0
@@ -238,6 +256,7 @@ class TestVectorStore:
             query="return policy",
             mode=src.domain.models.SearchMode.VECTOR,
             top_k=3,
+            filters=_scoped_filters(),
         )
         result = await seeded_store.search(query, query_embedding=query_embedding)
         assert result.total_results > 0
@@ -253,6 +272,7 @@ class TestVectorStore:
             query="return policy",
             mode=src.domain.models.SearchMode.HYBRID,
             top_k=5,
+            filters=_scoped_filters(),
         )
         result = await seeded_store.search(query, query_embedding=query_embedding)
         assert result.total_results > 0
@@ -265,7 +285,7 @@ class TestVectorStore:
             query="operations",
             mode=src.domain.models.SearchMode.KEYWORD,
             top_k=5,
-            filters=src.domain.models.SearchFilters(departments=["Pharmacy"]),
+            filters=_scoped_filters(departments=["Pharmacy"]),
         )
         result = await seeded_store.search(query, query_embedding=None)
         for r in result.results:
@@ -278,11 +298,13 @@ class TestVectorStore:
         docs: list[src.domain.models.Document] = [
             src.domain.models.Document(
                 id="live-current",
+                stream_id=TEST_VALUE_STREAM,
                 content="Current published policy",
                 metadata=src.domain.models.DocumentMetadata(
                     title="Current Policy",
                     document_type=src.domain.models.DocumentType.POLICY,
                     department="Pharmacy",
+                    stream_id=TEST_VALUE_STREAM,
                     updated_at=now - datetime.timedelta(days=10),
                 ),
                 status=src.domain.models.DocumentStatus.PUBLISHED,
@@ -292,11 +314,13 @@ class TestVectorStore:
             ),
             src.domain.models.Document(
                 id="pending-review",
+                stream_id=TEST_VALUE_STREAM,
                 content="Awaiting review",
                 metadata=src.domain.models.DocumentMetadata(
                     title="Pending Review",
                     document_type=src.domain.models.DocumentType.SOP,
                     department="Pharmacy",
+                    stream_id=TEST_VALUE_STREAM,
                     updated_at=now - datetime.timedelta(days=45),
                 ),
                 status=src.domain.models.DocumentStatus.PENDING_REVIEW,
@@ -306,11 +330,13 @@ class TestVectorStore:
             ),
             src.domain.models.Document(
                 id="processing-stale",
+                stream_id=TEST_VALUE_STREAM,
                 content="Still processing",
                 metadata=src.domain.models.DocumentMetadata(
                     title="Processing",
                     document_type=src.domain.models.DocumentType.GENERAL,
                     department="",
+                    stream_id=TEST_VALUE_STREAM,
                     updated_at=now - datetime.timedelta(days=120),
                 ),
                 status=src.domain.models.DocumentStatus.PROCESSING,
@@ -322,7 +348,7 @@ class TestVectorStore:
 
         store._documents = {doc.id: doc for doc in docs}
 
-        summary = await store.document_inventory_summary()
+        summary = await store.document_inventory_summary(allowed_streams=[TEST_VALUE_STREAM])
 
         assert summary.total_documents == 3
         assert summary.live_count == 1
@@ -340,7 +366,7 @@ class TestVectorStore:
         assert summary.freshness.unknown_count == 0
 
     @pytest.mark.asyncio
-    async def test_global_scope_allows_search_across_streams(self, seeded_store: src.adapters.vector_store.VectorStore) -> None:
+    async def test_global_scope_does_not_widen_runtime_search(self, seeded_store: src.adapters.vector_store.VectorStore) -> None:
         query = src.domain.models.SearchQuery(
             query="return policy",
             mode=src.domain.models.SearchMode.KEYWORD,
@@ -350,18 +376,19 @@ class TestVectorStore:
 
         result = await seeded_store.search(query, query_embedding=None)
 
-        assert result.total_results > 0
-        matched_docs = {r.document_id for r in result.results}
-        assert "doc-1" in matched_docs
+        assert result.total_results == 0
+        assert result.results == []
 
     @pytest.mark.asyncio
     async def test_filename_query_matches_document_title(self, store: src.adapters.vector_store.VectorStore) -> None:
         doc = src.domain.models.Document(
             id="doc-filename",
+            stream_id=TEST_VALUE_STREAM,
             content="Workers must use harnesses near unprotected edges.",
             metadata=src.domain.models.DocumentMetadata(
                 title="fall-protection-plan.md",
                 document_type=src.domain.models.DocumentType.POLICY,
+                stream_id=TEST_VALUE_STREAM,
             ),
             status=src.domain.models.DocumentStatus.PUBLISHED,
             chunk_count=1,
@@ -381,6 +408,7 @@ class TestVectorStore:
                 query="fall-protection-plan.md",
                 mode=src.domain.models.SearchMode.KEYWORD,
                 top_k=5,
+                filters=_scoped_filters(),
             ),
             query_embedding=None,
         )
@@ -392,11 +420,13 @@ class TestVectorStore:
     async def test_keyword_search_uses_retrieval_metadata(self, store: src.adapters.vector_store.VectorStore) -> None:
         doc = src.domain.models.Document(
             id="doc-pharmacy",
+            stream_id=TEST_VALUE_STREAM,
             content="Use the pharmacy troubleshooting playbook for additional detail.",
             metadata=src.domain.models.DocumentMetadata(
                 title="Pharmacy rejection playbook",
                 department="Pharmacy",
                 tags=["pharmacy"],
+                stream_id=TEST_VALUE_STREAM,
                 custom={
                     "source_id": "KB2028004",
                     "system_name": "Enterprise Pharmacy System (EPS)",
@@ -421,6 +451,7 @@ class TestVectorStore:
                 query="KB2028004 EPS NN switch intermediary",
                 mode=src.domain.models.SearchMode.KEYWORD,
                 top_k=5,
+                filters=_scoped_filters(),
             ),
             query_embedding=None,
         )
@@ -434,7 +465,7 @@ class TestVectorStore:
             query="operations",
             mode=src.domain.models.SearchMode.KEYWORD,
             top_k=5,
-            filters=src.domain.models.SearchFilters(document_types=[src.domain.models.DocumentType.SOP]),
+            filters=_scoped_filters(document_types=[src.domain.models.DocumentType.SOP]),
         )
         result = await seeded_store.search(query, query_embedding=None)
         for r in result.results:
@@ -448,6 +479,7 @@ class TestVectorStore:
             mode=src.domain.models.SearchMode.KEYWORD,
             top_k=5,
             include_citations=True,
+            filters=_scoped_filters(),
         )
         result = await seeded_store.search(query, query_embedding=None)
         assert len(result.citations) > 0
@@ -484,11 +516,13 @@ class TestVectorStore:
     async def test_restricted_document_requires_matching_group(self, store: src.adapters.vector_store.VectorStore) -> None:
         doc = src.domain.models.Document(
             id="legal-doc",
+            stream_id=LEGAL_VALUE_STREAM,
             content="Privileged legal memo about active litigation.",
             metadata=src.domain.models.DocumentMetadata(
                 title="Legal Litigation Memo",
                 document_type=src.domain.models.DocumentType.POLICY,
                 department="Legal",
+                stream_id=LEGAL_VALUE_STREAM,
                 classification=src.domain.models.DocumentClassification.RESTRICTED,
                 access_control=src.domain.models.DocumentAccessControl(
                     allowed_groups=["department:legal"],
@@ -512,7 +546,8 @@ class TestVectorStore:
                 query="litigation memo",
                 mode=src.domain.models.SearchMode.KEYWORD,
                 top_k=5,
-                filters=src.domain.models.SearchFilters(
+                filters=_scoped_filters(
+                    LEGAL_VALUE_STREAM,
                     document_statuses=[src.domain.models.DocumentStatus.PUBLISHED],
                     caller_user_id="ops-user",
                     caller_principals=["department:operations"],
@@ -526,7 +561,8 @@ class TestVectorStore:
                 query="litigation memo",
                 mode=src.domain.models.SearchMode.KEYWORD,
                 top_k=5,
-                filters=src.domain.models.SearchFilters(
+                filters=_scoped_filters(
+                    LEGAL_VALUE_STREAM,
                     document_statuses=[src.domain.models.DocumentStatus.PUBLISHED],
                     caller_user_id="legal-user",
                     caller_principals=["department:legal"],
@@ -540,9 +576,11 @@ class TestVectorStore:
     async def test_document_acl_allows_explicit_user(self, store: src.adapters.vector_store.VectorStore) -> None:
         doc = src.domain.models.Document(
             id="user-acl-doc",
+            stream_id=LEGAL_VALUE_STREAM,
             content="Case strategy notes for outside counsel.",
             metadata=src.domain.models.DocumentMetadata(
                 title="Case Strategy",
+                stream_id=LEGAL_VALUE_STREAM,
                 classification=src.domain.models.DocumentClassification.RESTRICTED,
                 access_control=src.domain.models.DocumentAccessControl(
                     allowed_users=["legal.lead@example.com"],
@@ -563,6 +601,7 @@ class TestVectorStore:
         assert (
             await store.get_document(
                 doc.id,
+                allowed_streams=[LEGAL_VALUE_STREAM],
                 user_id="someone.else@example.com",
                 principals=["department:legal"],
             )
@@ -571,6 +610,7 @@ class TestVectorStore:
         assert (
             await store.get_document(
                 doc.id,
+                allowed_streams=[LEGAL_VALUE_STREAM],
                 user_id="legal.lead@example.com",
                 principals=["department:operations"],
             )
@@ -579,14 +619,14 @@ class TestVectorStore:
 
     @pytest.mark.asyncio
     async def test_get_document(self, seeded_store: src.adapters.vector_store.VectorStore) -> None:
-        doc = await seeded_store.get_document("doc-1")
+        doc = await seeded_store.get_document("doc-1", allowed_streams=[TEST_VALUE_STREAM])
         assert doc is not None
         assert doc.metadata.title == "Return Policy"
 
     @pytest.mark.asyncio
     async def test_delete_document(self, seeded_store: src.adapters.vector_store.VectorStore) -> None:
         initial_count: int = len(seeded_store._documents)
-        result: bool = await seeded_store.delete_document("doc-1")
+        result: bool = await seeded_store.delete_document("doc-1", allowed_streams=[TEST_VALUE_STREAM])
         assert result is True
         assert len(seeded_store._documents) == initial_count - 1
         assert "doc-1" not in seeded_store._documents
@@ -604,6 +644,7 @@ class TestVectorStore:
             query="xyznonexistentquery123",
             mode=src.domain.models.SearchMode.KEYWORD,
             top_k=5,
+            filters=_scoped_filters(),
         )
         result = await seeded_store.search(query, query_embedding=None)
         assert result.total_results == 0
@@ -615,6 +656,7 @@ class TestVectorStore:
             mode=src.domain.models.SearchMode.KEYWORD,
             top_k=5,
             min_score=0.99,  # Very high threshold
+            filters=_scoped_filters(),
         )
         result = await seeded_store.search(query, query_embedding=None)
         for r in result.results:

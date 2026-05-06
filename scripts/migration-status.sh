@@ -4,7 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-AGENTIC_DIR="${SCRIPT_DIR}/../agentic"
+AGENTIC_DIR="${SCRIPT_DIR}/../apps/agentic"
 
 if [[ -z "${DATABASE_URL:-}" ]]; then
   echo "DATABASE_URL is required."

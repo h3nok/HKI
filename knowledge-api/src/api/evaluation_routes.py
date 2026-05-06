@@ -29,6 +29,7 @@ router = fastapi.APIRouter(
     tags=["evaluation"],
     dependencies=[fastapi.Depends(src.core.auth.verify_request_jwt)],
 )
+UNSCOPED_EVAL_ANALYTICS_SCOPE = "unscoped-eval"
 
 
 # ── Request / Response models ─────────────────────────────────────────────
@@ -100,7 +101,7 @@ def _analytics_scope(identity: src.core.auth.RequestIdentity) -> str:
         for scope in (getattr(identity, "scopes", None) or [])
         if str(scope).strip() and str(scope).strip() != "global"
     ]
-    return non_global_scopes[0] if len(non_global_scopes) == 1 else "global"
+    return non_global_scopes[0] if len(non_global_scopes) == 1 else UNSCOPED_EVAL_ANALYTICS_SCOPE
 
 
 def _summary_metric(
@@ -168,7 +169,7 @@ def _emit_evaluation_analytics(
     if metrics:
         payload.update(metrics)
         payload["ragas"] = metrics
-    if scope != "global":
+    if scope != UNSCOPED_EVAL_ANALYTICS_SCOPE:
         payload["stream_id"] = scope
 
     analytics.fire(

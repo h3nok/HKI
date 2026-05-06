@@ -3,7 +3,7 @@
    ╠═╝╠╦╝║║║║║ ║ ║╚╗╔╝║╣ ╚═╗
    ╩  ╩╚═╩╩ ╩╩ ╩ ╩ ╚╝ ╚═╝╚═╝
    
-   COSTCO INNOVATIONS DESIGN SYSTEM — PRIMITIVE TOKENS v3.0
+   HKI PLATFORM DESIGN SYSTEM — PRIMITIVE TOKENS v4.0
    
    ┌─────────────────────────────────────────────────────────────────────────────┐
    │  LAYER 1: ATOMIC DESIGN VALUES                                             │
@@ -19,61 +19,61 @@
   /* ═══════════════════════════════════════════════════════════════════════════
      §1 BRAND COLORS — HKI Identity (Immutable Core)
      ═══════════════════════════════════════════════════════════════════════════ */
-  
-  /* HKI Blue — Primary brand, trust, technology
-     Official: #0066B2 - Source: apps/steel/client/src/design-system/tokens.ts */
-  --color-brand-blue-25:  #F0F7FC;
-  --color-brand-blue-50:  #E6F2FA;
-  --color-brand-blue-100: #CCE5F5;
-  --color-brand-blue-200: #99CBEB;
-  --color-brand-blue-300: #66B1E1;
-  --color-brand-blue-400: #3397D7;
-  --color-brand-blue-500: #0066B2;  /* ★ Official HKI Blue */
-  --color-brand-blue-600: #00528E;
-  --color-brand-blue-700: #003E6B;
-  --color-brand-blue-800: #002A47;
-  --color-brand-blue-900: #001624;
-  --color-brand-blue-950: #000B12;
 
-  /* HKI Red — Secondary brand, energy, action
-     Official: #E31837 - Source: apps/steel/client/src/design-system/tokens.ts */
-  --color-brand-red-25:  #FEF5F6;
-  --color-brand-red-50:  #FCE8EC;
-  --color-brand-red-100: #F9D1D9;
-  --color-brand-red-200: #F3A3B3;
-  --color-brand-red-300: #ED758D;
-  --color-brand-red-400: #E74767;
-  --color-brand-red-500: #E31837;   /* ★ Official HKI Red */
-  --color-brand-red-600: #B6132C;
-  --color-brand-red-700: #880E21;
-  --color-brand-red-800: #5B0916;
-  --color-brand-red-900: #2D050B;
-  --color-brand-red-950: #170305;
+  /* HKI Iris — Primary brand, depth, focus
+     Official: #0E7C7B — deep teal (Pharos palette) */
+  --color-brand-iris-25: #ecfdfc;
+  --color-brand-iris-50: #d5f8f5;
+  --color-brand-iris-100: #a8f0eb;
+  --color-brand-iris-200: #6ee0da;
+  --color-brand-iris-300: #3dcbc6;
+  --color-brand-iris-400: #1fa9a5;
+  --color-brand-iris-500: #0e7c7b; /* ★ HKI Iris (deep teal) */
+  --color-brand-iris-600: #0b6261;
+  --color-brand-iris-700: #094948;
+  --color-brand-iris-800: #063030;
+  --color-brand-iris-900: #031818;
+  --color-brand-iris-950: #010c0c;
+
+  /* HKI Pulse — Secondary brand, signal, warmth
+     Official: #E07A1F — warm amber (Pharos palette) */
+  --color-brand-pulse-25: #fff8ee;
+  --color-brand-pulse-50: #feebcc;
+  --color-brand-pulse-100: #fdd49a;
+  --color-brand-pulse-200: #fbba68;
+  --color-brand-pulse-300: #f49e3b;
+  --color-brand-pulse-400: #ed8a28;
+  --color-brand-pulse-500: #e07a1f; /* ★ HKI Pulse (warm amber) */
+  --color-brand-pulse-600: #b8611a;
+  --color-brand-pulse-700: #8c4a14;
+  --color-brand-pulse-800: #5e320d;
+  --color-brand-pulse-900: #2f1907;
+  --color-brand-pulse-950: #170c03;
 
   /* ═══════════════════════════════════════════════════════════════════════════
-     §2 NEUTRAL SCALE — Warm Stone (Default Palette)
-     
-     19-step scale for precise surface hierarchy.
-     Apps can override these for different personalities (cool gray, slate, etc.)
+     §2 NEUTRAL SCALE — Clean System Gray
+
+     High-contrast scale for productivity interfaces.
+     Cooler undertone for screen readability.
      ═══════════════════════════════════════════════════════════════════════════ */
-  --color-neutral-0:    #ffffff;   /* Pure white */
-  --color-neutral-25:   #fdfdfb;   /* Warm off-white */
-  --color-neutral-50:   #faf9f7;   /* App canvas */
-  --color-neutral-75:   #f7f6f3;   /* Subtle step */
-  --color-neutral-100:  #f3f2ef;   /* Card surface */
-  --color-neutral-150:  #eae9e6;   /* Interactive bg */
-  --color-neutral-200:  #e0dfdc;   /* Borders (light) */
-  --color-neutral-300:  #d1d0cd;   /* Borders (medium) */
-  --color-neutral-400:  #a3a29f;   /* Placeholder text */
-  --color-neutral-500:  #6f6e6b;   /* Secondary text */
-  --color-neutral-600:  #525150;   /* Body text */
-  --color-neutral-700:  #3f3e3d;   /* Headings */
-  --color-neutral-800:  #292827;   /* Dark surfaces */
-  --color-neutral-850:  #1f1e1d;   /* Darker */
-  --color-neutral-900:  #171716;   /* Near black */
-  --color-neutral-925:  #121211;   /* Deeper */
-  --color-neutral-950:  #0a0a09;   /* True dark */
-  --color-neutral-1000: #000000;   /* Pure black */
+  --color-neutral-0: #ffffff;
+  --color-neutral-25: #fafafa;
+  --color-neutral-50: #f5f5f5;
+  --color-neutral-75: #f0f0f0;
+  --color-neutral-100: #e8e8e8;
+  --color-neutral-150: #dfdfdf;
+  --color-neutral-200: #d4d4d4;
+  --color-neutral-300: #b5b5b5;
+  --color-neutral-400: #8c8c8c;
+  --color-neutral-500: #636363;
+  --color-neutral-600: #4a4a4a;
+  --color-neutral-700: #363636;
+  --color-neutral-800: #262626;
+  --color-neutral-850: #1c1c1c;
+  --color-neutral-900: #141414;
+  --color-neutral-925: #0f0f0f;
+  --color-neutral-950: #0a0a0a;
+  --color-neutral-1000: #000000;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §3 STATUS COLORS — Semantic State Indicators
@@ -81,58 +81,58 @@
      Full 11-step scales for nuanced status communication.
      Optimized for WCAG AA contrast ratios.
      ═══════════════════════════════════════════════════════════════════════════ */
-  
+
   /* Success — Positive outcomes, completions, approvals */
-  --color-success-25:   #f0fdf4;
-  --color-success-50:   #dcfce7;
-  --color-success-100:  #bbf7d0;
-  --color-success-200:  #86efac;
-  --color-success-300:  #4ade80;
-  --color-success-400:  #22c55e;
-  --color-success-500:  #16a34a;  /* ★ Primary */
-  --color-success-600:  #15803d;
-  --color-success-700:  #166534;
-  --color-success-800:  #14532d;
-  --color-success-900:  #052e16;
-  
+  --color-success-25: #f0fdf4;
+  --color-success-50: #dcfce7;
+  --color-success-100: #bbf7d0;
+  --color-success-200: #86efac;
+  --color-success-300: #4ade80;
+  --color-success-400: #22c55e;
+  --color-success-500: #16a34a; /* ★ Primary */
+  --color-success-600: #15803d;
+  --color-success-700: #166534;
+  --color-success-800: #14532d;
+  --color-success-900: #052e16;
+
   /* Warning — Cautions, pending states, attention needed */
-  --color-warning-25:   #fffbeb;
-  --color-warning-50:   #fef3c7;
-  --color-warning-100:  #fde68a;
-  --color-warning-200:  #fcd34d;
-  --color-warning-300:  #fbbf24;
-  --color-warning-400:  #f59e0b;
-  --color-warning-500:  #d97706;  /* ★ Primary */
-  --color-warning-600:  #b45309;
-  --color-warning-700:  #92400e;
-  --color-warning-800:  #78350f;
-  --color-warning-900:  #451a03;
-  
+  --color-warning-25: #fffbeb;
+  --color-warning-50: #fef3c7;
+  --color-warning-100: #fde68a;
+  --color-warning-200: #fcd34d;
+  --color-warning-300: #fbbf24;
+  --color-warning-400: #f59e0b;
+  --color-warning-500: #d97706; /* ★ Primary */
+  --color-warning-600: #b45309;
+  --color-warning-700: #92400e;
+  --color-warning-800: #78350f;
+  --color-warning-900: #451a03;
+
   /* Error/Destructive — Failures, deletions, critical */
-  --color-error-25:     #fff5f5;
-  --color-error-50:     #fef2f2;
-  --color-error-100:    #fee2e2;
-  --color-error-200:    #fecaca;
-  --color-error-300:    #fca5a5;
-  --color-error-400:    #f87171;
-  --color-error-500:    #ef4444;  /* ★ Primary */
-  --color-error-600:    #dc2626;
-  --color-error-700:    #b91c1c;
-  --color-error-800:    #991b1b;
-  --color-error-900:    #7f1d1d;
+  --color-error-25: #fff5f5;
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444; /* ★ Primary */
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+  --color-error-900: #7f1d1d;
 
   /* Info — Informational, neutral highlights */
-  --color-info-25:      #f0f9ff;
-  --color-info-50:      #e0f2fe;
-  --color-info-100:     #bae6fd;
-  --color-info-200:     #7dd3fc;
-  --color-info-300:     #38bdf8;
-  --color-info-400:     #0ea5e9;
-  --color-info-500:     #0284c7;  /* ★ Primary */
-  --color-info-600:     #0369a1;
-  --color-info-700:     #075985;
-  --color-info-800:     #0c4a6e;
-  --color-info-900:     #082f49;
+  --color-info-25: #f0f9ff;
+  --color-info-50: #e0f2fe;
+  --color-info-100: #bae6fd;
+  --color-info-200: #7dd3fc;
+  --color-info-300: #38bdf8;
+  --color-info-400: #0ea5e9;
+  --color-info-500: #0284c7; /* ★ Primary */
+  --color-info-600: #0369a1;
+  --color-info-700: #075985;
+  --color-info-800: #0c4a6e;
+  --color-info-900: #082f49;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §4 DATA VISUALIZATION — Chart & Graph Palette
@@ -142,16 +142,16 @@
      - Print reproduction
      - Dark/light mode contrast
      ═══════════════════════════════════════════════════════════════════════════ */
-  --color-data-1:  #2b45c2;  /* HKI Blue */
-  --color-data-2:  #dc2626;  /* HKI Red */
-  --color-data-3:  #10b981;  /* Emerald */
-  --color-data-4:  #f59e0b;  /* Amber */
-  --color-data-5:  #8b5cf6;  /* Violet */
-  --color-data-6:  #06b6d4;  /* Cyan */
-  --color-data-7:  #ec4899;  /* Pink */
-  --color-data-8:  #84cc16;  /* Lime */
-  --color-data-9:  #f97316;  /* Orange */
-  --color-data-10: #14b8a6;  /* Teal */
+  --color-data-1: #0e7c7b; /* HKI Iris (teal) */
+  --color-data-2: #e07a1f; /* HKI Pulse (amber) */
+  --color-data-3: #10b981; /* Emerald */
+  --color-data-4: #f59e0b; /* Amber */
+  --color-data-5: #8b5cf6; /* Violet */
+  --color-data-6: #06b6d4; /* Cyan */
+  --color-data-7: #ec4899; /* Pink */
+  --color-data-8: #84cc16; /* Lime */
+  --color-data-9: #f97316; /* Orange */
+  --color-data-10: #14b8a6; /* Teal */
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §5 SPACING SCALE — 4px Base Unit
@@ -159,108 +159,115 @@
      Consistent spacing creates visual rhythm.
      Use space-* for margins, padding, gaps.
      ═══════════════════════════════════════════════════════════════════════════ */
-  --space-0:    0;
-  --space-px:   1px;
-  --space-0-5:  2px;
-  --space-1:    4px;
-  --space-1-5:  6px;
-  --space-2:    8px;
-  --space-2-5:  10px;
-  --space-3:    12px;
-  --space-3-5:  14px;
-  --space-4:    16px;
-  --space-5:    20px;
-  --space-6:    24px;
-  --space-7:    28px;
-  --space-8:    32px;
-  --space-9:    36px;
-  --space-10:   40px;
-  --space-11:   44px;
-  --space-12:   48px;
-  --space-14:   56px;
-  --space-16:   64px;
-  --space-20:   80px;
-  --space-24:   96px;
-  --space-28:   112px;
-  --space-32:   128px;
-  --space-36:   144px;
-  --space-40:   160px;
-  --space-44:   176px;
-  --space-48:   192px;
-  --space-52:   208px;
-  --space-56:   224px;
-  --space-60:   240px;
-  --space-64:   256px;
-  --space-72:   288px;
-  --space-80:   320px;
-  --space-96:   384px;
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-3-5: 14px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 36px;
+  --space-10: 40px;
+  --space-11: 44px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-28: 112px;
+  --space-32: 128px;
+  --space-36: 144px;
+  --space-40: 160px;
+  --space-44: 176px;
+  --space-48: 192px;
+  --space-52: 208px;
+  --space-56: 224px;
+  --space-60: 240px;
+  --space-64: 256px;
+  --space-72: 288px;
+  --space-80: 320px;
+  --space-96: 384px;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §6 BORDER RADIUS — Curvature Scale
      ═══════════════════════════════════════════════════════════════════════════ */
-  --radius-none:  0;
-  --radius-xs:    2px;
-  --radius-sm:    4px;
-  --radius-md:    6px;
-  --radius-lg:    8px;
-  --radius-xl:    12px;
-  --radius-2xl:   16px;
-  --radius-3xl:   24px;
-  --radius-4xl:   32px;
-  --radius-full:  9999px;
+  --radius-none: 0;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+  --radius-full: 9999px;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §7 TYPOGRAPHY — Font Families & Type Scale
      ═══════════════════════════════════════════════════════════════════════════ */
-  
+
   /* Font Stacks */
-  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-serif:   'Georgia', 'Times New Roman', serif;
-  --font-mono:    'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Georgia", "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", "Consolas", monospace;
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Font Sizes — Modular scale (1.25 ratio) */
-  --text-2xs:   0.625rem;   /* 10px */
-  --text-xs:    0.75rem;    /* 12px */
-  --text-sm:    0.875rem;   /* 14px */
-  --text-base:  1rem;       /* 16px */
-  --text-lg:    1.125rem;   /* 18px */
-  --text-xl:    1.25rem;    /* 20px */
-  --text-2xl:   1.5rem;     /* 24px */
-  --text-3xl:   1.875rem;   /* 30px */
-  --text-4xl:   2.25rem;    /* 36px */
-  --text-5xl:   3rem;       /* 48px */
-  --text-6xl:   3.75rem;    /* 60px */
-  --text-7xl:   4.5rem;     /* 72px */
-  --text-8xl:   6rem;       /* 96px */
-  --text-9xl:   8rem;       /* 128px */
+  --text-2xs: 0.625rem; /* 10px */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+  --text-5xl: 3rem; /* 48px */
+  --text-6xl: 3.75rem; /* 60px */
+  --text-7xl: 4.5rem; /* 72px */
+  --text-8xl: 6rem; /* 96px */
+  --text-9xl: 8rem; /* 128px */
 
   /* Line Heights */
-  --leading-none:    1;
-  --leading-tight:   1.25;
-  --leading-snug:    1.375;
-  --leading-normal:  1.5;
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
   --leading-relaxed: 1.625;
-  --leading-loose:   2;
+  --leading-loose: 2;
 
   /* Font Weights */
-  --font-thin:       100;
+  --font-thin: 100;
   --font-extralight: 200;
-  --font-light:      300;
-  --font-regular:    400;
-  --font-medium:     500;
-  --font-semibold:   600;
-  --font-bold:       700;
-  --font-extrabold:  800;
-  --font-black:      900;
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+
+  /* Atelier — OpenType feature sets & editorial weights */
+  --font-feature-display: "ss01" on, "cv11" on, "calt" on;
+  --font-feature-tabular: "tnum" on, "calt" on;
+  --font-weight-body: 380;
+  --font-weight-heading: 800;
 
   /* Letter Spacing */
   --tracking-tighter: -0.05em;
-  --tracking-tight:   -0.025em;
-  --tracking-normal:  0;
-  --tracking-wide:    0.025em;
-  --tracking-wider:   0.05em;
-  --tracking-widest:  0.1em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §8 SHADOWS — Multi-Layer Elevation System
@@ -269,185 +276,175 @@
      Each level uses multiple shadow layers for realism.
      ═══════════════════════════════════════════════════════════════════════════ */
   --shadow-none: none;
-  
-  --shadow-xs: 
-    0 1px 2px 0 rgb(0 0 0 / 0.05);
-  
-  --shadow-sm: 
-    0 1px 2px 0 rgb(0 0 0 / 0.05),
-    0 1px 3px 0 rgb(0 0 0 / 0.1);
-  
-  --shadow-md: 
-    0 2px 4px -1px rgb(0 0 0 / 0.06),
-    0 4px 6px -1px rgb(0 0 0 / 0.1);
-  
-  --shadow-lg: 
-    0 4px 6px -2px rgb(0 0 0 / 0.05),
-    0 10px 15px -3px rgb(0 0 0 / 0.1);
-  
-  --shadow-xl: 
-    0 10px 10px -5px rgb(0 0 0 / 0.04),
-    0 20px 25px -5px rgb(0 0 0 / 0.1);
-  
-  --shadow-2xl: 
-    0 25px 50px -12px rgb(0 0 0 / 0.25);
-  
-  --shadow-inner: 
-    inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 1px 3px 0 rgb(0 0 0 / 0.1);
+
+  --shadow-md:
+    0 2px 4px -1px rgb(0 0 0 / 0.06), 0 4px 6px -1px rgb(0 0 0 / 0.1);
+
+  --shadow-lg:
+    0 4px 6px -2px rgb(0 0 0 / 0.05), 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+  --shadow-xl:
+    0 10px 10px -5px rgb(0 0 0 / 0.04), 0 20px 25px -5px rgb(0 0 0 / 0.1);
+
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
 
   /* Colored shadows for emphasis */
-  --shadow-primary: 
-    0 4px 14px -3px rgb(43 69 194 / 0.25);
-  
-  --shadow-secondary: 
-    0 4px 14px -3px rgb(220 38 38 / 0.25);
+  --shadow-primary: 0 4px 14px -3px rgb(14 124 123 / 0.3);
+
+  --shadow-secondary: 0 4px 14px -3px rgb(224 122 31 / 0.25);
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §9 ANIMATION & MOTION — Timing Functions & Durations
      ═══════════════════════════════════════════════════════════════════════════ */
-  
+
   /* Durations */
-  --duration-0:       0ms;
-  --duration-75:      75ms;
-  --duration-100:     100ms;
-  --duration-150:     150ms;
-  --duration-200:     200ms;
-  --duration-300:     300ms;
-  --duration-500:     500ms;
-  --duration-700:     700ms;
-  --duration-1000:    1000ms;
-  
+  --duration-0: 0ms;
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  --duration-1000: 1000ms;
+
   /* Standard Easing */
-  --ease-linear:      linear;
-  --ease-in:          cubic-bezier(0.4, 0, 1, 1);
-  --ease-out:         cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out:      cubic-bezier(0.4, 0, 0.2, 1);
-  
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
   /* Expressive Easing */
-  --ease-spring:      cubic-bezier(0.34, 1.56, 0.64, 1);   /* Bouncy overshoot */
-  --ease-bounce:      cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  --ease-smooth:      cubic-bezier(0.16, 1, 0.3, 1);      /* Smooth deceleration */
-  --ease-snappy:      cubic-bezier(0.2, 0, 0, 1);         /* Quick & snappy */
-  --ease-emphasized:  cubic-bezier(0.2, 0, 0, 1);         /* Dramatic entrance */
-  --ease-decelerate:  cubic-bezier(0, 0, 0.2, 1);         /* Gentle stop */
-  --ease-accelerate:  cubic-bezier(0.4, 0, 1, 1);         /* Speed up */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy overshoot */
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1); /* Smooth deceleration */
+  --ease-snappy: cubic-bezier(0.2, 0, 0, 1); /* Quick & snappy */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1); /* Dramatic entrance */
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1); /* Gentle stop */
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1); /* Speed up */
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §10 Z-INDEX — Stacking Order System
      
      Predictable layering prevents z-index wars.
      ═══════════════════════════════════════════════════════════════════════════ */
-  --z-behind:     -1;
-  --z-base:       0;
-  --z-docked:     10;
-  --z-dropdown:   1000;
-  --z-sticky:     1100;
-  --z-banner:     1200;
-  --z-overlay:    1300;
-  --z-modal:      1400;
-  --z-popover:    1500;
-  --z-toast:      1600;
-  --z-tooltip:    1700;
-  --z-max:        9999;
+  --z-behind: -1;
+  --z-base: 0;
+  --z-docked: 10;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-banner: 1200;
+  --z-overlay: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-toast: 1600;
+  --z-tooltip: 1700;
+  --z-max: 9999;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §11 SIZING — Component Dimensions
      ═══════════════════════════════════════════════════════════════════════════ */
-  
+
   /* Touch Targets (minimum 44px for accessibility) */
-  --size-touch-min:     44px;
-  --size-touch-target:  48px;
-  
+  --size-touch-min: 44px;
+  --size-touch-target: 48px;
+
   /* Input Heights */
-  --size-input-xs:      28px;
-  --size-input-sm:      32px;
-  --size-input-md:      40px;
-  --size-input-lg:      48px;
-  --size-input-xl:      56px;
+  --size-input-xs: 28px;
+  --size-input-sm: 32px;
+  --size-input-md: 40px;
+  --size-input-lg: 48px;
+  --size-input-xl: 56px;
 
   /* Button Heights */
-  --size-button-xs:     24px;
-  --size-button-sm:     32px;
-  --size-button-md:     40px;
-  --size-button-lg:     48px;
-  --size-button-xl:     56px;
+  --size-button-xs: 24px;
+  --size-button-sm: 32px;
+  --size-button-md: 40px;
+  --size-button-lg: 48px;
+  --size-button-xl: 56px;
 
   /* Avatar Sizes */
-  --size-avatar-xs:     24px;
-  --size-avatar-sm:     32px;
-  --size-avatar-md:     40px;
-  --size-avatar-lg:     48px;
-  --size-avatar-xl:     64px;
-  --size-avatar-2xl:    80px;
-  --size-avatar-3xl:    96px;
+  --size-avatar-xs: 24px;
+  --size-avatar-sm: 32px;
+  --size-avatar-md: 40px;
+  --size-avatar-lg: 48px;
+  --size-avatar-xl: 64px;
+  --size-avatar-2xl: 80px;
+  --size-avatar-3xl: 96px;
 
   /* Icon Sizes */
-  --size-icon-xs:       12px;
-  --size-icon-sm:       16px;
-  --size-icon-md:       20px;
-  --size-icon-lg:       24px;
-  --size-icon-xl:       32px;
-  --size-icon-2xl:      40px;
+  --size-icon-xs: 12px;
+  --size-icon-sm: 16px;
+  --size-icon-md: 20px;
+  --size-icon-lg: 24px;
+  --size-icon-xl: 32px;
+  --size-icon-2xl: 40px;
 
   /* Layout */
-  --size-sidebar:       256px;
-  --size-sidebar-sm:    200px;
-  --size-sidebar-lg:    320px;
+  --size-sidebar: 256px;
+  --size-sidebar-sm: 200px;
+  --size-sidebar-lg: 320px;
   --size-sidebar-collapsed: 64px;
-  --size-header:        64px;
-  --size-header-sm:     48px;
-  --size-footer:        64px;
+  --size-header: 64px;
+  --size-header-sm: 48px;
+  --size-footer: 64px;
 
   /* Content Max Widths */
-  --size-content-xs:    320px;
-  --size-content-sm:    384px;
-  --size-content-md:    448px;
-  --size-content-lg:    512px;
-  --size-content-xl:    576px;
-  --size-content-2xl:   672px;
-  --size-content-3xl:   768px;
-  --size-content-4xl:   896px;
-  --size-content-5xl:   1024px;
-  --size-content-6xl:   1152px;
-  --size-content-7xl:   1280px;
-  --size-content-full:  100%;
+  --size-content-xs: 320px;
+  --size-content-sm: 384px;
+  --size-content-md: 448px;
+  --size-content-lg: 512px;
+  --size-content-xl: 576px;
+  --size-content-2xl: 672px;
+  --size-content-3xl: 768px;
+  --size-content-4xl: 896px;
+  --size-content-5xl: 1024px;
+  --size-content-6xl: 1152px;
+  --size-content-7xl: 1280px;
+  --size-content-full: 100%;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §12 BORDERS — Width Scale
      ═══════════════════════════════════════════════════════════════════════════ */
-  --border-0:     0;
-  --border-1:     1px;
-  --border-2:     2px;
-  --border-4:     4px;
-  --border-8:     8px;
+  --border-0: 0;
+  --border-1: 1px;
+  --border-2: 2px;
+  --border-4: 4px;
+  --border-8: 8px;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §13 OPACITY — Transparency Scale
      ═══════════════════════════════════════════════════════════════════════════ */
-  --opacity-0:    0;
-  --opacity-5:    0.05;
-  --opacity-10:   0.1;
-  --opacity-20:   0.2;
-  --opacity-25:   0.25;
-  --opacity-30:   0.3;
-  --opacity-40:   0.4;
-  --opacity-50:   0.5;
-  --opacity-60:   0.6;
-  --opacity-70:   0.7;
-  --opacity-75:   0.75;
-  --opacity-80:   0.8;
-  --opacity-90:   0.9;
-  --opacity-95:   0.95;
-  --opacity-100:  1;
+  --opacity-0: 0;
+  --opacity-5: 0.05;
+  --opacity-10: 0.1;
+  --opacity-20: 0.2;
+  --opacity-25: 0.25;
+  --opacity-30: 0.3;
+  --opacity-40: 0.4;
+  --opacity-50: 0.5;
+  --opacity-60: 0.6;
+  --opacity-70: 0.7;
+  --opacity-75: 0.75;
+  --opacity-80: 0.8;
+  --opacity-90: 0.9;
+  --opacity-95: 0.95;
+  --opacity-100: 1;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §14 BLUR — Backdrop & Filter Values
      ═══════════════════════════════════════════════════════════════════════════ */
-  --blur-none:    0;
-  --blur-sm:      4px;
-  --blur-md:      8px;
-  --blur-lg:      12px;
-  --blur-xl:      16px;
-  --blur-2xl:     24px;
-  --blur-3xl:     40px;
+  --blur-none: 0;
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 12px;
+  --blur-xl: 16px;
+  --blur-2xl: 24px;
+  --blur-3xl: 40px;
 }

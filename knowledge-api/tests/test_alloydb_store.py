@@ -50,12 +50,13 @@ def test_build_filter_clause_uses_custom_metadata_for_stream_scoping() -> None:
     assert params[-1] == ["pharmacy"]
 
 
-def test_build_filter_clause_treats_global_scope_as_wildcard() -> None:
+def test_build_filter_clause_rejects_global_scope_as_runtime_wildcard() -> None:
     where, params = _build_filter_clause(
         SearchFilters(value_streams=["global"]),
         org_id="default",
     )
 
+    assert "FALSE" in where
     assert "custom_metadata->>'stream_id'" not in where
     assert params == ["default", ["published", "indexed"]]
 

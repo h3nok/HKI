@@ -1,0 +1,39 @@
+name: Adapter request
+description: Request an HKI adapter for a store, gateway, cache, model router, or MCP tool surface.
+title: "adapter: "
+labels: ["adapter", "needs-triage"]
+body:
+  - type: input
+    id: target
+    attributes:
+      label: Target technology
+      placeholder: "Postgres, Redis, pgvector, Neo4j, MCP server, object store"
+    validations:
+      required: true
+  - type: dropdown
+    id: boundary
+    attributes:
+      label: Boundary type
+      options:
+        - Retrieval or vector search
+        - Relational data access
+        - Graph traversal
+        - Cache or memory
+        - MCP tool routing
+        - Object or artifact store
+        - Model gateway
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: What HKI boundary should the adapter enforce?
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: Note SDK version, runtime language, hosting model, auth model, or existing APIs.

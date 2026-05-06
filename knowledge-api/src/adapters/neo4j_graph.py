@@ -339,14 +339,14 @@ class Neo4jKnowledgeGraph:
         driver: neo4j.AsyncDriver = self._ensure_driver()
 
         document_filter: str = (
-            "WHERE d.org_id = $org_id AND (d.stream_id IS NULL OR trim(toString(d.stream_id)) = '')"
+            "WHERE d.org_id = $org_id AND (NOT EXISTS(d.stream_id) OR trim(toString(d.stream_id)) = '')"
             if org_id
-            else "WHERE d.stream_id IS NULL OR trim(toString(d.stream_id)) = ''"
+            else "WHERE NOT EXISTS(d.stream_id) OR trim(toString(d.stream_id)) = ''"
         )
         chunk_filter: str = (
-            "WHERE c.org_id = $org_id AND (c.stream_id IS NULL OR trim(toString(c.stream_id)) = '')"
+            "WHERE c.org_id = $org_id AND (NOT EXISTS(c.stream_id) OR trim(toString(c.stream_id)) = '')"
             if org_id
-            else "WHERE c.stream_id IS NULL OR trim(toString(c.stream_id)) = ''"
+            else "WHERE NOT EXISTS(c.stream_id) OR trim(toString(c.stream_id)) = ''"
         )
         params: dict[str, typing.Any] = {"org_id": org_id} if org_id else {}
 

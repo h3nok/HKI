@@ -33,6 +33,8 @@ import httpx
 import src.core.config
 import src.core.logging
 
+DEFAULT_ANALYTICS_SCOPE = "default"
+
 
 class AnalyticsClient:
     """
@@ -81,7 +83,7 @@ class AnalyticsClient:
         *,
         org_id: str = "default",
         user_id: str = "",
-        scope: str = "global",
+        scope: str = DEFAULT_ANALYTICS_SCOPE,
         payload: dict[str, typing.Any] | None = None,
     ) -> None:
         """

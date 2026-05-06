@@ -161,7 +161,7 @@ service_cloudbuild_config() {
         orchestrator)       echo "orchestrator-service/cloudbuild.yaml" ;;
         ingestion-pipeline) echo "ingestion-pipeline-service/cloudbuild.yaml" ;;
         analytics)          echo "analytics-service/cloudbuild.yaml" ;;
-        agentic-bff)        echo "agentic/cloudbuild.yaml" ;;
+        agentic-bff)        echo "apps/agentic/cloudbuild.yaml" ;;
         *) return 1 ;;
     esac
 }
@@ -172,7 +172,7 @@ service_dockerfile() {
         orchestrator)       echo "orchestrator-service/Dockerfile" ;;
         ingestion-pipeline) echo "ingestion-pipeline-service/Dockerfile" ;;
         analytics)          echo "analytics-service/Dockerfile" ;;
-        agentic-bff)        echo "agentic/Dockerfile" ;;
+        agentic-bff)        echo "apps/agentic/Dockerfile" ;;
         *) return 1 ;;
     esac
 }
@@ -695,10 +695,10 @@ apply_all_manifests() {
 
     # Agentic BFF last — depends on all above
     if [ -z "$ONLY_SERVICE" ] || [ "$ONLY_SERVICE" = "agentic-bff" ]; then
-        apply_service "agentic-bff" "$AI_PLATFORM_DIR/agentic/k8s"
+        apply_service "agentic-bff" "$AI_PLATFORM_DIR/apps/agentic/k8s"
         sync_agentic_runtime_config
         if [ "$APPLY_GKE_INGRESS" = "true" ]; then
-            apply_manifest "$AI_PLATFORM_DIR/agentic/k8s/ingress.yaml"
+            apply_manifest "$AI_PLATFORM_DIR/apps/agentic/k8s/ingress.yaml"
         fi
         run_agentic_db_migrations
         restart_deployment "agentic-bff"

@@ -1212,11 +1212,23 @@ class AlloyDBVectorStore:
                     org_id,
                     *stream_params_chunks,
                 )
-                edge_count = 0
-                if not allowed_streams or "global" in allowed_streams:
-                    edge_count = await conn.fetchval(
-                        "SELECT COUNT(*) FROM graph_edges WHERE org_id = $1", org_id
-                    )
+                edge_stream_clause, edge_stream_params = _build_stream_scope_clause(
+                    allowed_streams,
+                    base_param_idx=2,
+                    column_prefix="d.",
+                )
+                edge_count = await conn.fetchval(
+                    """
+                    SELECT COUNT(*)
+                    FROM graph_edges e
+                    JOIN chunks c ON c.id = e.source_id
+                    JOIN documents d ON d.id = c.document_id
+                    WHERE e.org_id = $1
+                    """
+                    + edge_stream_clause,
+                    org_id,
+                    *edge_stream_params,
+                )
             else:
                 doc_count = await conn.fetchval("SELECT COUNT(*) FROM documents")
                 chunk_count = await conn.fetchval("SELECT COUNT(*) FROM chunks")
@@ -1292,6 +1304,14 @@ def _normalize_stream_id(value: typing.Any) -> str | None:
         return None
     normalized: str = str(value).strip()
     return normalized or None
+
+
+def _runtime_stream_filters(values: list[str] | None) -> list[str]:
+    return [
+        stream
+        for stream in (_normalize_stream_id(value) for value in values or [])
+        if stream and stream.lower() != "global"
+    ]
 
 
 def _document_stream_id(document: src.domain.models.Document) -> str | None:
@@ -1398,19 +1418,16 @@ def _build_stream_scope_clause(
     Build an SQL fragment enforcing value-stream access on the ``documents`` table alias ``d``.
 
     Semantics:
-        - no scopes => unrestricted admin or migration path
-        - "global" in scopes => wildcard — grants access to every stream
-        - otherwise allow only stream-specific documents that match the caller scope
+        - no runtime scopes => no rows
+        - non-global scopes => allow only stream-specific documents that match the caller scope
     """
-    if not allowed_streams:
-        return "", []
-    # "global" scope acts as a wildcard — grants access to all streams
-    if "global" in allowed_streams:
-        return "", []
+    stream_filters: list[str] = _runtime_stream_filters(allowed_streams)
+    if not stream_filters:
+        return " AND FALSE", []
     stream_col: str = _stream_id_expr(column_prefix)
     return (
         f" AND {stream_col} = ANY(${base_param_idx}::text[])",
-        [allowed_streams],
+        [stream_filters],
     )
 
 
@@ -1462,14 +1479,14 @@ def _build_filter_clause(
         params.append(filters.tags)
         param_idx += 1
 
-    stream_filters: list[str] = [
-        str(stream).strip() for stream in (filters.value_streams or []) if str(stream).strip()
-    ]
-    if stream_filters and "global" not in stream_filters:
+    stream_filters: list[str] = _runtime_stream_filters(filters.value_streams)
+    if stream_filters:
         stream_expr: str = _stream_id_expr("d.")
         conditions.append(f"{stream_expr} = ANY(${param_idx}::text[])")
         params.append(stream_filters)
         param_idx += 1
+    else:
+        conditions.append("FALSE")
 
     if filters.date_from:
         conditions.append(f"d.created_at >= ${param_idx}")

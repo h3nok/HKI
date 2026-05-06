@@ -52,7 +52,6 @@ Local LiteLLM talks to Vertex AI through the credentials file mounted by Docker 
 
 - Local LiteLLM runs on `http://localhost:4000`
 - Local Agentic runs on `http://localhost:9001`
-- Local CI Portal runs on `http://localhost:9002`
 - Local analytics traffic uses `http://localhost:9510`
 - In-cluster analytics stays on port `9512`; do not copy that cluster port back into the local `.env` files unless you also change the local wrappers
 

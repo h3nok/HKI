@@ -130,7 +130,7 @@ def build_test_tickets() -> list[PharmacyTicket]:
          "EPS Rej NN - Transaction Rejected at Switch or Intermediary"),
         ("INC7305345", "EPS TPEXQ Transaction Rejected At Switch Or Intermediary", "KB2028004",
          "EPS Rej NN"),
-        ("INC7266018", "EPS COSTCO Product is not covered by funded plan, routed to discount card - offer CMPP or SingleCare for non-members", "KB2028004",
+        ("INC7266018", "EPS HKI Product is not covered by funded plan, routed to discount card - offer CMPP or SingleCare for non-members", "KB2028004",
          "EPS Rej NN"),
         ("INC7265890", "EPS Insurance Rejection - transaction rejected at switch", "KB2028004",
          "EPS Rej NN"),
@@ -280,11 +280,11 @@ def build_test_tickets() -> list[PharmacyTicket]:
          "6E M/I Other Payer Reject Code for Bin: 610020, PCN: PXXPDMI"),
 
         # ── KB2026873: ESI Claims Rejecting Submitted to SecondaryPlan ──
-        ("INC7400742", "EPS TPEQ COSTCO THIS PLAN CANNOT BE BILLED AS A PRIMARY PLAN", "KB2026873",
+        ("INC7400742", "EPS TPEQ HKI THIS PLAN CANNOT BE BILLED AS A PRIMARY PLAN", "KB2026873",
          "updated patient insurance to a non-COB/Secondary plan"),
-        ("INC7395707", "EPS COSTCO THIS PLAN CANNOT BE BILLED AS A PRIMARY PLAN", "KB2026873",
+        ("INC7395707", "EPS HKI THIS PLAN CANNOT BE BILLED AS A PRIMARY PLAN", "KB2026873",
          "Spoke to let her know what was done"),
-        ("INC7272799", "EPS TPEQ COSTCO THIS PLAN CANNOT BE BILLED AS A PRIMARY PLAN", "KB2026873",
+        ("INC7272799", "EPS TPEQ HKI THIS PLAN CANNOT BE BILLED AS A PRIMARY PLAN", "KB2026873",
          "billing ESI for a primary claim they cannot use a plan labeled ESI Secondary"),
         ("INC7393563", "EPS Deactivated Card: Cannot create TP with deactivated card", "KB2026873",
          "help desk ended up resolving for pharmacy"),

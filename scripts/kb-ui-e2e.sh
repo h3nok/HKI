@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-AGENTIC_DIR="${ROOT_DIR}/agentic"
+AGENTIC_DIR="${ROOT_DIR}/apps/agentic"
 DEV_STACK_SCRIPT="${ROOT_DIR}/scripts/dev-stack.sh"
 STATE_DIR="${ROOT_DIR}/.dev"
 LOG_DIR="${STATE_DIR}/logs"

@@ -1,0 +1,22 @@
+name: Documentation request
+description: Request or report a correction to HKI documentation.
+title: "docs: "
+labels: ["documentation", "needs-triage"]
+body:
+  - type: textarea
+    id: topic
+    attributes:
+      label: Topic
+      description: What needs to be added, clarified, or corrected?
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Current location
+      placeholder: "README.md, docs/HKI_PUBLIC_READINESS_PLAN.md, packages/hki-runtime/README.md"
+  - type: textarea
+    id: audience
+    attributes:
+      label: Audience and outcome
+      description: Who needs this information, and what should they be able to do after reading it?

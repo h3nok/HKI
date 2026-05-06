@@ -1,40 +1,43 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   GLASS UTILITY CLASSES — Shared Glassmorphism Presets
-   
-   Consume --glass-* CSS variables defined per-app in their index.css.
-   Fallback values ensure reasonable defaults when variables aren't set.
-   
-   Usage: className="glass-chrome" or className="glass-floating"
+   GLASS UTILITY CLASSES — Functional Glassmorphism
+
+   Clean backdrop blur classes. No colored borders.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Chrome glass — standard toolbar / sidebar glass */
+/* Chrome glass — toolbars, sidebars */
 .glass-chrome {
-  background: var(--glass-chrome-bg, rgba(255, 255, 255, 0.65));
-  border: 1px solid var(--glass-chrome-border, rgba(0, 93, 170, 0.06));
-  backdrop-filter: blur(var(--glass-chrome-blur, 16px)) saturate(var(--glass-chrome-saturate, 160%));
-  -webkit-backdrop-filter: blur(var(--glass-chrome-blur, 16px)) saturate(var(--glass-chrome-saturate, 160%));
+  background: var(--glass-chrome-bg, rgba(255, 255, 255, 0.72));
+  border: 1px solid var(--glass-chrome-border, rgba(0, 0, 0, 0.08));
+  backdrop-filter: blur(var(--glass-chrome-blur, 16px))
+    saturate(var(--glass-chrome-saturate, 150%));
+  -webkit-backdrop-filter: blur(var(--glass-chrome-blur, 16px))
+    saturate(var(--glass-chrome-saturate, 150%));
 }
 
-/* Floating glass — elevated popovers, modals, dropdowns */
+/* Floating glass — popovers, modals */
 .glass-floating {
-  background: var(--glass-floating-bg, rgba(255, 255, 255, 0.78));
-  border: 1px solid var(--glass-floating-border, rgba(0, 93, 170, 0.08));
-  backdrop-filter: blur(var(--glass-floating-blur, 24px)) saturate(var(--glass-floating-saturate, 180%));
-  -webkit-backdrop-filter: blur(var(--glass-floating-blur, 24px)) saturate(var(--glass-floating-saturate, 180%));
+  background: var(--glass-floating-bg, rgba(255, 255, 255, 0.82));
+  border: 1px solid var(--glass-floating-border, rgba(0, 0, 0, 0.1));
+  backdrop-filter: blur(var(--glass-floating-blur, 20px))
+    saturate(var(--glass-floating-saturate, 160%));
+  -webkit-backdrop-filter: blur(var(--glass-floating-blur, 20px))
+    saturate(var(--glass-floating-saturate, 160%));
 }
 
-/* Glass surface — add to any container for frosted-glass depth */
+/* Glass surface — basic frosted depth */
 .glass-surface {
-  backdrop-filter: blur(var(--glass-blur, 0px)) saturate(var(--glass-saturate, 100%));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 0px)) saturate(var(--glass-saturate, 100%));
-  box-shadow: var(--glass-card-highlight, none);
+  backdrop-filter: blur(var(--glass-blur, 0px))
+    saturate(var(--glass-saturate, 100%));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 0px))
+    saturate(var(--glass-saturate, 100%));
 }
 
-/* Glass card — frosted surface with luminous border + blur */
+/* Glass card — frosted surface with border */
 .glass-card {
   background: var(--glass-card-bg, var(--card));
   border: 1px solid var(--glass-card-border, var(--border));
-  backdrop-filter: blur(var(--glass-blur, 0px)) saturate(var(--glass-saturate, 100%));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 0px)) saturate(var(--glass-saturate, 100%));
-  box-shadow: var(--glass-card-highlight, none);
+  backdrop-filter: blur(var(--glass-blur, 0px))
+    saturate(var(--glass-saturate, 100%));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 0px))
+    saturate(var(--glass-saturate, 100%));
 }

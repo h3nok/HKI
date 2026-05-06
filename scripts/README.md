@@ -37,7 +37,6 @@ This will deploy the GKE platform services in order:
 2. Orchestrator Service
 3. Ingestion Pipeline Service
 4. Agentic BFF
-5. CI Portal
 
 The public entrypoint is `https://agentic.cilabs.np.hki.com`; backend services run in-cluster.
 
@@ -63,7 +62,6 @@ Available services:
 - `orchestrator`
 - `ingestion-pipeline`
 - `agentic`
-- `ci-portal`
 
 ## Features
 

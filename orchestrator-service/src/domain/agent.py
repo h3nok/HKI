@@ -13,18 +13,16 @@ the platform control plane around it:
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import inspect
 import re
-import dataclasses
 import typing
 import uuid
 
 import google.adk.runners
 import google.adk.sessions
 import google.genai
-from google.genai.types import Part
-from google.genai.types import FunctionCall
-from google.genai.types import FunctionResponse
+from google.genai.types import FunctionCall, FunctionResponse
 
 import src.adapters.cache
 import src.core.config
@@ -36,6 +34,7 @@ import src.domain.models
 import src.domain.tools
 
 logger = src.core.logging.logger.getChild("agent")
+DEFAULT_RUNTIME_SCOPE = "default"
 
 _GREETING_TURNS: set[str] = {
     "good afternoon",
@@ -162,9 +161,7 @@ def _build_conversational_fast_path_response(message: str) -> str | None:
         )
 
     remainder: str = _strip_leading_greeting(normalized)
-    capability_turn: bool = any(
-        phrase == normalized or phrase == remainder for phrase in _CAPABILITY_TURNS
-    )
+    capability_turn: bool = any(phrase in (normalized, remainder) for phrase in _CAPABILITY_TURNS)
     if capability_turn:
         return (
             "I can help with HKI internal knowledge, product lookup, inventory, "
@@ -251,7 +248,9 @@ def _is_complex_request(message: str) -> bool:
     return any(marker in lowered for marker in complexity_markers)
 
 
-def _normalize_guardrail_report(violations: list[src.domain.models.GuardrailViolation]) -> dict[str, typing.Any]:
+def _normalize_guardrail_report(
+    violations: list[src.domain.models.GuardrailViolation],
+) -> dict[str, typing.Any]:
     if not violations:
         return {"valid": True, "error": ""}
     first_error = next(
@@ -265,7 +264,7 @@ def _iter_response_chunks(text: str) -> list[str]:
     if not text:
         return []
 
-    tokens: list[Any] = re.findall(r"\S+\s*", text)
+    tokens: list[typing.Any] = re.findall(r"\S+\s*", text)
     return tokens or [text]
 
 
@@ -289,7 +288,7 @@ def _split_kb_fragments(text: str) -> list[str]:
     normalized: str = text.replace("\r", "\n")
     raw_fragments: list[str] = normalized.splitlines()
     if len(raw_fragments) <= 1:
-        raw_fragments: list[str | Any] = re.split(r"(?<=[.!?])\s+", normalized)
+        raw_fragments: list[str | typing.Any] = re.split(r"(?<=[.!?])\s+", normalized)
 
     fragments: list[str] = []
     for raw_fragment in raw_fragments:
@@ -426,6 +425,81 @@ def _build_grounded_kb_fallback_response(
     )
 
 
+def _redact_error_details(details: str) -> str:
+    redacted: str = re.sub(r"Bearer\s+[A-Za-z0-9._~+/-]+", "Bearer [redacted]", details)
+    return re.sub(r"\bsk-[A-Za-z0-9._-]+\b", "sk-[redacted]", redacted)
+
+
+def _error_chain_text(exc: Exception) -> str:
+    parts: list[str] = []
+    current: BaseException | None = exc
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        parts.append(f"{type(current).__name__}: {current}")
+        current = current.__cause__ or current.__context__
+    return _redact_error_details(" | ".join(parts))[:2000]
+
+
+def _classify_model_failure(exc: Exception) -> tuple[str, str]:
+    detail: str = _error_chain_text(exc)
+    message: str = detail.lower()
+    if (
+        "vpc_service_controls" in message
+        or "security_policy_violated" in message
+        or "vpc service controls" in message
+        or "request is prohibited by organization's policy" in message
+        or "permission_denied" in message
+        or "403" in message
+        or "forbidden" in message
+    ):
+        return "policy_blocked", detail
+    if (
+        "401" in message
+        or "unauthorized" in message
+        or "invalid api key" in message
+        or "authentication" in message
+    ):
+        return "auth_failed", detail
+    if "timeout" in message or "timed out" in message or "504" in message:
+        return "timeout", detail
+    if (
+        "connection refused" in message
+        or "econnrefused" in message
+        or "connecterror" in message
+        or "transport error" in message
+    ):
+        return "gateway_unavailable", detail
+    return "unknown", detail
+
+
+def _platform_failure_message(kind: str) -> str:
+    if kind == "policy_blocked":
+        return (
+            "The model gateway reached Vertex AI, but Google policy blocked this "
+            "environment from calling the configured model. Ask a platform admin "
+            "to allow the gateway credentials/project under VPC Service Controls "
+            "or point this domain to an approved LLM gateway, then retry."
+        )
+    if kind == "auth_failed":
+        return (
+            "The model gateway rejected the platform credentials. Update the LLM "
+            "gateway API key or service authentication configuration, then retry."
+        )
+    if kind == "gateway_unavailable":
+        return (
+            "The orchestrator or model gateway is unavailable from this environment. "
+            "Start the local services or update ORCHESTRATOR_URL and LLM_GATEWAY_URL, "
+            "then retry."
+        )
+    if kind == "timeout":
+        return "The upstream model request timed out before it could finish. Please retry."
+    return (
+        "The model gateway returned a platform error before response generation completed. "
+        "The trace envelope contains the gateway details for the platform team."
+    )
+
+
 class AdkAgent:
     """
     ADK-based agent with a policy-driven control plane.
@@ -501,7 +575,9 @@ class AdkAgent:
         )
         return src.domain.models.MemoryPolicy(**{**base.model_dump(), **override_dict})
 
-    def _build_execution_policy(self, stream_config: src.domain.models.StreamConfig | None) -> src.domain.models.ExecutionPolicy:
+    def _build_execution_policy(
+        self, stream_config: src.domain.models.StreamConfig | None
+    ) -> src.domain.models.ExecutionPolicy:
         default_policy = src.domain.models.ExecutionPolicy(
             retrieval_strategy="hybrid",
             budgets=src.domain.models.BudgetPolicy(
@@ -576,7 +652,11 @@ class AdkAgent:
 
         tier = policy.model_tier
         if tier == src.domain.models.ModelTier.AUTO:
-            tier = src.domain.models.ModelTier.SMART if _is_complex_request(message) else src.domain.models.ModelTier.FAST
+            tier = (
+                src.domain.models.ModelTier.SMART
+                if _is_complex_request(message)
+                else src.domain.models.ModelTier.FAST
+            )
 
         model_map = {
             src.domain.models.ModelTier.FAST: src.core.config.settings.AGENT_MODEL_FAST,
@@ -616,7 +696,9 @@ class AdkAgent:
                 src.core.config.settings.AGENT_MODEL_FAST,
             ],
         }
-        ordered = candidate_map.get(model_tier, [primary_model, src.core.config.settings.AGENT_MODEL])
+        ordered = candidate_map.get(
+            model_tier, [primary_model, src.core.config.settings.AGENT_MODEL]
+        )
         unique_candidates: list[str] = []
         for candidate in ordered:
             if candidate and candidate not in unique_candidates:
@@ -663,7 +745,9 @@ class AdkAgent:
         )
         return prompt_stack["assembled_instruction"], prompt_stack
 
-    def _execution_policy_summary(self, policy: src.domain.models.ExecutionPolicy) -> dict[str, typing.Any]:
+    def _execution_policy_summary(
+        self, policy: src.domain.models.ExecutionPolicy
+    ) -> dict[str, typing.Any]:
         return {
             "model": policy.model,
             "model_tier": policy.model_tier.value,
@@ -752,7 +836,9 @@ class AdkAgent:
                 return step
         return None
 
-    def _requires_approval(self, spec: src.domain.tools.ToolSpec, policy: src.domain.models.ExecutionPolicy) -> bool:
+    def _requires_approval(
+        self, spec: src.domain.tools.ToolSpec, policy: src.domain.models.ExecutionPolicy
+    ) -> bool:
         permissions = policy.tool_permissions
         if spec.name in permissions.require_approval_tools:
             return True
@@ -822,7 +908,11 @@ class AdkAgent:
                         },
                     }
 
-                result, duration_ms, cache_hit = await src.domain.adk_callbacks.execute_tool_with_hooks(
+                (
+                    result,
+                    duration_ms,
+                    cache_hit,
+                ) = await src.domain.adk_callbacks.execute_tool_with_hooks(
                     _tool_name,
                     _tool_func,
                     kwargs,
@@ -885,7 +975,7 @@ class AdkAgent:
         self,
         session_id: str,
         message: str,
-        scope: str = "global",
+        scope: str = DEFAULT_RUNTIME_SCOPE,
         stream_config: src.domain.models.StreamConfig | None = None,
         *,
         user_id: str | None = None,
@@ -1075,7 +1165,7 @@ class AdkAgent:
             policy=policy,
             enabled_tools=enabled_tools,
         )
-        tool_wrappers: dict[str, Any] = self._build_tool_wrappers(tool_context)
+        tool_wrappers: dict[str, typing.Any] = self._build_tool_wrappers(tool_context)
         model_candidates: list[str] = self._build_model_retry_candidates(model_name, model_tier)
         response_metadata_base["model"] = model_candidates[0]
 
@@ -1140,7 +1230,7 @@ class AdkAgent:
                             if hasattr(part, "function_call") and part.function_call:
                                 fc: FunctionCall = part.function_call
                                 tool_name: str | None = fc.name
-                                tool_args: dict[str, Any] = dict(fc.args) if fc.args else {}
+                                tool_args: dict[str, typing.Any] = dict(fc.args) if fc.args else {}
                                 tool_call_id: str = f"adk-{tool_name}-{uuid.uuid4().hex[:8]}"
                                 pending_tool_calls.append(
                                     {
@@ -1166,7 +1256,8 @@ class AdkAgent:
                                             "step_index": plan_state.steps.index(plan_step),
                                             "status": "executing",
                                             "plan_progress": (
-                                                f"{plan_state.completed_steps + 1}/{len(plan_state.steps)}"
+                                                f"{plan_state.completed_steps + 1}/"
+                                                f"{len(plan_state.steps)}"
                                             ),
                                         },
                                     }
@@ -1188,7 +1279,9 @@ class AdkAgent:
                             elif hasattr(part, "function_response") and part.function_response:
                                 fr: FunctionResponse = part.function_response
                                 tool_name: str | None = fr.name
-                                raw_output: dict[str, Any] = dict(fr.response) if fr.response else {}
+                                raw_output: dict[str, typing.Any] = (
+                                    dict(fr.response) if fr.response else {}
+                                )
                                 tool_meta = {}
                                 if isinstance(raw_output, dict):
                                     tool_meta = raw_output.pop("_tool_meta", {}) or {}
@@ -1284,7 +1377,8 @@ class AdkAgent:
                                                 ),
                                                 "context": (
                                                     f"{tool_name} is gated as a "
-                                                    f"{tool_meta.get('risk_level', 'high')} risk tool."
+                                                    f"{tool_meta.get('risk_level', 'high')} "
+                                                    "risk tool."
                                                 ),
                                                 "completed_steps": [
                                                     step.description
@@ -1493,7 +1587,8 @@ class AdkAgent:
                             "section": "MODEL_FALLBACK",
                             "icon": "↺",
                             "reasoning": (
-                                f"Primary model {failed_model} is unavailable; retrying with {fallback_model}."
+                                f"Primary model {failed_model} is unavailable; "
+                                f"retrying with {fallback_model}."
                             ),
                             "failed_model": failed_model,
                             "fallback_model": fallback_model,
@@ -1591,7 +1686,9 @@ class AdkAgent:
             estimated_tokens_saved: int = (
                 max(0, estimated_ungrounded_total_tokens - total_tokens) if kb_used else 0
             )
-            kb_search_ms: float | int = kb_search_ms_total / kb_search_calls if kb_search_calls > 0 else 0
+            kb_search_ms: float | int = (
+                kb_search_ms_total / kb_search_calls if kb_search_calls > 0 else 0
+            )
 
             yield {
                 "type": "reflecting",
@@ -1673,7 +1770,9 @@ class AdkAgent:
                     }
                 return
 
-            fallback_text: str | None = _build_grounded_kb_fallback_response(message, latest_kb_output)
+            fallback_text: str | None = _build_grounded_kb_fallback_response(
+                message, latest_kb_output
+            )
             if fallback_text:
                 fallback_reason = "runtime_error_after_retrieval"
                 logger.warning(
@@ -1712,7 +1811,36 @@ class AdkAgent:
                 }
                 return
 
+            failure_kind, failure_detail = _classify_model_failure(e)
+            failure_message = _platform_failure_message(failure_kind)
+            yield {
+                "type": "tool_result",
+                "step": step_counter,
+                "content": "Model gateway needs platform attention.",
+                "metadata": {
+                    "result": {
+                        "tool_call_id": f"model-gateway-{uuid.uuid4().hex[:8]}",
+                        "name": "model_gateway",
+                        "output": None,
+                        "error": failure_message,
+                        "duration_ms": 0,
+                    },
+                    "failure_kind": failure_kind,
+                    "failure_detail": failure_detail,
+                },
+            }
+            step_counter += 1
             yield {
                 "type": "final_response_chunk",
-                "content": "I encountered an internal error while processing your request.",
+                "content": failure_message,
+            }
+            yield {
+                "type": "response_metadata",
+                "metadata": {
+                    **response_metadata_base,
+                    "confidence": 0,
+                    "plan_id": plan_state.plan_id if plan_state else None,
+                    "fallback_used": True,
+                    "fallback_reason": f"model_gateway_{failure_kind}",
+                },
             }

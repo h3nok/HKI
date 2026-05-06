@@ -38,6 +38,7 @@ import src.domain.models
 import src.domain.protocols
 
 router = fastapi.APIRouter(prefix="/v1", tags=["knowledge"], dependencies=[fastapi.Depends(src.core.auth.verify_request_jwt)])
+UNSCOPED_SEARCH_ANALYTICS_SCOPE = "unscoped-search"
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────
@@ -290,6 +291,7 @@ async def search(
     )
     _top_score = result.results[0].score if result.results else 0.0
     _stream_id = identity.scope if identity.scope and identity.scope != "global" else ""
+    _analytics_scope = _stream_id or UNSCOPED_SEARCH_ANALYTICS_SCOPE
     analytics_payload = {
         "query_tokens": len(body.query.split()),
         "chunks_returned": result.total_results,
@@ -305,7 +307,7 @@ async def search(
         "kb.search",
         org_id=identity.org_id,
         user_id=identity.user_id,
-        scope=_stream_id or "global",
+        scope=_analytics_scope,
         payload=analytics_payload,
     )
 

@@ -5,7 +5,6 @@ These are the ports contributors should expect when running the local AI Platfor
 | Surface            | Local port | In-cluster port      | Notes                                                                |
 | ------------------ | ---------- | -------------------- | -------------------------------------------------------------------- |
 | Agentic BFF        | 9001       | external URL         | Local UI and tRPC entrypoint                                         |
-| CI Portal          | 9002       | external URL         | Started by `make dev-services` and `make dev-full`                   |
 | Orchestrator       | 9501       | 9501                 | Chat runtime and tool execution                                      |
 | Ingestion Pipeline | 9508       | 9508                 | Uploads, job state, and review flow                                  |
 | Knowledge API      | 9509       | 9509                 | Search, storage, citations, and taxonomy                             |

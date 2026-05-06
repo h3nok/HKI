@@ -1,5 +1,5 @@
 /**
- * Base ESLint configuration for Signature monorepo
+ * Base ESLint configuration for HKI monorepo
  * @type {import("eslint").Linter.Config}
  */
 module.exports = {
@@ -23,7 +23,7 @@ module.exports = {
     },
   },
   rules: {
-    // TypeScript rules
+    // TypeScript
     "@typescript-eslint/no-unused-vars": [
       "warn",
       {
@@ -39,7 +39,7 @@ module.exports = {
     ],
     "@typescript-eslint/no-empty-object-type": "off",
 
-    // Import rules
+    // Import order
     "import/order": [
       "error",
       {
@@ -53,19 +53,24 @@ module.exports = {
           "type",
         ],
         "newlines-between": "always",
-        alphabetize: {
-          order: "asc",
-          caseInsensitive: true,
-        },
+        alphabetize: { order: "asc", caseInsensitive: true },
       },
     ],
     "import/no-duplicates": "error",
-    "import/no-unresolved": "off", // Handled by TypeScript
+    "import/no-unresolved": "off",
+    "import/no-cycle": ["error", { maxDepth: 3 }],
 
-    // General rules
+    // General correctness
     "no-console": ["warn", { allow: ["warn", "error"] }],
     "prefer-const": "error",
     "no-unused-expressions": "error",
+    "no-param-reassign": ["error", { props: false }],
+
+    // Maintainability
+    complexity: ["warn", { max: 15 }],
+    "max-depth": ["warn", { max: 4 }],
+    "max-lines": ["warn", { max: 300, skipBlankLines: true, skipComments: true }],
+    "max-lines-per-function": ["warn", { max: 80, skipBlankLines: true, skipComments: true }],
   },
   ignorePatterns: [
     "node_modules",

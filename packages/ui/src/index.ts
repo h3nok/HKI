@@ -52,10 +52,10 @@ export const brandColors = {
   },
 } as const;
 
-/** HKI Blue — primary actions, trust, reliability */
-export const COSTCO_BLUE = "#0066B2";
-/** HKI Red — emphasis, urgency, important actions */
-export const COSTCO_RED = "#E31837";
+/** HKI Iris — primary brand (Pharos deep teal). */
+export const HKI_IRIS = "#0E7C7B";
+/** HKI Pulse — secondary brand (Pharos warm amber). */
+export const HKI_PULSE = "#E07A1F";
 /** Full brand object (alias for brandColors) */
 export const BRAND = brandColors;
 

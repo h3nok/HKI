@@ -38,6 +38,14 @@ def _normalize_stream_id(value: typing.Any) -> str | None:
     return normalized or None
 
 
+def _runtime_stream_filters(values: list[str] | None) -> list[str]:
+    return [
+        stream
+        for stream in (_normalize_stream_id(value) for value in values or [])
+        if stream and stream.lower() != "global"
+    ]
+
+
 _IGNORED_FILENAME_TOKENS: set[str] = {
     "csv",
     "doc",
@@ -144,14 +152,15 @@ class VectorStore:
         doc: src.domain.models.Document,
         allowed_streams: list[str] | None,
     ) -> bool:
-        if not allowed_streams or "global" in allowed_streams:
-            return True
+        stream_filters: list[str] = _runtime_stream_filters(allowed_streams)
+        if not stream_filters:
+            return False
         doc_stream: str | None = _normalize_stream_id(
             getattr(doc, "stream_id", None)
             or getattr(doc.metadata, "stream_id", None)
             or (getattr(doc.metadata, "custom", {}) or {}).get("stream_id")
         )
-        return doc_stream in allowed_streams
+        return doc_stream in stream_filters
 
     @staticmethod
     def _normalize_user_id(user_id: str | None) -> str | None:
@@ -609,14 +618,15 @@ class VectorStore:
 
                 Enforcement order (fail-closed):
                     1. org_id    — always applied, primary tenant boundary
-                    2. value_streams — when non-empty, document must belong to one of
-                                                        the listed streams. Unscoped documents are denied.
+                    2. value_streams — document must belong to one of
+                                                        the listed runtime streams.
                     3. Metadata  — document_type, department, tags, date range
 
         Returns a set of chunk_ids that match all filters.
         """
-        stream_filters: list[str] = [str(stream).strip() for stream in (filters.value_streams or []) if str(stream).strip()]
-        enforce_streams: bool = bool(stream_filters) and "global" not in stream_filters
+        stream_filters: list[str] = _runtime_stream_filters(filters.value_streams)
+        if not stream_filters:
+            return set()
 
         matching_doc_ids: set[str] = set()
         for doc_id, doc in self._documents.items():
@@ -634,10 +644,9 @@ class VectorStore:
                 continue
 
             # 2. Value-stream isolation
-            if enforce_streams:
-                doc_stream: typing.Any | None = getattr(doc, "stream_id", None) or getattr(doc.metadata, "stream_id", None)
-                if not doc_stream or doc_stream not in stream_filters:
-                    continue
+            doc_stream: typing.Any | None = getattr(doc, "stream_id", None) or getattr(doc.metadata, "stream_id", None)
+            if not doc_stream or doc_stream not in stream_filters:
+                continue
 
             # 3. Document-type filter
             if filters.document_types and doc.metadata.document_type not in filters.document_types:

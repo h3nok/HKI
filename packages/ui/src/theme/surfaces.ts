@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * COSTCO PLATFORM — Surface & Color Token System
+ * HKI PLATFORM — Surface & Color Token System
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Platform-wide Tailwind class tokens for every page and component.

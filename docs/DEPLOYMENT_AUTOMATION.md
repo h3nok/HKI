@@ -15,8 +15,6 @@ Orchestrator ← KNOWLEDGE_API_URL
 Ingestion Pipeline ← KNOWLEDGE_API_URL
     ↓ (captures URLs)
 Agentic BFF ← ORCHESTRATOR_URL, KNOWLEDGE_API_URL, INGESTION_PIPELINE_URL
-    ↓ (captures URL)
-CI Portal ← AGENTIC_URL
 
 ```
 
@@ -94,7 +92,7 @@ gcloud storage buckets create gs://p-642-cilab-infrastructure-terraform-state \
 - Should be deployed first
 - URL and API key required
 
-**PostgreSQL Databases** (for Agentic & CI Portal):
+**PostgreSQL Databases** (for Agentic):
 
 - Cloud SQL or AlloyDB instances
 - Connection strings required
@@ -147,7 +145,7 @@ gcloud storage buckets create gs://p-642-cilab-infrastructure-terraform-state
 # 4. Deploy supporting infrastructure
 # - AlloyDB cluster for Knowledge API
 # - Redis instance for Orchestrator
-# - Cloud SQL for Agentic/CI Portal
+# - Cloud SQL for Agentic
 # - LiteLLM gateway
 ```
 
@@ -167,10 +165,6 @@ echo -n "sk-litellm-key" | \
 # Agentic secrets
 echo -n "postgresql://user:pass@host/agentic" | \
   gcloud secrets create agentic-database-url --data-file=-
-
-# CI Portal secrets
-echo -n "postgresql://user:pass@host/ciportal" | \
-  gcloud secrets create ci-portal-database-url --data-file=-
 ```
 
 ### Phase 3: Automated Deployment (Script)

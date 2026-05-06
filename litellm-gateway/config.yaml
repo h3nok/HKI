@@ -1,0 +1,44 @@
+model_list:
+  - model_name: gemini-2.0-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.0-flash
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: os.environ/VERTEX_LOCATION
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: os.environ/VERTEX_LOCATION
+
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: vertex_ai/gemini-2.5-pro
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: os.environ/VERTEX_LOCATION
+
+  # Backward-compatible aliases used by local admin and prompt-generation code.
+  - model_name: gemini-3-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: os.environ/VERTEX_LOCATION
+
+  - model_name: gemini-3-pro
+    litellm_params:
+      model: vertex_ai/gemini-2.5-pro
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: os.environ/VERTEX_LOCATION
+
+  - model_name: text-embedding-004
+    litellm_params:
+      model: vertex_ai/text-embedding-004
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: os.environ/VERTEX_LOCATION
+
+litellm_settings:
+  drop_params: true
+  request_timeout: 60
+
+router_settings:
+  routing_strategy: simple-shuffle

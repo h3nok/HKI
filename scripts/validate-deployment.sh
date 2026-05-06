@@ -8,7 +8,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AI_PLATFORM_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-MONOREPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+MONOREPO_ROOT="$AI_PLATFORM_DIR"
 
 # Colors
 RED='\033[0;31m'
@@ -150,11 +150,11 @@ check_dockerfiles_exist() {
     log_check "Dockerfiles exist for all services"
 
     services=(
-        "apps/ai-platform/knowledge-api/Dockerfile"
-        "apps/ai-platform/orchestrator-service/Dockerfile"
-        "apps/ai-platform/ingestion-pipeline-service/Dockerfile"
-        "apps/ai-platform/agentic/Dockerfile"
-        "apps/ci-portal/Dockerfile"
+        "knowledge-api/Dockerfile"
+        "orchestrator-service/Dockerfile"
+        "ingestion-pipeline-service/Dockerfile"
+        "analytics-service/Dockerfile"
+        "apps/agentic/Dockerfile"
     )
 
     all_found=true
@@ -172,11 +172,11 @@ check_terraform_dirs() {
     log_check "Terraform directories exist"
 
     tf_dirs=(
-        "apps/ai-platform/knowledge-api/tf"
-        "apps/ai-platform/orchestrator-service/tf"
-        "apps/ai-platform/ingestion-pipeline-service/tf"
-        "apps/ai-platform/k8s/tf"
-        "apps/ci-portal/tf"
+        "knowledge-api/tf"
+        "orchestrator-service/tf"
+        "ingestion-pipeline-service/tf"
+        "analytics-service/tf"
+        "k8s/tf"
     )
 
     for tf_dir in "${tf_dirs[@]}"; do

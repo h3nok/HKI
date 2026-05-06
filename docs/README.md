@@ -1,6 +1,7 @@
-# AI Platform Docs
+# HKI Docs
 
-Use this directory as the current documentation index for `apps/ai-platform`.
+Use this directory as the current documentation index for HKI, the Hermetic
+Knowledge Isolation reference platform.
 
 ## Start here
 
@@ -11,6 +12,14 @@ Use this directory as the current documentation index for `apps/ai-platform`.
 - `KB_INITIAL_MVP_RELEASE_NOTE.md` - shareable release note for the currently deployed KB MVP scope and how to position it with EA and partner teams
 - `KB_FILE_UPLOAD_E2E_QA_PLAN.md` - manual QA runbook for value stream creation, file-upload KB workflows, review and publish, and Agentic validation
 - `KB_FILE_UPLOAD_E2E_QA_CHECKLIST.csv` - spreadsheet-friendly sign-off checklist aligned to the KB file upload QA plan
+- `AGENTIC_PLATFORM_FEATURE_MAP.md` - evidence-backed map of non-dashboard
+  product surfaces, service dependencies, status, gaps, and next actions
+- `ADMIN_CONTROL_PLANE_DASHBOARD_DESIGN.md` - design, feature inventory,
+  completeness bar, and careful development plan for the Agentic admin dashboard
+- `HKI_CONFORMANCE.md` - implementer-facing conformance bar for runtime scope,
+  artifacts, storage, caches, tools, admin plane, and publication
+- `HKI_PUBLIC_READINESS_PLAN.md` - end-to-end roadmap for making HKI ready for
+  public adoption as an open-source standard and reference runtime
 - `SERVICE_PORTS.md` - local and in-cluster port reference
 - `SERVICE_BOUNDARIES.md` - service ownership by responsibility and change surface
 
@@ -22,16 +31,21 @@ Use this directory as the current documentation index for `apps/ai-platform`.
 
 ## Agentic isolation and routing
 
+- `../spec/HKI-1.0.md` - draft normative HKI 1.0 standard
+- `../spec/HKI-Agent-Gateway-Profile.md` - gateway conformance profile for MCP, A2A, tools, memory, cache, and retrieval
+- `../packages/hki-runtime/README.md` - TypeScript runtime helpers and JSON Schemas for HKI envelopes and artifact labels
+- `../packages/hki-runtime-py/README.md` - Python runtime helpers for the same HKI envelope and artifact-label contract
+- `../packages/hki-conformance/README.md` - conformance adapter contract and CLI runner for runtime evidence
 - `HKI-package/HERMETIC-KNOWLEDGE-ISOLATION.md` - full Hermetic Knowledge Isolation paper and runtime model
 - `SCOPED_AGENTIC_ROUTING.md` - operational standard for scoped agentic routing across models, knowledge, memory, tools, cache, eval, and audit
 - `MCP_GATEWAY_AND_BUS.md` - MCP tool control-plane design bound to HKI/SAR enforcement
+- `HKI_SECURITY_MAPPING.md` - mapping from HKI to MCP, A2A, OWASP, NIST, and gateway controls
 
 ## Historical and point-in-time docs
 
 These files are still useful for context, but they are not the canonical onboarding path:
 
 - `archive/DEPLOYMENT_ORDER.md` - retired Cloud Run deployment order
-- `archive/NAVIGATION_GUIDE.md` - earlier navigation and integration notes
 - `archive/README.md` - archived sprint plans, dashboards, and historical risk/debt snapshots
 
 If current behavior and a historical doc disagree, trust `../README.md`, the active Make targets, and the live service READMEs.

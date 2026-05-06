@@ -39,7 +39,6 @@ service_port() {
     ingestion-pipeline-auth) echo 9608 ;;
     orchestrator) echo 9501 ;;
     analytics) echo 9510 ;;
-    ci-portal) echo 9002 ;;
     agentic) echo 9001 ;;
     mysql) echo 9306 ;;
     redis) echo 9379 ;;
@@ -57,7 +56,6 @@ service_label() {
     ingestion-pipeline-auth) echo "ingestion-pipeline-auth" ;;
     orchestrator) echo "orchestrator-service" ;;
     analytics) echo "analytics-service" ;;
-    ci-portal) echo "ci-portal" ;;
     agentic) echo "agentic-bff" ;;
     *) echo "$1" ;;
   esac
@@ -357,21 +355,6 @@ EOF
   launch_runner analytics "${runner}"
 }
 
-start_ci_portal() {
-  local runner
-  runner="$(service_runner_file ci-portal)"
-  cat >"${runner}" <<EOF
-#!/usr/bin/env bash
-set -euo pipefail
-cd "${ROOT_DIR}/../ci-portal"
-export NODE_ENV="development"
-export PORT="9002"
-exec ./node_modules/.bin/tsx watch server/_core/index.ts
-EOF
-  chmod +x "${runner}"
-  launch_runner ci-portal "${runner}"
-}
-
 start_service() {
   local name="$1"
   ensure_port_released "${name}"
@@ -383,7 +366,6 @@ start_service() {
     ingestion-pipeline-auth) start_ingestion_pipeline_auth ;;
     orchestrator) start_orchestrator ;;
     analytics) start_analytics ;;
-    ci-portal) start_ci_portal ;;
     *) error "Unsupported start target: ${name}"; exit 1 ;;
   esac
 
@@ -480,7 +462,7 @@ show_status() {
   echo ""
   echo "Managed local services"
   echo ""
-  for name in knowledge-api ingestion-pipeline orchestrator analytics ci-portal agentic; do
+  for name in knowledge-api ingestion-pipeline orchestrator analytics agentic; do
     status_row "${name}"
   done
   echo ""
@@ -502,7 +484,7 @@ show_status() {
 
 start_managed_stack() {
   start_infra
-  for name in knowledge-api ingestion-pipeline orchestrator analytics ci-portal; do
+  for name in knowledge-api ingestion-pipeline orchestrator analytics; do
     stop_service "${name}"
     start_service "${name}"
   done
@@ -511,7 +493,6 @@ start_managed_stack() {
 
 start_full_stack() {
   start_infra
-  stop_service ci-portal
   for name in knowledge-api ingestion-pipeline orchestrator analytics; do
     stop_service "${name}"
     start_service "${name}"
@@ -528,7 +509,7 @@ start_auth_kb_stack() {
 }
 
 stop_managed_stack() {
-  for name in ci-portal analytics orchestrator ingestion-pipeline knowledge-api agentic; do
+  for name in analytics orchestrator ingestion-pipeline knowledge-api agentic; do
     stop_service "${name}"
   done
 }
@@ -544,13 +525,13 @@ usage() {
 Usage: scripts/dev-stack.sh <command>
 
 Commands:
-  start-services   Start infra, Python services, and ci-portal in background
+  start-services   Start infra and Python services in background
   start-full       Start infra + Python services only and free agentic port for foreground UI
   start-kb-auth    Start isolated auth-enabled KB validation services on :9608/:9609
   stop             Stop managed local services and free reserved ports
   stop-kb-auth     Stop isolated auth-enabled KB validation services
   stop-all         Stop managed local services and Docker infra
-  restart          Restart managed local services and ci-portal
+  restart          Restart managed local services
   reset            Restart Docker infra, then restart managed local services
   status           Show managed service and infra status
 EOF
@@ -590,7 +571,7 @@ main() {
     reset)
       stop_managed_stack
       restart_infra
-      for name in knowledge-api ingestion-pipeline orchestrator analytics ci-portal; do
+      for name in knowledge-api ingestion-pipeline orchestrator analytics; do
         start_service "${name}"
       done
       ensure_port_released agentic

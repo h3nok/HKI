@@ -1,0 +1,96 @@
+name: Services Deploy
+
+# Internal reference-platform deployment. Public framework contributors do not
+# need these GKE secrets to build or verify the HKI packages.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "analytics-service/**"
+      - "ingestion-pipeline-service/**"
+      - "knowledge-api/**"
+      - "orchestrator-service/**"
+      - "apps/agentic/**"
+      - "k8s/**"
+      - "scripts/deploy-k8s.sh"
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to GKE
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Detect changed services
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            knowledge-api:
+              - "knowledge-api/**"
+            orchestrator:
+              - "orchestrator-service/**"
+            ingestion:
+              - "ingestion-pipeline-service/**"
+            analytics:
+              - "analytics-service/**"
+            agentic:
+              - "apps/agentic/**"
+
+      - name: Build knowledge-api
+        if: steps.changes.outputs.knowledge-api == 'true'
+        run: |
+          gcloud builds submit . \
+            --config=knowledge-api/cloudbuild.yaml \
+            --project=${{ secrets.GKE_PROJECT_ID }}
+
+      - name: Build orchestrator-service
+        if: steps.changes.outputs.orchestrator == 'true'
+        run: |
+          gcloud builds submit . \
+            --config=orchestrator-service/cloudbuild.yaml \
+            --project=${{ secrets.GKE_PROJECT_ID }}
+
+      - name: Build ingestion-pipeline-service
+        if: steps.changes.outputs.ingestion == 'true'
+        run: |
+          gcloud builds submit . \
+            --config=ingestion-pipeline-service/cloudbuild.yaml \
+            --project=${{ secrets.GKE_PROJECT_ID }}
+
+      - name: Build analytics-service
+        if: steps.changes.outputs.analytics == 'true'
+        run: |
+          gcloud builds submit . \
+            --config=analytics-service/cloudbuild.yaml \
+            --project=${{ secrets.GKE_PROJECT_ID }}
+
+      - name: Build agentic BFF
+        if: steps.changes.outputs.agentic == 'true'
+        run: |
+          gcloud builds submit . \
+            --config=apps/agentic/cloudbuild.yaml \
+            --project=${{ secrets.GKE_PROJECT_ID }}
+
+      - name: Apply k8s manifests
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.CLUSTER_NAME }} \
+            --region=${{ secrets.GKE_REGION }} \
+            --project=${{ secrets.GKE_PROJECT_ID }} \
+            --dns-endpoint
+          SKIP_TF=true SKIP_BUILD=true ./scripts/deploy-k8s.sh

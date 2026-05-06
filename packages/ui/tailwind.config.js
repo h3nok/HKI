@@ -1,6 +1,6 @@
 /** 
  * ═══════════════════════════════════════════════════════════════════════════
- * COSTCO INNOVATIONS DESIGN SYSTEM — TAILWIND CONFIGURATION
+ * HKI INNOVATIONS DESIGN SYSTEM — TAILWIND CONFIGURATION
  * Signature Platform — Enterprise Security & Intelligence
  * 
  * This configuration extends Tailwind CSS with the HKI Innovations
@@ -19,7 +19,7 @@ module.exports = {
          ═══════════════════════════════════════════════════════════════════ */
       colors: {
         // ─────────────────────────────────────────────────────────────────
-        // COSTCO BLUE — Trust, Authority, Intelligence
+        // HKI IRIS — Trust, Authority, Intelligence
         // Primary brand color (HSL: 229° 64% 47%)
         // ─────────────────────────────────────────────────────────────────
         'hki-blue': {
@@ -39,7 +39,7 @@ module.exports = {
         },
 
         // ─────────────────────────────────────────────────────────────────
-        // COSTCO RED — Energy, Urgency, Critical Actions  
+        // HKI PULSE — Energy, Urgency, Critical Actions  
         // Secondary brand color (HSL: 0° 73% 51%)
         // ─────────────────────────────────────────────────────────────────
         'hki-red': {
