@@ -55,6 +55,19 @@ For OWASP/NIST/MCP alignment: [docs/HKI_SECURITY_MAPPING.md](./docs/HKI_SECURITY
 
 ---
 
+## Try it in 5 minutes
+
+```bash
+pip install hki-runtime
+```
+
+Open the [quickstart notebook](./notebooks/01_quickstart.ipynb) — or run it directly in
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/h3nok/HKI/blob/main/notebooks/01_quickstart.ipynb)
+
+The notebook shows the cache leak problem, the envelope fix, artifact visibility, and gateway enforcement in under 5 minutes. No LLM API key required.
+
+---
+
 ## Three Ways to Use HKI
 
 ### 1. Read the Standard
