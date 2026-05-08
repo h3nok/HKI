@@ -12,6 +12,10 @@ HKI_VERSION = "1.0"
 GLOBAL_DOMAIN = "global"
 WILDCARD_DOMAIN = "*"
 
+# Hard limits to prevent DoS via oversized inputs.
+_MAX_FIELD_LENGTH = 512
+_MAX_AUTHORIZED_DOMAINS = 64
+
 HkiPurpose = typing.Literal[
     "chat",
     "retrieve",
@@ -193,12 +197,21 @@ def validate_envelope(
     issues: list[HkiValidationIssue] = []
 
     for field in _REQUIRED_STRING_FIELDS:
-        if not normalize_domain(record.get(field)):
+        val = record.get(field)
+        if not normalize_domain(val):
             issues.append(
                 HkiValidationIssue(
                     code="missing-field",
                     field=field,
                     message=f"{field} is required.",
+                )
+            )
+        elif isinstance(val, str) and len(val) > _MAX_FIELD_LENGTH:
+            issues.append(
+                HkiValidationIssue(
+                    code="missing-field",
+                    field=field,
+                    message=f"{field} exceeds maximum length of {_MAX_FIELD_LENGTH} characters.",
                 )
             )
 
@@ -212,7 +225,12 @@ def validate_envelope(
             )
         )
 
-    if require_signature and not normalize_domain(record.get("signature")):
+    # Signature presence check. NOTE: this library validates structural correctness
+    # and claim consistency of the envelope. Cryptographic signature verification
+    # (Ed25519/JWS) is the responsibility of the gateway that mints the envelope —
+    # it must be performed before calling validate_envelope in downstream services.
+    sig = record.get("signature")
+    if require_signature and not (isinstance(sig, str) and sig.strip()):
         issues.append(
             HkiValidationIssue(
                 code="missing-field",
@@ -238,6 +256,15 @@ def validate_envelope(
                 code="missing-field",
                 field="authorized_domains",
                 message="authorized_domains must contain at least the active domain.",
+            )
+        )
+
+    if len(authorized_domains) > _MAX_AUTHORIZED_DOMAINS:
+        issues.append(
+            HkiValidationIssue(
+                code="missing-field",
+                field="authorized_domains",
+                message=f"authorized_domains must not exceed {_MAX_AUTHORIZED_DOMAINS} entries.",
             )
         )
 

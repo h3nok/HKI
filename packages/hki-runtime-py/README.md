@@ -7,6 +7,16 @@ This package mirrors the public `@hki/runtime` TypeScript package for Python
 gateways, FastAPI services, retrieval adapters, memory stores, caches, and MCP
 tool routers.
 
+> **Security scope of this library**
+>
+> `validate_envelope` checks structural correctness, expiry, domain validity,
+> and claim consistency. It does **not** perform cryptographic signature
+> verification (Ed25519/JWS). Cryptographic verification is the responsibility
+> of the **gateway or issuer** that mints the envelope — it must happen before
+> handing the envelope to downstream services. See
+> [HKI Agent Gateway Profile](../../spec/HKI-Agent-Gateway-Profile.md) for
+> gateway-layer requirements.
+
 ## Install
 
 ```bash

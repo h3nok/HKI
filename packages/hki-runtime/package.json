@@ -3,6 +3,16 @@
   "version": "0.1.0",
   "description": "Hermetic Knowledge Isolation runtime envelope, cache, gateway, and telemetry helpers.",
   "license": "MIT",
+  "author": "Henok Ghebrechristos",
+  "homepage": "https://github.com/h3nok/HKI",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/h3nok/HKI.git",
+    "directory": "packages/hki-runtime"
+  },
+  "bugs": {
+    "url": "https://github.com/h3nok/HKI/issues"
+  },
   "sideEffects": false,
   "keywords": [
     "agent-security",

@@ -12,6 +12,18 @@ import {
   sameDomain,
 } from "./domain";
 
+// Hard limits to prevent DoS via oversized inputs.
+const MAX_FIELD_LENGTH = 512;
+const MAX_AUTHORIZED_DOMAINS = 64;
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function fieldTooLong(value: unknown): boolean {
+  return typeof value === "string" && value.length > MAX_FIELD_LENGTH;
+}
+
 export interface ValidateEnvelopeOptions {
   now?: number | undefined;
   maxFutureSkewSeconds?: number | undefined;
@@ -41,6 +53,12 @@ function addMissingStringIssues(
         field,
         message: `${field} is required.`,
       });
+    } else if (fieldTooLong(input[field])) {
+      issues.push({
+        code: "missing-field",
+        field,
+        message: `${field} exceeds maximum length of ${MAX_FIELD_LENGTH} characters.`,
+      });
     }
   }
 }
@@ -65,7 +83,11 @@ export function validateEnvelope(
     });
   }
 
-  if (options.requireSignature && !normalizeDomain(record.signature)) {
+  // Signature presence check. NOTE: this library validates structural correctness
+  // and claim consistency of the envelope. Cryptographic signature verification
+  // (Ed25519/JWS) is the responsibility of the gateway that mints the envelope —
+  // it must be performed before calling validateEnvelope in downstream services.
+  if (options.requireSignature && !isNonEmptyString(record.signature)) {
     issues.push({
       code: "missing-field",
       field: "signature",
@@ -88,6 +110,14 @@ export function validateEnvelope(
       code: "missing-field",
       field: "authorized_domains",
       message: "authorized_domains must contain at least the active domain.",
+    });
+  }
+
+  if (authorizedDomains.length > MAX_AUTHORIZED_DOMAINS) {
+    issues.push({
+      code: "missing-field",
+      field: "authorized_domains",
+      message: `authorized_domains must not exceed ${MAX_AUTHORIZED_DOMAINS} entries.`,
     });
   }
 

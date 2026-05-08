@@ -6,6 +6,16 @@ HKI treats runtime scope as a signed envelope, not as a loose query parameter.
 This package provides the minimal primitives needed by gateways, agent
 orchestrators, retrieval services, memory stores, and caches.
 
+> **Security scope of this library**
+>
+> `validateEnvelope` checks structural correctness, expiry, domain validity,
+> and claim consistency. It does **not** perform cryptographic signature
+> verification (Ed25519/JWS). Cryptographic verification is the responsibility
+> of the **gateway or issuer** that mints the envelope — it must happen before
+> handing the envelope to downstream services. See
+> [HKI Agent Gateway Profile](../../spec/HKI-Agent-Gateway-Profile.md) for
+> gateway-layer requirements.
+
 ## Install
 
 ```bash
