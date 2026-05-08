@@ -44,15 +44,15 @@ export function BreadcrumbBar({
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 flex h-12 shrink-0 items-center gap-3 px-4 sm:px-6 bg-background/80 backdrop-blur-sm",
+        "dashboard-breadcrumb sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 px-4 sm:px-6 bg-background/80 backdrop-blur-sm",
         className
       )}
     >
-      <SidebarTrigger className="-ml-1 size-7 rounded-md text-muted-foreground hover:bg-muted/50 hover:text-foreground" />
+      <SidebarTrigger className="-ml-1 size-8 rounded-md text-muted-foreground hover:bg-muted/50 hover:text-foreground" />
 
       <nav
         data-breadcrumb-nav
-        className="flex min-w-0 flex-1 items-center gap-1 text-sm"
+        className="flex min-w-0 flex-1 items-center gap-1 text-[15px]"
       >
         {segments.map((seg, idx) => {
           const isLast = idx === lastIdx;
@@ -67,7 +67,7 @@ export function BreadcrumbBar({
             <React.Fragment key={idx}>
               {idx > 0 && (
                 <ChevronRight
-                  className="w-2.5 h-2.5 text-muted-foreground/45 shrink-0"
+                  className="w-3 h-3 text-muted-foreground/45 shrink-0"
                   aria-hidden
                 />
               )}
@@ -84,7 +84,7 @@ export function BreadcrumbBar({
                     : undefined
                 }
                 className={cn(
-                  "flex shrink-0 items-center gap-1.5",
+                  "flex shrink-0 items-center gap-2",
                   isLast
                     ? "font-semibold text-foreground truncate"
                     : "text-muted-foreground",
@@ -96,7 +96,7 @@ export function BreadcrumbBar({
               >
                 {Icon && (
                   <Icon
-                    className={cn("w-3.5 h-3.5 shrink-0", seg.iconClassName)}
+                    className={cn("w-4 h-4 shrink-0", seg.iconClassName)}
                   />
                 )}
                 <span className={cn(seg.hideOnMobile && "hidden sm:inline")}>

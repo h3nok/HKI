@@ -38,6 +38,55 @@ const buildDate =
 
 const plugins = [react(), tailwindcss()];
 
+function manualChunks(id: string): string | undefined {
+  if (id.includes("/packages/ui/")) {
+    return "hki-ui";
+  }
+
+  if (id.includes("/node_modules/")) {
+    if (id.includes("/lucide-react/")) {
+      return "vendor-icons";
+    }
+
+    if (
+      id.includes("/@radix-ui/") ||
+      id.includes("/cmdk/") ||
+      id.includes("/vaul/") ||
+      id.includes("/sonner/") ||
+      id.includes("/react-day-picker/")
+    ) {
+      return "vendor-ui";
+    }
+
+    if (
+      id.includes("/framer-motion/") ||
+      id.includes("/motion-dom/") ||
+      id.includes("/motion-utils/")
+    ) {
+      return "vendor-motion";
+    }
+
+    if (
+      id.includes("/recharts/") ||
+      id.includes("/d3-") ||
+      id.includes("/@xyflow/")
+    ) {
+      return "vendor-viz";
+    }
+
+    if (
+      id.includes("/react-markdown/") ||
+      id.includes("/react-syntax-highlighter/") ||
+      id.includes("/remark-gfm/") ||
+      id.includes("/streamdown/")
+    ) {
+      return "vendor-content";
+    }
+  }
+
+  return undefined;
+}
+
 export default defineConfig({
   define: {
     "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
@@ -67,6 +116,12 @@ export default defineConfig({
   build: {
     outDir: path.resolve(appRoot, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 850,
+    rollupOptions: {
+      output: {
+        manualChunks,
+      },
+    },
   },
   server: {
     host: true,

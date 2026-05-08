@@ -11,6 +11,7 @@ import { cn } from "@hki/ui";
 import { trpc } from "@/lib/trpc";
 import { a } from "./theme";
 import { AdminPageHeader } from "./components/AdminPageHeader";
+import { SettingsButton } from "./components";
 
 function formatTokens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -56,18 +57,18 @@ export default function UsagePage() {
         action={
           <div className="flex items-center gap-2">
             {[7, 30, 90].map(d => (
-              <button
+              <SettingsButton
                 key={d}
                 onClick={() => setDays(d)}
+                size="sm"
+                variant={days === d ? "brand" : "outline"}
                 className={cn(
-                  "rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all",
-                  days === d
-                    ? `${a.pillPrimary} shadow-sm`
-                    : `${a.pillNeutral} hover:text-foreground`
+                  "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
+                  days !== d && "text-muted-foreground hover:text-foreground"
                 )}
               >
                 {d}d
-              </button>
+              </SettingsButton>
             ))}
           </div>
         }

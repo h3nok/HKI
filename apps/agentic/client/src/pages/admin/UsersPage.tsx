@@ -40,6 +40,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { a } from "./theme";
 import { AdminPageHeader } from "./components/AdminPageHeader";
+import { SettingsButton } from "./components";
 import {
   ALL_ROLES,
   DEFAULT_STANDARD_ROLE,
@@ -368,15 +369,17 @@ export default function UsersPage() {
         icon={Users}
         action={
           !showInvite ? (
-            <button
+            <SettingsButton
               onClick={() => {
                 setShowInvite(true);
                 setInviteResult(null);
               }}
-              className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+              size="sm"
+              variant="brand"
+              className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold"
             >
               <UserPlus className="h-3.5 w-3.5" /> Invite User
-            </button>
+            </SettingsButton>
           ) : undefined
         }
         stats={[

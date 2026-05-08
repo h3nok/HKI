@@ -300,8 +300,32 @@
 }
 
 .agentic-prompt-inner {
+  overflow: hidden;
   background: var(--capsule-inner-bg);
   box-shadow: inset 0 0 0 1px var(--capsule-inner-border);
+}
+
+.agentic-prompt-inner::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.625rem;
+  bottom: 0.625rem;
+  width: 0.1875rem;
+  pointer-events: none;
+  border-radius: 999px;
+  opacity: 0.72;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary) 64%, transparent) 0%,
+    color-mix(in srgb, var(--kb-brand-red) 44%, transparent) 58%,
+    transparent 100%
+  );
+}
+
+.agentic-prompt-inner > * {
+  position: relative;
+  z-index: 1;
 }
 
 .agentic-prompt-inner--focus {
@@ -1560,7 +1584,7 @@ body::before {
   }
 
   .sidebar-section-label {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 650;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -1568,9 +1592,9 @@ body::before {
   }
 
   .admin-sidebar-section-label {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--primary) 36%, var(--muted-foreground) 64%);
   }
@@ -1618,6 +1642,363 @@ body::before {
       color-mix(in srgb, var(--primary) 14%, transparent) 0%,
       color-mix(in srgb, var(--primary) 8%, transparent) 100%
     );
+  }
+
+  /* ── Agentic workspace chrome — chat shell + sidebar command surfaces ── */
+  .agentic-chat-shell {
+    --agentic-interface-rail: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 52%, transparent) 0%,
+      color-mix(in srgb, var(--kb-brand-red) 36%, transparent) 48%,
+      transparent 100%
+    );
+    --agentic-interface-line: color-mix(
+      in srgb,
+      var(--border) 62%,
+      var(--foreground) 12%
+    );
+  }
+
+  .dark .agentic-chat-shell {
+    position: relative;
+    isolation: isolate;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 88%, #152033 12%) 0%,
+        color-mix(in srgb, var(--background) 96%, black 4%) 100%
+      ),
+      var(--background);
+  }
+
+  .dark .agentic-chat-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 8%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--foreground) 5%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        120deg,
+        transparent 0 70%,
+        color-mix(in srgb, var(--kb-brand-red) 7%, transparent) 70% 70.35%,
+        transparent 70.35% 100%
+      );
+    background-position:
+      left top,
+      left top,
+      right -10rem top 5rem;
+    background-size:
+      3rem 3rem,
+      3rem 3rem,
+      44rem 24rem;
+    mask-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, black 28%, transparent),
+      color-mix(in srgb, black 14%, transparent) 48%,
+      transparent 100%
+    );
+    opacity: 0.76;
+  }
+
+  .dark .agentic-chat-shell > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dark .agentic-chat-main {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 18%, transparent) 0%,
+        transparent 28%
+      ),
+      transparent !important;
+  }
+
+  .dark .agentic-chat-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background:
+      linear-gradient(
+        180deg,
+        rgba(18, 20, 25, 0.86) 0%,
+        rgba(11, 13, 17, 0.78) 100%
+      ),
+      color-mix(in srgb, var(--card) 52%, transparent);
+    backdrop-filter: blur(20px) saturate(1.12);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 16px 30px -28px rgba(0, 0, 0, 0.72);
+  }
+
+  .dark .agentic-task-sidebar {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(26, 29, 36, 0.94) 0%,
+        rgba(15, 17, 22, 0.96) 100%
+      ),
+      var(--sidebar) !important;
+    border-right-color: rgba(255, 255, 255, 0.07) !important;
+    box-shadow:
+      1px 0 0 rgba(255, 255, 255, 0.03),
+      18px 0 34px -30px rgba(0, 0, 0, 0.92);
+  }
+
+  .agentic-task-sidebar::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    width: 2px;
+    pointer-events: none;
+    background: var(--agentic-interface-rail);
+    opacity: 0.74;
+  }
+
+  .agentic-sidebar-collapsed-rail::before {
+    content: "";
+    position: absolute;
+    top: 1rem;
+    bottom: 1rem;
+    left: 0;
+    width: 2px;
+    border-radius: 999px;
+    background: var(--agentic-interface-rail);
+    opacity: 0.74;
+  }
+
+  .agentic-sidebar-header {
+    position: relative;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--sidebar-border) 58%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--sidebar) 90%, var(--card) 10%) 0%,
+        color-mix(in srgb, var(--sidebar) 96%, transparent) 100%
+      ),
+      transparent;
+  }
+
+  .agentic-sidebar-header::after {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: -1px;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--primary) 30%, transparent) 22%,
+      color-mix(in srgb, var(--kb-brand-red) 18%, transparent) 70%,
+      transparent 100%
+    );
+  }
+
+  .agentic-sidebar-brand {
+    min-width: 0;
+    border-radius: 0.625rem;
+    padding: 0.25rem 0.375rem 0.25rem 0.25rem;
+  }
+
+  .agentic-sidebar-brand:hover {
+    background: color-mix(in srgb, var(--primary) 6%, transparent);
+  }
+
+  .agentic-sidebar-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    border-radius: 0.625rem;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+        color-mix(in srgb, var(--foreground) 4%, transparent) 100%
+      ),
+      transparent;
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--primary) 16%, transparent),
+      inset 0 1px 0 color-mix(in srgb, white 32%, transparent);
+  }
+
+  .agentic-sidebar-brand-signal {
+    width: 1.125rem;
+    height: 0.125rem;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      var(--primary) 0%,
+      color-mix(in srgb, var(--kb-brand-red) 78%, var(--primary)) 100%
+    );
+  }
+
+  .agentic-sidebar-primary-action {
+    min-height: 2rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 34%, transparent);
+  }
+
+  .agentic-sidebar-primary-action::after {
+    content: "";
+    position: absolute;
+    left: 0.625rem;
+    right: 0.625rem;
+    top: 0;
+    height: 1px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.44) 45%,
+      transparent 100%
+    );
+  }
+
+  .agentic-sidebar-icon-button,
+  .agentic-sidebar-footer-icon,
+  .agentic-sidebar-support-button,
+  .agentic-sidebar-clear-button {
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 24%, transparent);
+  }
+
+  .agentic-sidebar-icon-button::before,
+  .agentic-sidebar-footer-icon::before,
+  .agentic-sidebar-support-button::before,
+  .agentic-sidebar-clear-button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+      color-mix(in srgb, var(--kb-brand-red) 6%, transparent) 100%
+    );
+    transition: opacity 180ms ease;
+  }
+
+  .agentic-sidebar-icon-button:hover::before,
+  .agentic-sidebar-footer-icon:hover::before,
+  .agentic-sidebar-support-button:hover::before,
+  .agentic-sidebar-clear-button:hover::before {
+    opacity: 1;
+  }
+
+  .agentic-sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--primary) 24%, transparent)
+      transparent;
+    scrollbar-gutter: stable;
+  }
+
+  .agentic-sidebar-scroll::-webkit-scrollbar {
+    width: 0.5rem;
+  }
+
+  .agentic-sidebar-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 22%, transparent);
+    border: 0.125rem solid transparent;
+    background-clip: content-box;
+  }
+
+  .agentic-sidebar-list {
+    padding-top: 0.125rem;
+  }
+
+  .agentic-project-folder,
+  .agentic-conversation-item {
+    isolation: isolate;
+    border: 1px solid transparent;
+  }
+
+  .agentic-project-folder::before,
+  .agentic-conversation-item::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 12%, transparent) 0%,
+        color-mix(in srgb, var(--kb-brand-red) 5%, transparent) 100%
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 26px,
+        color-mix(in srgb, var(--foreground) 4%, transparent) 26px 27px,
+        transparent 27px 54px
+      );
+    transition: opacity 180ms ease;
+  }
+
+  .agentic-project-folder:hover::before,
+  .agentic-project-folder[data-active="true"]::before,
+  .agentic-conversation-item:hover::before,
+  .agentic-conversation-item[data-active="true"]::before {
+    opacity: 1;
+  }
+
+  .agentic-project-folder > *,
+  .agentic-conversation-item > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .agentic-conversation-item[data-active="true"] {
+    border-color: color-mix(in srgb, var(--primary) 22%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
+      0 10px 20px -22px color-mix(in srgb, var(--primary) 38%, transparent);
+  }
+
+  .agentic-conversation-item[data-status="running"] {
+    border-color: color-mix(in srgb, var(--primary) 24%, transparent);
+  }
+
+  .agentic-project-folder[data-active="true"] {
+    border-color: color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+
+  .agentic-sidebar-footer {
+    background:
+      linear-gradient(
+        180deg,
+        transparent 0%,
+        color-mix(in srgb, var(--sidebar) 76%, var(--primary) 3%) 100%
+      ),
+      transparent;
+  }
+
+  .agentic-sidebar-avatar {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.24),
+      0 10px 18px -18px color-mix(in srgb, var(--primary) 52%, transparent);
   }
 
   :root:not(.dark) .agentic-chat-shell {
@@ -1766,6 +2147,8 @@ body::before {
   }
 
   :root:not(.dark) .agentic-suggestion-tile {
+    isolation: isolate;
+    overflow: hidden;
     border-color: color-mix(
       in srgb,
       var(--border) 62%,
@@ -1783,6 +2166,99 @@ body::before {
       0 1px 2px color-mix(in srgb, var(--foreground) 12%, transparent),
       0 14px 24px -22px color-mix(in srgb, var(--foreground) 30%, transparent),
       0 24px 46px -38px color-mix(in srgb, var(--primary) 26%, transparent);
+  }
+
+  .agentic-suggestion-tile {
+    min-height: 4.75rem;
+  }
+
+  .agentic-suggestion-tile::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0.52;
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+        transparent 34%,
+        color-mix(in srgb, var(--kb-brand-red) 5%, transparent) 100%
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 32px,
+        color-mix(in srgb, var(--foreground) 4%, transparent) 32px 33px,
+        transparent 33px 64px
+      );
+  }
+
+  .agentic-suggestion-tile::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 1;
+    width: 0.1875rem;
+    pointer-events: none;
+    border-radius: 999px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 54%, transparent) 0%,
+      color-mix(in srgb, var(--kb-brand-red) 34%, transparent) 62%,
+      transparent 100%
+    );
+  }
+
+  .agentic-suggestion-tile > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  .agentic-suggestion-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.625rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+    background: color-mix(in srgb, var(--primary) 7%, transparent);
+    color: color-mix(in srgb, var(--primary) 72%, var(--foreground));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 36%, transparent);
+    transition:
+      color 180ms ease,
+      border-color 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .agentic-suggestion-tile:hover .agentic-suggestion-glyph {
+    border-color: color-mix(in srgb, var(--primary) 22%, transparent);
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--primary);
+  }
+
+  .dark .agentic-suggestion-tile {
+    overflow: hidden;
+    border-color: rgba(255, 255, 255, 0.07);
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.045) 0%,
+        rgba(255, 255, 255, 0.018) 100%
+      ),
+      color-mix(in srgb, var(--card) 62%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 16px 30px -28px rgba(0, 0, 0, 0.74);
+  }
+
+  .dark .agentic-suggestion-tile::before {
+    opacity: 0.42;
   }
 
   :root:not(.dark) .agentic-suggestion-tile:hover {
@@ -1803,6 +2279,21 @@ body::before {
       0 2px 4px color-mix(in srgb, var(--foreground) 14%, transparent),
       0 20px 36px -26px color-mix(in srgb, var(--foreground) 32%, transparent),
       0 32px 62px -46px color-mix(in srgb, var(--primary) 34%, transparent);
+  }
+
+  .dark .agentic-suggestion-tile:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--primary) 22%,
+      rgba(255, 255, 255, 0.08)
+    );
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        color-mix(in srgb, var(--primary) 6%, rgba(255, 255, 255, 0.025)) 100%
+      ),
+      color-mix(in srgb, var(--card) 66%, transparent);
   }
 
   :root:not(.dark) .agentic-message-frame {
@@ -1826,6 +2317,63 @@ body::before {
 
   .agentic-message-bubble-agent {
     width: 100%;
+  }
+
+  .agentic-message-bubble-agent[data-variant="default"] {
+    border-radius: 1.125rem;
+    padding: 0.125rem 0 0.125rem 0.875rem;
+  }
+
+  .agentic-message-bubble-agent[data-variant="default"] .agentic-message-body {
+    position: relative;
+    z-index: 1;
+  }
+
+  .agentic-message-bubble-agent[data-variant="default"]::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.375rem;
+    bottom: 0.375rem;
+    z-index: 0;
+    width: 0.1875rem;
+    pointer-events: none;
+    border-radius: 999px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 50%, transparent) 0%,
+      color-mix(in srgb, var(--kb-brand-red) 26%, transparent) 64%,
+      transparent 100%
+    );
+    opacity: 0.58;
+  }
+
+  .agentic-message-bubble-agent[data-variant="default"]::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 0 0.375rem;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 4%, transparent) 0%,
+        transparent 34%
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 38px,
+        color-mix(in srgb, var(--foreground) 3%, transparent) 38px 39px,
+        transparent 39px 76px
+      );
+    transition: opacity 180ms ease;
+  }
+
+  .agentic-message-frame[data-author="agent"]:hover
+    .agentic-message-bubble-agent[data-variant="default"]::after {
+    opacity: 1;
   }
 
   .agentic-message-bubble-user {
@@ -2499,16 +3047,16 @@ body::before {
   }
 
   .admin-sidebar-nav-label {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.15;
     color: inherit;
     font-weight: 600;
   }
 
   .admin-sidebar-nav-meta {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--muted-foreground) 74%, transparent);
   }
@@ -3458,51 +4006,21 @@ body::before {
   .admin-sidebar-brand {
     isolation: isolate;
     overflow: hidden;
-    background: var(--admin-sidebar-brand-bg) !important;
-    box-shadow: var(--admin-sidebar-brand-shadow) !important;
+    background: transparent !important;
+    box-shadow: none !important;
     color: var(--admin-sidebar-brand-title-color);
     transition:
       background 180ms ease,
-      box-shadow 180ms ease,
-      filter 180ms ease,
+      color 180ms ease,
       transform 180ms ease;
   }
 
   .admin-sidebar-brand::before {
-    content: "";
-    position: absolute;
-    inset: -18% -10% -18% -22%;
-    z-index: 0;
-    pointer-events: none;
-    background:
-      conic-gradient(
-        from 218deg at 23% 50%,
-        transparent 0deg,
-        color-mix(in srgb, var(--primary) 22%, transparent) 38deg,
-        transparent 72deg,
-        transparent 182deg,
-        color-mix(in srgb, var(--secondary) 16%, transparent) 222deg,
-        transparent 264deg,
-        transparent 360deg
-      ),
-      radial-gradient(
-        circle at 23% 50%,
-        color-mix(in srgb, var(--admin-logo-ink) 12%, transparent) 0 11%,
-        transparent 12% 18%,
-        color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) 19% 20%,
-        transparent 21% 100%
-      );
-    opacity: 0.82;
-    mix-blend-mode: screen;
-    transform: rotate(-4deg);
-    transition:
-      opacity 180ms ease,
-      transform 180ms ease;
+    content: none;
   }
 
   .admin-sidebar-brand:hover::before {
     opacity: 1;
-    transform: rotate(-1deg) scale(1.02);
   }
 
   .admin-sidebar-brand > * {
@@ -3511,76 +4029,53 @@ body::before {
   }
 
   .admin-sidebar-brand:hover {
-    background: var(--admin-sidebar-brand-bg-hover) !important;
-    filter: saturate(1.04);
+    background: color-mix(
+      in srgb,
+      var(--foreground) 4%,
+      transparent
+    ) !important;
     transform: translateY(-1px);
   }
 
   .admin-sidebar-brand-copy {
     max-width: 100%;
-    border-radius: 0.78rem;
-    background: var(--admin-sidebar-brand-label-bg);
-    padding: 0.38rem 0.58rem;
-    box-shadow: var(--admin-sidebar-brand-label-shadow);
-    backdrop-filter: blur(14px) saturate(1.06);
-  }
-
-  .admin-sidebar-brand-seal {
-    color: color-mix(
-      in srgb,
-      var(--admin-duotone-a) 38%,
-      var(--admin-logo-ink)
-    );
-    text-shadow: 0 1px 0
-      color-mix(in srgb, var(--admin-logo-base) 22%, transparent);
-  }
-
-  .admin-sidebar-brand-seal svg {
-    color: color-mix(
-      in srgb,
-      var(--admin-duotone-b) 54%,
-      var(--admin-logo-ink)
-    );
-    filter: drop-shadow(
-      0 0 8px color-mix(in srgb, var(--admin-duotone-b) 16%, transparent)
-    );
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    backdrop-filter: none;
   }
 
   .admin-sidebar-brand-mark-shell {
-    background: var(--admin-sidebar-brand-mark-bg) !important;
-    box-shadow: var(--admin-sidebar-brand-mark-shadow) !important;
-    backdrop-filter: blur(12px) saturate(1.08);
+    background: color-mix(
+      in srgb,
+      var(--admin-duotone-a) 10%,
+      transparent
+    ) !important;
+    box-shadow: inset 0 0 0 1px
+      color-mix(in srgb, var(--border) 76%, transparent) !important;
+    backdrop-filter: none;
   }
 
   .admin-sidebar-brand-mark {
     --ops-icon-iris: color-mix(
       in srgb,
-      var(--admin-logo-ink) 84%,
-      var(--admin-duotone-a) 16%
+      var(--admin-logo-ink) 74%,
+      var(--admin-duotone-a) 26%
     );
     --ops-icon-pulse: color-mix(
       in srgb,
-      var(--admin-duotone-b) 72%,
+      var(--admin-duotone-b) 56%,
       var(--admin-logo-ink)
     );
-    filter: drop-shadow(
-      0 1px 1px color-mix(in srgb, var(--admin-logo-base) 24%, transparent)
-    );
-  }
-
-  .admin-sidebar-brand-status {
-    box-shadow:
-      0 0 0 2px var(--admin-sidebar-brand-status-ring),
-      0 8px 14px -11px
-        color-mix(in srgb, var(--admin-logo-base) 55%, transparent) !important;
-  }
-
-  .admin-sidebar-brand-status.is-healthy {
-    background: var(--admin-sidebar-brand-status-bg) !important;
+    filter: none;
   }
 
   .admin-sidebar-brand-eyebrow {
-    color: var(--admin-sidebar-brand-eyebrow-color) !important;
+    color: color-mix(
+      in srgb,
+      var(--muted-foreground) 84%,
+      transparent
+    ) !important;
     text-shadow: none !important;
   }
 
@@ -5236,24 +5731,44 @@ body::before {
   }
 
   .admin-sidebar-shell [data-slot="sidebar-inner"] {
-    background: var(--admin-duotone-canvas) !important;
+    background:
+      radial-gradient(
+        42rem 22rem at 0% 0%,
+        color-mix(in srgb, var(--admin-duotone-a) 34%, transparent) 0%,
+        transparent 72%
+      ),
+      linear-gradient(
+        170deg,
+        color-mix(in srgb, var(--admin-duotone-a) 26%, #0b1518) 0%,
+        color-mix(in srgb, var(--admin-duotone-a) 18%, #0d1618) 52%,
+        color-mix(in srgb, var(--admin-duotone-b) 20%, #0f171a) 100%
+      ) !important;
     box-shadow:
-      inset -1px 0 0 color-mix(in srgb, var(--foreground) 5%, transparent),
-      18px 0 42px -42px
-        color-mix(in srgb, var(--admin-duotone-a) 28%, transparent) !important;
+      inset -1px 0 0 color-mix(in srgb, var(--foreground) 10%, transparent),
+      16px 0 34px -34px
+        color-mix(in srgb, var(--admin-duotone-a) 56%, transparent),
+      22px 0 54px -46px
+        color-mix(in srgb, var(--admin-duotone-b) 36%, transparent) !important;
   }
 
   :root:not(.dark) .admin-sidebar-shell [data-slot="sidebar-inner"] {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card) 88%, var(--admin-duotone-a)) 0%,
-      color-mix(in srgb, var(--muted) 82%, var(--background)) 100%
-    ) !important;
+    background:
+      radial-gradient(
+        36rem 20rem at 0% 0%,
+        color-mix(in srgb, var(--admin-duotone-a) 22%, transparent) 0%,
+        transparent 74%
+      ),
+      linear-gradient(
+        170deg,
+        color-mix(in srgb, var(--admin-duotone-a) 20%, var(--card)) 0%,
+        color-mix(in srgb, var(--admin-duotone-a) 12%, var(--background)) 56%,
+        color-mix(in srgb, var(--admin-duotone-b) 14%, var(--background)) 100%
+      ) !important;
     box-shadow:
       inset -1px 0 0
-        color-mix(in srgb, var(--border) 78%, var(--foreground) 10%),
-      14px 0 34px -30px color-mix(in srgb, var(--foreground) 40%, transparent),
-      22px 0 54px -48px
+        color-mix(in srgb, var(--admin-duotone-a) 26%, var(--border)),
+      12px 0 24px -24px color-mix(in srgb, var(--foreground) 20%, transparent),
+      18px 0 40px -36px
         color-mix(in srgb, var(--admin-duotone-a) 34%, transparent) !important;
   }
 
@@ -5389,33 +5904,95 @@ body::before {
   }
 
   .admin-sidebar-brand {
-    min-height: 3.75rem !important;
-    border: 0 !important;
-    background: transparent !important;
+    min-height: 3.25rem !important;
+    position: relative;
+    isolation: isolate;
+    border: 1px solid
+      color-mix(in srgb, var(--admin-duotone-a) 24%, var(--border)) !important;
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--admin-duotone-a) 16%, var(--card)) 0%,
+        color-mix(in srgb, var(--admin-duotone-b) 12%, var(--card)) 100%
+      ),
+      radial-gradient(
+        90% 120% at 0% 0%,
+        color-mix(in srgb, var(--admin-duotone-a) 20%, transparent) 0%,
+        transparent 62%
+      ) !important;
     box-shadow: none !important;
     color: var(--foreground) !important;
   }
 
   .admin-sidebar-brand:hover {
-    background: color-mix(
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--admin-duotone-a) 22%, var(--card)) 0%,
+        color-mix(in srgb, var(--admin-duotone-b) 16%, var(--card)) 100%
+      ),
+      radial-gradient(
+        90% 120% at 0% 0%,
+        color-mix(in srgb, var(--admin-duotone-a) 28%, transparent) 0%,
+        transparent 62%
+      ) !important;
+    border-color: color-mix(
       in srgb,
-      var(--foreground) 4%,
-      transparent
+      var(--admin-duotone-a) 42%,
+      var(--border)
     ) !important;
     box-shadow: none !important;
   }
 
+  .admin-sidebar-brand::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--admin-duotone-a) 24%, transparent) 0 1px,
+        transparent 1px 2.6rem
+      ),
+      linear-gradient(
+        140deg,
+        transparent 0 52%,
+        color-mix(in srgb, var(--admin-duotone-b) 16%, transparent) 52% 52.4%,
+        transparent 52.4% 100%
+      );
+    background-size:
+      9rem 100%,
+      12rem 100%;
+    background-position:
+      right -2rem top 0,
+      right -3rem top 0;
+    opacity: 0.58;
+  }
+
+  .admin-sidebar-brand > * {
+    position: relative;
+    z-index: 1;
+  }
+
   :root:not(.dark) .admin-sidebar-brand,
   :root:not(.dark) .admin-sidebar-brand:hover {
-    border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
+    border: 1px solid
+      color-mix(in srgb, var(--admin-duotone-a) 22%, var(--border)) !important;
   }
 
   .admin-sidebar-brand-mark-shell,
   :root:not(.dark) .admin-sidebar-brand-mark-shell {
-    background: transparent !important;
-    box-shadow: none !important;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) 0%,
+      color-mix(in srgb, var(--admin-duotone-b) 14%, transparent) 100%
+    ) !important;
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--admin-duotone-a) 32%, var(--border)),
+      0 8px 16px -14px color-mix(in srgb, var(--admin-duotone-a) 38%, transparent) !important;
   }
 
   .admin-sidebar-brand-mark {
@@ -5426,14 +6003,16 @@ body::before {
   .admin-sidebar-brand-eyebrow {
     color: color-mix(
       in srgb,
-      var(--muted-foreground) 84%,
+      var(--muted-foreground) 82%,
       transparent
     ) !important;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.12em;
+    font-weight: 600;
   }
 
   .admin-sidebar-brand-title {
     color: var(--foreground) !important;
+    font-weight: 650;
   }
 
   .dashboard-shell.admin-control-plane-canvas
@@ -5717,13 +6296,19 @@ body::before {
   }
 
   .dashboard-shell.admin-control-plane-canvas
-    :is(
-      .admin-toolbar-button,
-      .admin-breadcrumb-bar,
-      .admin-tab-trigger[data-state="active"]
-    ) {
+    :is(.admin-toolbar-button, .admin-tab-trigger[data-state="active"]) {
     border: 1px solid color-mix(in srgb, var(--border) 70%, transparent) !important;
     border-radius: 0.75rem !important;
+    background: var(--admin-duotone-panel) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
+      0 14px 24px -24px
+        color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-breadcrumb-bar {
+    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent) !important;
+    border-radius: 0 !important;
     background: var(--admin-duotone-panel) !important;
     box-shadow:
       inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
@@ -5738,11 +6323,15 @@ body::before {
     background: var(--admin-duotone-active) !important;
   }
 
+  .admin-sidebar-nav-button {
+    color: color-mix(in srgb, var(--foreground) 88%, var(--admin-duotone-a)) !important;
+  }
+
   .admin-sidebar-nav-button:hover,
   .admin-sidebar-nav-button[data-active="true"] {
     color: color-mix(
       in srgb,
-      var(--admin-duotone-a) 56%,
+      var(--admin-duotone-a) 72%,
       var(--foreground)
     ) !important;
   }
@@ -5783,6 +6372,10 @@ body::before {
   .admin-sidebar-user-trigger:hover,
   .admin-sidebar-user-trigger[data-state="open"] {
     color: var(--foreground) !important;
+  }
+
+  .admin-sidebar-section-label {
+    color: color-mix(in srgb, var(--admin-duotone-a) 74%, var(--foreground)) !important;
   }
 
   .kb-self-service-shell {

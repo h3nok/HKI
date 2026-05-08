@@ -77,6 +77,7 @@ import type {
 } from "@shared/value-streams";
 import { a } from "./theme";
 import { AdminPageHeader } from "./components/AdminPageHeader";
+import { SettingsButton } from "./components";
 import {
   DEFAULT_GUARDRAILS,
   DEFAULT_MEMORY,
@@ -2224,12 +2225,14 @@ export default function StreamsPage() {
         description="Define active HKI domains, signed scope boundaries, system prompts, tool permissions, and knowledge policy for each agent surface in the control plane."
         icon={Layers}
         action={
-          <button
+          <SettingsButton
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+            size="sm"
+            variant="brand"
+            className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold"
           >
             <Plus className="h-3.5 w-3.5" /> New Domain
-          </button>
+          </SettingsButton>
         }
         stats={[
           {

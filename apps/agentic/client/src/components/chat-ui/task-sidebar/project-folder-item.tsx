@@ -71,6 +71,7 @@ export function ProjectFolderItem({
             {/* Folder header */}
             <button
                 type="button"
+                data-active={isActive ? 'true' : 'false'}
                 onClick={() => !isRenaming && onToggleExpand()}
                 onContextMenu={onContextMenu}
                 onDragEnter={onDragEnter}
@@ -78,7 +79,7 @@ export function ProjectFolderItem({
                 onDragOver={onDragOver}
                 onDrop={onDrop}
                 className={cn(
-                    'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-300 relative overflow-hidden outline-none',
+                    'agentic-project-folder w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-300 relative overflow-hidden outline-none',
                     isDragOver
                         ? 'bg-primary/20 text-foreground ring-1 ring-primary/40 shadow-inner'
                         : isActive

@@ -665,6 +665,8 @@ export const ConversationItem = memo(function ConversationItem({
         <motion.div
           role="button"
           tabIndex={isRenaming ? -1 : 0}
+          data-active={isActive ? "true" : "false"}
+          data-status={status}
           onClick={handleSelect}
           onContextMenu={handleContextMenu}
           onKeyDown={e => {
@@ -691,7 +693,7 @@ export const ConversationItem = memo(function ConversationItem({
           onDragEnd={handleSwipeEnd}
           animate={swipeControls}
           whileTap={isRenaming ? undefined : { scale: 0.99 }}
-          className={`relative w-full text-left px-3 py-3
+          className={`agentic-conversation-item relative w-full text-left px-3 py-3
                            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40
                            group rounded-lg cursor-pointer transition-all duration-150
                            ${

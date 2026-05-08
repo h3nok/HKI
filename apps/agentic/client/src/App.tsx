@@ -7,22 +7,9 @@ import {
   SkipToContent,
   RouteAnnouncer,
 } from "@hki/ui";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch, Redirect, useLocation } from "wouter";
+import { lazy, Suspense, type ReactNode } from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import AgenticChat from "./pages/AgenticChat";
-import EngineeringHub from "./pages/EngineeringHub";
-import EngineeringStandardPage from "./pages/EngineeringStandardPage";
-import AgenticPlatformLanding from "./pages/landing";
-import { AgenticLoginPage } from "./pages/LoginPage";
-import ComponentDemo from "./pages/ComponentDemo";
-import UIShowcase from "./pages/UIShowcase";
-import AdminLayout from "./pages/admin";
-import KnowledgePage from "./pages/knowledge";
-import KnowledgeWelcome from "./pages/knowledge/welcome";
-import KnowledgeJoin from "./pages/knowledge/join";
-import KnowledgeCreate from "./pages/knowledge/create";
-import KnowledgeRequestAccess from "./pages/knowledge/request-access";
 import { useAuth } from "./_core/hooks/useAuth";
 import {
   canAccessKnowledgeWorkspace,
@@ -43,6 +30,25 @@ import {
 
 import { BrandLoader } from "@/components/ui/brand-loader";
 
+const AdminLayout = lazy(() => import("./pages/admin"));
+const AgenticChat = lazy(() => import("./pages/AgenticChat"));
+const AgenticLoginPage = lazy(() => import("./pages/LoginPage"));
+const AgenticPlatformLanding = lazy(() => import("./pages/landing"));
+const ComponentDemo = lazy(() => import("./pages/ComponentDemo"));
+const EngineeringHub = lazy(() => import("./pages/EngineeringHub"));
+const EngineeringStandardPage = lazy(
+  () => import("./pages/EngineeringStandardPage")
+);
+const KnowledgeCreate = lazy(() => import("./pages/knowledge/create"));
+const KnowledgeJoin = lazy(() => import("./pages/knowledge/join"));
+const KnowledgePage = lazy(() => import("./pages/knowledge"));
+const KnowledgeRequestAccess = lazy(
+  () => import("./pages/knowledge/request-access")
+);
+const KnowledgeWelcome = lazy(() => import("./pages/knowledge/welcome"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const UIShowcase = lazy(() => import("./pages/UIShowcase"));
+
 function getAssignedKnowledgeScope(valueStreams: string | null | undefined) {
   return (
     valueStreams
@@ -53,11 +59,7 @@ function getAssignedKnowledgeScope(valueStreams: string | null | undefined) {
 }
 
 // Auth guard component
-function ProtectedRoute({
-  component: Component,
-}: {
-  component: React.ComponentType;
-}) {
+function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const [location] = useLocation();
 
@@ -83,7 +85,7 @@ function ProtectedRoute({
     sessionStorage.removeItem("loginReturnTo");
   }
 
-  return <Component />;
+  return <>{children}</>;
 }
 
 function KnowledgeWorkspaceRoute() {
@@ -152,37 +154,52 @@ function AdminWorkspaceRoute() {
 
 function Router() {
   return (
-    <Switch>
-      {/* Public routes */}
-      <Route path="/" component={AgenticPlatformLanding} />
-      <Route path={HKI_STANDARD_ROUTE} component={EngineeringStandardPage} />
-      <Route path={ENGINEERING_HUB_ROUTE} component={EngineeringHub} />
-      <Route path="/login" component={AgenticLoginPage} />
-      <Route path="/demo" component={ComponentDemo} />
-      <Route path="/ui-showcase" component={UIShowcase} />
-      <Route path="/welcome" component={KnowledgeWelcome} />
-      <Route path="/knowledge/welcome">
-        {() => <Redirect to="/welcome" />}
-      </Route>
-      <Route path="/knowledge/join" component={KnowledgeJoin} />
-      <Route
-        path="/knowledge/request-access"
-        component={KnowledgeRequestAccess}
-      />
-      <Route path="/knowledge/create">
-        {() => <ProtectedRoute component={KnowledgeCreateRoute} />}
-      </Route>
+    <Suspense fallback={<BrandLoader variant="fullscreen" />}>
+      <Switch>
+        {/* Public routes */}
+        <Route path="/">{() => <AgenticPlatformLanding />}</Route>
+        <Route path={HKI_STANDARD_ROUTE}>
+          {() => <EngineeringStandardPage />}
+        </Route>
+        <Route path={ENGINEERING_HUB_ROUTE}>{() => <EngineeringHub />}</Route>
+        <Route path="/login">{() => <AgenticLoginPage />}</Route>
+        <Route path="/demo">{() => <ComponentDemo />}</Route>
+        <Route path="/ui-showcase">{() => <UIShowcase />}</Route>
+        <Route path="/welcome">{() => <KnowledgeWelcome />}</Route>
+        <Route path="/knowledge/welcome">
+          {() => <Redirect to="/welcome" />}
+        </Route>
+        <Route path="/knowledge/join">{() => <KnowledgeJoin />}</Route>
+        <Route path="/knowledge/request-access">
+          {() => <KnowledgeRequestAccess />}
+        </Route>
+        <Route path="/knowledge/create">
+          {() => (
+            <ProtectedRoute>
+              <KnowledgeCreateRoute />
+            </ProtectedRoute>
+          )}
+        </Route>
 
-      {/* Protected routes */}
-      <Route path="/chat">
-        {() => <ProtectedRoute component={AgenticChat} />}
-      </Route>
-      <Route path="/admin/*?">
-        {() => <ProtectedRoute component={AdminWorkspaceRoute} />}
-      </Route>
-      <Route path="/knowledge" component={KnowledgeWorkspaceRoute} />
-      <Route component={NotFound} />
-    </Switch>
+        {/* Protected routes */}
+        <Route path="/chat">
+          {() => (
+            <ProtectedRoute>
+              <AgenticChat />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/admin/*?">
+          {() => (
+            <ProtectedRoute>
+              <AdminWorkspaceRoute />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/knowledge">{() => <KnowledgeWorkspaceRoute />}</Route>
+        <Route>{() => <NotFound />}</Route>
+      </Switch>
+    </Suspense>
   );
 }
 

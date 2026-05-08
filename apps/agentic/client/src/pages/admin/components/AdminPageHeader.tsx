@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { cn, HkiCard } from "@hki/ui";
 import { a, type AdminTone } from "../theme";
+import { SectionPill } from "./primitives";
 
 type AdminPageHeaderStat = {
   label: string;
@@ -41,27 +42,31 @@ export function AdminPageHeader({
       interactive={false}
       elevation="flat"
       size="md"
-      className={cn(a.hero, "relative overflow-hidden rounded-2xl", className)}
+      className={cn(a.hero, "relative overflow-hidden rounded-xl", className)}
     >
       <div className="flex flex-col gap-5 px-6 py-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
-          <p className={a.sectionEyebrow}>{eyebrow}</p>
+          <SectionPill
+            label={eyebrow}
+            icon={Icon}
+            className={cn(a.pillNeutral, "rounded-full")}
+          />
 
           <div className="mt-3 flex items-start gap-4">
             <div
               className={cn(
                 a.iconPrimary,
-                "mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
+                "mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
               )}
             >
               <Icon className="h-5 w-5" />
             </div>
 
             <div className="min-w-0">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground dark:text-foreground/78">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                 {title}
               </h1>
-              <p className="mt-1.5 max-w-3xl text-sm leading-6 text-foreground/68 dark:text-muted-foreground">
+              <p className="mt-1.5 max-w-3xl text-base leading-7 text-muted-foreground">
                 {description}
               </p>
             </div>
@@ -84,10 +89,10 @@ export function AdminPageHeader({
                   STAT_TONE_CLASS[stat.tone ?? "neutral"]
                 )}
               >
-                <span className="text-sm font-semibold tabular-nums text-foreground dark:text-foreground/78">
+                <span className="text-base font-semibold tabular-nums text-foreground">
                   {stat.value}
                 </span>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.16em]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">
                   {stat.label}
                 </span>
               </div>

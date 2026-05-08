@@ -11,7 +11,7 @@
  */
 
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { cn } from "@hki/ui";
 
 // ── Types ────────────────────────────────────────────────────────────────
@@ -108,6 +108,10 @@ function SuggestionTile({ prompt, disabled, onSelect }: SuggestionTileProps) {
         "px-4 py-3.5 sm:flex-1 sm:min-w-0"
       )}
     >
+      <span className="agentic-suggestion-glyph" aria-hidden>
+        <Sparkles className="h-3.5 w-3.5" />
+      </span>
+
       {/* Prompt text */}
       <span className="flex-1 min-w-0 text-[13px] leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors">
         {prompt}

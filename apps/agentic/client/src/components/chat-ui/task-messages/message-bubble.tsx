@@ -140,6 +140,7 @@ export const MessageBubble = memo(function MessageBubble({
               : "agentic-message-bubble-agent",
             isMinimal && "agentic-message-bubble-minimal"
           )}
+          data-variant={isMinimal ? "minimal" : "default"}
         >
           <div className="agentic-message-body text-[0.9375rem] leading-[1.65] tracking-normal text-foreground">
             {children}

@@ -23,10 +23,10 @@ export function SectionPill({
     <span
       className={cn(
         className,
-        "inline-flex items-center gap-2 px-3 py-1.5 text-[12px] font-medium"
+        "inline-flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium"
       )}
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="h-4 w-4" />
       {label}
     </span>
   );
@@ -42,12 +42,12 @@ export function ActionAffordance({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-primary/82",
+        "inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary/82",
         className
       )}
     >
       {label}
-      <ArrowRight className="h-3 w-3" />
+      <ArrowRight className="h-3.5 w-3.5" />
     </span>
   );
 }
@@ -108,7 +108,7 @@ export function DisclosureAffordance({
   closeLabel?: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/72">
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/72">
       {isOpen ? closeLabel : openLabel}
       {isOpen ? (
         <ChevronDown className="h-3.5 w-3.5" />

@@ -118,6 +118,8 @@ export function ArtifactViewer({
 
   const config = typeConfig[artifact.type];
   const Icon = config.icon;
+  const canDownload = Boolean(artifact.url || artifact.content);
+  const previewId = `artifact-preview-${artifact.id}`;
 
   const handleCopy = async () => {
     if (artifact.content) {
@@ -132,6 +134,8 @@ export function ArtifactViewer({
   };
 
   const handleDownload = () => {
+    if (!canDownload) return;
+
     if (artifact.url) {
       window.open(artifact.url, "_blank");
     } else if (artifact.content) {
@@ -149,7 +153,11 @@ export function ArtifactViewer({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-xl border overflow-hidden ${className}`}
+      role="group"
+      aria-label={`Artifact ${artifact.name}`}
+      data-artifact-type={artifact.type}
+      data-expanded={isExpanded ? "true" : "false"}
+      className={`agentic-artifact-viewer rounded-xl border overflow-hidden ${className}`}
       style={{
         background: "var(--card)",
         borderColor: "var(--border)",
@@ -210,6 +218,13 @@ export function ArtifactViewer({
                 onClick={() => setShowPreview(!showPreview)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                aria-label={
+                  showPreview
+                    ? "Hide artifact preview"
+                    : "Show artifact preview"
+                }
+                aria-pressed={showPreview}
+                aria-controls={previewId}
                 className="p-1.5 rounded-lg transition-colors"
                 style={{
                   color: "var(--muted-foreground)",
@@ -230,6 +245,9 @@ export function ArtifactViewer({
                 onClick={handleCopy}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                aria-label={
+                  copied ? "Artifact content copied" : "Copy artifact content"
+                }
                 className="p-1.5 rounded-lg transition-colors"
                 style={{
                   color: copied
@@ -249,9 +267,11 @@ export function ArtifactViewer({
           <motion.button
             type="button"
             onClick={handleDownload}
+            disabled={!canDownload}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="p-1.5 rounded-lg transition-colors"
+            aria-label="Download artifact"
+            className="p-1.5 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-40"
             style={{ color: "var(--muted-foreground)" }}
             title="Download"
           >
@@ -263,6 +283,7 @@ export function ArtifactViewer({
               onClick={() => onOpen(artifact)}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
+              aria-label={`Open ${artifact.name}`}
               className="p-1.5 rounded-lg transition-colors"
               style={{ color: "var(--primary)" }}
               title="Open"
@@ -277,6 +298,7 @@ export function ArtifactViewer({
       <AnimatePresence>
         {showPreview && artifact.content && (
           <motion.div
+            id={previewId}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}

@@ -771,7 +771,7 @@ export function TaskSidebar({
             tabIndex={-1}
             onClick={onToggle}
             title="Open Sidebar (⌘B)"
-            className="absolute inset-y-0 left-0 w-3 z-30 cursor-e-resize"
+            className="agentic-sidebar-collapsed-rail absolute inset-y-0 left-0 w-3 z-30 cursor-e-resize"
           />
         </div>
       )}
@@ -786,7 +786,7 @@ export function TaskSidebar({
             role="navigation"
             aria-label="Tasks"
             className={cn(
-              "agentic-task-sidebar flex flex-col h-full shrink-0 overflow-hidden bg-sidebar/90 backdrop-blur-3xl border-r border-border/50",
+              "agentic-task-sidebar relative flex flex-col h-full shrink-0 overflow-hidden bg-sidebar/90 backdrop-blur-3xl border-r border-border/50",
               isMobile
                 ? "fixed inset-y-0 left-0 z-40 shadow-2xl"
                 : "relative z-20 shadow-lg"
@@ -839,14 +839,14 @@ export function TaskSidebar({
 
               <div
                 ref={scrollContainerRef}
-                className="h-full overflow-y-auto px-2 pb-2"
+                className="agentic-sidebar-scroll h-full overflow-y-auto px-2 pb-2"
               >
                 {isLoading ? (
                   <ConversationListSkeleton />
                 ) : filteredTasks.length === 0 && projects.length === 0 ? (
                   <EmptyState hasSearchQuery={false} query="" />
                 ) : (
-                  <div className="space-y-1">
+                  <div className="agentic-sidebar-list space-y-1">
                     {/* ── Project Folders ── */}
                     {projects.map(project => (
                       <ProjectFolderItem
@@ -999,6 +999,7 @@ export function TaskSidebar({
                   type="button"
                   onClick={() => setShowClearAll(true)}
                   className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium
+                                               agentic-sidebar-clear-button
                                                text-sidebar-muted-foreground hover:text-destructive
                                                hover:bg-destructive/8 transition-all duration-200
                                                border border-transparent hover:border-destructive/20"

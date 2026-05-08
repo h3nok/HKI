@@ -14,7 +14,7 @@
  *  - Scoped autonomy: user decides scope of execution
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap,
@@ -87,6 +87,7 @@ export function AgentPlanCard({
   isExecuting = false,
   className,
 }: AgentPlanCardProps) {
+  const contentId = useId();
   const [isExpanded, setIsExpanded] = useState(true);
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
 
@@ -113,6 +114,10 @@ export function AgentPlanCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      role="group"
+      aria-label={title}
+      data-highest-risk={highestRisk}
+      data-executing={isExecuting ? "true" : "false"}
       className={cn("rounded-xl border overflow-hidden", className)}
       style={{
         background: "var(--card)",
@@ -125,6 +130,8 @@ export function AgentPlanCard({
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={isExpanded}
+        aria-controls={contentId}
         className="w-full flex items-center gap-3 p-3.5 transition-colors"
         style={{
           background: "color-mix(in srgb, var(--primary) 5%, transparent)",
@@ -167,6 +174,7 @@ export function AgentPlanCard({
       <AnimatePresence>
         {isExpanded && (
           <motion.div
+            id={contentId}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -187,6 +195,7 @@ export function AgentPlanCard({
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
+                    data-risk={step.risk}
                     className="rounded-lg border transition-colors mt-1.5"
                     style={{
                       background: isOpen
@@ -198,6 +207,7 @@ export function AgentPlanCard({
                     <button
                       type="button"
                       onClick={() => toggleStep(step.id)}
+                      aria-expanded={isOpen}
                       className="w-full flex items-center gap-2.5 p-2.5 text-left"
                     >
                       {/* Step number */}
@@ -300,6 +310,9 @@ export function AgentPlanCard({
                 type="button"
                 onClick={onApprove}
                 disabled={isExecuting}
+                aria-label={
+                  isExecuting ? "Plan is executing" : "Approve and run plan"
+                }
                 className={cn(
                   "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all",
                   "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -319,7 +332,8 @@ export function AgentPlanCard({
                   type="button"
                   onClick={onEdit}
                   disabled={isExecuting}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all border"
+                  aria-label="Edit proposed plan"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all border disabled:cursor-not-allowed disabled:opacity-50"
                   style={{
                     background: "transparent",
                     color: "var(--foreground)",
@@ -335,7 +349,8 @@ export function AgentPlanCard({
                 type="button"
                 onClick={onReject}
                 disabled={isExecuting}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all"
+                aria-label="Reject proposed plan"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50"
                 style={{
                   background:
                     "color-mix(in srgb, var(--destructive) 10%, transparent)",

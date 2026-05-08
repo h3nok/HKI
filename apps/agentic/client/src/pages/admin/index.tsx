@@ -220,7 +220,14 @@ export default function AdminLayout() {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "18.5rem",
+          "--sidebar-width-icon": "4rem",
+        } as React.CSSProperties
+      }
+    >
       <AdminSidebar />
       <AdminContent />
     </SidebarProvider>
@@ -290,7 +297,7 @@ function AdminSidebar() {
     >
       {/* ── Header: Editorial brand block ── */}
       <SidebarHeader
-        className={cn(isCollapsed ? "px-0 py-3" : "px-4 pt-4 pb-3")}
+        className={cn(isCollapsed ? "px-0 py-3" : "px-4 pt-3.5 pb-2.5")}
       >
         <button
           onClick={() => setLocation("/admin")}
@@ -299,27 +306,27 @@ function AdminSidebar() {
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
             isCollapsed
               ? "w-full justify-center px-0 py-2"
-              : "gap-2.5 px-2.5 py-2.5"
+              : "gap-2 px-2.5 py-2"
           )}
           aria-label="Control Plane Home"
         >
           <div
             className={cn(
               "admin-sidebar-brand-mark-shell relative flex shrink-0 items-center justify-center rounded-xl",
-              isCollapsed ? "size-10" : "size-10"
+              isCollapsed ? "size-9" : "size-9"
             )}
           >
             <OpsIcon
               className="admin-sidebar-brand-mark"
-              size={isCollapsed ? 27 : 28}
+              size={isCollapsed ? 24 : 24}
             />
           </div>
           {!isCollapsed && (
             <div className="admin-sidebar-brand-copy flex min-w-0 flex-col">
-              <span className="admin-sidebar-brand-eyebrow font-mono text-[10px] uppercase tracking-[0.22em] leading-none">
-                Hermetic
+              <span className="admin-sidebar-brand-eyebrow font-mono text-[10px] uppercase tracking-[0.12em] leading-none">
+                HKI Ops
               </span>
-              <span className="admin-sidebar-brand-title mt-0.5 text-[14px] font-extrabold tracking-[-0.01em] leading-tight">
+              <span className="admin-sidebar-brand-title mt-0.5 text-[14px] font-semibold tracking-[-0.005em] leading-tight">
                 Control Plane
               </span>
             </div>
@@ -328,18 +335,18 @@ function AdminSidebar() {
       </SidebarHeader>
 
       {/* ── Navigation: Chapters ── */}
-      <SidebarContent className={cn("pt-1", isCollapsed ? "px-1" : "px-2")}>
+      <SidebarContent className={cn("pt-1.5", isCollapsed ? "px-1.5" : "px-3")}>
         {visibleGroups.map(group => (
-          <SidebarGroup key={group.label} className="shrink-0 py-1">
+          <SidebarGroup key={group.label} className="shrink-0 py-1.5">
             {!isCollapsed && (
-              <div className="px-3 pt-2 pb-1 first:pt-1.5">
-                <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground/70">
+              <div className="px-3.5 pt-2 pb-1.5 first:pt-1.5">
+                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground/72">
                   {group.label}
                 </span>
               </div>
             )}
             <SidebarGroupContent>
-              <SidebarMenu className="gap-0.5">
+              <SidebarMenu className="gap-1.5">
                 {group.items.map(item => {
                   const isExternal =
                     item.path.startsWith("http://") ||
@@ -373,25 +380,25 @@ function AdminSidebar() {
                         }}
                         tooltip={item.label}
                         className={cn(
-                          "admin-sidebar-nav-button group/nav relative text-[13px] font-semibold",
+                          "admin-sidebar-nav-button group/nav relative text-[14px] font-semibold",
                           "rounded-xl transition-colors duration-200",
                           isCollapsed
-                            ? "h-10 w-10 justify-center px-0"
-                            : "h-8 gap-2 px-2"
+                            ? "h-11 w-11 justify-center px-0"
+                            : "h-11 gap-3 px-3.5"
                         )}
                       >
-                        <span className="admin-sidebar-nav-icon flex size-6 shrink-0 items-center justify-center rounded-lg">
-                          <item.icon className="size-3.5 shrink-0" />
+                        <span className="admin-sidebar-nav-icon flex size-7 shrink-0 items-center justify-center rounded-lg">
+                          <item.icon className="size-4 shrink-0" />
                         </span>
                         {!isCollapsed && (
-                          <span className="admin-sidebar-nav-text flex-1 truncate">
+                          <span className="admin-sidebar-nav-text flex-1 truncate text-[14px]">
                             {item.label}
                           </span>
                         )}
                         {!isCollapsed &&
                           item.badgeKey &&
                           badgeCounts[item.badgeKey] != null && (
-                            <span className="admin-sidebar-nav-count ml-auto inline-flex h-4 min-w-4 items-center justify-center rounded-md px-1 font-mono text-[9px] font-semibold tabular-nums">
+                            <span className="admin-sidebar-nav-count ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-md px-1.5 font-mono text-[11px] font-semibold tabular-nums">
                               {badgeCounts[item.badgeKey]}
                             </span>
                           )}
@@ -409,7 +416,7 @@ function AdminSidebar() {
       </SidebarContent>
 
       {/* ── Footer: Quiet bug link + editorial user line ── */}
-      <SidebarFooter className={cn(isCollapsed ? "p-2" : "px-3 pb-2 pt-1.5")}>
+      <SidebarFooter className={cn(isCollapsed ? "p-2.5" : "px-3.5 pb-3 pt-2")}>
         <SidebarMenu className="gap-0.5">
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -417,7 +424,9 @@ function AdminSidebar() {
               tooltip="Open support"
               className={cn(
                 "admin-sidebar-soft-button text-sm font-medium rounded-xl transition-colors duration-150",
-                isCollapsed ? "h-10 w-10 justify-center px-0" : "h-9 gap-3 px-3"
+                isCollapsed
+                  ? "h-11 w-11 justify-center px-0"
+                  : "h-10 gap-3 px-3.5"
               )}
             >
               <LifeBuoy className="size-4 shrink-0" />
@@ -433,26 +442,26 @@ function AdminSidebar() {
                 <SidebarMenuButton
                   size="lg"
                   className={cn(
-                    "admin-sidebar-user-trigger rounded-xl px-2 py-2 transition-colors duration-150"
+                    "admin-sidebar-user-trigger rounded-xl px-2.5 py-2.5 transition-colors duration-150"
                   )}
                 >
                   <div className="relative shrink-0">
-                    <Avatar className="h-8 w-8 rounded-md">
-                      <AvatarFallback className="rounded-md text-[10px] font-bold bg-primary/15 text-primary">
+                    <Avatar className="h-9 w-9 rounded-lg">
+                      <AvatarFallback className="rounded-lg text-[11px] font-bold bg-primary/15 text-primary">
                         {user?.name ? getInitials(user.name) : "U"}
                       </AvatarFallback>
                     </Avatar>
                   </div>
                   <div className="grid flex-1 text-left leading-none">
-                    <span className="truncate text-[13px] font-semibold text-foreground">
+                    <span className="truncate text-[14px] font-semibold text-foreground">
                       {user?.name || "User"}
                     </span>
                     <div className="mt-1 flex items-center gap-1.5">
-                      <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
                         {isAdmin ? "Admin" : "Manager"}
                       </span>
                       <span className="text-muted-foreground/40">·</span>
-                      <span className="truncate text-[10px] text-muted-foreground/70">
+                      <span className="truncate text-[11px] text-muted-foreground/70">
                         {user?.email || ""}
                       </span>
                     </div>
@@ -521,7 +530,7 @@ function AdminSidebar() {
       {!isCollapsed && (
         <div className="px-4 pb-2 pt-1">
           <p
-            className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/50"
+            className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/50"
             title={formatAppVersionTitle("Control Plane", APP_BUILD_INFO)}
           >
             {APP_VERSION_LABEL}
@@ -678,12 +687,12 @@ function AdminContent() {
             onClick={() => setCmdOpen(true)}
             className={cn(
               a.toolbarButton,
-              "hidden h-8 items-center gap-2 rounded-xl px-3 text-xs text-muted-foreground hover:text-foreground sm:flex"
+              "hidden h-9 items-center gap-2 rounded-xl px-3.5 text-sm text-muted-foreground hover:text-foreground sm:flex"
             )}
           >
             <Search className="w-3.5 h-3.5 text-primary" />
             <span className="hidden sm:inline">Search…</span>
-            <kbd className="ml-1 hidden font-mono text-[10px] opacity-60 sm:inline">
+            <kbd className="ml-1 hidden font-mono text-[11px] opacity-60 sm:inline">
               ⌘K
             </kbd>
           </button>

@@ -56,7 +56,7 @@ export function UserFooter({
 
   return (
     <div
-      className="mt-auto px-3 py-2"
+      className="agentic-sidebar-footer mt-auto px-3 py-2"
       style={{
         borderTop:
           "1px solid color-mix(in srgb, var(--sidebar-border) 40%, transparent)",
@@ -88,7 +88,7 @@ export function UserFooter({
       <button
         type="button"
         onClick={handleReportBug}
-        className="mb-2 flex w-full items-center justify-center gap-2 rounded-lg border border-sidebar-border/60 bg-sidebar-accent/40 px-3 py-2 text-xs font-semibold text-sidebar-muted-foreground transition-colors hover:border-primary/25 hover:bg-primary/8 hover:text-sidebar-foreground"
+        className="agentic-sidebar-support-button mb-2 flex w-full items-center justify-center gap-2 rounded-lg border border-sidebar-border/60 bg-sidebar-accent/40 px-3 py-2 text-xs font-semibold text-sidebar-muted-foreground transition-colors hover:border-primary/25 hover:bg-primary/8 hover:text-sidebar-foreground"
       >
         <LifeBuoy className="h-3.5 w-3.5" />
         Support
@@ -96,7 +96,7 @@ export function UserFooter({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5 min-w-0">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-semibold shrink-0"
+            className="agentic-sidebar-avatar w-8 h-8 rounded-lg flex items-center justify-center text-white font-semibold shrink-0"
             style={{ fontSize: 11, background: "var(--sidebar-primary)" }}
           >
             {getInitials()}
@@ -120,7 +120,7 @@ export function UserFooter({
             <TooltipTrigger asChild>
               <button
                 onClick={onOpenSettings}
-                className="p-1.5 rounded-md text-sidebar-muted-foreground hover:text-primary hover:bg-primary/8 transition-colors"
+                className="agentic-sidebar-footer-icon p-1.5 rounded-md text-sidebar-muted-foreground hover:text-primary hover:bg-primary/8 transition-colors"
               >
                 <Settings className="w-4 h-4" />
               </button>
@@ -131,7 +131,7 @@ export function UserFooter({
             <TooltipTrigger asChild>
               <button
                 onClick={handleLogout}
-                className="p-1.5 rounded-md text-sidebar-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                className="agentic-sidebar-footer-icon p-1.5 rounded-md text-sidebar-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
               </button>
