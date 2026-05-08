@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+on_error() {
+  local exit_code=$?
+  local line=${BASH_LINENO[0]:-unknown}
+  printf "[%s] ERROR: Command failed near line %s with exit code %s\n" \
+    "$(date +"%H:%M:%S")" "${line}" "${exit_code}" >&2
+}
+trap on_error ERR
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STATE_DIR="${ROOT_DIR}/.dev"
@@ -8,6 +17,14 @@ LOG_DIR="${STATE_DIR}/logs"
 RUN_DIR="${STATE_DIR}/run"
 
 mkdir -p "${PID_DIR}" "${LOG_DIR}" "${RUN_DIR}"
+
+PYTHON_SERVICES=(knowledge-api ingestion-pipeline orchestrator analytics)
+AUTH_KB_SERVICES=(knowledge-api-auth ingestion-pipeline-auth)
+MANAGED_STATUS_SERVICES=(knowledge-api ingestion-pipeline orchestrator analytics agentic)
+MANAGED_STOP_SERVICES=(analytics orchestrator ingestion-pipeline knowledge-api agentic)
+AUTH_STOP_SERVICES=(ingestion-pipeline-auth knowledge-api-auth)
+INFRA_READY_SERVICES=(mysql redis postgres)
+INFRA_STATUS_SERVICES=(mysql redis postgres litellm)
 
 if command -v docker-compose >/dev/null 2>&1; then
   DOCKER_COMPOSE=(docker-compose)
@@ -61,6 +78,16 @@ service_label() {
   esac
 }
 
+service_dir() {
+  case "$1" in
+    knowledge-api|knowledge-api-auth) echo "${ROOT_DIR}/services/knowledge-api" ;;
+    ingestion-pipeline|ingestion-pipeline-auth) echo "${ROOT_DIR}/services/ingestion-pipeline-service" ;;
+    orchestrator) echo "${ROOT_DIR}/services/orchestrator-service" ;;
+    analytics) echo "${ROOT_DIR}/services/analytics-service" ;;
+    *) error "No service directory mapping for: $1"; exit 1 ;;
+  esac
+}
+
 service_log() {
   printf "%s/%s.log" "${LOG_DIR}" "$1"
 }
@@ -71,6 +98,12 @@ service_pid_file() {
 
 service_runner_file() {
   printf "%s/%s.sh" "${RUN_DIR}" "$1"
+}
+
+service_pid() {
+  local pid_file
+  pid_file="$(service_pid_file "$1")"
+  [[ -f "${pid_file}" ]] && cat "${pid_file}" || true
 }
 
 service_health_url() {
@@ -93,6 +126,7 @@ launch_runner() {
   log_file="$(service_log "${name}")"
 
   local pid
+  printf "\n[%s] launching %s\n" "$(timestamp)" "${name}" >>"${log_file}"
   pid="$(
     python3 - "${runner}" "${log_file}" <<'PY'
 import os
@@ -124,9 +158,66 @@ pid_is_running() {
   kill -0 "${pid}" 2>/dev/null
 }
 
+check_managed_process_alive() {
+  local name="$1"
+  local pid
+  pid="$(service_pid "${name}")"
+  [[ -z "${pid}" ]] && return 0
+  if ! pid_is_running "${pid}"; then
+    error "${name} exited before becoming ready (pid ${pid})"
+    return 1
+  fi
+}
+
 port_listener_pids() {
   local port="$1"
   lsof -tiTCP:"${port}" -sTCP:LISTEN 2>/dev/null || true
+}
+
+tail_service_log() {
+  local name="$1"
+  local log_file
+  log_file="$(service_log "${name}")"
+  if [[ -f "${log_file}" ]]; then
+    tail -n "${DEV_STACK_LOG_TAIL_LINES:-80}" "${log_file}" 2>/dev/null || true
+  else
+    warn "No log file found for ${name}: ${log_file}"
+  fi
+}
+
+preflight_python_service() {
+  local name="$1"
+  local dir
+  dir="$(service_dir "${name}")"
+
+  if [[ ! -d "${dir}" ]]; then
+    error "Missing service directory for ${name}: ${dir}"
+    return 1
+  fi
+  if [[ ! -x "${dir}/.venv/bin/python" ]]; then
+    error "Missing Python venv for ${name}: ${dir}/.venv/bin/python"
+    error "Run: make bootstrap"
+    return 1
+  fi
+  if [[ ! -x "${dir}/.venv/bin/uvicorn" ]]; then
+    error "Missing uvicorn executable for ${name}: ${dir}/.venv/bin/uvicorn"
+    error "Run: make bootstrap"
+    return 1
+  fi
+
+  info "Preflighting ${name}..."
+  (
+    cd "${dir}"
+    PYTHONPATH="${ROOT_DIR}/packages/shared-py:${PYTHONPATH:-}" \
+      ./.venv/bin/python -m compileall -q src
+  )
+}
+
+preflight_services() {
+  local name
+  for name in "$@"; do
+    preflight_python_service "${name}"
+  done
 }
 
 terminate_pid() {
@@ -182,6 +273,7 @@ wait_for_port() {
     if lsof -iTCP:"${port}" -sTCP:LISTEN >/dev/null 2>&1; then
       return 0
     fi
+    check_managed_process_alive "${name}" || return 1
     sleep 1
   done
   error "${name} did not bind to port ${port}"
@@ -203,6 +295,7 @@ wait_for_health() {
     if curl -fsS "${health}" >/dev/null 2>&1; then
       return 0
     fi
+    check_managed_process_alive "${name}" || return 1
     sleep 1
   done
   error "${name} health check did not become ready: ${health}"
@@ -215,13 +308,16 @@ start_knowledge_api() {
   cat >"${runner}" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
-cd "${ROOT_DIR}/knowledge-api"
+cd "${ROOT_DIR}/services/knowledge-api"
 set -a
 [[ -f .env ]] && . ./.env
 set +a
+unset __PYVENV_LAUNCHER__
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
 export ALLOYDB_URL="postgresql://postgres:postgres@localhost:9432/knowledge"
 export AUTH_ENABLED="false"
 export ENVIRONMENT="development"
+export HKI_DEV_RUNTIME_SCOPE="dev"
 export JWT_SECRET="${JWT_SECRET:-local-dev-jwt-secret-67890}"
 export KB_HERMETIC_ISOLATION="true"
 export SERVICE_AUTH_SECRET="${SERVICE_AUTH_SECRET:-local-dev-secret-key-12345}"
@@ -241,10 +337,12 @@ start_knowledge_api_auth() {
   cat >"${runner}" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
-cd "${ROOT_DIR}/knowledge-api"
+cd "${ROOT_DIR}/services/knowledge-api"
 set -a
 [[ -f .env ]] && . ./.env
 set +a
+unset __PYVENV_LAUNCHER__
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
 export ALLOYDB_URL=""
 export ANALYTICS_SERVICE_URL=""
 export AUTH_ENABLED="true"
@@ -267,14 +365,17 @@ start_ingestion_pipeline() {
   cat >"${runner}" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
-cd "${ROOT_DIR}/ingestion-pipeline-service"
+cd "${ROOT_DIR}/services/ingestion-pipeline-service"
 set -a
 [[ -f .env ]] && . ./.env
 set +a
+unset __PYVENV_LAUNCHER__
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
 export KNOWLEDGE_API_URL="http://localhost:9509"
 export REDIS_URL="redis://localhost:9379/0"
 export AUTH_ENABLED="false"
 export ENVIRONMENT="development"
+export HKI_DEV_RUNTIME_SCOPE="dev"
 export JWT_SECRET="${JWT_SECRET:-local-dev-jwt-secret-67890}"
 export KB_HERMETIC_ISOLATION="true"
 export SERVICE_AUTH_SECRET="${SERVICE_AUTH_SECRET:-local-dev-secret-key-12345}"
@@ -294,10 +395,12 @@ start_ingestion_pipeline_auth() {
   cat >"${runner}" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
-cd "${ROOT_DIR}/ingestion-pipeline-service"
+cd "${ROOT_DIR}/services/ingestion-pipeline-service"
 set -a
 [[ -f .env ]] && . ./.env
 set +a
+unset __PYVENV_LAUNCHER__
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
 export ANALYTICS_SERVICE_URL=""
 export AUTH_ENABLED="true"
 export EMBEDDING_GATEWAY_URL=""
@@ -324,10 +427,12 @@ start_orchestrator() {
   cat >"${runner}" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
-cd "${ROOT_DIR}/orchestrator-service"
+cd "${ROOT_DIR}/services/orchestrator-service"
 set -a
 [[ -f .env ]] && . ./.env
 set +a
+unset __PYVENV_LAUNCHER__
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
 export REDIS_URL="redis://localhost:9379/0"
 export AUTH_ENABLED="false"
 export JWT_SECRET="${JWT_SECRET:-local-dev-jwt-secret-67890}"
@@ -344,10 +449,12 @@ start_analytics() {
   cat >"${runner}" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
-cd "${ROOT_DIR}/analytics-service"
+cd "${ROOT_DIR}/services/analytics-service"
 set -a
 [[ -f .env ]] && . ./.env
 set +a
+unset __PYVENV_LAUNCHER__
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
 export ENVIRONMENT="development"
 exec ./.venv/bin/uvicorn src.api.app:app --reload --port 9510 --reload-dir src
 EOF
@@ -372,7 +479,7 @@ start_service() {
   info "Starting ${name}..."
   if ! wait_for_health "${name}"; then
     warn "Startup failed for ${name}; recent log output:"
-    tail -n 40 "$(service_log "${name}")" 2>/dev/null || true
+    tail_service_log "${name}"
     return 1
   fi
   info "${name} is ready on :$(service_port "${name}")"
@@ -395,11 +502,11 @@ stop_service() {
 start_infra() {
   info "Starting local infrastructure..."
   (
-    cd "${ROOT_DIR}/docker-compose"
+    cd "${ROOT_DIR}/deploy/compose"
     "${DOCKER_COMPOSE[@]}" up -d
   ) >/dev/null
 
-  for dep in mysql redis postgres; do
+  for dep in "${INFRA_READY_SERVICES[@]}"; do
     info "Waiting for ${dep} on :$(service_port "${dep}")..."
     wait_for_port "${dep}"
   done
@@ -409,12 +516,12 @@ start_infra() {
 restart_infra() {
   info "Restarting local infrastructure..."
   (
-    cd "${ROOT_DIR}/docker-compose"
+    cd "${ROOT_DIR}/deploy/compose"
     "${DOCKER_COMPOSE[@]}" down
     "${DOCKER_COMPOSE[@]}" up -d
   ) >/dev/null
 
-  for dep in mysql redis postgres; do
+  for dep in "${INFRA_READY_SERVICES[@]}"; do
     info "Waiting for ${dep} on :$(service_port "${dep}")..."
     wait_for_port "${dep}"
   done
@@ -424,7 +531,7 @@ restart_infra() {
 stop_infra() {
   info "Stopping local infrastructure..."
   (
-    cd "${ROOT_DIR}/docker-compose"
+    cd "${ROOT_DIR}/deploy/compose"
     "${DOCKER_COMPOSE[@]}" stop
   ) >/dev/null || true
 }
@@ -462,19 +569,19 @@ show_status() {
   echo ""
   echo "Managed local services"
   echo ""
-  for name in knowledge-api ingestion-pipeline orchestrator analytics agentic; do
+  for name in "${MANAGED_STATUS_SERVICES[@]}"; do
     status_row "${name}"
   done
   echo ""
   echo "Auth validation services"
   echo ""
-  for name in knowledge-api-auth ingestion-pipeline-auth; do
+  for name in "${AUTH_KB_SERVICES[@]}"; do
     status_row "${name}"
   done
   echo ""
   echo "Local infrastructure"
   echo ""
-  for name in mysql redis postgres litellm; do
+  for name in "${INFRA_STATUS_SERVICES[@]}"; do
     status_infra_row "${name}"
   done
   echo ""
@@ -482,40 +589,41 @@ show_status() {
   echo ""
 }
 
-start_managed_stack() {
+start_python_stack() {
+  preflight_services "${PYTHON_SERVICES[@]}"
   start_infra
-  for name in knowledge-api ingestion-pipeline orchestrator analytics; do
+  for name in "${PYTHON_SERVICES[@]}"; do
     stop_service "${name}"
     start_service "${name}"
   done
   ensure_port_released agentic
+}
+
+start_managed_stack() {
+  start_python_stack
 }
 
 start_full_stack() {
-  start_infra
-  for name in knowledge-api ingestion-pipeline orchestrator analytics; do
-    stop_service "${name}"
-    start_service "${name}"
-  done
-  ensure_port_released agentic
+  start_python_stack
 }
 
 start_auth_kb_stack() {
+  preflight_services "${AUTH_KB_SERVICES[@]}"
   start_infra
-  for name in knowledge-api-auth ingestion-pipeline-auth; do
+  for name in "${AUTH_KB_SERVICES[@]}"; do
     stop_service "${name}"
     start_service "${name}"
   done
 }
 
 stop_managed_stack() {
-  for name in analytics orchestrator ingestion-pipeline knowledge-api agentic; do
+  for name in "${MANAGED_STOP_SERVICES[@]}"; do
     stop_service "${name}"
   done
 }
 
 stop_auth_kb_stack() {
-  for name in ingestion-pipeline-auth knowledge-api-auth; do
+  for name in "${AUTH_STOP_SERVICES[@]}"; do
     stop_service "${name}"
   done
 }
@@ -525,6 +633,7 @@ usage() {
 Usage: scripts/dev-stack.sh <command>
 
 Commands:
+  preflight        Validate Python service venvs and source syntax
   start-services   Start infra and Python services in background
   start-full       Start infra + Python services only and free agentic port for foreground UI
   start-kb-auth    Start isolated auth-enabled KB validation services on :9608/:9609
@@ -543,6 +652,9 @@ main() {
     start-services)
       start_managed_stack
       show_status
+      ;;
+    preflight)
+      preflight_services "${PYTHON_SERVICES[@]}"
       ;;
     start-full)
       start_full_stack
@@ -569,9 +681,10 @@ main() {
       show_status
       ;;
     reset)
+      preflight_services "${PYTHON_SERVICES[@]}"
       stop_managed_stack
       restart_infra
-      for name in knowledge-api ingestion-pipeline orchestrator analytics; do
+      for name in "${PYTHON_SERVICES[@]}"; do
         start_service "${name}"
       done
       ensure_port_released agentic

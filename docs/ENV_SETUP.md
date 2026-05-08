@@ -15,7 +15,7 @@ make init-env
 If you want to do it manually instead, the command sequence is:
 
 ```bash
-cp docker-compose/.env.example docker-compose/.env
+cp deploy/compose/.env.example deploy/compose/.env
 cp agentic/.env.example agentic/.env
 cp orchestrator-service/.env.example orchestrator-service/.env
 cp ingestion-pipeline-service/.env.example ingestion-pipeline-service/.env
@@ -33,7 +33,7 @@ make validate-env
 
 | File                              | Purpose                                         | Required before first run                                                         |
 | --------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------- |
-| `docker-compose/.env`             | Shared Docker infra ports and LiteLLM config    | `VERTEX_PROJECT`                                                                  |
+| `deploy/compose/.env`             | Shared Docker infra ports and LiteLLM config    | `VERTEX_PROJECT`                                                                  |
 | `agentic/.env`                    | Agentic BFF, UI, and local MySQL wiring         | `DATABASE_URL`, `ORCHESTRATOR_URL`, `KNOWLEDGE_API_URL`, `KNOWLEDGE_PIPELINE_URL` |
 | `orchestrator-service/.env`       | Orchestrator models, Redis, downstream services | `LLM_GATEWAY_URL`, `KNOWLEDGE_API_URL`                                            |
 | `ingestion-pipeline-service/.env` | Ingestion pipeline, review flow, queue options  | `KNOWLEDGE_API_URL`                                                               |
@@ -44,8 +44,8 @@ make validate-env
 
 Local LiteLLM talks to Vertex AI through the credentials file mounted by Docker Compose.
 
-- Put a service-account key at `docker-compose/creds/gcp_creds.json`
-- Set `VERTEX_PROJECT` in `docker-compose/.env`
+- Put a service-account key at `deploy/compose/creds/gcp_creds.json`
+- Set `VERTEX_PROJECT` in `deploy/compose/.env`
 - Keep `LITELLM_PORT=4000` unless you are deliberately changing every local service URL that points at LiteLLM
 
 ## Local defaults that matter

@@ -38,8 +38,11 @@
 **/.mypy_cache/
 **/.eslintcache
 
+# Terraform — provider binaries are large and should not be committed
+**/.terraform/providers/
+
 # GCP credentials
-docker-compose/creds/
+deploy/compose/creds/
 **/gcp_creds.json
 **/service-account*.json
 
@@ -65,3 +68,7 @@ coverage/
 *.bak
 *.swp
 *.swo
+
+# HKI evidence registry artifact (built by scripts/build-conformance-registry.mjs)
+/conformance.json
+scripts/publish-kit/out/

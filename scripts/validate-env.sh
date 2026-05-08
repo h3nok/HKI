@@ -85,17 +85,17 @@ warn_on_local_port_mismatch() {
 
 printf "Checking AI Platform local environment files in %s\n\n" "${ROOT_DIR}"
 
-if env_file_exists "docker-compose/.env"; then
-  require_value "docker-compose/.env" "VERTEX_PROJECT" "GCP project for local LiteLLM and Vertex AI"
+if env_file_exists "deploy/compose/.env"; then
+  require_value "deploy/compose/.env" "VERTEX_PROJECT" "GCP project for local LiteLLM and Vertex AI"
 
-  if [[ ! -f "${ROOT_DIR}/docker-compose/creds/gcp_creds.json" ]]; then
-    warn "docker-compose/creds/gcp_creds.json is missing. Model-backed local flows will fail until this file is present."
+  if [[ ! -f "${ROOT_DIR}/deploy/compose/creds/gcp_creds.json" ]]; then
+    warn "deploy/compose/creds/gcp_creds.json is missing. Model-backed local flows will fail until this file is present."
   else
-    ok "Found docker-compose/creds/gcp_creds.json"
+    ok "Found deploy/compose/creds/gcp_creds.json"
   fi
 
   warn_on_local_port_mismatch \
-    "docker-compose/.env" \
+    "deploy/compose/.env" \
     "LITELLM_PORT" \
     "4000" \
     "Local docs and service defaults assume LiteLLM is on port 4000."

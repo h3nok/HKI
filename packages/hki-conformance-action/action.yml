@@ -1,0 +1,150 @@
+name: HKI Conformance
+description: |
+  Run the full HKI conformance gate against a repository — static audit,
+  conformance cases, threat catalog, optional HTTP probe — and emit a
+  signed `conformance.json` evidence artifact.
+
+  Use as a required check on PRs to enforce that no change ships unless it
+  meets the HKI standard at the level claimed by `min-level`.
+
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  min-level:
+    description: |
+      Minimum acceptable conformance level. One of:
+        L0-non-conformant | L1-passing | L2-baseline | L3-evidenced
+      The action fails if the produced level is below this threshold.
+    required: false
+    default: "L2-baseline"
+  python-version:
+    description: Python version used for hki-runtime-py / threats / litellm / langchain.
+    required: false
+    default: "3.12"
+  node-version:
+    description: Node version used for the JS gates.
+    required: false
+    default: "20"
+  pnpm-version:
+    description: pnpm version.
+    required: false
+    default: "10.0.0"
+  probe-url:
+    description: |
+      Optional HTTP base URL of a deployed system to probe with `hki-probe`.
+      If empty, the probe step is skipped.
+    required: false
+    default: ""
+  output-path:
+    description: Path to write the evidence artifact to.
+    required: false
+    default: "conformance.json"
+  upload-artifact:
+    description: When 'true', upload `conformance.json` as a workflow artifact.
+    required: false
+    default: "true"
+
+outputs:
+  level:
+    description: The conformance level produced by this run.
+    value: ${{ steps.gate.outputs.level }}
+  passed:
+    description: '"true" if all conformance cases passed; "false" otherwise.'
+    value: ${{ steps.gate.outputs.passed }}
+  artifact-path:
+    description: Filesystem path of the produced conformance.json.
+    value: ${{ steps.gate.outputs.artifact }}
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install uv
+      shell: bash
+      run: pip install --upgrade uv
+
+    - name: Install JS dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Sync hki-runtime-py
+      shell: bash
+      run: cd packages/hki-runtime-py && uv sync --extra dev
+
+    - name: Static audit (audit:hki)
+      shell: bash
+      run: pnpm audit:hki
+
+    - name: Conformance cases (verify:hki-conformance)
+      shell: bash
+      run: pnpm verify:hki-conformance
+
+    - name: Runtime tests
+      shell: bash
+      run: |
+        pnpm test:hki-runtime
+        pnpm test:hki-runtime-py
+        pnpm test:hki-litellm
+        pnpm test:hki-langchain
+        pnpm test:hki-threats
+
+    - name: Optional HTTP probe
+      if: inputs.probe-url != ''
+      shell: bash
+      run: |
+        node packages/hki-conformance/dist/probe.js \
+          --base-url "${{ inputs.probe-url }}" \
+          --json --out probe-evidence.json || true
+
+    - name: Build evidence registry
+      id: gate
+      shell: bash
+      run: |
+        node scripts/build-conformance-registry.mjs --out="${{ inputs.output-path }}"
+        level=$(node -e "const r=require('./${{ inputs.output-path }}'); process.stdout.write(r.level)")
+        passed=$(node -e "const r=require('./${{ inputs.output-path }}'); process.stdout.write(String(r.conformance.overallPassed===true))")
+        echo "level=$level" >> "$GITHUB_OUTPUT"
+        echo "passed=$passed" >> "$GITHUB_OUTPUT"
+        echo "artifact=${{ inputs.output-path }}" >> "$GITHUB_OUTPUT"
+
+    - name: Enforce min-level
+      shell: bash
+      env:
+        LEVEL: ${{ steps.gate.outputs.level }}
+        MIN: ${{ inputs.min-level }}
+      run: |
+        order="L0-non-conformant L1-passing L2-baseline L3-evidenced"
+        rank() { echo "$order" | tr ' ' '\n' | nl -ba | awk -v t="$1" '$2==t{print $1}'; }
+        actual=$(rank "$LEVEL")
+        wanted=$(rank "$MIN")
+        if [ -z "$actual" ] || [ -z "$wanted" ]; then
+          echo "::error::Unknown level: actual=$LEVEL wanted=$MIN"
+          exit 1
+        fi
+        if [ "$actual" -lt "$wanted" ]; then
+          echo "::error::HKI level $LEVEL is below required $MIN"
+          exit 1
+        fi
+        echo "HKI level $LEVEL meets minimum $MIN"
+
+    - name: Upload conformance artifact
+      if: inputs.upload-artifact == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: hki-conformance-registry
+        path: ${{ inputs.output-path }}
+        if-no-files-found: error

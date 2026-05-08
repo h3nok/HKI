@@ -189,7 +189,7 @@ async function callOrchestrator(payload: {
 The orchestrator connects to knowledge-api as an **MCP server**, treating it like a tool provider:
 
 ```python
-# orchestrator-service/src/adapters/mcp_client.py
+# services/orchestrator-service/src/adapters/mcp_client.py
 from mcp import ClientSession, StdioServerParameters
 
 async def connect_to_knowledge_mcp():
@@ -266,7 +266,7 @@ async function uploadDocument(
 **Purpose**: Store processed chunks, embeddings, metadata
 
 ```python
-# ingestion-pipeline-service/src/domain/pipeline.py
+# services/ingestion-pipeline-service/src/domain/pipeline.py
 async def store_chunks(chunks: list[Chunk]):
     async with httpx.AsyncClient() as client:
         response = await client.post(
@@ -300,7 +300,7 @@ async def store_chunks(chunks: list[Chunk]):
 **Purpose**: All LLM calls (routing, rate limiting, guardrails)
 
 ```python
-# orchestrator-service/src/adapters/llm_client.py
+# services/orchestrator-service/src/adapters/llm_client.py
 from openai import AsyncOpenAI
 
 client = AsyncOpenAI(

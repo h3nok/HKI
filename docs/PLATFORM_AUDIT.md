@@ -202,7 +202,7 @@ Architecture doc describes 4 core services. **Analytics Service is a 5th service
 Based on the architecture document, these items are specified but were not confirmed as fully implemented:
 
 - **SAML auth** — Architecture mentions "OAuth/SAML"; only Google OAuth is implemented
-- **DLP / PII detection** in LiteLLM guardrails — Architecture lists this as a LiteLLM benefit; not confirmed in `litellm-gateway/config.yaml`
+- **DLP / PII detection** in LiteLLM guardrails — Architecture lists this as a LiteLLM benefit; not confirmed in `services/litellm-gateway/config.yaml`
 - **Langfuse spend tracking** — LiteLLM integration exists but cost cap configuration unverified
 - **Ingestion webhook** from Pipeline to BFF — Architecture shows BFF polling or webhook for `document.indexed`; only polling confirmed
 

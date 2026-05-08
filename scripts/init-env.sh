@@ -109,7 +109,7 @@ normalize_exact_value() {
 
 printf "Bootstrapping AI Platform local env files in %s\n\n" "${ROOT_DIR}"
 
-copy_if_missing "docker-compose/.env.example" "docker-compose/.env"
+copy_if_missing "deploy/compose/.env.example" "deploy/compose/.env"
 copy_if_missing "agentic/.env.example" "agentic/.env"
 copy_if_missing "orchestrator-service/.env.example" "orchestrator-service/.env"
 copy_if_missing "ingestion-pipeline-service/.env.example" "ingestion-pipeline-service/.env"
@@ -130,7 +130,7 @@ append_key_from_example_if_missing \
   "ANALYTICS_SERVICE_URL"
 
 normalize_exact_value \
-  "docker-compose/.env" \
+  "deploy/compose/.env" \
   "LITELLM_PORT" \
   "9400" \
   "4000" \

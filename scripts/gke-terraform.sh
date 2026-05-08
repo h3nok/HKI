@@ -11,13 +11,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AI_PLATFORM_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-TF_DIR="${TF_DIR:-$AI_PLATFORM_DIR/k8s/tf}"
+TF_DIR="${TF_DIR:-$AI_PLATFORM_DIR/deploy/k8s/tf}"
 TERRAFORM_BIN="${TERRAFORM_BIN:-terraform}"
 DRY_RUN="${DRY_RUN:-false}"
 TF_RECONFIGURE="${TF_RECONFIGURE:-true}"
 TF_BACKEND="${TF_BACKEND:-true}"
 TF_AUTO_APPROVE="${TF_AUTO_APPROVE:-true}"
-DEPLOY_ENV_FILE="${DEPLOY_ENV_FILE:-$AI_PLATFORM_DIR/.env.deploy}"
+DEPLOY_ENV_FILE="${DEPLOY_ENV_FILE:-$AI_PLATFORM_DIR/deploy/.env.deploy}"
 
 log_info() { echo "[INFO] $1"; }
 log_success() { echo "[OK] $1"; }

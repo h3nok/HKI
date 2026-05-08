@@ -8,13 +8,17 @@ const root = process.cwd();
 const args = new Set(process.argv.slice(2));
 const strict = args.has("--strict");
 const update = args.has("--update");
-const baselinePath = path.join(root, "scripts", "hki-conformance-audit-baseline.json");
+const baselinePath = path.join(
+  root,
+  "scripts",
+  "hki-conformance-audit-baseline.json"
+);
 
 const scanRoots = [
   "agentic/server",
-  "knowledge-api/src",
-  "ingestion-pipeline-service/src",
-  "orchestrator-service/src",
+  "services/knowledge-api/src",
+  "services/ingestion-pipeline-service/src",
+  "services/orchestrator-service/src",
   "shared",
 ];
 
@@ -22,6 +26,9 @@ const ignoredPathParts = [
   "/node_modules/",
   "/dist/",
   "/.turbo/",
+  "/.venv/",
+  "/venv/",
+  "/site-packages/",
   "/coverage/",
   "/__pycache__/",
   "/tests/",
@@ -45,25 +52,65 @@ const rules = [
     id: "runtime-global-default",
     pattern:
       /\b(?:scope|scopes|stream_id|streamId|active_domain|activeDomain)\s*(?::\s*[\w.[\] |]+)?=\s*(?:Field\([^)]*default\s*=\s*)?["']global["']|\bdefault\s*=\s*["']global["']/g,
-    message: "Runtime scope must not default to global on HKI-conformant paths.",
+    message:
+      "Runtime scope must not default to global on HKI-conformant paths.",
   },
   {
     id: "implicit-global-fallback",
     pattern:
       /\b(?:or|\?\?)\s*(?:GLOBAL_SCOPE|["']global["'])|\belse\s+(?:GLOBAL_SCOPE|["']global["'])|\|\|\s*(?:GLOBAL_SCOPE|["']global["'])/g,
-    message: "Use fail-closed handling or explicit admin-plane routing instead of global fallback.",
+    message:
+      "Use fail-closed handling or explicit admin-plane routing instead of global fallback.",
   },
   {
     id: "global-copy-contract",
-    pattern: /\b(?:org-global|global fallback|global documents|unscoped documents|null means org-global)\b/gi,
-    message: "Shared knowledge should be explicit publication, not org-global runtime visibility.",
+    pattern:
+      /\b(?:org-global|global fallback|global documents|unscoped documents|null means org-global)\b/gi,
+    message:
+      "Shared knowledge should be explicit publication, not org-global runtime visibility.",
   },
   {
     id: "nullable-domain-query",
-    pattern: /\b(?:domain|scope|stream|value_stream)[\w."]*\s+IS\s+NULL\b|\bOR\b[^;\n]*(?:domain|scope|stream|value_stream)[\w."]*\s*=\s*["']global["']/gi,
+    pattern:
+      /\b(?:domain|scope|stream|value_stream)[\w."]*\s+IS\s+NULL\b|\bOR\b[^;\n]*(?:domain|scope|stream|value_stream)[\w."]*\s*=\s*["']global["']/gi,
     message: "Runtime queries must reject null/global wildcard visibility.",
   },
+  {
+    id: "wildcard-domain-literal",
+    pattern:
+      /\b(?:domain|active_domain|activeDomain|published_domains|publishedDomains)\s*[:=]\s*["']\*["']/g,
+    message:
+      "Wildcard '*' is not a valid runtime domain. Use exact domain or explicit publication.",
+  },
+  {
+    id: "body-scope-trust",
+    // Match body/payload/input/args/kwargs reading domain-like fields, but exclude
+    // `request.scope` / `req.scope` (ASGI scope) and JWT-style `scope` claims.
+    pattern:
+      /\b(?:body|payload|input|inputs|args|kwargs)\s*[\[.](?:get\(\s*)?["']?(?:active_domain|activeDomain|stream_id|streamId)["']?/g,
+    message:
+      "Reading scope/domain from request body trusts caller input. Use signed envelope; pass body to reject_conflicting_scope_argument.",
+  },
+  {
+    id: "cache-key-no-envelope",
+    pattern:
+      /\b(?:cache|CACHE)\s*\[\s*(?:f?["'][^"']*\{(?:query|prompt|text|model)[^"']*\}["']|(?:query|prompt|text|model_route)\b)/g,
+    message:
+      "Cache keys must derive from HKI envelope (use deriveHkiCacheKey / derive_hki_cache_key).",
+  },
+  {
+    id: "envelope-less-job-payload",
+    pattern:
+      /\b(?:enqueue|publish|send_task|delay|apply_async|push)\s*\(\s*\{[^}]*\}\s*\)/g,
+    message:
+      "Async job payloads must thread the HKI envelope so workers can re-validate on resume (HKI-T04).",
+  },
 ];
+
+const advisoryRules = new Set([
+  "envelope-less-job-payload",
+  "cache-key-no-envelope",
+]);
 
 function walk(dir) {
   const abs = path.join(root, dir);
@@ -123,13 +170,13 @@ const summary = findings.reduce(
     acc.byRule[finding.rule] = (acc.byRule[finding.rule] ?? 0) + 1;
     return acc;
   },
-  { total: 0, byRule: {} },
+  { total: 0, byRule: {} }
 );
 
 if (update) {
   fs.writeFileSync(
     baselinePath,
-    `${JSON.stringify({ generatedAt: new Date().toISOString(), ...summary }, null, 2)}\n`,
+    `${JSON.stringify({ generatedAt: new Date().toISOString(), ...summary }, null, 2)}\n`
   );
   console.log(`Updated HKI conformance audit baseline: ${baselinePath}`);
 }
@@ -147,7 +194,7 @@ for (const [rule, count] of Object.entries(summary.byRule).sort()) {
 
 for (const finding of findings.slice(0, 40)) {
   console.log(
-    `${finding.file}:${finding.line} ${finding.rule} ${JSON.stringify(finding.sample)}`,
+    `${finding.file}:${finding.line} ${finding.rule} ${JSON.stringify(finding.sample)}`
   );
 }
 if (findings.length > 40) {
@@ -161,7 +208,7 @@ if (strict && summary.total > 0) {
 
 if (!strict && baseline && summary.total > baseline.total) {
   console.error(
-    `HKI conformance debt increased from baseline ${baseline.total} to ${summary.total}.`,
+    `HKI conformance debt increased from baseline ${baseline.total} to ${summary.total}.`
   );
   process.exit(1);
 }

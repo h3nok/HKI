@@ -29,6 +29,7 @@ export type {
   ActionButtonProps,
   SendButtonProps,
   InteractionState,
+  PromptRuntimeTone,
   PromptInputSize,
   Attachment,
   AttachmentStatus,

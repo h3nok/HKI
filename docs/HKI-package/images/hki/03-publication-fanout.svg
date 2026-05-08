@@ -91,7 +91,13 @@
   <text class="num" x="140" y="219" text-anchor="middle">1</text>
   <rect class="card shared" x="100" y="236" width="280" height="140" rx="24" />
   <text class="chip shared-text" x="136" y="272">Source</text>
-  <text x="240" y="298" text-anchor="middle" font-size="18">📦</text>
+  <!-- Document icon -->
+  <g transform="translate(240,296)">
+    <rect x="-13" y="-14" width="26" height="30" rx="3" fill="var(--shared-fill)" stroke="var(--shared-stroke)" stroke-width="2"/>
+    <line x1="-8" y1="-5" x2="8" y2="-5" stroke="var(--shared-stroke)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-8" y1="1" x2="8" y2="1" stroke="var(--shared-stroke)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-8" y1="7" x2="3" y2="7" stroke="var(--shared-stroke)" stroke-width="2" stroke-linecap="round"/>
+  </g>
   <text class="title shared-text" x="240" y="324" text-anchor="middle">Curated master artifact</text>
   <text class="body" x="240" y="348" text-anchor="middle">
     <tspan x="240" dy="0">Central product, policy, or reference</tspan>
@@ -103,7 +109,13 @@
   <text class="num" x="456" y="219" text-anchor="middle">2</text>
   <rect class="card policy" x="430" y="236" width="320" height="180" rx="24" />
   <text class="chip policy-text" x="466" y="272">Controlled bridge</text>
-  <text x="590" y="298" text-anchor="middle" font-size="18">🔍</text>
+  <!-- Review/inspect icon -->
+  <g transform="translate(590,296)">
+    <circle cx="-3" cy="-3" r="9" fill="none" stroke="var(--policy-stroke)" stroke-width="2.2"/>
+    <line x1="4" y1="4" x2="12" y2="12" stroke="var(--policy-stroke)" stroke-width="2.2" stroke-linecap="round"/>
+    <line x1="-7" y1="-3" x2="1" y2="-3" stroke="var(--policy-stroke)" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="-3" y1="-7" x2="-3" y2="1" stroke="var(--policy-stroke)" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
   <text class="title policy-text" x="590" y="326" text-anchor="middle">Publication workflow</text>
   <text class="body" x="590" y="350" text-anchor="middle">
     <tspan x="590" dy="0">Review policy, choose destinations,</tspan>
@@ -143,7 +155,12 @@
   <!-- Runtime rule card -->
   <rect class="card warn" x="1130" y="258" width="220" height="300" rx="22" />
   <text class="chip warn-text" x="1164" y="290">Runtime rule</text>
-  <text x="1240" y="320" text-anchor="middle" font-size="18">⚠</text>
+  <!-- Warning triangle -->
+  <g transform="translate(1240,316)">
+    <path d="M 0,-13 L 14,11 L -14,11 Z" fill="none" stroke="var(--warn-stroke)" stroke-width="2" stroke-linejoin="round"/>
+    <line x1="0" y1="-6" x2="0" y2="3" stroke="var(--warn-stroke)" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="0" cy="7" r="1.8" fill="var(--warn-stroke)"/>
+  </g>
   <text class="title warn-text" x="1240" y="350" text-anchor="middle">No implicit</text>
   <text class="title warn-text" x="1240" y="374" text-anchor="middle">cross-domain reads</text>
   <text class="body" x="1240" y="404" text-anchor="middle">

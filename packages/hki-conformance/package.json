@@ -21,10 +21,12 @@
   "files": [
     "dist",
     "templates",
+    "schemas",
     "README.md"
   ],
   "bin": {
-    "hki-conformance": "./dist/cli.js"
+    "hki-conformance": "./dist/cli.js",
+    "hki-probe": "./dist/probe.js"
   },
   "exports": {
     ".": {

@@ -1,0 +1,51 @@
+{
+  "name": "hki",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "HKI \u2014 Hermetic Knowledge Isolation runtime, conformance, and framework adapters.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-hki/hki.git"
+  },
+  "homepage": "https://github.com/open-hki/hki",
+  "bugs": "https://github.com/open-hki/hki/issues",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "build:hki-runtime": "pnpm --dir packages/hki-runtime build",
+    "build:hki-conformance": "pnpm --dir packages/hki-conformance build",
+    "audit:hki": "node scripts/audit-hki-conformance.mjs",
+    "audit:hki:strict": "node scripts/audit-hki-conformance.mjs --strict",
+    "audit:hki-ast": "uv run --with libcst python scripts/hki_ast_audit.py",
+    "audit:hki-ast:strict": "uv run --with libcst python scripts/hki_ast_audit.py --strict-internal",
+    "audit:hki-ast-ts": "node scripts/hki-ast-audit-ts.mjs",
+    "audit:hki-ast-ts:strict": "node scripts/hki-ast-audit-ts.mjs --strict-internal",
+    "test:hki-runtime": "pnpm --dir packages/hki-runtime test",
+    "typecheck:hki-runtime": "pnpm --dir packages/hki-runtime typecheck",
+    "test:hki-runtime-py": "cd packages/hki-runtime-py && uv run --extra dev pytest -q",
+    "test:hki-litellm": "cd packages/hki-litellm && uv run --extra dev pytest -q",
+    "test:hki-langchain": "cd packages/hki-langchain && uv run --extra dev pytest -q",
+    "test:hki-llamaindex": "cd packages/hki-llamaindex && uv run --extra dev pytest -q",
+    "test:hki-adk": "cd packages/hki-adk && uv run --extra dev pytest -q",
+    "test:hki-autogen": "cd packages/hki-autogen && uv run --extra dev pytest -q",
+    "test:hki-crewai": "cd packages/hki-crewai && uv run --extra dev pytest -q",
+    "test:hki-adapters": "pnpm test:hki-litellm && pnpm test:hki-langchain && pnpm test:hki-llamaindex && pnpm test:hki-adk && pnpm test:hki-autogen && pnpm test:hki-crewai",
+    "test:hki-integration": "cd packages/hki-integration-tests && uv run --extra dev pytest -q",
+    "test:hki-threats": "cd packages/hki-runtime-py && uv run --extra dev pytest -q ../../examples/threats",
+    "test:hki-conformance": "pnpm --dir packages/hki-conformance test",
+    "verify:hki-conformance": "pnpm build:hki-runtime && pnpm build:hki-conformance && pnpm --dir packages/hki-conformance conformance",
+    "registry:build": "node scripts/build-conformance-registry.mjs",
+    "demo:hki": "uv run --project packages/hki-integration-tests python examples/end_to_end_demo.py"
+  },
+  "devDependencies": {
+    "turbo": "^2.8.19",
+    "typescript": "^6.0.3"
+  },
+  "packageManager": "pnpm@10.0.0"
+}

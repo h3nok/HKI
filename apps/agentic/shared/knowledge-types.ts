@@ -9,11 +9,11 @@
  * never see Python naming.
  *
  * Source of truth:
- *   knowledge-api/src/domain/models.py
+ *   services/knowledge-api/src/domain/models.py
  *   knowledge-pipeline-service/src/domain/models.py
- *   knowledge-api/src/domain/evaluation.py
- *   knowledge-api/src/domain/taxonomy.py
- *   knowledge-api/src/domain/context_shaping.py
+ *   services/knowledge-api/src/domain/evaluation.py
+ *   services/knowledge-api/src/domain/taxonomy.py
+ *   services/knowledge-api/src/domain/context_shaping.py
  *   knowledge-pipeline-service/src/domain/versioning.py
  *   knowledge-pipeline-service/src/domain/synthesis.py
  *   knowledge-pipeline-service/src/domain/review.py

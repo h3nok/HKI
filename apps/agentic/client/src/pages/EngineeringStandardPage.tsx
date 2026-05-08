@@ -1,30 +1,33 @@
-import { useCallback, type ReactNode } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
+import { ArrowLeft, Clock, Moon, Sun } from "lucide-react";
+import { HkiMark, Topbar, cn, hub } from "@hki/ui";
+
 import { usePageMeta } from "@/hooks/usePageMeta";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { ArrowLeft, ArrowUpRight, BookOpen, Moon, Sun } from "lucide-react";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  HkiMark,
-  Topbar,
-  cn,
-  hub,
-} from "@hki/ui";
-import { AgenticGrid } from "@/pages/landing/agentic-grid";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
   ENGINEERING_HUB_ROUTE,
   HKI_STANDARD_ROUTE,
 } from "@/pages/engineering/constants";
 
-import hkiPaper from "../../../../../docs/HKI-package/HERMETIC-KNOWLEDGE-ISOLATION.md?raw";
+import { Breadcrumb } from "@/pages/engineering/components/Breadcrumb";
+import { ContractPills } from "@/pages/engineering/components/ContractPills";
+import { SectionLede } from "@/pages/engineering/components/SectionLede";
+import { RiskCard } from "@/pages/engineering/components/RiskCard";
+import { AutonomyLadder } from "@/pages/engineering/components/AutonomyLadder";
+import { RuntimeContractDiagram } from "@/pages/engineering/components/RuntimeContractDiagram";
+import { DocumentOutline } from "@/pages/engineering/components/DocumentOutline";
+import { OnThisPage } from "@/pages/engineering/components/OnThisPage";
+import { ArticleFooter } from "@/pages/engineering/components/ArticleFooter";
+import { ArticleMarkdown } from "@/pages/engineering/components/ArticleMarkdown";
+import {
+  useActiveHeading,
+  useDocumentOutline,
+} from "@/pages/engineering/components/useDocumentOutline";
+import { stripDuplicateSections } from "@/pages/engineering/markdown/stripDuplicateSections";
+import { RISK_SCENARIOS } from "@/pages/engineering/data/riskScenarios";
+
+import hkiPaperRaw from "../../../../../docs/HKI-package/HERMETIC-KNOWLEDGE-ISOLATION.md?raw";
 import hkiStoryUrl from "../../../../../docs/HKI-package/images/hki/06-hki-story.svg";
 import runtimePlaneUrl from "../../../../../docs/HKI-package/images/hki/01-runtime-vs-admin-plane.svg";
 import requestFlowUrl from "../../../../../docs/HKI-package/images/hki/02-request-flow.svg";
@@ -41,227 +44,77 @@ const IMAGE_URLS: Record<string, string> = {
   "images/hki/06-hki-story.svg": hkiStoryUrl,
 };
 
-const KEY_SECTIONS = [
-  { label: "TL;DR", href: "#tldr" },
-  { label: "System Model", href: "#system-model" },
-  { label: "Reference Architecture", href: "#reference-architecture" },
-  { label: "Implementation Surface", href: "#implementation-surface" },
-  { label: "Conformance Tests", href: "#conformance-and-regression-tests" },
-  { label: "Migration Path", href: "#adoption-and-migration-path" },
-] as const;
+const HKI_PAPER = stripDuplicateSections(hkiPaperRaw);
+const READING_TIME_MIN = Math.max(
+  1,
+  Math.ceil(HKI_PAPER.split(/\s+/).filter(Boolean).length / 220)
+);
 
-function textFromNode(node: ReactNode): string {
-  if (typeof node === "string" || typeof node === "number") {
-    return String(node);
-  }
-
-  if (Array.isArray(node)) {
-    return node.map(textFromNode).join("");
-  }
-
-  if (node && typeof node === "object" && "props" in node) {
-    return textFromNode(
-      (node as { props?: { children?: ReactNode } }).props?.children
-    );
-  }
-
-  return "";
-}
-
-function slugify(value: ReactNode) {
-  return textFromNode(value)
-    .toLowerCase()
-    .replace(/&/g, " and ")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-const markdownComponents = {
-  h1({ children }: { children?: ReactNode }) {
-    return (
-      <h1
-        id={slugify(children)}
-        className="mb-5 mt-0 max-w-3xl text-3xl font-black tracking-normal text-foreground sm:text-4xl"
-      >
-        {children}
-      </h1>
-    );
-  },
-  h2({ children }: { children?: ReactNode }) {
-    return (
-      <h2
-        id={slugify(children)}
-        className="max-w-3xl scroll-mt-28 border-t border-border/50 pt-10 text-2xl font-black tracking-normal text-foreground"
-      >
-        {children}
-      </h2>
-    );
-  },
-  h3({ children }: { children?: ReactNode }) {
-    return (
-      <h3
-        id={slugify(children)}
-        className="max-w-3xl scroll-mt-28 text-lg font-extrabold tracking-normal text-foreground"
-      >
-        {children}
-      </h3>
-    );
-  },
-  p({ children }: { children?: ReactNode }) {
-    return (
-      <p className="my-4 max-w-3xl leading-7 text-foreground/84">{children}</p>
-    );
-  },
-  a({ href, children }: { href?: string; children?: ReactNode }) {
-    const isExternal = href?.startsWith("http");
-    return (
-      <a
-        href={href}
-        target={isExternal ? "_blank" : undefined}
-        rel={isExternal ? "noopener noreferrer" : undefined}
-        className="inline-flex items-center gap-1 font-semibold text-primary underline decoration-primary/30 underline-offset-4 transition-colors hover:text-primary/80 hover:decoration-primary/60"
-      >
-        {children}
-        {isExternal && <ArrowUpRight className="h-3.5 w-3.5" />}
-      </a>
-    );
-  },
-  img({ src, alt }: { src?: string; alt?: string }) {
-    const resolvedSrc = src ? (IMAGE_URLS[src] ?? src) : undefined;
-
-    return (
-      <img
-        src={resolvedSrc}
-        alt={alt ?? ""}
-        loading="lazy"
-        className="my-6 w-full rounded-md border border-border/60 bg-white p-3 shadow-sm dark:bg-white"
-      />
-    );
-  },
-  blockquote({ children }: { children?: ReactNode }) {
-    return (
-      <blockquote className="my-6 max-w-3xl rounded-md border-l-4 border-primary bg-primary/6 px-5 py-3 text-foreground/88">
-        {children}
-      </blockquote>
-    );
-  },
-  ul({ children }: { children?: ReactNode }) {
-    return (
-      <ul className="my-4 max-w-3xl list-disc space-y-2 pl-6 marker:text-primary/70">
-        {children}
-      </ul>
-    );
-  },
-  ol({ children }: { children?: ReactNode }) {
-    return (
-      <ol className="my-4 max-w-3xl list-decimal space-y-2 pl-6 marker:font-bold marker:text-primary/70">
-        {children}
-      </ol>
-    );
-  },
-  li({ children }: { children?: ReactNode }) {
-    return <li className="pl-1 leading-7 text-foreground/84">{children}</li>;
-  },
-  table({ children }: { children?: ReactNode }) {
-    return (
-      <div className="my-6 overflow-x-auto rounded-md border border-border/60 bg-card/80 shadow-sm">
-        <table className="min-w-full text-left text-sm">{children}</table>
-      </div>
-    );
-  },
-  th({ children }: { children?: ReactNode }) {
-    return (
-      <th className="border-b border-border/70 bg-muted/60 px-4 py-3 text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
-        {children}
-      </th>
-    );
-  },
-  td({ children }: { children?: ReactNode }) {
-    return (
-      <td className="border-b border-border/40 px-4 py-3 align-top leading-6 text-foreground/82">
-        {children}
-      </td>
-    );
-  },
-  code({ children }: { children?: ReactNode }) {
-    return (
-      <code className="rounded bg-muted/70 px-1.5 py-0.5 font-mono text-[0.9em] text-primary">
-        {children}
-      </code>
-    );
-  },
-  pre({ children }: { children?: ReactNode }) {
-    return (
-      <pre className="my-5 max-w-4xl overflow-x-auto rounded-md border border-border/60 bg-zinc-950 p-4 text-sm leading-6 text-zinc-100 shadow-sm">
-        {children}
-      </pre>
-    );
-  },
-  hr() {
-    return <hr className="my-8 border-border/70" />;
-  },
-};
+const PRINTABLE_BRIEF_HREF =
+  "https://github.com/innovationlab/Hki/blob/main/docs/HKI-package/HKI-EXECUTIVE-BRIEF.md";
+const SOURCE_HREF =
+  "https://github.com/innovationlab/Hki/tree/main/docs/HKI-package";
 
 export default function EngineeringStandardPage() {
-  usePageMeta("HKI Standard Architecture");
+  usePageMeta("HKI Standard · Architecture");
   const [, setLocation] = useLocation();
   const { theme, toggleTheme } = useTheme();
+
   const navigate = useCallback(
     (path: string) => setLocation(path),
     [setLocation]
   );
 
-  return (
-    <div className={hub.page}>
-      <AgenticGrid />
+  const articleRef = useRef<HTMLElement>(null);
+  const outline = useDocumentOutline(articleRef, [HKI_PAPER]);
+  const headingIds = useMemo(() => outline.map(n => n.id), [outline]);
+  const activeId = useActiveHeading(headingIds);
 
+  return (
+    <div className={cn(hub.page, "bg-background")}>
       <Topbar
         variant="blur"
         showMenuTrigger={false}
-        className="border-border/60! bg-background/88! backdrop-blur"
+        className="border-b border-border/50! bg-background! shadow-none!"
         leftContent={
-          <a
-            href={ENGINEERING_HUB_ROUTE}
-            onClick={event => {
-              event.preventDefault();
-              navigate(ENGINEERING_HUB_ROUTE);
-            }}
-            className="flex items-center gap-3 transition-colors hover:text-primary"
-          >
-            <HkiMark size={28} variant="color" />
-            <div className="flex flex-col">
-              <span className="text-[13px] font-extrabold uppercase tracking-normal text-foreground">
-                HKI Standard
-              </span>
-              <span className="mt-1 text-[11px] font-medium uppercase tracking-normal text-muted-foreground">
-                Architecture Reader
-              </span>
-            </div>
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href={ENGINEERING_HUB_ROUTE}
+              onClick={e => {
+                e.preventDefault();
+                navigate(ENGINEERING_HUB_ROUTE);
+              }}
+              className="flex shrink-0 items-center transition-opacity hover:opacity-80"
+              aria-label="Engineering hub"
+            >
+              <HkiMark size={26} variant="color" />
+            </a>
+            <Breadcrumb
+              trail={[
+                {
+                  label: "Hub",
+                  href: ENGINEERING_HUB_ROUTE,
+                  onNavigate: () => navigate(ENGINEERING_HUB_ROUTE),
+                },
+                { label: "HKI Standard", href: HKI_STANDARD_ROUTE },
+              ]}
+            />
+          </div>
         }
         actions={
           <div className="flex items-center gap-2">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="hidden rounded-md sm:inline-flex"
+            <button
+              type="button"
+              onClick={() => navigate(ENGINEERING_HUB_ROUTE)}
+              className="hidden items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground sm:inline-flex"
             >
-              <a
-                href={ENGINEERING_HUB_ROUTE}
-                onClick={event => {
-                  event.preventDefault();
-                  navigate(ENGINEERING_HUB_ROUTE);
-                }}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Hub
-              </a>
-            </Button>
+              <ArrowLeft className="h-4 w-4" />
+              Hub
+            </button>
             <button
               type="button"
               onClick={toggleTheme}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
               aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
             >
               {theme === "light" ? (
@@ -277,108 +130,127 @@ export default function EngineeringStandardPage() {
       <main
         className={cn(
           hub.pageInner,
-          "relative z-10 mx-auto w-full max-w-7xl px-5 py-8 sm:px-6 lg:px-8 lg:py-10"
+          "relative z-10 mx-auto w-full max-w-300 px-5 pt-7 pb-12 sm:px-8"
         )}
       >
-        <div className="mb-6 flex flex-col gap-4 border-b border-border/70 pb-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <Badge
-              variant="outline"
-              className="mb-4 rounded-md border-primary/35 bg-primary/8 text-primary tracking-normal"
-            >
-              HKI Package
-            </Badge>
-            <h1 className="max-w-3xl text-4xl font-extrabold leading-tight tracking-normal text-foreground sm:text-5xl">
-              Standard Reader
-            </h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
-              The architecture writeup is the canonical read path: runtime
-              model, threat model, reference architecture, implementation
-              surface, and conformance bar in one artifact.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" size="sm" className="rounded-md">
-              <a
-                href={ENGINEERING_HUB_ROUTE}
-                onClick={event => {
-                  event.preventDefault();
-                  navigate(ENGINEERING_HUB_ROUTE);
-                }}
+        <div className="grid gap-10 lg:grid-cols-[200px_minmax(0,1fr)] xl:grid-cols-[200px_minmax(0,1fr)_180px]">
+          <DocumentOutline nodes={outline} activeId={activeId} />
+
+          <article
+            ref={articleRef}
+            className="mx-auto min-w-0 w-full max-w-[80ch]"
+            aria-labelledby="hki-article-title"
+          >
+            {/* Hero */}
+            <header className="mb-14">
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+                Enterprise AI Isolation · v1.0
+              </p>
+              <h1
+                id="hki-article-title"
+                className="text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-[44px]"
               >
-                <ArrowLeft className="h-4 w-4" />
-                Engineering
-              </a>
-            </Button>
-            <Button asChild size="sm" className="rounded-md">
-              <a href="#reference-architecture">
-                <BookOpen className="h-4 w-4" />
-                Architecture
-              </a>
-            </Button>
-          </div>
-        </div>
+                Hermetic Knowledge Isolation
+              </h1>
+              <p className="mt-5 text-lg leading-8 text-muted-foreground">
+                A runtime contract for enterprise agentic systems: every
+                artifact belongs to one domain, every request runs in one active
+                domain, and shared knowledge appears only through explicit
+                publication — never silent global fallback.
+              </p>
 
-        <nav className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-          {KEY_SECTIONS.map(section => (
-            <a
-              key={section.href}
-              href={section.href}
-              className="shrink-0 rounded-md border border-border/65 bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/35 hover:text-foreground"
-            >
-              {section.label}
-            </a>
-          ))}
-        </nav>
+              <ContractPills className="mt-6" />
 
-        <div className="grid w-full gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-          <aside className="hidden lg:block">
-            <Card className="sticky top-24">
-              <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-sm tracking-normal">
-                  Read Path
-                </CardTitle>
-                <CardDescription>
-                  Jump to the architecture and conformance sections.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-2">
-                <nav className="space-y-1">
-                  {KEY_SECTIONS.map(section => (
-                    <a
-                      key={section.href}
-                      href={section.href}
-                      className="block rounded-md px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/35 hover:text-foreground"
-                    >
-                      {section.label}
-                    </a>
-                  ))}
-                </nav>
-                <div className="mt-3 border-t border-border/60 p-3">
-                  <p className="text-[11px] font-medium uppercase tracking-normal text-muted-foreground">
-                    Contract
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-foreground">
-                    One active domain. Exact-domain visibility. No global
-                    fallback.
-                  </p>
+              <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-success/35 bg-success/[0.08] px-2.5 py-0.5 font-bold uppercase tracking-[0.12em] text-success">
+                  <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                  Published
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />~{READING_TIME_MIN} min read
+                </span>
+                <span>By Henok Ghebrechristos, PhD</span>
+              </div>
+            </header>
+
+            {/* Executive Brief */}
+            <section aria-labelledby="executive-brief">
+              <SectionLede
+                id="executive-brief"
+                eyebrow="Executive Brief"
+                title="Autonomy changes the threat model."
+                takeaway="Once agents rewrite, remember, retrieve, call tools, and start jobs, isolation stops being a database filter — it becomes the execution boundary that keeps autonomy from becoming cross-domain action."
+              />
+              <div className="mt-8 space-y-5">
+                {RISK_SCENARIOS.map((s, i) => (
+                  <RiskCard key={s.id} scenario={s} index={i} />
+                ))}
+              </div>
+
+              <div className="mt-12">
+                <SectionLede
+                  id="autonomy-ladder"
+                  eyebrow="Why a primitive, not a filter"
+                  title="Autonomy and isolation move together."
+                  takeaway="The more an agent can do, the less safe it is to treat scope as a hint. Each stage adds capability — and the isolation requirement that has to ship with it."
+                />
+                <div className="mt-6">
+                  <AutonomyLadder />
                 </div>
-              </CardContent>
-            </Card>
-          </aside>
+              </div>
+            </section>
 
-          <Card className="min-w-0">
-            <CardContent className="p-5 sm:p-8 lg:p-10">
-              <article className="standard-reader max-w-none">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={markdownComponents}
-                >
-                  {hkiPaper}
-                </ReactMarkdown>
-              </article>
-            </CardContent>
-          </Card>
+            {/* Interactive Runtime Contract */}
+            <section aria-labelledby="runtime-contract" className="mt-20">
+              <SectionLede
+                id="runtime-contract"
+                eyebrow="System Model · Interactive"
+                title="One signed envelope, every step."
+                takeaway="Click any stage of the request lifecycle to see what happens there and the boundary HKI enforces. The active domain is decided once at the gateway and travels — never gets re-derived — through retrieval, cache, graph, tools, and jobs."
+              />
+              <div className="mt-8">
+                <RuntimeContractDiagram />
+              </div>
+            </section>
+
+            {/* Full standard (markdown body) */}
+            <section aria-labelledby="full-standard" className="mt-20">
+              <SectionLede
+                id="full-standard"
+                eyebrow="Full Standard"
+                title="The complete contract."
+                takeaway="The remainder of the document covers system model, reference architecture, implementation surface, conformance tests, and the migration path."
+              />
+              <div className="mt-6">
+                <ArticleMarkdown source={HKI_PAPER} imageUrls={IMAGE_URLS} />
+              </div>
+            </section>
+
+            <ArticleFooter
+              links={[
+                {
+                  label: "Open printable brief",
+                  href: PRINTABLE_BRIEF_HREF,
+                  icon: "printable",
+                  external: true,
+                },
+                {
+                  label: "View source",
+                  href: SOURCE_HREF,
+                  icon: "source",
+                  external: true,
+                },
+                {
+                  label: "Back to Engineering Hub",
+                  href: ENGINEERING_HUB_ROUTE,
+                  icon: "hub",
+                  onNavigate: () => navigate(ENGINEERING_HUB_ROUTE),
+                },
+              ]}
+            />
+          </article>
+
+          <OnThisPage nodes={outline} activeId={activeId} />
         </div>
       </main>
     </div>

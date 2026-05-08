@@ -18,7 +18,7 @@ You're further along than the architecture doc implies. These are already runnin
 | Component | GCP Service | Evidence |
 |---|---|---|
 | **BFF database (MySQL)** | **Cloud SQL for MySQL** | `cloud-sql-proxy` sidecar in `agentic/k8s/deployment.yaml`; instance `p-642-cilab-demo:us-west1:agentic-db` |
-| **Vector store (PostgreSQL + pgvector)** | **AlloyDB** | PSC endpoint `10.1.0.6` (knowledge-api-db-psc-endpoint) — noted in `knowledge-api/k8s/deployment.yaml` |
+| **Vector store (PostgreSQL + pgvector)** | **AlloyDB** | PSC endpoint `10.1.0.6` (knowledge-api-db-psc-endpoint) — noted in `services/knowledge-api/k8s/deployment.yaml` |
 | **Cache / memory / job state** | **Memorystore for Redis** | `REDIS_URL` patched from Terraform outputs at deploy time (`deploy-k8s.sh`) |
 | **Container images** | **Artifact Registry** | `us-west1-docker.pkg.dev/p-642-cilab-infrastructure/cilab/` |
 | **CI/CD** | **Cloud Build** | `cloudbuild.yaml` in every service |
@@ -30,7 +30,7 @@ You're further along than the architecture doc implies. These are already runnin
 | **HTTPS ingress + TLS** | **Cloud Load Balancing + Google-managed cert** | `agentic/k8s/ingress.yaml`; cert for `agentic.cilabs.np.hki.com` |
 | **WAF** | **Cloud Armor** | `BackendConfig` in ingress references `agentic-waf` security policy — **needs the `gcloud` commands run to activate** |
 | **LLM observability** | **Langfuse Cloud** | `VITE_LANGFUSE_URL: https://cloud.langfuse.com` in production configmap |
-| **PII/DLP** | **Cloud DLP** | Configured in `litellm-gateway/config.yaml` `dlp_guardrail_config` — **callbacks disabled, needs one line to activate** |
+| **PII/DLP** | **Cloud DLP** | Configured in `services/litellm-gateway/config.yaml` `dlp_guardrail_config` — **callbacks disabled, needs one line to activate** |
 | **Compute** | **GKE Standard** | `namespace: platform`; multi-zone topology spread on all deployments |
 
 ---
@@ -50,7 +50,7 @@ Your orchestrator uses Google ADK, which is natively designed to deploy to **Ver
 - Integrated with Vertex AI Tracing and Evaluation
 
 ```python
-# orchestrator-service/src/domain/agent.py — deploy like this instead of FastAPI pod:
+# services/orchestrator-service/src/domain/agent.py — deploy like this instead of FastAPI pod:
 from google.adk.agents import Agent
 from vertexai.preview import reasoning_engines
 
@@ -127,7 +127,7 @@ This eliminates the round-trip: ingestion-pipeline → LiteLLM gateway → Verte
 
 ### 2E. Vertex AI Evaluation Service
 
-You have custom RAGAS-style evaluation in `knowledge-api/src/domain/evaluation.py` and `llm_judge.py`. Vertex AI Evaluation provides managed:
+You have custom RAGAS-style evaluation in `services/knowledge-api/src/domain/evaluation.py` and `llm_judge.py`. Vertex AI Evaluation provides managed:
 
 - Pointwise metrics (coherence, fluency, groundedness, instruction-following)
 - Pairwise comparison between model versions
@@ -146,14 +146,14 @@ eval_task = EvalTask(
 result = eval_task.evaluate(model=your_model)
 ```
 
-**Replace**: `knowledge-api/src/domain/llm_judge.py` — identical purpose, managed infrastructure.
+**Replace**: `services/knowledge-api/src/domain/llm_judge.py` — identical purpose, managed infrastructure.
 
 ### 2F. Gemini 2.5 Flash / Pro — Add to LiteLLM Config Now
 
-Your `litellm-gateway/config.yaml` only has `gemini-2.0-flash`. Gemini 2.5 is a major quality leap — especially for agent reasoning and long-context retrieval:
+Your `services/litellm-gateway/config.yaml` only has `gemini-2.0-flash`. Gemini 2.5 is a major quality leap — especially for agent reasoning and long-context retrieval:
 
 ```yaml
-# Add to litellm-gateway/config.yaml model_list:
+# Add to services/litellm-gateway/config.yaml model_list:
 - model_name: gemini-2.5-flash
   litellm_params:
     model: vertex_ai/gemini-2.5-flash-preview-05-20
@@ -219,10 +219,10 @@ No code changes. No deployment. The GKE ingress will pick it up immediately.
 
 ### 3B. Cloud DLP — One Line to Activate
 
-DLP is fully configured in `litellm-gateway/config.yaml` — project ID, info types, redaction rules. It's just not enabled in callbacks:
+DLP is fully configured in `services/litellm-gateway/config.yaml` — project ID, info types, redaction rules. It's just not enabled in callbacks:
 
 ```yaml
-# litellm-gateway/config.yaml — change:
+# services/litellm-gateway/config.yaml — change:
 # success_callback: ["langfuse"]
 # failure_callback: ["langfuse"]
 
@@ -322,7 +322,7 @@ WHERE e.entity_id = @entity_id
 RETURN related.name, related.type;
 ```
 
-**What changes**: `knowledge-api/src/adapters/neo4j_graph.py` → `spanner_graph.py`. Query syntax is GQL (similar to Cypher). No more Neo4j pod to manage, backup, or patch.
+**What changes**: `services/knowledge-api/src/adapters/neo4j_graph.py` → `spanner_graph.py`. Query syntax is GQL (similar to Cypher). No more Neo4j pod to manage, backup, or patch.
 
 ### 5B. Cloud Run Jobs — Ingestion Workers
 
@@ -382,8 +382,8 @@ All existing K8s manifests (Deployment, Service, HPA, PDB) work unchanged on Aut
 
 ### Immediate (no code change, configuration only)
 1. **Activate Cloud Armor WAF** — `gcloud` commands already documented in `ingress.yaml`
-2. **Enable Cloud DLP callbacks** — one line in `litellm-gateway/config.yaml`
-3. **Add Gemini 2.5 Flash/Pro** — two entries in `litellm-gateway/config.yaml`
+2. **Enable Cloud DLP callbacks** — one line in `services/litellm-gateway/config.yaml`
+3. **Add Gemini 2.5 Flash/Pro** — two entries in `services/litellm-gateway/config.yaml`
 4. **Enable Managed Prometheus** — one `gcloud` command on the cluster
 5. **Enable AlloyDB AI** — `CREATE EXTENSION google_ml_integration` on the AlloyDB instance
 

@@ -114,8 +114,11 @@
       <tspan x="34" dy="16">retrieval, graph traversal, or tool use begins.</tspan>
     </text>
 
-    <!-- Shield icon -->
-    <text x="1008" y="50" font-size="30" text-anchor="middle">🛡</text>
+    <!-- Shield icon (SVG path) -->
+    <g transform="translate(1008,36)">
+      <path d="M 0,-16 L 14,-9 L 14,3 C 14,12 0,19 0,19 C 0,19 -14,12 -14,3 L -14,-9 Z" fill="var(--safe-fill)" stroke="var(--safe-stroke)" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M -5,3 L -1.5,7 L 6.5,-3" fill="none" stroke="var(--safe-stroke)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
 
     <!-- Principal -->
     <circle class="num-bg" cx="68" cy="148" r="14" />
@@ -165,8 +168,11 @@
       <tspan x="608" dy="16">must stay label-preserving.</tspan>
     </text>
 
-    <!-- Domain A store -->
-    <text x="884" y="368" text-anchor="middle" font-size="18">✓</text>
+    <!-- Domain A store checkmark -->
+    <g transform="translate(884,368)">
+      <circle cx="0" cy="0" r="10" fill="var(--safe-stroke)" opacity="0.18"/>
+      <path d="M -4.5,0 L -1.5,3.5 L 5.5,-4" fill="none" stroke="var(--safe-stroke)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
     <rect class="card safe" x="766" y="386" width="236" height="96" rx="22" />
     <text class="card-title safe-text" x="884" y="424" text-anchor="middle">Domain A store</text>
     <text class="card-body" x="884" y="448" text-anchor="middle">
@@ -174,8 +180,12 @@
       <tspan x="884" dy="16">are visible at runtime.</tspan>
     </text>
 
-    <!-- Domain B store (blocked) -->
-    <text x="884" y="536" text-anchor="middle" font-size="18">🚫</text>
+    <!-- Domain B store blocked symbol -->
+    <g transform="translate(884,536)">
+      <circle cx="0" cy="0" r="10" fill="var(--danger-fill)" stroke="var(--danger-stroke)" stroke-width="2"/>
+      <line x1="-6" y1="-6" x2="6" y2="6" stroke="var(--danger-stroke)" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="6" y1="-6" x2="-6" y2="6" stroke="var(--danger-stroke)" stroke-width="2.2" stroke-linecap="round"/>
+    </g>
     <rect class="card danger" x="766" y="556" width="236" height="96" rx="22" />
     <text class="card-title danger-text" x="884" y="594" text-anchor="middle">Domain B store</text>
     <text class="card-body" x="884" y="618" text-anchor="middle">
@@ -220,8 +230,15 @@
       <tspan x="34" dy="16">a live end-user request.</tspan>
     </text>
 
-    <!-- Admin icon -->
-    <text x="436" y="50" font-size="26" text-anchor="middle">⚙</text>
+    <!-- Settings icon (SVG path) -->
+    <g transform="translate(436,42)">
+      <circle cx="0" cy="0" r="12" fill="none" stroke="var(--muted)" stroke-width="2.5"/>
+      <circle cx="0" cy="0" r="5" fill="var(--surface)" stroke="var(--muted)" stroke-width="2"/>
+      <line x1="0" y1="-12" x2="0" y2="-17" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="0" y1="12" x2="0" y2="17" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="12" y1="0" x2="17" y2="0" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="-12" y1="0" x2="-17" y2="0" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
 
     <!-- Admin auditor -->
     <rect class="card shared" x="36" y="184" width="196" height="96" rx="22" />
@@ -249,7 +266,12 @@
 
     <!-- Warning banner card -->
     <rect class="card warn" x="56" y="536" width="370" height="110" rx="22" />
-    <text x="241" y="570" text-anchor="middle" font-size="18">⚠</text>
+    <!-- Warning triangle -->
+    <g transform="translate(241,566)">
+      <path d="M 0,-13 L 13,10 L -13,10 Z" fill="none" stroke="var(--warn-stroke)" stroke-width="2" stroke-linejoin="round"/>
+      <line x1="0" y1="-6" x2="0" y2="2" stroke="var(--warn-stroke)" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="0" cy="6" r="1.5" fill="var(--warn-stroke)"/>
+    </g>
     <text class="card-title warn-text" x="241" y="594" text-anchor="middle">Admin ≠ runtime access</text>
     <text class="card-body" x="241" y="618" text-anchor="middle">
       <tspan x="241" dy="0">This plane may inspect many domains,</tspan>

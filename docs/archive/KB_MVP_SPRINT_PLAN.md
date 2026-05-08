@@ -180,7 +180,7 @@ Multi-tenancy, access control, and data isolation are **already production-grade
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ---- | ------ |
 | 5.1 | **Verify AlloyDB terraform plan** — Run `terraform plan` for knowledge-api/tf/ to ensure AlloyDB cluster, PSC, and IAM bindings are correct. Fix any drift.               | `knowledge-api/tf/`                 | M    | ☐      |
 | 5.2 | **Verify ingestion pipeline terraform** — Ensure Cloud Tasks, Pub/Sub, GCS bucket configs are correct. Check Redis/Memorystore config.                                    | `ingestion-pipeline-service/tf/`    | M    | ☐      |
-| 5.3 | **Test docker-compose local stack** — Bring up full stack (postgres, neo4j, redis, pubsub-emulator, mysql, litellm) and verify all services connect. Document any issues. | `docker-compose/docker-compose.yml` | M    | ☐      |
+| 5.3 | **Test docker-compose local stack** — Bring up full stack (postgres, neo4j, redis, pubsub-emulator, mysql, litellm) and verify all services connect. Document any issues. | `deploy/compose/docker-compose.yml` | M    | ☐      |
 | 5.4 | **Centralize service URLs in config** — `knowledge.ts` server router uses hardcoded URLs. Move `KNOWLEDGE_PIPELINE_URL` and `VECTOR_STORE_URL` to shared env config.      | `agentic/server/knowledge.ts`       | S    | ☐      |
 
 #### Day 9–10: E2E Testing & Launch Prep

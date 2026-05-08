@@ -91,4 +91,71 @@ jobs:
 
       - run: pnpm audit:ui-tokens
       - run: pnpm audit:hki
+      - run: pnpm audit:hki-ast-ts
       - run: pnpm verify:hki-conformance
+
+  hki-python:
+    name: HKI Python Gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install --upgrade uv
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Sync hki-runtime-py (with dev extras)
+        run: cd packages/hki-runtime-py && uv sync --extra dev
+
+      - run: pnpm test:hki-runtime-py
+      - run: pnpm test:hki-litellm
+      - run: pnpm test:hki-langchain
+      - run: pnpm test:hki-llamaindex
+      - run: pnpm test:hki-adk
+      - run: pnpm test:hki-autogen
+      - run: pnpm test:hki-crewai
+      - run: pnpm test:hki-integration
+      - run: pnpm test:hki-threats
+      - run: pnpm audit:hki-ast
+
+      - name: Build evidence registry
+        run: pnpm registry:build
+
+      - name: Upload conformance.json
+        uses: actions/upload-artifact@v4
+        with:
+          name: hki-conformance-registry
+          path: conformance.json
+          if-no-files-found: error
+
+  hki-gate:
+    name: HKI Gate (required)
+    runs-on: ubuntu-latest
+    needs: [quality, typecheck, test, conformance, hki-python]
+    if: always()
+    steps:
+      - name: Verify all HKI gates passed
+        run: |
+          if [ "${{ needs.quality.result }}" != "success" ] \
+            || [ "${{ needs.typecheck.result }}" != "success" ] \
+            || [ "${{ needs.test.result }}" != "success" ] \
+            || [ "${{ needs.conformance.result }}" != "success" ] \
+            || [ "${{ needs.hki-python.result }}" != "success" ]; then
+            echo "::error::One or more HKI gates failed"
+            exit 1
+          fi
+          echo "All HKI gates green."

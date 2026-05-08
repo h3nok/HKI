@@ -1,5 +1,7 @@
 {
-  "generatedAt": "2026-05-04T23:00:40.678Z",
-  "total": 0,
-  "byRule": {}
+  "generatedAt": "2026-05-07T02:10:06.245Z",
+  "total": 19,
+  "byRule": {
+    "body-scope-trust": 19
+  }
 }

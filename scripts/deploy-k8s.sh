@@ -1,5 +1,6 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -Eeuo pipefail
+IFS=$'\n\t'
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # AI Platform — GKE Deployment Script
@@ -24,7 +25,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AI_PLATFORM_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-K8S_DIR="$AI_PLATFORM_DIR/k8s"
+K8S_DIR="$AI_PLATFORM_DIR/deploy/k8s"
 TF_DIR="$K8S_DIR/tf"
 
 # ── Configuration ─────────────────────────────────────────────────────────────
@@ -40,7 +41,7 @@ SKIP_TF="${SKIP_TF:-false}"
 SKIP_BUILD="${SKIP_BUILD:-false}"
 APPLY_GKE_INGRESS="${APPLY_GKE_INGRESS:-false}"
 BUILD_MODE="${BUILD_MODE:-auto}"
-CLOUD_BUILD_SERVICE_ACCOUNT="${CLOUD_BUILD_SERVICE_ACCOUNT-projects/${HUB_PROJECT_ID}/serviceAccounts/cloudrun-sa@${HUB_PROJECT_ID}.iam.gserviceaccount.com}"
+CLOUD_BUILD_SERVICE_ACCOUNT="${CLOUD_BUILD_SERVICE_ACCOUNT:-projects/${HUB_PROJECT_ID}/serviceAccounts/cloudrun-sa@${HUB_PROJECT_ID}.iam.gserviceaccount.com}"
 REDIS_INSTANCE_NAME="${REDIS_INSTANCE_NAME:-platform-redis}"
 REDIS_DB_INDEX="${REDIS_DB_INDEX:-0}"
 IMAGE_TAG="${IMAGE_TAG:-$(git -C "$AI_PLATFORM_DIR" rev-parse --short HEAD 2>/dev/null || date +%Y%m%d%H%M%S)}"
@@ -157,10 +158,10 @@ get_cluster_credentials() {
 
 service_cloudbuild_config() {
     case "$1" in
-        knowledge-api)      echo "knowledge-api/cloudbuild.yaml" ;;
-        orchestrator)       echo "orchestrator-service/cloudbuild.yaml" ;;
-        ingestion-pipeline) echo "ingestion-pipeline-service/cloudbuild.yaml" ;;
-        analytics)          echo "analytics-service/cloudbuild.yaml" ;;
+        knowledge-api)      echo "services/knowledge-api/cloudbuild.yaml" ;;
+        orchestrator)       echo "services/orchestrator-service/cloudbuild.yaml" ;;
+        ingestion-pipeline) echo "services/ingestion-pipeline-service/cloudbuild.yaml" ;;
+        analytics)          echo "services/analytics-service/cloudbuild.yaml" ;;
         agentic-bff)        echo "apps/agentic/cloudbuild.yaml" ;;
         *) return 1 ;;
     esac
@@ -168,10 +169,10 @@ service_cloudbuild_config() {
 
 service_dockerfile() {
     case "$1" in
-        knowledge-api)      echo "knowledge-api/Dockerfile" ;;
-        orchestrator)       echo "orchestrator-service/Dockerfile" ;;
-        ingestion-pipeline) echo "ingestion-pipeline-service/Dockerfile" ;;
-        analytics)          echo "analytics-service/Dockerfile" ;;
+        knowledge-api)      echo "services/knowledge-api/Dockerfile" ;;
+        orchestrator)       echo "services/orchestrator-service/Dockerfile" ;;
+        ingestion-pipeline) echo "services/ingestion-pipeline-service/Dockerfile" ;;
+        analytics)          echo "services/analytics-service/Dockerfile" ;;
         agentic-bff)        echo "apps/agentic/Dockerfile" ;;
         *) return 1 ;;
     esac
@@ -662,21 +663,21 @@ apply_all_manifests() {
 
     # 3. Services in dependency order
     if [ -z "$ONLY_SERVICE" ] || [ "$ONLY_SERVICE" = "knowledge-api" ]; then
-        apply_service "knowledge-api" "$AI_PLATFORM_DIR/knowledge-api/k8s"
+        apply_service "knowledge-api" "$AI_PLATFORM_DIR/services/knowledge-api/k8s"
         restart_deployment "knowledge-api"
         wait_for_rollout "knowledge-api"
         check_pod_health "knowledge-api"
     fi
 
     if [ -z "$ONLY_SERVICE" ] || [ "$ONLY_SERVICE" = "analytics" ]; then
-        apply_service "analytics" "$AI_PLATFORM_DIR/analytics-service/k8s"
+        apply_service "analytics" "$AI_PLATFORM_DIR/services/analytics-service/k8s"
         restart_deployment "analytics"
         wait_for_rollout "analytics"
         check_pod_health "analytics"
     fi
 
     if [ -z "$ONLY_SERVICE" ] || [ "$ONLY_SERVICE" = "ingestion-pipeline" ]; then
-        apply_service "ingestion-pipeline" "$AI_PLATFORM_DIR/ingestion-pipeline-service/k8s"
+        apply_service "ingestion-pipeline" "$AI_PLATFORM_DIR/services/ingestion-pipeline-service/k8s"
         restart_deployment "ingestion-pipeline"
         restart_deployment "ingestion-pipeline-worker"
         wait_for_rollout "ingestion-pipeline"
@@ -687,7 +688,7 @@ apply_all_manifests() {
     fi
 
     if [ -z "$ONLY_SERVICE" ] || [ "$ONLY_SERVICE" = "orchestrator" ]; then
-        apply_service "orchestrator" "$AI_PLATFORM_DIR/orchestrator-service/k8s"
+        apply_service "orchestrator" "$AI_PLATFORM_DIR/services/orchestrator-service/k8s"
         restart_deployment "orchestrator"
         wait_for_rollout "orchestrator"
         check_pod_health "orchestrator"

@@ -100,7 +100,11 @@
     <text class="num" x="130" y="-1" text-anchor="middle">1</text>
     <rect class="card warn" x="0" y="16" width="260" height="160" rx="22" />
     <text class="chip warn-text" x="30" y="48">Phase 1</text>
-    <text x="130" y="76" text-anchor="middle" font-size="18">🏷</text>
+    <!-- Tag icon -->
+    <g transform="translate(130,72)">
+      <rect x="-12" y="-9" width="24" height="18" rx="4" fill="none" stroke="var(--warn-stroke)" stroke-width="2"/>
+      <circle cx="7" cy="0" r="2.5" fill="var(--warn-stroke)"/>
+    </g>
     <text class="phase warn-text" x="130" y="102" text-anchor="middle">Label artifacts</text>
     <text class="body" x="130" y="126" text-anchor="middle">
       <tspan x="130" dy="0">Assign domain ownership</tspan>
@@ -114,7 +118,11 @@
     <text class="num" x="130" y="-1" text-anchor="middle">2</text>
     <rect class="card safe" x="0" y="16" width="260" height="160" rx="22" />
     <text class="chip safe-text" x="30" y="48">Phase 2</text>
-    <text x="130" y="76" text-anchor="middle" font-size="18">🚪</text>
+    <!-- Gateway/door icon -->
+    <g transform="translate(130,72)">
+      <rect x="-11" y="-13" width="22" height="26" rx="2" fill="none" stroke="var(--safe-stroke)" stroke-width="2"/>
+      <circle cx="6" cy="1" r="2" fill="var(--safe-stroke)"/>
+    </g>
     <text class="phase safe-text" x="130" y="102" text-anchor="middle">Resolve active domain</text>
     <text class="body" x="130" y="126" text-anchor="middle">
       <tspan x="130" dy="0">Teach the gateway to select</tspan>
@@ -128,7 +136,11 @@
     <text class="num" x="130" y="-1" text-anchor="middle">3</text>
     <rect class="card policy" x="0" y="16" width="260" height="160" rx="22" />
     <text class="chip policy-text" x="30" y="48">Phase 3</text>
-    <text x="130" y="76" text-anchor="middle" font-size="18">📨</text>
+    <!-- Envelope/propagate icon -->
+    <g transform="translate(130,72)">
+      <rect x="-13" y="-9" width="26" height="18" rx="3" fill="none" stroke="var(--policy-stroke)" stroke-width="2"/>
+      <path d="M -13,-9 L 0,3 L 13,-9" fill="none" stroke="var(--policy-stroke)" stroke-width="2" stroke-linejoin="round"/>
+    </g>
     <text class="phase policy-text" x="130" y="102" text-anchor="middle">Propagate scope envelope</text>
     <text class="body" x="130" y="126" text-anchor="middle">
       <tspan x="130" dy="0">Carry labels through tools,</tspan>
@@ -142,7 +154,11 @@
     <text class="num" x="130" y="-1" text-anchor="middle">4</text>
     <rect class="card shared" x="0" y="16" width="260" height="160" rx="22" />
     <text class="chip shared-text" x="30" y="48">Phase 4</text>
-    <text x="130" y="76" text-anchor="middle" font-size="18">🛡</text>
+    <!-- Shield icon -->
+    <g transform="translate(130,72)">
+      <path d="M 0,-14 L 13,-8 L 13,3 C 13,11 0,17 0,17 C 0,17 -13,11 -13,3 L -13,-8 Z" fill="none" stroke="var(--shared-stroke)" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M -5,3 L -1.5,7 L 6.5,-4" fill="none" stroke="var(--shared-stroke)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
     <text class="phase shared-text" x="130" y="102" text-anchor="middle">Turn on enforcement</text>
     <text class="body" x="130" y="126" text-anchor="middle">
       <tspan x="130" dy="0">Require exact-domain equality</tspan>
@@ -156,7 +172,11 @@
     <text class="num" x="130" y="-1" text-anchor="middle">5</text>
     <rect class="card safe" x="0" y="16" width="260" height="160" rx="22" />
     <text class="chip safe-text" x="30" y="48">Phase 5</text>
-    <text x="130" y="76" text-anchor="middle" font-size="18">📤</text>
+    <!-- Publish/upload icon -->
+    <g transform="translate(130,72)">
+      <rect x="-13" y="2" width="26" height="12" rx="2" fill="none" stroke="var(--safe-stroke)" stroke-width="2"/>
+      <path d="M 0,-11 L 0,2 M -7,-4 L 0,-12 L 7,-4" fill="none" stroke="var(--safe-stroke)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
     <text class="phase safe-text" x="130" y="102" text-anchor="middle">Operationalize publication</text>
     <text class="body" x="130" y="126" text-anchor="middle">
       <tspan x="130" dy="0">Use explicit materialization</tspan>

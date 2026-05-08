@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ts-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:hki-runtime
+      - run: pnpm test:hki-runtime
+      - run: pnpm typecheck:hki-runtime
+
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit:hki
+      - run: pnpm audit:hki-ast-ts
+      - run: pnpm verify:hki-conformance
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install uv
+        run: pip install --upgrade uv
+      - run: pnpm install --frozen-lockfile
+      - name: Sync hki-runtime-py
+        run: cd packages/hki-runtime-py && uv sync --extra dev
+      - run: pnpm test:hki-runtime-py
+      - run: pnpm test:hki-litellm
+      - run: pnpm test:hki-langchain
+      - run: pnpm test:hki-llamaindex
+      - run: pnpm test:hki-adk
+      - run: pnpm test:hki-autogen
+      - run: pnpm test:hki-crewai
+      - run: pnpm test:hki-integration
+      - run: pnpm test:hki-threats
+      - run: pnpm audit:hki-ast
+      - name: Build evidence registry
+        run: pnpm registry:build
+      - name: Upload conformance.json
+        uses: actions/upload-artifact@v4
+        with:
+          name: hki-conformance-registry
+          path: conformance.json
+          if-no-files-found: error
+
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install --upgrade uv
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm demo:hki

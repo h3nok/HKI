@@ -20,8 +20,8 @@ make dev-full
 
 Before the first successful run, make sure these exist:
 
-- `docker-compose/creds/gcp_creds.json` - service-account key used by local LiteLLM when talking to Vertex AI
-- `docker-compose/.env` with `VERTEX_PROJECT` set to a GCP project you can use for local model calls
+- `deploy/compose/creds/gcp_creds.json` - service-account key used by local LiteLLM when talking to Vertex AI
+- `deploy/compose/.env` with `VERTEX_PROJECT` set to a GCP project you can use for local model calls
 
 If you do not have GCP access yet, you can still work on large parts of the UI and service wiring, but model-backed flows will fail until LiteLLM can authenticate.
 
@@ -51,7 +51,7 @@ You are fully onboarded when all of the following are true:
 
 - If `make validate-env` fails, run `make init-env` first, then fill in any remaining required values.
 - If Agentic starts but database-backed pages fail, run `make db-migrate-local`.
-- If LiteLLM returns `401` or `403`, verify `VERTEX_PROJECT` and the `docker-compose/creds/gcp_creds.json` file.
+- If LiteLLM returns `401` or `403`, verify `VERTEX_PROJECT` and the `deploy/compose/creds/gcp_creds.json` file.
 - If a port is already busy, run `make dev-stop` and retry.
 - If Docker infra looks healthy but the app is still broken, use `make infra-reset` and then restart the stack.
 

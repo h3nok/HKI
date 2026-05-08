@@ -77,7 +77,7 @@ export interface TaskSidebarProps {
   /** Optional override for selecting a conversation from the list */
   onSelectTask?: (task: Task) => void;
   /** Notifies parent when the active project filter changes (null = all tasks) */
-  onActiveProjectChange?: (projectId: string | null) => void;
+  onActiveProjectChange?: (projectId: string | null, projectName?: string | null) => void;
   /** Active domain name for the sidebar badge */
   activeStreamName?: string;
   /** Active domain icon */
@@ -286,11 +286,6 @@ export function TaskSidebar({
     null
   );
 
-  // Notify parent whenever active project changes (so new tasks inherit the scope)
-  useEffect(() => {
-    onActiveProjectChange?.(activeProjectId);
-  }, [activeProjectId, onActiveProjectChange]);
-
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
@@ -320,6 +315,11 @@ export function TaskSidebar({
     if (!activeProjectId || !projects) return null;
     return projects.find(p => p.id === activeProjectId) ?? null;
   }, [activeProjectId, projects]);
+
+  // Notify parent whenever active project changes (so new tasks inherit the scope)
+  useEffect(() => {
+    onActiveProjectChange?.(activeProjectId, activeProject?.name ?? null);
+  }, [activeProjectId, activeProject?.name, onActiveProjectChange]);
 
   const grouped = useMemo(() => groupByDate(filteredTasks), [filteredTasks]);
 

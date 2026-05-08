@@ -1,0 +1,32 @@
+name: HKI Action Self-Test
+
+# Exercises packages/hki-conformance-action/ against this very repo so we
+# catch regressions in the reusable action before tagging a release.
+
+on:
+  pull_request:
+    paths:
+      - "packages/hki-conformance-action/**"
+      - "scripts/build-conformance-registry.mjs"
+      - "packages/hki-conformance/schemas/**"
+      - ".github/workflows/hki-action-selftest.yml"
+  push:
+    branches: [main]
+
+jobs:
+  selftest:
+    name: HKI Conformance (self-test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: hki
+        uses: ./packages/hki-conformance-action
+        with:
+          min-level: L3-evidenced
+
+      - name: Assert outputs
+        run: |
+          test "${{ steps.hki.outputs.passed }}" = "true"
+          test "${{ steps.hki.outputs.level }}" = "L3-evidenced"
+          test -f conformance.json

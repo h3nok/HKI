@@ -1,0 +1,26 @@
+# Node / pnpm
+node_modules/
+.turbo/
+dist/
+build/
+coverage/
+.next/
+
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Generated registry artifact
+conformance.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

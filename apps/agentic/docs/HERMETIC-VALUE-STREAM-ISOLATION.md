@@ -293,21 +293,21 @@ For each legacy artifact choose one action:
 
 Primary targets:
 
-1. `knowledge-api/src/domain/protocols.py`
-2. `knowledge-api/src/adapters/vector_store.py`
-3. `knowledge-api/src/adapters/alloydb_store.py`
-4. `knowledge-api/src/adapters/neo4j_graph.py`
-5. `knowledge-api/src/api/internal_routes.py`
-6. `knowledge-api/src/api/routes.py`
+1. `services/knowledge-api/src/domain/protocols.py`
+2. `services/knowledge-api/src/adapters/vector_store.py`
+3. `services/knowledge-api/src/adapters/alloydb_store.py`
+4. `services/knowledge-api/src/adapters/neo4j_graph.py`
+5. `services/knowledge-api/src/api/internal_routes.py`
+6. `services/knowledge-api/src/api/routes.py`
 
 ### Ingestion Pipeline
 
 Primary targets:
 
-1. `ingestion-pipeline-service/src/domain/models.py`
-2. `ingestion-pipeline-service/src/domain/queue_messages.py`
-3. `ingestion-pipeline-service/src/api/routes.py`
-4. `ingestion-pipeline-service/src/api/review_routes.py`
+1. `services/ingestion-pipeline-service/src/domain/models.py`
+2. `services/ingestion-pipeline-service/src/domain/queue_messages.py`
+3. `services/ingestion-pipeline-service/src/api/routes.py`
+4. `services/ingestion-pipeline-service/src/api/review_routes.py`
 
 ### Agentic BFF and UI
 

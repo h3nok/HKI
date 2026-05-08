@@ -13,8 +13,8 @@
 import { useRef, useEffect, useCallback } from "react";
 
 const CELL = 28; // grid spacing (px)
-const DOT_R = 1.1; // base dot radius
-const CURSOR_R = 210; // spotlight radius
+const DOT_R = 1.5; // base dot radius
+const CURSOR_R = 240; // spotlight radius
 
 /** Read a CSS custom property as an "r,g,b" string. */
 function tokenRgb(name: string): string {
@@ -87,7 +87,7 @@ export function AgenticGrid() {
     const hov = int > 0.01;
     const mx = s.x;
     const my = s.y;
-    const fade = Math.max(0.15, 1 - scrollY.current / 700);
+    const fade = Math.max(0.35, 1 - scrollY.current / 900);
 
     ctx.clearRect(0, 0, w, h);
 
@@ -119,9 +119,9 @@ export function AgenticGrid() {
         const rgb = colorT < 0.5 ? irisRgb : pulseRgb;
 
         const baseAlpha =
-          ((isDark ? 0.14 : 0.09) + breath * (isDark ? 0.05 : 0.03)) * fade;
-        const glowAlpha = prox * prox * (isDark ? 0.72 : 0.55) * fade;
-        const r = DOT_R + prox * 1.3;
+          ((isDark ? 0.28 : 0.18) + breath * (isDark ? 0.12 : 0.08)) * fade;
+        const glowAlpha = prox * prox * (isDark ? 0.85 : 0.65) * fade;
+        const r = DOT_R + prox * 1.8;
 
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -196,24 +196,26 @@ export function AgenticGrid() {
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-background">
-      {/* Ambient base — light: faint iris blush at top */}
+      {/* Ambient base — light: iris crown + pulse accent */}
       <div
         className="absolute inset-0 dark:opacity-0 transition-opacity duration-500"
         style={{
           background: `
-            radial-gradient(ellipse 80% 40% at 50% 0%, color-mix(in srgb, var(--hki-iris-500) 5%, transparent) 0%, transparent 55%),
-            radial-gradient(ellipse 50% 30% at 90% 60%, color-mix(in srgb, var(--hki-pulse-500) 3%, transparent) 0%, transparent 50%),
+            radial-gradient(ellipse 85% 50% at 50% -5%, color-mix(in srgb, var(--hki-iris-500) 14%, transparent) 0%, transparent 60%),
+            radial-gradient(ellipse 55% 40% at 92% 55%, color-mix(in srgb, var(--hki-pulse-500) 8%, transparent) 0%, transparent 55%),
+            radial-gradient(ellipse 40% 30% at 8% 75%, color-mix(in srgb, var(--hki-iris-500) 5%, transparent) 0%, transparent 50%),
             linear-gradient(180deg, var(--background) 0%, var(--surface-ground) 100%)
           `,
         }}
       />
-      {/* Ambient base — dark: iris crown, pulse accent */}
+      {/* Ambient base — dark: strong iris crown, pulse corner accent */}
       <div
         className="absolute inset-0 dark:opacity-100 opacity-0 transition-opacity duration-500"
         style={{
           background: `
-            radial-gradient(ellipse 80% 45% at 50% 0%, color-mix(in srgb, var(--hki-iris-500) 13%, transparent) 0%, transparent 55%),
-            radial-gradient(ellipse 55% 35% at 85% 70%, color-mix(in srgb, var(--hki-pulse-500) 7%, transparent) 0%, transparent 50%),
+            radial-gradient(ellipse 90% 55% at 50% -5%, color-mix(in srgb, var(--hki-iris-500) 26%, transparent) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 45% at 88% 65%, color-mix(in srgb, var(--hki-pulse-500) 16%, transparent) 0%, transparent 55%),
+            radial-gradient(ellipse 45% 35% at 10% 80%, color-mix(in srgb, var(--hki-iris-500) 10%, transparent) 0%, transparent 50%),
             linear-gradient(180deg, var(--background) 0%, var(--surface-ground) 40%, var(--background) 100%)
           `,
         }}
@@ -226,7 +228,7 @@ export function AgenticGrid() {
       />
 
       {/* Edge fades */}
-      <div className="absolute left-0 right-0 top-0 h-[18%] bg-linear-to-b from-background via-background/60 to-transparent pointer-events-none" />
+      <div className="absolute left-0 right-0 top-0 h-[8%] bg-linear-to-b from-background to-transparent pointer-events-none" />
       <div className="absolute bottom-0 left-0 right-0 h-[10%] bg-linear-to-t from-background to-transparent pointer-events-none" />
 
       {/* Film grain */}

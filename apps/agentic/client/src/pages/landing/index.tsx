@@ -68,50 +68,44 @@ function SectionMarker({ num, label }: { num: string; label: string }) {
   return (
     <div
       ref={ref}
-      className="relative z-10 flex flex-col items-center justify-center py-12 md:py-16"
+      className="relative z-10 flex flex-col items-center justify-center py-8 md:py-10"
     >
+      <div
+        aria-hidden
+        className="absolute left-0 right-0 top-1/2 h-px bg-linear-to-r from-transparent via-border/45 to-transparent"
+      />
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6, ease: EASE }}
-        className="flex flex-col items-center gap-6"
+        className="relative flex flex-col items-center"
       >
-        {/* Divider line with label */}
-        <div className="flex items-center gap-4">
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={inView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-            className="h-px w-12 md:w-20 bg-linear-to-r from-transparent via-border/50 to-border/50 origin-left"
-          />
-          <span
-            className="text-xs font-bold tracking-[0.25em] uppercase text-muted-foreground/50"
-            style={{ fontFamily: HEADING }}
-          >
-            {num} · {label}
-          </span>
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={inView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-            className="h-px w-12 md:w-20 bg-linear-to-l from-transparent via-border/50 to-border/50 origin-right"
-          />
-        </div>
-
-        {/* Scroll indicator */}
         <motion.button
           onClick={scrollToNext}
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
-          transition={{ delay: 0.6 }}
-          className="flex flex-col items-center gap-1 text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors cursor-pointer group"
-          aria-label="Scroll to next section"
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={inView ? { opacity: 1, scale: 1 } : {}}
+          transition={{ duration: 0.55, delay: 0.15, ease: EASE }}
+          className="group relative inline-flex items-center gap-3 rounded-full border border-border/55 bg-background/78 px-4 py-2 shadow-sm backdrop-blur-xl transition-all duration-200 hover:border-primary/30 hover:bg-card/92 hover:shadow-md"
+          aria-label={`Scroll to ${label}`}
         >
+          <span
+            className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary/80"
+            style={{ fontFamily: HEADING }}
+          >
+            {num}
+          </span>
+          <span className="h-1 w-1 rounded-full bg-primary/45" />
+          <span
+            className="text-[11px] font-bold uppercase tracking-[0.16em] text-foreground/72 transition-colors group-hover:text-foreground"
+            style={{ fontFamily: HEADING }}
+          >
+            {label}
+          </span>
           <motion.div
             animate={{ y: [0, 4, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/55 transition-colors group-hover:text-primary" />
           </motion.div>
         </motion.button>
       </motion.div>
@@ -127,6 +121,12 @@ const PLATFORM_CAPABILITY_COUNT = VISIBLE_LAYERS.reduce(
   (total, layer) => total + layer.capabilities.length,
   0
 );
+const LIVE_LAYER_COUNT = VISIBLE_LAYERS.filter(
+  layer => layer.status === "live"
+).length;
+const API_LAYER_COUNT = VISIBLE_LAYERS.filter(
+  layer => layer.status === "api"
+).length;
 const LIVE_AGENT_STARTER =
   "Show me the HKI conformance path for one active domain across retrieval, memory, cache, and tools.";
 const LIVE_AGENT_ROUTE = `/chat?scope=hki-reference&starter=${encodeURIComponent(LIVE_AGENT_STARTER)}`;
@@ -154,6 +154,27 @@ const STATUS_META = {
   },
 } as const;
 
+function SurfaceStatusBadge({
+  status,
+  className = "",
+}: {
+  status: keyof typeof STATUS_META;
+  className?: string;
+}) {
+  const meta = STATUS_META[status];
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-md px-2 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em]",
+        meta.className,
+        className
+      )}
+    >
+      {meta.label}
+    </span>
+  );
+}
+
 function PlatformCards({
   inView,
   onNavigate,
@@ -161,178 +182,274 @@ function PlatformCards({
   inView: boolean;
   onNavigate?: (path: string) => void;
 }) {
-  return (
-    <div data-no-grid className="w-full grid grid-cols-2 md:grid-cols-3 gap-5">
-      {VISIBLE_LAYERS.map((layer, i) => {
-        const Icon = layer.icon;
-        const hasLink = !!layer.link;
-        const status = STATUS_META[layer.status];
-        return (
-          <motion.div
-            key={layer.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.45, delay: 0.08 + i * 0.07, ease: EASE }}
-            whileHover={{ scale: 1.025, y: -4 }}
-            className={cn(
-              "group relative flex flex-col gap-4 p-6 rounded-2xl border-2",
-              "bg-card dark:bg-card/95 backdrop-blur-sm",
-              "border-border/60 dark:border-border/40",
-              "shadow-sm hover:shadow-xl transition-all duration-300",
-              hasLink ? "cursor-pointer" : "cursor-default"
-            )}
-            style={{
-              boxShadow: HAIRLINE_SHADOW,
-            }}
-            onMouseEnter={e => {
-              const card = e.currentTarget as HTMLElement;
-              card.style.backgroundColor = colorMix(
-                layer.color,
-                6,
-                "var(--card)"
-              );
-              card.style.borderColor = colorMix(
-                layer.color,
-                46,
-                "var(--border)"
-              );
-              card.style.boxShadow = RAISED_SHADOW;
-            }}
-            onMouseLeave={e => {
-              const card = e.currentTarget as HTMLElement;
-              card.style.backgroundColor = "";
-              card.style.borderColor = "";
-              card.style.boxShadow = HAIRLINE_SHADOW;
-            }}
-            onClick={() => {
-              if (!layer.link) return;
-              if (layer.link.startsWith("http")) {
-                window.open(layer.link, "_blank", "noopener,noreferrer");
-              } else {
-                onNavigate?.(layer.link);
-              }
-            }}
-          >
-            {/* Accent top bar */}
-            <div
-              className="absolute top-0 left-6 right-6 h-0.75 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{
-                background: accentGradient(layer.color),
-              }}
-            />
+  const [activeLayerId, setActiveLayerId] = useState(
+    VISIBLE_LAYERS[0]?.id ?? ""
+  );
+  const activeLayer =
+    VISIBLE_LAYERS.find(layer => layer.id === activeLayerId) ??
+    VISIBLE_LAYERS[0];
 
-            {/* Icon + label row */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
+  if (!activeLayer) return null;
+
+  const activeIndex = VISIBLE_LAYERS.findIndex(
+    layer => layer.id === activeLayer.id
+  );
+  const ActiveIcon = activeLayer.icon;
+  const selfService = activeLayer.selfService ?? [];
+  const openActiveLayer = () => {
+    if (!activeLayer.link) return;
+    if (activeLayer.link.startsWith("http")) {
+      window.open(activeLayer.link, "_blank", "noopener,noreferrer");
+    } else {
+      onNavigate?.(activeLayer.link);
+    }
+  };
+
+  return (
+    <div data-no-grid className="w-full">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 22 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.55, delay: 0.08, ease: EASE }}
+          className="relative overflow-hidden rounded-lg border border-border/60 bg-card/82 p-5 shadow-2xl shadow-black/10 backdrop-blur-xl dark:bg-card/88 dark:shadow-black/35 sm:p-6 lg:p-7"
+          style={{
+            borderColor: colorMix(activeLayer.color, 32, "var(--border)"),
+            background: `linear-gradient(135deg, ${colorMix(activeLayer.color, 11, "var(--card)")} 0%, var(--card) 48%, ${colorMix(activeLayer.color, 6, "var(--background)")} 100%)`,
+          }}
+        >
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-1"
+            style={{ background: accentGradient(activeLayer.color) }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-[0.08]"
+            style={{
+              backgroundImage: `linear-gradient(${colorMix(activeLayer.color, 16)} 1px, transparent 1px), linear-gradient(90deg, ${colorMix(activeLayer.color, 14)} 1px, transparent 1px)`,
+              backgroundSize: "44px 44px",
+            }}
+          />
+
+          <div className="relative flex min-h-130 flex-col">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex items-center gap-4">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  className="flex h-14 w-14 items-center justify-center rounded-lg border shadow-lg"
                   style={{
-                    backgroundColor: colorMix(layer.color, 12),
-                    border: `1px solid ${colorMix(layer.color, 24, "var(--border)")}`,
+                    backgroundColor: colorMix(activeLayer.color, 16),
+                    borderColor: colorMix(
+                      activeLayer.color,
+                      34,
+                      "var(--border)"
+                    ),
+                    boxShadow: `0 18px 45px -28px ${activeLayer.color}`,
                   }}
                 >
-                  <Icon
-                    className="w-5.5 h-5.5"
-                    style={{ color: layer.color }}
+                  <ActiveIcon
+                    className="h-6 w-6"
+                    style={{ color: activeLayer.color }}
                   />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <p
-                      className="text-[15px] font-bold leading-tight text-foreground
-                                 group-hover:opacity-90 transition-opacity duration-200"
-                      style={{ fontFamily: HEADING }}
-                    >
-                      {layer.label}
-                    </p>
-                    {!!status && (
-                      <span
-                        className={cn(
-                          "text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md",
-                          status.className
-                        )}
-                      >
-                        {status.label}
-                      </span>
-                    )}
-                  </div>
+                  <p
+                    className="mb-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/65"
+                    style={{ fontFamily: HEADING }}
+                  >
+                    Surface {String(activeIndex + 1).padStart(2, "0")}
+                  </p>
+                  <h3
+                    className="text-2xl font-extrabold leading-tight text-foreground sm:text-3xl"
+                    style={{ fontFamily: HEADING }}
+                  >
+                    {activeLayer.label}
+                  </h3>
                 </div>
               </div>
+              <SurfaceStatusBadge status={activeLayer.status} />
             </div>
 
-            {/* Subtitle */}
-            <p className="text-[13px] leading-relaxed text-muted-foreground dark:text-muted-foreground/85">
-              {layer.subtitle}
-            </p>
-            <p className="text-[11px] leading-relaxed text-muted-foreground/75">
-              <span className="font-semibold text-foreground/80">
-                Best for:
-              </span>{" "}
-              {layer.useCase}
-            </p>
+            <div className="mt-8 max-w-xl">
+              <p className="text-lg font-semibold leading-relaxed text-foreground/88">
+                {activeLayer.subtitle}
+              </p>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground/72">
+                {activeLayer.description}
+              </p>
+              <p className="mt-5 text-sm leading-relaxed text-muted-foreground/78">
+                <span className="font-semibold text-foreground/85">
+                  Best for:
+                </span>{" "}
+                {activeLayer.useCase}
+              </p>
+            </div>
 
-            {/* Tech Stack */}
-            {layer.techStack && layer.techStack.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {layer.techStack.map(tech => (
-                  <span
-                    key={tech}
-                    className="text-[10px] font-medium px-2 py-0.5 rounded-md
-                               bg-muted/40 text-muted-foreground/70
-                               border border-border/40"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Capabilities */}
-            <ul className="flex flex-wrap gap-x-3 gap-y-2">
-              {layer.capabilities.slice(0, 4).map(cap => {
-                const isLive = (
-                  layer.selfService as readonly string[] | undefined
-                )?.includes(cap);
+            <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {activeLayer.capabilities.slice(0, 6).map((capability, index) => {
+                const isLive = selfService.includes(capability);
                 return (
-                  <li key={cap} className="flex items-center gap-1.5">
-                    <span
-                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                  <div
+                    key={capability}
+                    className="group relative overflow-hidden rounded-md border border-border/45 bg-background/42 px-3.5 py-3 backdrop-blur-sm transition-colors duration-200 hover:bg-background/66"
+                  >
+                    <div
+                      aria-hidden
+                      className="absolute inset-y-3 left-0 w-0.75 rounded-r-full"
                       style={{
                         backgroundColor: isLive
-                          ? layer.color
-                          : colorMix(layer.color, 32),
-                        border: `1px solid ${colorMix(layer.color, isLive ? 28 : 20, "var(--border)")}`,
+                          ? activeLayer.color
+                          : colorMix(activeLayer.color, 34),
                       }}
                     />
-                    <span
-                      className="text-[11px] font-medium leading-tight"
-                      style={{
-                        color: isLive
-                          ? `${layer.color}`
-                          : "hsl(var(--muted-foreground))",
-                        opacity: isLive ? 0.95 : 0.7,
-                      }}
-                    >
-                      {cap}
-                    </span>
-                  </li>
+                    <div className="flex items-center justify-between gap-3 pl-1.5">
+                      <span className="text-sm font-semibold leading-tight text-foreground/86">
+                        {capability}
+                      </span>
+                      <span
+                        className="text-[10px] font-bold tabular-nums text-muted-foreground/42"
+                        style={{ fontFamily: HEADING }}
+                      >
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                  </div>
                 );
               })}
-            </ul>
-            {hasLink && (
-              <div className="mt-auto pt-1">
-                <span
-                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold opacity-75 group-hover:opacity-100 transition-opacity duration-200"
-                  style={{ color: layer.color }}
+            </div>
+
+            <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-8">
+              {activeLayer.techStack && activeLayer.techStack.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {activeLayer.techStack.map(tech => (
+                    <span
+                      key={tech}
+                      className="rounded-md border border-border/45 bg-background/48 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground/78"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {activeLayer.link && (
+                <button
+                  type="button"
+                  onClick={openActiveLayer}
+                  className="group inline-flex items-center gap-2 rounded-lg border border-border/55 bg-foreground px-4 py-2.5 text-sm font-bold text-background shadow-lg shadow-black/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl dark:shadow-black/30"
                 >
-                  {layer.linkLabel ?? "Explore"}
-                  <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            )}
-          </motion.div>
-        );
-      })}
+                  {activeLayer.linkLabel ?? "Explore"}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </button>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="mb-1 hidden items-center justify-between lg:flex">
+            <span
+              className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/45"
+              style={{ fontFamily: HEADING }}
+            >
+              Explore each layer
+            </span>
+            <ArrowRight className="h-3 w-3 text-muted-foreground/35" />
+          </div>
+          {VISIBLE_LAYERS.map((layer, index) => {
+            const Icon = layer.icon;
+            const selected = layer.id === activeLayer.id;
+
+            return (
+              <motion.button
+                key={layer.id}
+                type="button"
+                initial={{ opacity: 0, x: 18 }}
+                animate={inView ? { opacity: 1, x: 0 } : {}}
+                transition={{
+                  duration: 0.42,
+                  delay: 0.12 + index * 0.055,
+                  ease: EASE,
+                }}
+                onMouseEnter={() => setActiveLayerId(layer.id)}
+                onFocus={() => setActiveLayerId(layer.id)}
+                onClick={() => setActiveLayerId(layer.id)}
+                aria-pressed={selected}
+                className={cn(
+                  "group relative min-h-29 w-full overflow-hidden rounded-lg border px-4 py-3 text-left transition-all duration-200 lg:min-h-20 lg:px-3 lg:py-2.5",
+                  selected
+                    ? "border-border/70 bg-card/88 shadow-xl shadow-black/10 dark:shadow-black/30"
+                    : "border-border/38 bg-background/34 hover:border-border/65 hover:bg-card/70"
+                )}
+                style={{
+                  borderColor: selected
+                    ? colorMix(layer.color, 42, "var(--border)")
+                    : undefined,
+                  boxShadow: selected
+                    ? `0 18px 55px -40px ${layer.color}`
+                    : undefined,
+                }}
+              >
+                <span
+                  aria-hidden
+                  className="absolute inset-y-3 left-0 w-1 rounded-r-full transition-opacity duration-200"
+                  style={{
+                    backgroundColor: layer.color,
+                    opacity: selected ? 1 : 0.38,
+                  }}
+                />
+                <div className="flex items-start gap-3 pl-1.5">
+                  <span
+                    className="mt-1 text-[10px] font-extrabold tabular-nums text-muted-foreground/45"
+                    style={{ fontFamily: HEADING }}
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border"
+                    style={{
+                      backgroundColor: colorMix(layer.color, selected ? 16 : 9),
+                      borderColor: colorMix(layer.color, 24, "var(--border)"),
+                    }}
+                  >
+                    <Icon
+                      className="h-4.5 w-4.5"
+                      style={{ color: layer.color }}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className="text-sm font-extrabold leading-tight text-foreground"
+                        style={{ fontFamily: HEADING }}
+                      >
+                        {layer.label}
+                      </span>
+                      <SurfaceStatusBadge
+                        status={layer.status}
+                        className="px-1.5 py-0.5 text-[8px]"
+                      />
+                    </div>
+                    <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground/68 lg:line-clamp-1">
+                      {layer.subtitle}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-1.5 lg:hidden 2xl:flex">
+                      {layer.capabilities.slice(0, 3).map(capability => (
+                        <span
+                          key={capability}
+                          className="rounded-md border border-border/35 bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground/70"
+                        >
+                          {capability}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -375,10 +492,6 @@ const STATS = [
 ] as const;
 
 function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
-  const scrollToFeatures = useCallback(() => {
-    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
-  }, []);
-
   return (
     <section className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100svh-170px)] sm:min-h-[calc(100vh-220px)] px-6 text-center">
       {/* Content block — grid disabled here; outer section whitespace stays interactive */}
@@ -470,29 +583,6 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
         </motion.div>
       </div>
       {/* end data-no-grid */}
-
-      {/* Scroll indicator — outside the no-grid zone */}
-      <motion.button
-        onClick={scrollToFeatures}
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-2
-             text-muted-foreground/55 dark:text-muted-foreground/45 hover:text-primary/70 transition-colors duration-200 cursor-pointer group"
-        aria-label="Scroll to explore platforms"
-      >
-        <span className="text-[10px] font-semibold uppercase tracking-[0.2em] group-hover:text-primary/70 transition-colors">
-          Explore Framework
-        </span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-0.5"
-        >
-          <ChevronDown className="w-4 h-4" />
-          <ChevronDown className="w-3 h-3 opacity-50" />
-        </motion.div>
-      </motion.button>
     </section>
   );
 }
@@ -508,50 +598,47 @@ function CapabilitiesSection({
   const inView = useInView(ref, { once: true, amount: 0 });
 
   return (
-    <FullSection id="features">
-      <div
-        ref={ref}
-        className="w-full max-w-6xl mx-auto flex flex-col items-center px-4"
-      >
+    <FullSection id="features" className="py-12 md:py-14">
+      <div ref={ref} className="w-full max-w-7xl mx-auto flex flex-col px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, ease: EASE }}
-          className="text-center mb-10"
+          className="mb-9"
         >
           <p
-            className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-4"
+            className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-primary"
             style={{ fontFamily: HEADING }}
           >
-            Open Runtime Standard
+            Architecture
           </p>
           <h2
-            className="text-3xl sm:text-4xl font-extrabold tracking-[-0.025em] text-foreground leading-tight mb-4"
+            className="max-w-4xl text-3xl font-extrabold leading-tight tracking-[-0.025em] text-foreground sm:text-4xl lg:text-[3.25rem]"
             style={{ fontFamily: HEADING }}
           >
-            {PLATFORM_LAYER_COUNT} enforcement surfaces.{" "}
-            <span className="text-primary">One isolation law.</span>
+            {PLATFORM_LAYER_COUNT} layers in your stack.{" "}
+            <span className="text-primary">One isolation rule.</span>
           </h2>
-          <p className="text-base text-muted-foreground/60 max-w-2xl mx-auto leading-relaxed mb-3">
-            From signed scope envelopes to publication workflows, HKI makes
-            isolation testable across every agentic transformation.
+          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted-foreground/66">
+            HKI specifies exactly where domain isolation must hold — from the
+            signed scope envelope at the edge to cache keys, graph edges, tool
+            calls, and audit traces. Each layer has concrete controls and a
+            conformance check.
           </p>
-          <div className="flex items-center justify-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span className="text-muted-foreground/70">
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                  Live
-                </span>{" "}
-                = implemented in the reference stack
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-muted-foreground/30"></span>
-              <span className="text-muted-foreground/70">
-                Status chips indicate implemented, API-only, or planned
-              </span>
-            </div>
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <CountUp to={LIVE_LAYER_COUNT} /> layers live in the reference
+              stack
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[11px] font-bold text-sky-600 dark:text-sky-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
+              <CountUp to={API_LAYER_COUNT} /> API-only
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-muted/40 px-3 py-1 text-[11px] font-bold text-muted-foreground/80">
+              <CountUp to={PLATFORM_CAPABILITY_COUNT} /> total controls across
+              all layers
+            </span>
           </div>
         </motion.div>
 
@@ -963,15 +1050,8 @@ export default function AgenticPlatformLanding() {
       </div>
       {/* Hero: grid interaction active */}
       <HeroSection onNavigate={navigate} />
-      <SectionMarker num="01" label="Framework" />
       {/* Dense sections: grid disabled */}
       <div data-no-grid>
-        <CapabilitiesSection onNavigate={navigate} />
-        <SectionMarker num="02" label="Engineering" />
-        <EngineeringSection />
-        <SectionMarker num="03" label="Impact" />
-        <RolesSection />
-        <SectionMarker num="04" label="Adopt" />
         <CTASection onNavigate={navigate} />
         <Footer />
       </div>

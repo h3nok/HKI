@@ -37,7 +37,7 @@ knowledge paths, MCP gateway documentation, and public-readiness audit ratchets.
 The remaining work is tracked in
 [Public Readiness Plan](./docs/HKI_PUBLIC_READINESS_PLAN.md).
 
-> **Windows Users:** See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for Windows-specific setup instructions.
+> **Windows Users:** See [scripts/windows/WINDOWS_SETUP.md](scripts/windows/WINDOWS_SETUP.md) for Windows-specific setup instructions.
 
 ## Architecture
 
@@ -50,7 +50,7 @@ hki/
 ├── analytics-service/          # Usage and event analytics (:9510)
 ├── shared/                     # Shared Python auth, tracing, and service helpers
 ├── packages/                   # Shared packages, including @hki/runtime and @hki/conformance
-├── docker-compose/             # Local development infrastructure
+├── deploy/compose/             # Local development infrastructure
 ├── docs/                       # HKI standard, SAR standard, operations docs
 └── tests/                      # E2E and platform checks
 ```
@@ -75,11 +75,11 @@ hki/
 
 ## Public Packages
 
-| Package | Purpose |
-| --- | --- |
-| [`@hki/runtime`](./packages/hki-runtime/README.md) | Runtime envelope validation, artifact visibility checks, cache-key derivation, gateway target decisions, telemetry attributes, and JSON Schemas. |
-| [`hki-runtime`](./packages/hki-runtime-py/README.md) | Python parity helpers for FastAPI services, Python gateways, retrieval adapters, caches, and MCP tool routers. |
-| [`@hki/conformance`](./packages/hki-conformance/README.md) | Adapter contract, conformance fixtures, CLI runner, and evidence report for HKI-compatible gateways and agent runtimes. |
+| Package                                                    | Purpose                                                                                                                                          |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`@hki/runtime`](./packages/hki-runtime/README.md)         | Runtime envelope validation, artifact visibility checks, cache-key derivation, gateway target decisions, telemetry attributes, and JSON Schemas. |
+| [`hki-runtime`](./packages/hki-runtime-py/README.md)       | Python parity helpers for FastAPI services, Python gateways, retrieval adapters, caches, and MCP tool routers.                                   |
+| [`@hki/conformance`](./packages/hki-conformance/README.md) | Adapter contract, conformance fixtures, CLI runner, and evidence report for HKI-compatible gateways and agent runtimes.                          |
 
 ---
 
@@ -113,7 +113,7 @@ VERTEX_PROJECT=<your-gcp-project>
 Place your GCP service account key at:
 
 ```
-docker-compose/creds/gcp_creds.json
+deploy/compose/creds/gcp_creds.json
 ```
 
 Validate before starting:
@@ -161,18 +161,18 @@ make infra-down     # stop Docker containers
 
 ## Service Ports
 
-| Service            | Port | Notes                            |
-| ------------------ | ---- | -------------------------------- |
-| Agentic BFF        | 9001 | tRPC + React UI                  |
-| knowledge-api      | 9509 | FastAPI, pgvector                |
-| ingestion-pipeline | 9508 | FastAPI, Pub/Sub                 |
-| orchestrator       | 9501 | FastAPI, Redis                   |
-| analytics          | 9510 | Dev wrapper; cluster uses 9512   |
-| LiteLLM            | 4000 | LLM proxy (dev only)             |
-| PostgreSQL         | 9432 | pgvector / AlloyDB local         |
-| MySQL              | 9306 | Agentic BFF schema               |
-| Redis              | 9379 | Orchestrator cache               |
-| Neo4j              | 9687 | Knowledge graph (optional)       |
+| Service            | Port | Notes                          |
+| ------------------ | ---- | ------------------------------ |
+| Agentic BFF        | 9001 | tRPC + React UI                |
+| knowledge-api      | 9509 | FastAPI, pgvector              |
+| ingestion-pipeline | 9508 | FastAPI, Pub/Sub               |
+| orchestrator       | 9501 | FastAPI, Redis                 |
+| analytics          | 9510 | Dev wrapper; cluster uses 9512 |
+| LiteLLM            | 4000 | LLM proxy (dev only)           |
+| PostgreSQL         | 9432 | pgvector / AlloyDB local       |
+| MySQL              | 9306 | Agentic BFF schema             |
+| Redis              | 9379 | Orchestrator cache             |
+| Neo4j              | 9687 | Knowledge graph (optional)     |
 
 ---
 

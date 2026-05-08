@@ -34,14 +34,14 @@ Task specs for the next phase of Knowledge Base development. Each task has a def
 
 ### Steps
 
-1. **Add config flags** to `ingestion-pipeline-service/k8s/configmap.yaml`:
+1. **Add config flags** to `services/ingestion-pipeline-service/k8s/configmap.yaml`:
 
    ```yaml
    RAPTOR_ENABLED: "true"
    RAPTOR_MAX_LEVELS: "3"
    ```
 
-   In `ingestion-pipeline-service/src/core/config.py`, add the matching settings fields:
+   In `services/ingestion-pipeline-service/src/core/config.py`, add the matching settings fields:
 
    ```python
    RAPTOR_ENABLED: bool = False
@@ -68,7 +68,7 @@ Task specs for the next phase of Knowledge Base development. Each task has a def
 
    Use `asyncio.create_task` so it runs in the background and does not block the ingest response.
 
-4. **Add `node_level` to the AlloyDB schema.** In `knowledge-api/src/adapters/alloydb_store.py`, find the schema migration SQL inside the `connect()` method. Add:
+4. **Add `node_level` to the AlloyDB schema.** In `services/knowledge-api/src/adapters/alloydb_store.py`, find the schema migration SQL inside the `connect()` method. Add:
 
    ```sql
    ALTER TABLE chunks ADD COLUMN IF NOT EXISTS node_level INTEGER DEFAULT 0;
@@ -79,7 +79,7 @@ Task specs for the next phase of Knowledge Base development. Each task has a def
 
 5. **Exclude summary nodes from standard search by default.** In `alloydb_store.py`, in `_vector_search()` and `_keyword_search()`, add `AND node_level = 0` to the WHERE clause. Add an optional `include_summary_nodes: bool = False` parameter that removes this filter when set to `True`.
 
-6. **Write one pytest** in `ingestion-pipeline-service/tests/` that mocks `RaptorBuilder.build` and asserts it was called after a successful `ingest_text()`.
+6. **Write one pytest** in `services/ingestion-pipeline-service/tests/` that mocks `RaptorBuilder.build` and asserts it was called after a successful `ingest_text()`.
 
 ### Acceptance Criteria
 
@@ -107,7 +107,7 @@ Ingest → Generate QA pairs → Retrieve answers → Judge → Gate promotion
 
 ### Steps
 
-1. **Add config flags** to `ingestion-pipeline-service/k8s/configmap.yaml`:
+1. **Add config flags** to `services/ingestion-pipeline-service/k8s/configmap.yaml`:
 
    ```yaml
    EVAL_ON_INGEST_ENABLED: "true"
@@ -117,7 +117,7 @@ Ingest → Generate QA pairs → Retrieve answers → Judge → Gate promotion
 
    Add matching fields to `config.py`.
 
-2. **Implement `GeminiQABackend`** in a new file `ingestion-pipeline-service/src/domain/qa_backend.py`. It must implement the `QAGeneratorBackend` protocol from `synthesis.py`:
+2. **Implement `GeminiQABackend`** in a new file `services/ingestion-pipeline-service/src/domain/qa_backend.py`. It must implement the `QAGeneratorBackend` protocol from `synthesis.py`:
 
    ```python
    class GeminiQABackend:
@@ -131,7 +131,7 @@ Ingest → Generate QA pairs → Retrieve answers → Judge → Gate promotion
        ) -> list[SyntheticQA]: ...
    ```
 
-   Use the existing `GeminiClient` in `ingestion-pipeline-service/src/adapters/gemini_client.py`. Call Gemini with the prompt from `synthesis.build_generation_prompt()` and parse the response into `SyntheticQA` objects.
+   Use the existing `GeminiClient` in `services/ingestion-pipeline-service/src/adapters/gemini_client.py`. Call Gemini with the prompt from `synthesis.build_generation_prompt()` and parse the response into `SyntheticQA` objects.
 
 3. **Wire evaluation into the pipeline.** In `pipeline.py`, after `_send_to_vector_store` returns the stored chunks, add a new private method:
 
@@ -270,7 +270,7 @@ Ingest → Generate QA pairs → Retrieve answers → Judge → Gate promotion
      --project=p-642-cilab-demo
    ```
 
-2. **Create `knowledge-api/src/adapters/spanner_graph.py`.** It must implement the same public interface as `neo4j_graph.py`:
+2. **Create `services/knowledge-api/src/adapters/spanner_graph.py`.** It must implement the same public interface as `neo4j_graph.py`:
    - `async connect(instance: str, database: str, project: str)` — create a Spanner client
    - `async close()` — close the client
    - `async store_entities(entities, relationships, org_id, document_id)` — upsert nodes and edges
@@ -347,8 +347,8 @@ Ingest → Generate QA pairs → Retrieve answers → Judge → Gate promotion
 
 - `apps/ai-platform/ingestion-pipeline-service/src/domain/pipeline.py` — `ingest_file()` — call this per file
 - `apps/ai-platform/agentic/k8s/configmap.yaml` line 33 — `GOOGLE_DRIVE_REDIRECT_URI` already configured
-- Create: `ingestion-pipeline-service/src/adapters/gdrive_connector.py`
-- Create: `ingestion-pipeline-service/src/api/connector_routes.py`
+- Create: `services/ingestion-pipeline-service/src/adapters/gdrive_connector.py`
+- Create: `services/ingestion-pipeline-service/src/api/connector_routes.py`
 
 ### Steps
 
@@ -384,7 +384,7 @@ Ingest → Generate QA pairs → Retrieve answers → Judge → Gate promotion
    For each file in the folder: download → call `pipeline.ingest_file()` → collect job IDs.
    Return: `{ synced: N, job_ids: [...] }`
 
-3. **Register the router** in `ingestion-pipeline-service/src/api/app.py`.
+3. **Register the router** in `services/ingestion-pipeline-service/src/api/app.py`.
 
 4. **Add a proxy endpoint in the agentic BFF** that calls the above endpoint with the user's Google OAuth token from the existing BFF session. Coordinate with the agentic team for the token retrieval pattern already used in the Drive OAuth callback.
 
@@ -405,8 +405,8 @@ Ingest → Generate QA pairs → Retrieve answers → Judge → Gate promotion
 **Starting files:**
 
 - `apps/ai-platform/ingestion-pipeline-service/src/domain/pipeline.py` — `ingest_url()` — already implemented, just call it per URL
-- Create: `ingestion-pipeline-service/src/adapters/url_crawler.py`
-- Extend: `ingestion-pipeline-service/src/api/connector_routes.py` (from KB-5a, or create fresh)
+- Create: `services/ingestion-pipeline-service/src/adapters/url_crawler.py`
+- Extend: `services/ingestion-pipeline-service/src/api/connector_routes.py` (from KB-5a, or create fresh)
 
 ### Steps
 
@@ -478,7 +478,7 @@ Ingest → Generate QA pairs → Retrieve answers → Judge → Gate promotion
      --role="roles/aiplatform.user"
    ```
 
-2. **Add a config flag** to `knowledge-api/k8s/configmap.yaml`:
+2. **Add a config flag** to `services/knowledge-api/k8s/configmap.yaml`:
 
    ```yaml
    ALLOYDB_INLINE_EMBEDDINGS: "true"

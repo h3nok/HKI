@@ -11,8 +11,9 @@ By Henok Ghebrechristos, PhD
 ## TL;DR
 
 1. Most enterprise RAG and agent platforms claim to be "domain-aware," but isolation often exists only as a final retrieval filter. Rewriters, graph edges, caches, jobs, traces, and review workflows can still lose or widen scope.
-2. **Hermetic Knowledge Isolation (HKI)** turns isolation identity into a mandatory execution label: one domain per runtime artifact, one active domain per request, no null-scope, no global fallback, and no cross-domain visibility except through publication.
-3. The primitives — labeled security, information-flow control, fail-closed authorization — are familiar. The contribution is a deployable whole-stack contract for agentic RAG and MCP-style systems, with conformance checks that can be audited before release.
+2. As agent autonomy increases, weak scope becomes an enterprise control failure. An autonomous agent that can rewrite, retrieve, remember, call tools, and start jobs must not be allowed to discover its boundary from convenience filters or natural language.
+3. **Hermetic Knowledge Isolation (HKI)** turns isolation identity into a mandatory execution label: one domain per runtime artifact, one active domain per request, no null-scope, no global fallback, and no cross-domain visibility except through publication.
+4. The primitives — labeled security, information-flow control, fail-closed authorization — are familiar. The contribution is a deployable whole-stack contract for agentic RAG and MCP-style systems, with conformance checks that can be audited before release.
 
 ## One-Picture Summary
 
@@ -47,14 +48,44 @@ The strongest claim for HKI is therefore modest but important: not that it inven
 
 The practical test is blunt: a runtime path is HKI-conformant only if removing the active domain makes it fail, changing the active domain to an unauthorized value makes it fail, and adding artifacts in Domain B cannot change the observable output of a Domain A request except through explicit publication into A.
 
+## Why Autonomy Makes Isolation Fundamental
+
+Enterprise AI risk changes when systems move from answering questions to taking autonomous steps. A retrieval-only assistant may expose boundary mistakes through bad citations or overbroad search results. An agentic platform can do more: rewrite the request, choose tools, traverse graphs, consult memory, reuse caches, spawn async jobs, and trigger follow-on workflows. Each of those capabilities creates a new place where scope can be lost, widened, cached, or reconstructed incorrectly.
+
+That is why HKI treats isolation as a primitive construct. In an autonomous system, isolation cannot be a UI selection, a prompt instruction, a final SQL predicate, or a best-effort convention. It must be part of the execution object carried through the system. The platform must know, at every transformation, which domain the agent is operating in and which artifacts may legally shape the result.
+
+For enterprises, the risk is not only direct data leakage. The larger risk is unauthorized influence: one domain's documents, graph edges, policy interpretations, cached answers, or tool results silently shaping another domain's autonomous decision path. This is especially dangerous in regulated functions, internal investigations, finance, pharmacy, legal, safety, supply chain, and customer operations, where a wrong boundary can change a decision without producing an obvious access violation.
+
+HKI's position is therefore simple: autonomy requires isolation before optimization. Recall, memory, caching, tool use, graph traversal, and agent planning are valuable only after the system can prove the active domain is preserved. Without that proof, an enterprise agent is not merely under-secured; it is operating without a stable boundary for action.
+
+## A Concrete Enterprise Failure
+
+To make the risk tangible, consider a scenario that appears in enterprise AI deployments more often than vendors publicly acknowledge.
+
+A large retail enterprise deploys an agentic platform to support its supply chain, pharmacy, HR, and legal operations. The platform indexes vendor contracts, procurement policies, safety incident reports, pharmacy formulary records, and HR performance data. These come from different business units sharing the same infrastructure. The system is described internally as "domain-aware" — retrieval applies a tenant filter.
+
+What was not carried through: the knowledge graph. An offline extraction pipeline built semantic relationships across the corpus without propagating domain identity through derived node and edge creation. Several unlabeled edges now connect supply chain vendor nodes to pharmacy formulary records via a "related_to" relationship the extraction model inferred from co-occurrence.
+
+A procurement analyst asks: _"Which vendors are approved for medical supply contracts in our distribution centers?"_
+
+The agent rewrites the query for recall improvement — a standard RAG optimization. The expanded query surface reaches into semantically similar territory. The graph traversal follows an unlabeled derived edge from a supply chain vendor node into a pharmacy formulary record. The pharmacy division operates under a distinct compliance regime, with different approval criteria and regulatory constraints.
+
+The agent synthesizes an answer that incorporates pharmacy-domain constraints the supply chain analyst was never meant to see in this context. The answer looks plausible. It reads as helpful — more specific than expected. No alert fires. No access violation appears in any log. The boundary dissolved in the graph extraction step, not the query layer. The supply chain decision is now influenced by pharmacy-domain data without a trace.
+
+In a regulated environment this is not a minor access control gap. It is an auditable boundary failure that can affect safety determinations, liability, and regulatory standing — and it produced no observable signal.
+
+**Under HKI, the outcome is deterministic.** The graph traversal encounters an edge without a domain label. HKI fails closed. The traversal stops. The answer is computed from supply-chain-labeled artifacts only. The analyst may receive a narrower answer, but the boundary holds and the audit trail is clean.
+
 ## HKI at a Glance
 
 | Concern                     | Typical "domain-aware" RAG             | Under HKI                                                    |
 | --------------------------- | -------------------------------------- | ------------------------------------------------------------ |
 | Artifact scope              | Optional metadata, often nullable      | Mandatory single domain label on every artifact              |
 | Request scope               | Inferred per query, may be multi-scope | Exactly one active domain, signed at the gateway             |
+| Agent autonomy              | Model/tool steps infer scope as needed | Tool, memory, job, and cache steps inherit the active domain |
 | "Global" / shared knowledge | Null scope or wildcard fallback        | Explicit publication or replication into domain-local copies |
 | Missing or ambiguous scope  | Falls back to broader visibility       | Fails closed                                                 |
+| Enterprise risk             | Unauthorized influence is hard to see  | Boundary preservation is testable before release             |
 | Graph traversal             | Inherits visibility from neighbors     | Domain label preserved on derived edges and nodes            |
 | Cache keys                  | Query + model                          | Org + active domain + query + operation context              |
 | Async jobs / connectors     | Reconstruct scope from inputs          | Carry signed domain through every stage transition           |
@@ -92,6 +123,8 @@ Said plainly: the system looks scoped at the UI or query layer, but scope quietl
 - Admin or migration paths leak into runtime code paths.
 
 These are not merely implementation bugs. They arise because the system lacks a complete execution model for semantic isolation. HKI addresses that gap by making boundary identity a mandatory runtime property rather than an optional query parameter.
+
+The enterprise version of this problem is especially severe because agentic systems often produce decisions, recommendations, workflow actions, and operational summaries rather than raw search results. A cross-domain artifact may never be shown to the user, but it can still influence what the agent decides to do next. HKI is designed to block that hidden influence path, not only visible document leakage.
 
 ## The Core HKI Thesis
 
@@ -238,6 +271,37 @@ A minimal conformance bar follows from that surface:
 6. Publication creates new domain-labeled artifacts with provenance.
 7. Readiness fails if null-scope audits or non-preserving paths are detected.
 
+## Minimum Viable HKI
+
+For a team shipping its first HKI-conformant agent system, these five controls are non-negotiable. Everything else in this document extends or hardens them — but a platform that cannot satisfy all five has no credible isolation claim.
+
+**1. Signed envelope at every service boundary.**
+The gateway issues an envelope containing `org`, `active_domain`, `op`, and expiry. Every downstream service validates it before any read, write, or traversal. No service derives the active domain from user-provided arguments, model output, or inferred context.
+
+```json
+{
+  "org": "acme",
+  "active_domain": "vs_payments",
+  "authorized_domains": ["vs_payments", "vs_fraud"],
+  "op": "retrieve",
+  "exp": 1745000300
+}
+```
+
+**2. Null domain fails closed, unconditionally.**
+A runtime path that encounters a missing, null, or `"global"` active domain rejects the request before touching any store. No fallback, no default domain, no "best effort" selection. Rejection is logged. The log is part of the conformance record.
+
+**3. Cache keys include the active domain.**
+A cache key must be at minimum `(org, active_domain, op, query_fingerprint)`. A cache lookup that drops `active_domain` is not an optimization — it is a boundary failure. Semantic similarity is not a substitute for domain identity.
+
+**4. Graph traversal rejects unlabeled edges.**
+An edge or node without a domain label in the runtime plane fails the traversal, not the caller. Derived edges created by offline extraction pipelines must carry domain provenance. "Unlabeled" is not a universal join — it is a conformance defect.
+
+**5. Null-scope artifacts block the deployment.**
+A readiness check that detects runtime artifacts with null or missing domain identity fails the deploy gate. These are not migration backlog items — they are live boundary holes. The deploy gate is the enforcement point, not the code review.
+
+If your platform satisfies all five, you have a defensible minimum. Expanding to full conformance adds publication workflows, admin plane separation, async job context binding, and adversarial regression testing — all of which the remainder of this document specifies.
+
 ## Why HKI Matters for Agentic and MCP-Based Systems
 
 HKI matters most where modern systems are most dynamic. Agents do more than issue direct document lookups. They compose tools, traverse graphs, reformulate queries, accumulate memory, and interact with caches, evaluators, and release workflows. The attack surface for boundary failure is therefore larger than in a conventional search application.
@@ -253,6 +317,37 @@ If an enterprise MCP gateway is built under HKI, then every tool invocation must
 5. Long-running workflows such as ingest, review, and release carry the same domain identity across all async stages.
 
 This is what makes HKI more than a search filter. It is a boundary contract for the entire execution path.
+
+## Regulatory Alignment
+
+HKI is not a compliance framework, but its runtime isolation contract maps directly onto the structural controls that current AI regulations and risk frameworks require. For enterprises operating under any of the following, HKI conformance evidence is directly useful.
+
+**EU AI Act — High-Risk AI Systems (Articles 10, 13, 17)**
+Article 10 requires that high-risk AI systems implement appropriate data governance practices to ensure training and operational data are free from errors that could influence system outputs across unauthorized contexts. Article 13 requires technical documentation sufficient to demonstrate conformance with data governance obligations. Article 17 requires a quality management system that includes data management procedures.
+
+HKI's signed scope envelope, null-scope blocking, and conformance test suite provide the boundary integrity and auditability these articles demand. An HKI-conformant system can produce a structured evidence artifact — conformance gate results, null-scope audit report, cross-domain read rejection rate — demonstrating that cross-domain data did not influence a high-risk AI decision.
+
+**NIST AI Risk Management Framework (AI RMF 1.0)**
+
+| NIST Function | Subcategory | HKI Mapping |
+|---|---|---|
+| GOVERN | 1.1 — AI risk priorities are established | HKI formalizes isolation priorities as runtime enforcement, not convention |
+| MAP | 2.1 — Scientific findings and regulations used to identify AI risks | HKI's threat model and failure mode table map directly to this function |
+| MEASURE | 2.5 — AI system data provenance is documented and maintained | HKI requires provenance on every artifact including derived graph nodes, cached entries, and review records |
+| MANAGE | 3.1 — Responses to risks are documented and communicated | HKI's conformance gate results and null-scope audit outputs serve as this evidence |
+
+**HIPAA — Minimum Necessary Standard (Healthcare AI)**
+For healthcare enterprises deploying agents across clinical, pharmacy, supply chain, and administrative domains, HIPAA's minimum necessary standard applies not only to what principals can query but to what an autonomous agent can observe. HKI's exact-domain equality rule and fail-closed graph traversal directly implement minimum necessary at the execution level — preventing an agent operating in one care domain from observing PHI labeled to another, even through a derived graph edge or semantic cache hit.
+
+**SOC 2 Type II (Logical Access and Data Integrity)**
+
+| Control | Description | HKI Evidence |
+|---|---|---|
+| CC6.1 | Logical access security over protected information assets | Signed envelope validation, null-domain rejection logs, plane separation test results |
+| CC6.7 | Restriction of data transmission to authorized users | Publication-only cross-domain bridge, provenance records on every materialized artifact |
+| CC7.2 | Monitoring for unauthorized or unusual activity | Null-scope audit reports, cross-domain read rejection rate, conformance regression suite |
+
+A single HKI audit report — null-scope artifact count, cross-domain read rejection rate, conformance gate pass/fail, publication provenance records — provides directly usable evidence for all four frameworks. That evidence quality is not achievable with ad-hoc retrieval filters, because filters operate only at the final read and cannot speak to what happened at graph traversal, cache population, or async job handoff.
 
 ## Threat Model and Failure Modes
 
@@ -412,6 +507,24 @@ HKI should be tested as a boundary invariant, not as a documentation promise. A 
 | Publication fan-out        | Shared policy is published from a curated source into A and B    | Create separate A-labeled and B-labeled artifacts with provenance |
 
 Useful acceptance thresholds are concrete: zero successful cross-domain reads in the adversarial suite, zero runtime endpoints that answer without active domain, zero cache keys that omit active domain, zero async job records without domain identity, and a readiness block whenever null-scope runtime artifacts are detected.
+
+### Pre-Release Conformance Checklist
+
+The following nine checks must pass before a system ships under an HKI conformance claim. Each is binary. Partial credit does not apply.
+
+| # | Check | What a Failure Looks Like |
+|---|---|---|
+| 1 | **Envelope validation on every service** — Automated tests confirm that every runtime service rejects requests with missing, null, or `"global"` active domain before touching any store | Any service that returns a result given a null or missing active domain |
+| 2 | **Zero null-scope artifacts in runtime plane** — A full scan of every persisted artifact class returns zero records with missing domain identity | Any document, chunk, graph node, cache entry, or job record with null domain |
+| 3 | **Cache key structure audit** — Every cache layer confirmed to include `org`, `active_domain`, and `op` in key structure; three spot-checked cache hits verified against expected key shape | A cache hit returned without verifying active domain in the key |
+| 4 | **Graph edge label coverage** — Every edge class in the runtime graph confirmed to carry a domain label; extraction pipeline confirmed to propagate domain identity from source artifacts | Any edge class without mandatory domain label, or extraction pipeline that infers label from neighbors |
+| 5 | **Async job domain binding** — Every background job type (ingest, review, reprocess, sync) confirmed to carry and validate active domain at every stage transition | Any worker that reconstructs scope from payload content or uses a default |
+| 6 | **Admin plane separation** — No runtime endpoint has a code path that calls an admin-plane or cross-domain query; confirmed by static analysis or automated test | Any runtime endpoint that shares code with a cross-domain reporting or audit query |
+| 7 | **Publication gate** — Every cross-domain content publication goes through a dedicated workflow producing new domain-labeled artifacts with provenance; no shared artifacts have null or wildcard scope | Any artifact that is visible in multiple domains through runtime visibility rather than explicit publication |
+| 8 | **Adversarial regression suite** — Full conformance test suite run returns zero successful cross-domain reads across all nine test categories | Any passing test in the cross-domain read categories |
+| 9 | **Deploy-time readiness block** — CI/CD pipeline is configured to fail deployment on non-zero null-scope artifact count or any failing conformance test | A deployment that completes despite failing checks, even in non-production environments |
+
+A team that checks all nine has a defensible HKI conformance claim. A team that fails one check knows exactly where the boundary is broken — which is the point.
 
 ## Adoption and Migration Path
 

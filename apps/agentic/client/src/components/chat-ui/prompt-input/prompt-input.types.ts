@@ -45,6 +45,8 @@ export type InteractionState =
   | "active"
   | "disabled";
 
+export type PromptRuntimeTone = "ready" | "working" | "live" | "offline";
+
 export interface PromptInputProps {
   userId: number;
   disabled?: boolean;
@@ -72,8 +74,20 @@ export interface PromptInputProps {
   onSendingStateChange?: (isSending: boolean) => void;
   /** Active project ID — new tasks created from prompt will auto-assign to this project */
   activeProjectId?: string | null;
+  /** Active project display name for prompt context chrome */
+  activeProjectName?: string | null;
   /** Active domain scope — threads through to orchestrator for agent routing */
   activeScope?: string;
+  /** Active domain display name for prompt context chrome */
+  activeScopeName?: string | null;
+  /** Active domain icon, when configured by the stream */
+  activeScopeIcon?: string | null;
+  /** True when the URL fixes the active domain and prevents stream switching */
+  isScopeLocked?: boolean;
+  /** Runtime label rendered in the prompt context chrome */
+  runtimeStateLabel?: string;
+  /** Runtime tone rendered in the prompt context chrome */
+  runtimeStateTone?: PromptRuntimeTone;
 }
 
 // ── Sub-component props ─────────────────────────────────────────────────

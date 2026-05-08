@@ -8,12 +8,12 @@ on:
     branches:
       - main
     paths:
-      - "analytics-service/**"
-      - "ingestion-pipeline-service/**"
-      - "knowledge-api/**"
-      - "orchestrator-service/**"
+      - "services/analytics-service/**"
+      - "services/ingestion-pipeline-service/**"
+      - "services/knowledge-api/**"
+      - "services/orchestrator-service/**"
       - "apps/agentic/**"
-      - "k8s/**"
+      - "deploy/k8s/**"
       - "scripts/deploy-k8s.sh"
   workflow_dispatch:
 
@@ -42,13 +42,13 @@ jobs:
         with:
           filters: |
             knowledge-api:
-              - "knowledge-api/**"
+              - "services/knowledge-api/**"
             orchestrator:
-              - "orchestrator-service/**"
+              - "services/orchestrator-service/**"
             ingestion:
-              - "ingestion-pipeline-service/**"
+              - "services/ingestion-pipeline-service/**"
             analytics:
-              - "analytics-service/**"
+              - "services/analytics-service/**"
             agentic:
               - "apps/agentic/**"
 
@@ -56,28 +56,28 @@ jobs:
         if: steps.changes.outputs.knowledge-api == 'true'
         run: |
           gcloud builds submit . \
-            --config=knowledge-api/cloudbuild.yaml \
+            --config=services/knowledge-api/cloudbuild.yaml \
             --project=${{ secrets.GKE_PROJECT_ID }}
 
       - name: Build orchestrator-service
         if: steps.changes.outputs.orchestrator == 'true'
         run: |
           gcloud builds submit . \
-            --config=orchestrator-service/cloudbuild.yaml \
+            --config=services/orchestrator-service/cloudbuild.yaml \
             --project=${{ secrets.GKE_PROJECT_ID }}
 
       - name: Build ingestion-pipeline-service
         if: steps.changes.outputs.ingestion == 'true'
         run: |
           gcloud builds submit . \
-            --config=ingestion-pipeline-service/cloudbuild.yaml \
+            --config=services/ingestion-pipeline-service/cloudbuild.yaml \
             --project=${{ secrets.GKE_PROJECT_ID }}
 
       - name: Build analytics-service
         if: steps.changes.outputs.analytics == 'true'
         run: |
           gcloud builds submit . \
-            --config=analytics-service/cloudbuild.yaml \
+            --config=services/analytics-service/cloudbuild.yaml \
             --project=${{ secrets.GKE_PROJECT_ID }}
 
       - name: Build agentic BFF

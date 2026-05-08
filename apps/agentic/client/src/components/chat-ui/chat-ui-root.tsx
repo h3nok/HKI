@@ -37,6 +37,7 @@ import { TracesSidebar } from "./traces-sidebar/traces-sidebar";
 import { TaskMessages } from "./task-messages/task-messages";
 import { ErrorBoundary } from "@hki/ui";
 import { PromptInput } from "./prompt-input";
+import type { PromptRuntimeTone } from "./prompt-input";
 import { SuggestionGrid } from "./suggestions/suggestion-grid";
 import {
   buildLeadershipFallbackQuestions,
@@ -390,6 +391,16 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
 
   // Track active project from sidebar so new tasks inherit project scope
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [activeProjectName, setActiveProjectName] = useState<string | null>(
+    null
+  );
+  const handleActiveProjectChange = useCallback(
+    (projectId: string | null, projectName?: string | null) => {
+      setActiveProjectId(projectId);
+      setActiveProjectName(projectName ?? null);
+    },
+    []
+  );
 
   // Live streaming state from WebSocket — provides agent phase label + trace steps
   const {
@@ -506,6 +517,24 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
   // Robust sending detection: combines prompt-driven busy state with explicit
   // quick-action / suggestion sends so the thinking UI appears immediately.
   const isAgentBusy = isPromptSending || isQuickActionSending || isTaskCreating;
+  const promptRuntimeState = useMemo<{
+    label: string;
+    tone: PromptRuntimeTone;
+  }>(() => {
+    if (isAgentBusy) {
+      return {
+        label: agentPhaseLabel?.trim() || "Working",
+        tone: "working",
+      };
+    }
+    if (taskID && isConnected === false) {
+      return { label: "Offline", tone: "offline" };
+    }
+    if (taskID && isConnected) {
+      return { label: "Live", tone: "live" };
+    }
+    return { label: "Ready", tone: "ready" };
+  }, [agentPhaseLabel, isAgentBusy, isConnected, taskID]);
 
   const handleSendingStateChange = useCallback(
     (sending: boolean) => {
@@ -867,7 +896,7 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
         onClose={() => setIsSidebarOpen(false)}
         onToggle={() => setIsSidebarOpen(prev => !prev)}
         onSelectTask={handleTaskSelect}
-        onActiveProjectChange={setActiveProjectId}
+        onActiveProjectChange={handleActiveProjectChange}
         activeStreamName={
           activeScope === GLOBAL_SCOPE ? undefined : activeScopeDef?.name
         }
@@ -1220,7 +1249,13 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
                       enableVoice={canUseChatVoice}
                       onSendingStateChange={handleSendingStateChange}
                       activeProjectId={activeProjectId}
+                      activeProjectName={activeProjectName}
                       activeScope={activeScope}
+                      activeScopeName={activeScopeDef?.name}
+                      activeScopeIcon={activeScopeDef?.icon}
+                      isScopeLocked={isScopeLocked}
+                      runtimeStateLabel={promptRuntimeState.label}
+                      runtimeStateTone={promptRuntimeState.tone}
                     />
                   </div>
 
@@ -1347,13 +1382,19 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
                         enableVoice={canUseChatVoice}
                         onSendingStateChange={handleSendingStateChange}
                         activeProjectId={activeProjectId}
+                        activeProjectName={activeProjectName}
                         activeScope={activeScope}
+                        activeScopeName={activeScopeDef?.name}
+                        activeScopeIcon={activeScopeDef?.icon}
+                        isScopeLocked={isScopeLocked}
+                        runtimeStateLabel={promptRuntimeState.label}
+                        runtimeStateTone={promptRuntimeState.tone}
                       />
                       {/* Typewriter rotating placeholder — hides on focus or when typing */}
                       {!promptValue && !isInputFocused && (
                         <RotatingPlaceholder
                           hidden={!!promptValue || isInputFocused}
-                          className="left-16 right-28 top-0 bottom-0"
+                          className="left-16 right-28 top-8 bottom-0"
                           scopeId={activeScopeDef?.id}
                           scopeName={activeScopeDef?.name}
                           scopeDescription={activeScopeDef?.description}

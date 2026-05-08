@@ -36,12 +36,15 @@ ALLOW_LEGACY_CLOUD_RUN ?= false
 AGENTIC_PUBLIC_URL ?= https://agentic.cilabs.np.cc-hki.com
 
 REGISTRY   := $(REGION)-docker.pkg.dev/$(SPOKE_PROJECT_ID)/$(REGISTRY_NAME)
-URLS_FILE  := $(CURDIR)/deployed-urls.env
+URLS_FILE  := $(CURDIR)/deploy/deployed-urls.env
 AI_PLATFORM_DIR := $(CURDIR)
 AGENTIC_DIR := $(CURDIR)/apps/agentic
+COMPOSE_DIR := $(CURDIR)/deploy/compose
 BUILD_IMAGE_SCRIPT := $(CURDIR)/scripts/build-and-push-image.sh
 DEV_STACK_SCRIPT := $(CURDIR)/scripts/dev-stack.sh
 GKE_TERRAFORM_SCRIPT := $(CURDIR)/scripts/gke-terraform.sh
+DOCKER_COMPOSE := $(shell if command -v docker-compose >/dev/null 2>&1; then printf '%s' docker-compose; else printf '%s' 'docker compose'; fi)
+PYTHON_SERVICES := knowledge-api ingestion-pipeline-service orchestrator-service analytics-service
 
 LEGACY_CLOUD_RUN_TARGETS := \
 	add-user \
@@ -80,9 +83,10 @@ export ANALYTICS_IMAGE AGENTIC_IMAGE
 
 # ── Shell helpers ──────────────────────────────────────────────────────────────
 SHELL := /bin/bash
-.SHELLFLAGS := -euo pipefail -c
+.SHELLFLAGS := -Eeuo pipefail -c
+.DELETE_ON_ERROR:
 
-# Save a Cloud Run service URL to deployed-urls.env
+# Save a Cloud Run service URL to deploy/deployed-urls.env
 define save-url
 	@SERVICE_URL=$$(gcloud run services describe $(2) \
 		--region=$(REGION) \
@@ -166,10 +170,10 @@ endef
         plan-knowledge-api plan-orchestrator plan-ingestion-pipeline \
 		plan-analytics plan-agentic plan-all plan-prod \
         release-prod \
-		db-migrate db-migrate-local db-migrate-prod db-migrate-status db-push \
+		db-migrate db-migrate-local db-migrate-prod db-migrate-status db-migrate-preflight db-push \
 		init-env validate-env install bootstrap clean-workspace \
         dev-knowledge-api dev-knowledge-api-full \
-        dev-ingestion dev-orchestrator dev-analytics dev-services dev-full \
+        dev-ingestion dev-orchestrator dev-analytics dev-services dev-preflight dev-full \
         dev-kb-auth dev-kb-auth-stop \
         dev-stop dev-status dev-restart dev-reset \
         infra-up infra-down infra-reset \
@@ -182,7 +186,7 @@ endef
 
 # ── Help ───────────────────────────────────────────────────────────────────────
 # Use firstword so grep runs only on this Makefile; MAKEFILE_LIST can include
-# included files (e.g. deployed-urls.env) which would make grep prefix lines and break awk.
+# included files (e.g. deploy/deployed-urls.env) which would make grep prefix lines and break awk.
 HELP_MAKEFILE := $(firstword $(MAKEFILE_LIST))
 help: ## Show this help message
 	@echo ""
@@ -232,6 +236,7 @@ help: ## Show this help message
 	@echo "  make install          Install all deps (Python + Node)"
 	@echo "  make clean-workspace  Remove safe local caches and generated metadata"
 	@echo "  make infra-up         Start Docker infrastructure"
+	@echo "  make dev-preflight    Validate service venvs and Python source syntax"
 	@echo "  make dev-full         Restart local stack and launch agentic UI"
 	@echo "  make dev-services     Restart local background services"
 	@echo "  make dev-kb-auth      Start isolated auth-enabled KB validation stack"
@@ -356,10 +361,10 @@ security-audit: ## Run pnpm audit to check for vulnerabilities
 security-fix: ## Run automated security vulnerability fixes
 	@echo ""
 	@echo "━━━ Running security fixes ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@if [ ! -x $(CURDIR)/fix-wiz-vulnerabilities.sh ]; then \
-		chmod +x $(CURDIR)/fix-wiz-vulnerabilities.sh; \
+	@if [ ! -x $(CURDIR)/scripts/fix-wiz-vulnerabilities.sh ]; then \
+		chmod +x $(CURDIR)/scripts/fix-wiz-vulnerabilities.sh; \
 	fi
-	@$(CURDIR)/fix-wiz-vulnerabilities.sh
+	@$(CURDIR)/scripts/fix-wiz-vulnerabilities.sh
 	@echo ""
 	@echo "✅ Security fixes complete. Review changes and commit."
 	@echo ""
@@ -367,10 +372,10 @@ security-fix: ## Run automated security vulnerability fixes
 audit-python: ## Audit Python dependencies for vulnerabilities using pip-audit
 	@echo ""
 	@echo "━━━ Auditing Python dependencies ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@if [ ! -x $(CURDIR)/audit-python-deps.sh ]; then \
-		chmod +x $(CURDIR)/audit-python-deps.sh; \
+	@if [ ! -x $(CURDIR)/scripts/audit-python-deps.sh ]; then \
+		chmod +x $(CURDIR)/scripts/audit-python-deps.sh; \
 	fi
-	@$(CURDIR)/audit-python-deps.sh
+	@$(CURDIR)/scripts/audit-python-deps.sh
 	@echo ""
 	@echo "✅ Python dependency audit complete."
 	@echo ""
@@ -434,7 +439,7 @@ list-users: check-auth ## [DEPRECATED] Legacy Cloud Run invoker visibility — u
 plan-knowledge-api: check-auth ## [DEPRECATED] Legacy Cloud Run plan — use gke-plan
 	@echo ""
 	@echo "━━━ PLAN 1: knowledge-api ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@$(call tf-plan,$(AI_PLATFORM_DIR)/knowledge-api/tf,\
+	@$(call tf-plan,$(AI_PLATFORM_DIR)/services/knowledge-api/tf,\
 		$(if $(strip $(KNOWLEDGE_API_IMAGE)),-var="container_image=$(KNOWLEDGE_API_IMAGE)"))
 	$(call save-url,KNOWLEDGE_API_URL,knowledge-api)
 
@@ -449,16 +454,16 @@ else
 	@IMAGE="$(KNOWLEDGE_API_IMAGE)"; \
 	if [ -z "$$IMAGE" ] && [ "$(SKIP_IMAGE_BUILD)" != "true" ]; then \
 		echo "  Building knowledge-api image for release tag $(RELEASE_TAG)..."; \
-		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" knowledge-api knowledge-api/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
+		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" knowledge-api services/knowledge-api/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
 	elif [ "$(SKIP_IMAGE_BUILD)" = "true" ]; then \
 		echo "  Skipping knowledge-api image build (SKIP_IMAGE_BUILD=true)"; \
 	fi; \
 	if [ -n "$$IMAGE" ]; then \
 		echo "  Using knowledge-api image: $$IMAGE"; \
-		$(call tf-apply,$(AI_PLATFORM_DIR)/knowledge-api/tf,-var="container_image=$$IMAGE"); \
+		$(call tf-apply,$(AI_PLATFORM_DIR)/services/knowledge-api/tf,-var="container_image=$$IMAGE"); \
 	else \
 		echo "  Using knowledge-api Terraform default image reference"; \
-		$(call tf-apply,$(AI_PLATFORM_DIR)/knowledge-api/tf,); \
+		$(call tf-apply,$(AI_PLATFORM_DIR)/services/knowledge-api/tf,); \
 	fi
 	$(call wait-ready,knowledge-api)
 	$(call save-url,KNOWLEDGE_API_URL,knowledge-api)
@@ -474,7 +479,7 @@ plan-orchestrator: check-auth ## Show Terraform plan for Orchestrator Service
 	@if [ -z "$(KNOWLEDGE_API_URL)" ]; then \
 		echo "ERROR: KNOWLEDGE_API_URL not set. Run 'make plan-knowledge-api' first or load $(URLS_FILE)."; exit 1; \
 	fi
-	@$(call tf-plan,$(AI_PLATFORM_DIR)/orchestrator-service/tf,\
+	@$(call tf-plan,$(AI_PLATFORM_DIR)/services/orchestrator-service/tf,\
 		$(if $(strip $(ORCHESTRATOR_IMAGE)),-var="container_image=$(ORCHESTRATOR_IMAGE)") \
 		-var="knowledge_api_url=$(KNOWLEDGE_API_URL)")
 	$(call save-url,ORCHESTRATOR_URL,orchestrator-service)
@@ -494,18 +499,18 @@ else
 	@IMAGE="$(ORCHESTRATOR_IMAGE)"; \
 	if [ -z "$$IMAGE" ] && [ "$(SKIP_IMAGE_BUILD)" != "true" ]; then \
 		echo "  Building orchestrator-service image for release tag $(RELEASE_TAG)..."; \
-		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" orchestrator-service orchestrator-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
+		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" orchestrator-service services/orchestrator-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
 	elif [ "$(SKIP_IMAGE_BUILD)" = "true" ]; then \
 		echo "  Skipping orchestrator-service image build (SKIP_IMAGE_BUILD=true)"; \
 	fi; \
 	if [ -n "$$IMAGE" ]; then \
 		echo "  Using orchestrator-service image: $$IMAGE"; \
-		$(call tf-apply,$(AI_PLATFORM_DIR)/orchestrator-service/tf,\
+		$(call tf-apply,$(AI_PLATFORM_DIR)/services/orchestrator-service/tf,\
 			-var="container_image=$$IMAGE" \
 			-var="knowledge_api_url=$(KNOWLEDGE_API_URL)"); \
 	else \
 		echo "  Using orchestrator-service Terraform default image reference"; \
-		$(call tf-apply,$(AI_PLATFORM_DIR)/orchestrator-service/tf,\
+		$(call tf-apply,$(AI_PLATFORM_DIR)/services/orchestrator-service/tf,\
 			-var="knowledge_api_url=$(KNOWLEDGE_API_URL)"); \
 	fi
 	$(call wait-ready,orchestrator-service)
@@ -522,7 +527,7 @@ plan-ingestion-pipeline: check-auth ## Show Terraform plan for Ingestion Pipelin
 	@if [ -z "$(KNOWLEDGE_API_URL)" ]; then \
 		echo "ERROR: KNOWLEDGE_API_URL not set. Run 'make plan-knowledge-api' first or load $(URLS_FILE)."; exit 1; \
 	fi
-	@$(call tf-plan,$(AI_PLATFORM_DIR)/ingestion-pipeline-service/tf,\
+	@$(call tf-plan,$(AI_PLATFORM_DIR)/services/ingestion-pipeline-service/tf,\
 		$(if $(strip $(INGESTION_PIPELINE_IMAGE)),-var="container_image=$(INGESTION_PIPELINE_IMAGE)") \
 		-var="knowledge_api_url=$(KNOWLEDGE_API_URL)")
 	$(call save-url,INGESTION_PIPELINE_URL,ingestion-pipeline-service)
@@ -542,18 +547,18 @@ else
 	@IMAGE="$(INGESTION_PIPELINE_IMAGE)"; \
 	if [ -z "$$IMAGE" ] && [ "$(SKIP_IMAGE_BUILD)" != "true" ]; then \
 		echo "  Building ingestion-pipeline-service image for release tag $(RELEASE_TAG)..."; \
-		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" ingestion-pipeline-service ingestion-pipeline-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
+		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" ingestion-pipeline-service services/ingestion-pipeline-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
 	elif [ "$(SKIP_IMAGE_BUILD)" = "true" ]; then \
 		echo "  Skipping ingestion-pipeline-service image build (SKIP_IMAGE_BUILD=true)"; \
 	fi; \
 	if [ -n "$$IMAGE" ]; then \
 		echo "  Using ingestion-pipeline-service image: $$IMAGE"; \
-		$(call tf-apply,$(AI_PLATFORM_DIR)/ingestion-pipeline-service/tf,\
+		$(call tf-apply,$(AI_PLATFORM_DIR)/services/ingestion-pipeline-service/tf,\
 			-var="container_image=$$IMAGE" \
 			-var="knowledge_api_url=$(KNOWLEDGE_API_URL)"); \
 	else \
 		echo "  Using ingestion-pipeline-service Terraform default image reference"; \
-		$(call tf-apply,$(AI_PLATFORM_DIR)/ingestion-pipeline-service/tf,\
+		$(call tf-apply,$(AI_PLATFORM_DIR)/services/ingestion-pipeline-service/tf,\
 			-var="knowledge_api_url=$(KNOWLEDGE_API_URL)"); \
 	fi
 	$(call wait-ready,ingestion-pipeline-service)
@@ -567,7 +572,7 @@ endif
 plan-analytics: check-auth ## Show Terraform plan for Analytics Service
 	@echo ""
 	@echo "━━━ PLAN 4: analytics-service ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@$(call tf-plan,$(AI_PLATFORM_DIR)/analytics-service/tf,\
+	@$(call tf-plan,$(AI_PLATFORM_DIR)/services/analytics-service/tf,\
 		$(if $(strip $(ANALYTICS_IMAGE)),-var="container_image=$(ANALYTICS_IMAGE)"))
 	$(call save-url,ANALYTICS_URL,analytics-service)
 
@@ -582,16 +587,16 @@ else
 	@IMAGE="$(ANALYTICS_IMAGE)"; \
 	if [ -z "$$IMAGE" ] && [ "$(SKIP_IMAGE_BUILD)" != "true" ]; then \
 		echo "  Building analytics-service image for release tag $(RELEASE_TAG)..."; \
-		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" analytics-service analytics-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
+		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" analytics-service services/analytics-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
 	elif [ "$(SKIP_IMAGE_BUILD)" = "true" ]; then \
 		echo "  Skipping analytics-service image build (SKIP_IMAGE_BUILD=true)"; \
 	fi; \
 	if [ -n "$$IMAGE" ]; then \
 		echo "  Using analytics-service image: $$IMAGE"; \
-		$(call tf-apply,$(AI_PLATFORM_DIR)/analytics-service/tf,-var="container_image=$$IMAGE"); \
+		$(call tf-apply,$(AI_PLATFORM_DIR)/services/analytics-service/tf,-var="container_image=$$IMAGE"); \
 	else \
 		echo "  Using analytics-service Terraform default image reference"; \
-		$(call tf-apply,$(AI_PLATFORM_DIR)/analytics-service/tf,); \
+		$(call tf-apply,$(AI_PLATFORM_DIR)/services/analytics-service/tf,); \
 	fi
 	$(call wait-ready,analytics-service)
 	$(call save-url,ANALYTICS_URL,analytics-service)
@@ -636,7 +641,7 @@ else
 	@IMAGE="$(KNOWLEDGE_API_IMAGE)"; \
 	if [ -z "$$IMAGE" ] && [ "$(SKIP_IMAGE_BUILD)" != "true" ]; then \
 		echo "  Building knowledge-api image for release tag $(RELEASE_TAG)..."; \
-		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" knowledge-api knowledge-api/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
+		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" knowledge-api services/knowledge-api/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
 	elif [ "$(SKIP_IMAGE_BUILD)" = "true" ]; then \
 		echo "ERROR: SKIP_IMAGE_BUILD=true requires KNOWLEDGE_API_IMAGE to be set"; exit 1; \
 	fi; \
@@ -665,7 +670,7 @@ else
 	@IMAGE="$(ORCHESTRATOR_IMAGE)"; \
 	if [ -z "$$IMAGE" ] && [ "$(SKIP_IMAGE_BUILD)" != "true" ]; then \
 		echo "  Building orchestrator-service image for release tag $(RELEASE_TAG)..."; \
-		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" orchestrator-service orchestrator-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
+		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" orchestrator-service services/orchestrator-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
 	elif [ "$(SKIP_IMAGE_BUILD)" = "true" ]; then \
 		echo "ERROR: SKIP_IMAGE_BUILD=true requires ORCHESTRATOR_IMAGE to be set"; exit 1; \
 	fi; \
@@ -694,7 +699,7 @@ else
 	@IMAGE="$(INGESTION_PIPELINE_IMAGE)"; \
 	if [ -z "$$IMAGE" ] && [ "$(SKIP_IMAGE_BUILD)" != "true" ]; then \
 		echo "  Building ingestion-pipeline-service image for release tag $(RELEASE_TAG)..."; \
-		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" ingestion-pipeline-service ingestion-pipeline-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
+		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" ingestion-pipeline-service services/ingestion-pipeline-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
 	elif [ "$(SKIP_IMAGE_BUILD)" = "true" ]; then \
 		echo "ERROR: SKIP_IMAGE_BUILD=true requires INGESTION_PIPELINE_IMAGE to be set"; exit 1; \
 	fi; \
@@ -723,7 +728,7 @@ else
 	@IMAGE="$(ANALYTICS_IMAGE)"; \
 	if [ -z "$$IMAGE" ] && [ "$(SKIP_IMAGE_BUILD)" != "true" ]; then \
 		echo "  Building analytics-service image for release tag $(RELEASE_TAG)..."; \
-		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" analytics-service analytics-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
+		IMAGE="$$( "$(BUILD_IMAGE_SCRIPT)" analytics-service services/analytics-service/Dockerfile "$(AI_PLATFORM_DIR)" "$(REGISTRY)" "$(RELEASE_TAG)" )"; \
 	elif [ "$(SKIP_IMAGE_BUILD)" = "true" ]; then \
 		echo "ERROR: SKIP_IMAGE_BUILD=true requires ANALYTICS_IMAGE to be set"; exit 1; \
 	fi; \
@@ -758,19 +763,6 @@ rollout-agentic-runtime: check-auth ## Agentic Cloud Run runtime rollout removed
 #   Pub/Sub emulator    :9085
 # ═══════════════════════════════════════════════════════════════════════════════
 
-.PHONY: help-dev help-test help-deploy init-env validate-env install bootstrap \
-        dev-knowledge-api dev-knowledge-api-full \
-        dev-ingestion dev-orchestrator dev-analytics dev-services dev-full \
-        dev-kb-auth dev-kb-auth-stop \
-        dev-stop dev-status \
-        infra-up infra-down infra-reset \
-        test-services lint-services hki-check hki-audit hki-runtime-check \
-        hki-runtime-py-check hki-conformance-check \
-        e2e-test \
-	kb-test-setup kb-test-run kb-test-search kb-acl-smoke kb-ui-e2e kb-user-cleanup \
-        doctor-dev \
-        db-migrate db-migrate-status db-push
-
 # ── Build ─────────────────────────────────────────────────────────────────────
 build: ## Build all Node packages (ui, chat, agentic)
 	pnpm run build
@@ -790,10 +782,10 @@ install: bootstrap ## Install all dependencies (Python + Node) — alias for ful
 
 bootstrap: ## Install Python dependencies for all ai-platform services (uv sync)
 	@echo "Installing Python dependencies..."
-	cd knowledge-api && uv sync --extra dev
-	cd ingestion-pipeline-service && uv sync --extra dev
-	cd orchestrator-service && uv sync --extra dev
-	cd analytics-service && uv sync --extra dev
+	@for svc in $(PYTHON_SERVICES); do \
+		echo "  $$svc"; \
+		(cd "services/$$svc" && uv sync --extra dev); \
+	done
 	@echo "Python deps installed (4 services)"
 
 clean-workspace: ## Remove safe local caches, generated metadata, and stray OS files
@@ -804,19 +796,19 @@ clean-workspace: ## Remove safe local caches, generated metadata, and stray OS f
 
 # ── Local Infrastructure ───────────────────────────────────────────────────────
 infra-up: ## Start local dev infrastructure (PostgreSQL, Redis, MySQL, LiteLLM)
-	cd docker-compose && docker-compose up -d
+	cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) up -d
 	@sleep 3
-	@cd docker-compose && docker-compose ps
+	@cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) ps
 
 infra-down: ## Stop local dev infrastructure
-	cd docker-compose && docker-compose down
+	cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) down
 
 infra-reset: ## Nuke volumes and restart infrastructure
-	cd docker-compose && docker-compose down -v --remove-orphans
+	cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) down -v --remove-orphans
 	@docker volume prune -f 2>/dev/null || true
-	cd docker-compose && docker-compose up -d
+	cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) up -d
 	@sleep 3
-	@cd docker-compose && docker-compose ps
+	@cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) ps
 	@echo "Infrastructure reset"
 
 KB_API_URL ?= http://localhost:9509
@@ -824,29 +816,31 @@ KB_API_URL ?= http://localhost:9509
 kb-reset: ## Clear all documents from the knowledge base (vector store + pipeline jobs + review records)
 	@echo "Resetting knowledge base..."
 	@echo "── Deleting all vector store documents ──"
-	@doc_ids=$$(curl -sf "$(KB_API_URL)/v1/documents" \
-		-H 'Authorization: Bearer test' \
-		| python3 -c "import sys,json; [print(d['id']) for d in json.load(sys.stdin).get('documents',[])]" 2>/dev/null) \
-	&& if [ -z "$$doc_ids" ]; then \
+	@docs_json=$$(curl -sf "$(KB_API_URL)/v1/documents" 2>/dev/null) || { \
+		echo "  Knowledge API not reachable (skipped)"; \
+		docs_json=""; \
+	}; \
+	doc_ids=$$(printf '%s' "$$docs_json" \
+		| python3 -c "import sys,json; [print(d['id']) for d in json.load(sys.stdin).get('documents',[])]" 2>/dev/null || true); \
+	if [ -z "$$docs_json" ]; then \
+		:; \
+	elif [ -z "$$doc_ids" ]; then \
 		echo "  No documents found — already clean"; \
 	else \
 		count=0; \
 		for id in $$doc_ids; do \
-			curl -sf -X DELETE "$(KB_API_URL)/v1/documents/$$id" \
-				-H 'Authorization: Bearer test' >/dev/null 2>&1 \
+			curl -sf -X DELETE "$(KB_API_URL)/v1/documents/$$id" >/dev/null 2>&1 \
 			&& count=$$((count + 1)); \
 		done; \
 		echo "  Deleted $$count document(s)"; \
 	fi
 	@echo "── Clearing pipeline jobs ──"
-	@curl -sf "http://localhost:9508/v1/jobs" \
-		-H 'Authorization: Bearer test' 2>/dev/null \
+	@curl -sf "http://localhost:9508/v1/jobs" 2>/dev/null \
 		| python3 -c "import sys,json; d=json.load(sys.stdin); print(f'  {len(d.get(\"jobs\",d.get(\"items\",[])))} job(s) in store (will expire via TTL)')" 2>/dev/null \
 	|| echo "  Pipeline not reachable (skipped)"
 	@echo "── Clearing review records ──"
-	@curl -sf "http://localhost:9508/v1/review/history" \
-		-H 'Authorization: Bearer test' 2>/dev/null \
-		| python3 -c "import sys,json; d=json.load(sys.stdin); print(f'  {len(d.get(\"items\",[]))} review record(s) in store')" 2>/dev/null \
+	@curl -sf "http://localhost:9508/v1/review/history" 2>/dev/null \
+		| python3 -c "import sys,json; d=json.load(sys.stdin); items=d if isinstance(d,list) else d.get(\"items\",[]); print(f'  {len(items)} review record(s) in store')" 2>/dev/null \
 	|| echo "  Pipeline not reachable (skipped)"
 	@echo ""
 	@echo "Knowledge base reset complete."
@@ -856,13 +850,13 @@ reset-test-db: ## Wipe all KB data, value streams, conversations, traces from lo
 	@echo "═══════════════════════════════════════════════════════"
 	@echo "  Resetting local test database"
 	@echo "═══════════════════════════════════════════════════════"
-	@if ! docker ps | grep -q retail-agentic-mysql; then \
-		echo "ERROR: retail-agentic-mysql container is not running."; \
+	@if ! docker ps | grep -q hki-mysql; then \
+		echo "ERROR: hki-mysql container is not running."; \
 		echo "Start it with: make infra-up"; \
 		exit 1; \
 	fi
 	@echo "── Truncating knowledge tables ──"
-	@docker exec retail-agentic-mysql mysql -u root -proot retail_agentic -e "\
+	@docker exec hki-mysql mysql -u root -proot retail_agentic -e "\
 		SET FOREIGN_KEY_CHECKS = 0; \
 		TRUNCATE TABLE knowledgeAgentEvalRuns; \
 		TRUNCATE TABLE knowledgeAttestations; \
@@ -882,28 +876,28 @@ reset-test-db: ## Wipe all KB data, value streams, conversations, traces from lo
 		SET FOREIGN_KEY_CHECKS = 1; \
 	" 2>/dev/null && echo "  Done" || echo "  Warning: some tables may not exist yet (OK)"
 	@echo "── Truncating value streams + user assignments ──"
-	@docker exec retail-agentic-mysql mysql -u root -proot retail_agentic -e "\
+	@docker exec hki-mysql mysql -u root -proot retail_agentic -e "\
 		SET FOREIGN_KEY_CHECKS = 0; \
 		TRUNCATE TABLE userValueStreams; \
 		TRUNCATE TABLE valueStreams; \
 		SET FOREIGN_KEY_CHECKS = 1; \
 	" 2>/dev/null && echo "  Done"
 	@echo "── Truncating conversations + messages ──"
-	@docker exec retail-agentic-mysql mysql -u root -proot retail_agentic -e "\
+	@docker exec hki-mysql mysql -u root -proot retail_agentic -e "\
 		SET FOREIGN_KEY_CHECKS = 0; \
 		TRUNCATE TABLE messages; \
 		TRUNCATE TABLE conversations; \
 		SET FOREIGN_KEY_CHECKS = 1; \
 	" 2>/dev/null && echo "  Done"
 	@echo "── Truncating traces + tool executions ──"
-	@docker exec retail-agentic-mysql mysql -u root -proot retail_agentic -e "\
+	@docker exec hki-mysql mysql -u root -proot retail_agentic -e "\
 		SET FOREIGN_KEY_CHECKS = 0; \
 		TRUNCATE TABLE thoughtTraceSteps; \
 		TRUNCATE TABLE toolExecutions; \
 		SET FOREIGN_KEY_CHECKS = 1; \
 	" 2>/dev/null && echo "  Done"
 	@echo "── Truncating audit log + access requests ──"
-	@docker exec retail-agentic-mysql mysql -u root -proot retail_agentic -e "\
+	@docker exec hki-mysql mysql -u root -proot retail_agentic -e "\
 		SET FOREIGN_KEY_CHECKS = 0; \
 		TRUNCATE TABLE auditLog; \
 		TRUNCATE TABLE accessRequests; \
@@ -925,7 +919,7 @@ reset-test-db: ## Wipe all KB data, value streams, conversations, traces from lo
 db-migrate-status: ## Check database migration status and show applied migrations
 	@if [ -z "$(DATABASE_URL)" ]; then \
 		echo "Checking local Docker MySQL migration status..."; \
-		if docker ps | grep -q retail-agentic-mysql; then \
+		if docker ps | grep -q hki-mysql; then \
 			cd "$(AGENTIC_DIR)" && DATABASE_URL=mysql://root:root@localhost:9306/retail_agentic pnpm db:migrate:status; \
 		else \
 			echo "ERROR: No DATABASE_URL provided and local MySQL not running."; \
@@ -941,7 +935,7 @@ db-migrate-status: ## Check database migration status and show applied migration
 db-migrate-preflight: ## Validate migration state and auto-apply pending migrations
 	@if [ -z "$(DATABASE_URL)" ]; then \
 		echo "Checking local Docker MySQL migration preflight..."; \
-		if docker ps | grep -q retail-agentic-mysql; then \
+		if docker ps | grep -q hki-mysql; then \
 			cd "$(AGENTIC_DIR)" && DATABASE_URL=mysql://root:root@localhost:9306/retail_agentic pnpm db:migrate:preflight; \
 		else \
 			echo "ERROR: No DATABASE_URL provided and local MySQL not running."; \
@@ -955,7 +949,7 @@ db-migrate-preflight: ## Validate migration state and auto-apply pending migrati
 	fi
 
 db-migrate-local: ## Run migrations against local Docker MySQL (auto-detects connection)
-	@if ! docker ps | grep -q retail-agentic-mysql; then \
+	@if ! docker ps | grep -q hki-mysql; then \
 		echo "ERROR: Local MySQL container not running. Start with: make infra-up"; \
 		exit 1; \
 	fi
@@ -999,44 +993,55 @@ db-push: ## Run drizzle-kit push to sync schema to DATABASE_URL (interactive)
 
 # ── Service Dev Targets ────────────────────────────────────────────────────────
 dev-knowledge-api: ## Run Knowledge API on :9509 (requires infra-up)
-	cd knowledge-api && \
+	cd services/knowledge-api && unset __PYVENV_LAUNCHER__ && \
 		ALLOYDB_URL=postgresql://postgres:postgres@localhost:9432/knowledge \
 		ENVIRONMENT=development \
+		HKI_DEV_RUNTIME_SCOPE=dev \
 		KB_HERMETIC_ISOLATION=true \
+		PYTHONPATH="$(CURDIR)/packages/shared-py:$${PYTHONPATH:-}" \
 		uv run uvicorn src.api.app:app --reload --port 9509 --reload-dir src
 
 dev-knowledge-api-full: ## Run Knowledge API with Neo4j on :9509
-	cd knowledge-api && \
+	cd services/knowledge-api && unset __PYVENV_LAUNCHER__ && \
 		ALLOYDB_URL=postgresql://postgres:postgres@localhost:9432/knowledge \
 		NEO4J_URI=bolt://localhost:9687 \
 		NEO4J_PASSWORD=knowledge \
 		ENTITY_EXTRACTION_ENABLED=true \
 		ENVIRONMENT=development \
+		HKI_DEV_RUNTIME_SCOPE=dev \
 		KB_HERMETIC_ISOLATION=true \
+		PYTHONPATH="$(CURDIR)/packages/shared-py:$${PYTHONPATH:-}" \
 		uv run uvicorn src.api.app:app --reload --port 9509 --reload-dir src
 
 dev-ingestion: ## Run Ingestion Pipeline Service on :9508 (requires infra-up)
 	@lsof -ti :9508 | xargs kill -9 2>/dev/null || true
-	cd ingestion-pipeline-service && set -a && [ -f .env ] && . .env; set +a && \
+	cd services/ingestion-pipeline-service && set -a && [ -f .env ] && . .env; set +a && unset __PYVENV_LAUNCHER__ && \
 		KNOWLEDGE_API_URL=http://localhost:9509 \
 		AUTH_ENABLED=false \
 		ENVIRONMENT=development \
+		HKI_DEV_RUNTIME_SCOPE=dev \
 		KB_HERMETIC_ISOLATION=true \
+		PYTHONPATH="$(CURDIR)/packages/shared-py:$${PYTHONPATH:-}" \
 		uv run uvicorn src.api.app:app --reload --port 9508 --reload-dir src
 
 dev-orchestrator: ## Run Orchestrator Service on :9501 (requires infra-up)
-	cd orchestrator-service && set -a && [ -f .env ] && . .env; set +a && \
+	cd services/orchestrator-service && set -a && [ -f .env ] && . .env; set +a && unset __PYVENV_LAUNCHER__ && \
 		REDIS_URL=redis://localhost:9379/0 \
 		AUTH_ENABLED=false \
+		PYTHONPATH="$(CURDIR)/packages/shared-py:$${PYTHONPATH:-}" \
 		uv run uvicorn src.api.app:app --reload --port 9501 --reload-dir src
 
 dev-analytics: ## Run Analytics Service on :9510
-	cd analytics-service && set -a && [ -f .env ] && . .env; set +a && \
+	cd services/analytics-service && set -a && [ -f .env ] && . .env; set +a && unset __PYVENV_LAUNCHER__ && \
 		ENVIRONMENT=development \
+		PYTHONPATH="$(CURDIR)/packages/shared-py:$${PYTHONPATH:-}" \
 		uv run uvicorn src.api.app:app --reload --port 9510 --reload-dir src
 
 dev-services: ## Restart local background services (infra + Python services)
 	@bash "$(DEV_STACK_SCRIPT)" start-services
+
+dev-preflight: ## Validate Python service venvs and source syntax before startup
+	@bash "$(DEV_STACK_SCRIPT)" preflight
 
 dev-kb-auth: ## Start isolated auth-enabled KB validation stack on :9608/:9609
 	@bash "$(DEV_STACK_SCRIPT)" start-kb-auth
@@ -1080,9 +1085,9 @@ dev-reset: ## Restart Docker infra and local services
 # ── Quality ────────────────────────────────────────────────────────────────────
 test-services: ## Run pytest for all ai-platform services
 	@status=0; \
-	for svc in knowledge-api ingestion-pipeline-service orchestrator-service analytics-service; do \
+	for svc in $(PYTHON_SERVICES); do \
 		echo "  Testing $$svc..."; \
-		if ! (cd $$svc && PYTHONPATH="$(CURDIR)" AUTH_ENABLED=false uv run pytest tests/ -x --tb=short); then \
+		if ! (cd services/$$svc && PYTHONPATH="$(CURDIR)" AUTH_ENABLED=false uv run pytest tests/ -x --tb=short); then \
 			echo "  ✗ $$svc tests failed"; \
 			status=1; \
 		fi; \
@@ -1091,9 +1096,9 @@ test-services: ## Run pytest for all ai-platform services
 
 lint-services: ## Run ruff linter on all ai-platform services
 	@status=0; \
-	for svc in knowledge-api ingestion-pipeline-service orchestrator-service analytics-service; do \
+	for svc in $(PYTHON_SERVICES); do \
 		echo "  Linting $$svc..."; \
-		if ! (cd $$svc && uv run ruff check src/); then \
+		if ! (cd services/$$svc && uv run ruff check src/); then \
 			echo "  ✗ $$svc lint failed"; \
 			status=1; \
 		fi; \
@@ -1129,11 +1134,11 @@ test-prod: gke-credentials ## Run canonical GKE production verification suite
 # ── Knowledge Base Testing ─────────────────────────────────────────────────────
 kb-test-setup: ## Set up knowledge base test environment
 	@echo "Setting up knowledge base testing environment..."
-	cd knowledge-api/test-data && bash setup_test_env.sh
+	cd services/knowledge-api/test-data && bash setup_test_env.sh
 
 kb-test-run: ## Run knowledge base evaluation suite
 	@echo "Running knowledge base evaluation suite..."
-	cd knowledge-api/test-data && python3 run_evaluation.py
+	cd services/knowledge-api/test-data && python3 run_evaluation.py
 
 kb-test-search: ## Quick knowledge base search smoke test
 	@echo "Quick knowledge base search test..."

@@ -39,4 +39,4 @@ node_modules/
 
 docs/
 tests/
-docker-compose/
+deploy/compose/

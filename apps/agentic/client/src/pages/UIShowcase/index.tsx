@@ -47,9 +47,13 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 
 // ── Brand ──────────────────────────────────────────────────────────────────────
 
-const BLUE = "#0066B2";
-const RED = "#E31837";
+const IRIS = "#0E7C7B";
+const PULSE = "#E07A1F";
 const PRIMARY = "var(--primary)";
+const DOMAIN_STRUCTURE =
+  "var(--stream-icon-structure, var(--color-brand-iris-500, #0E7C7B))";
+const DOMAIN_ACCENT =
+  "var(--stream-icon-accent, var(--color-brand-pulse-500, #E07A1F))";
 const INDIGO = "#6366F1";
 const SHOWCASE_HEADING_FONT =
   (FONT_FAMILY as typeof FONT_FAMILY & { heading?: string }).heading ??
@@ -106,14 +110,14 @@ function Section({
           <div className="flex items-center gap-3">
             <span
               className="text-[10px] font-black tracking-[0.25em] uppercase"
-              style={{ color: BLUE }}
+              style={{ color: IRIS }}
             >
               {num}
             </span>
             <div
               className="h-px flex-1"
               style={{
-                background: `linear-gradient(90deg, ${BLUE}50, transparent)`,
+                background: `linear-gradient(90deg, ${IRIS}50, transparent)`,
               }}
             />
           </div>
@@ -217,8 +221,12 @@ function OverviewSection() {
     >
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { value: "30+", label: "Components", color: BLUE },
-          { value: "14", label: "Stream Icons", color: RED },
+          { value: "30+", label: "Components", color: IRIS },
+          {
+            value: String(STREAM_ICON_OPTIONS.length),
+            label: "Stream Icons",
+            color: DOMAIN_ACCENT,
+          },
           { value: "8", label: "Sections", color: INDIGO },
           { value: "2", label: "Themes", color: "#10B981" },
         ].map(({ value, label, color }) => (
@@ -266,9 +274,9 @@ function OverviewSection() {
             <div key={label}>
               <div
                 className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 border"
-                style={{ background: `${BLUE}0c`, borderColor: `${BLUE}30` }}
+                style={{ background: `${IRIS}0c`, borderColor: `${IRIS}30` }}
               >
-                <Icon className="w-4 h-4" style={{ color: BLUE }} />
+                <Icon className="w-4 h-4" style={{ color: IRIS }} />
               </div>
               <p className="text-sm font-semibold text-foreground mb-1.5">
                 {label}
@@ -289,9 +297,9 @@ function OverviewSection() {
             { t: "Radix UI", c: "#8B5CF6" },
             { t: "Tailwind CSS", c: "#06B6D4" },
             { t: "Framer Motion", c: "#FF0055" },
-            { t: "Plus Jakarta Sans", c: BLUE },
+            { t: "Plus Jakarta Sans", c: IRIS },
             { t: "Lucide Icons", c: "#F97316" },
-            { t: "HKI Brand Tokens", c: RED },
+            { t: "HKI Brand Tokens", c: PULSE },
           ].map(({ t, c }) => (
             <span
               key={t}
@@ -328,16 +336,16 @@ function BrandSection() {
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
             {
-              color: BLUE,
-              label: "HKI Blue",
-              hex: "#0066B2",
+              color: IRIS,
+              label: "HKI Iris",
+              hex: "#0E7C7B",
               usage: "Primary — structure, CTAs, links",
             },
             {
-              color: RED,
-              label: "HKI Red",
-              hex: "#E31837",
-              usage: "Accent — alerts, highlights, errors",
+              color: PULSE,
+              label: "HKI Pulse",
+              hex: "#E07A1F",
+              usage: "Accent — signals, highlights, active marks",
             },
             {
               color: INDIGO,
@@ -422,11 +430,11 @@ function BrandSection() {
               {[
                 {
                   label: "Brand",
-                  grad: `linear-gradient(135deg, ${BLUE}, ${RED})`,
+                  grad: `linear-gradient(135deg, ${IRIS}, ${PULSE})`,
                 },
                 {
                   label: "AI / Agentic",
-                  grad: `linear-gradient(135deg, ${BLUE}, ${INDIGO})`,
+                  grad: `linear-gradient(135deg, ${IRIS}, ${INDIGO})`,
                 },
                 {
                   label: "Success",
@@ -438,7 +446,7 @@ function BrandSection() {
                 },
                 {
                   label: "Subtle Tint",
-                  grad: `linear-gradient(135deg, ${BLUE}14, ${RED}14)`,
+                  grad: `linear-gradient(135deg, ${IRIS}14, ${PULSE}14)`,
                 },
               ].map(({ label, grad }) => (
                 <div key={label} className="flex items-center gap-3">
@@ -464,7 +472,7 @@ function BrandSection() {
                 <div
                   className="p-4 rounded-xl inline-flex items-center justify-center"
                   style={{
-                    background: `linear-gradient(135deg, ${BLUE}14, ${RED}14)`,
+                    background: `linear-gradient(135deg, ${IRIS}14, ${PULSE}14)`,
                   }}
                 >
                   <StreamIcon id="global" size={32} />
@@ -629,13 +637,15 @@ function ComponentsSection() {
             <Button size="sm">Small</Button>
             <Button>Default</Button>
             <Button size="lg">Large</Button>
-            <Button style={{ background: BLUE, color: "white" }}>
-              HKI Blue
+            <Button style={{ background: IRIS, color: "white" }}>
+              HKI Iris
             </Button>
-            <Button style={{ background: RED, color: "white" }}>HKI Red</Button>
+            <Button style={{ background: PULSE, color: "white" }}>
+              HKI Pulse
+            </Button>
             <Button
               style={{
-                background: `linear-gradient(135deg, ${BLUE}, ${INDIGO})`,
+                background: `linear-gradient(135deg, ${IRIS}, ${INDIGO})`,
                 color: "white",
               }}
             >
@@ -654,15 +664,15 @@ function ComponentsSection() {
               </Badge>
             )
           )}
-          <Badge className="text-white" style={{ background: BLUE }}>
-            HKI Blue
+          <Badge className="text-white" style={{ background: IRIS }}>
+            HKI Iris
           </Badge>
-          <Badge className="text-white" style={{ background: RED }}>
-            HKI Red
+          <Badge className="text-white" style={{ background: PULSE }}>
+            HKI Pulse
           </Badge>
           <Badge
             className="text-white text-[10px] font-bold"
-            style={{ background: `linear-gradient(90deg, ${BLUE}, ${INDIGO})` }}
+            style={{ background: `linear-gradient(90deg, ${IRIS}, ${INDIGO})` }}
           >
             @hki/ui
           </Badge>
@@ -712,16 +722,16 @@ function ComponentsSection() {
             </Card>
             <Card
               className="border-2"
-              style={{ borderColor: `${BLUE}40`, background: `${BLUE}06` }}
+              style={{ borderColor: `${IRIS}40`, background: `${IRIS}06` }}
             >
               <CardHeader>
-                <CardTitle className="text-sm" style={{ color: BLUE }}>
+                <CardTitle className="text-sm" style={{ color: IRIS }}>
                   Branded Card
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Elevated variant with HKI Blue tint — for featured content.
+                  Elevated variant with HKI Iris tint — for featured content.
                 </p>
               </CardContent>
             </Card>
@@ -755,7 +765,7 @@ function IconsSection() {
       id="icons"
       num="05"
       title="Domain Icons"
-      subtitle="14 HKI-domain SVG icons. Blue for structure, Red for the defining accent. IDs are varchar(8) for direct database storage."
+      subtitle={`${STREAM_ICON_OPTIONS.length} HKI-domain SVG icons. Iris defines boundary structure; Pulse marks the active domain accent. IDs fit varchar(8) for direct database storage.`}
     >
       <Demo title="Full Set">
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
@@ -765,16 +775,33 @@ function IconsSection() {
               whileHover={{ scale: 1.08, y: -3 }}
               onHoverStart={() => setHovered(id)}
               onHoverEnd={() => setHovered(null)}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl cursor-default"
+              className="relative flex flex-col items-center gap-2 overflow-hidden rounded-lg p-3 cursor-default"
               style={{
                 background:
                   hovered === id
-                    ? `linear-gradient(135deg, ${BLUE}0d, ${RED}0d)`
+                    ? `linear-gradient(135deg, color-mix(in srgb, ${DOMAIN_STRUCTURE} 10%, transparent), color-mix(in srgb, ${DOMAIN_ACCENT} 12%, transparent))`
                     : "transparent",
-                border: `1px solid ${hovered === id ? `${BLUE}40` : "transparent"}`,
-                transition: "background 0.2s, border-color 0.2s",
+                border: `1px solid ${
+                  hovered === id
+                    ? `color-mix(in srgb, ${DOMAIN_STRUCTURE} 40%, var(--border))`
+                    : "transparent"
+                }`,
+                boxShadow:
+                  hovered === id
+                    ? `0 12px 32px color-mix(in srgb, ${DOMAIN_STRUCTURE} 16%, transparent)`
+                    : "none",
+                transition:
+                  "background 0.2s, border-color 0.2s, box-shadow 0.2s",
               }}
             >
+              <span
+                aria-hidden
+                className="absolute inset-x-3 top-0 h-0.5 rounded-full opacity-0 transition-opacity duration-200"
+                style={{
+                  opacity: hovered === id ? 1 : 0,
+                  background: `linear-gradient(90deg, transparent, ${DOMAIN_STRUCTURE}, ${DOMAIN_ACCENT}, transparent)`,
+                }}
+              />
               <Icon size={28} />
               <span className="text-[10px] text-muted-foreground text-center leading-snug">
                 {label}
@@ -829,13 +856,13 @@ function PatternsSection() {
       id: "a",
       label: "Color-Tinted Hover",
       desc: "Border and background tinted to the brand color on hover",
-      color: BLUE,
+      color: IRIS,
     },
     {
       id: "b",
       label: "Gradient Accent Bar",
       desc: "Top-edge gradient animates from transparent to layer color on hover",
-      color: RED,
+      color: PULSE,
     },
     {
       id: "c",
@@ -925,22 +952,22 @@ style={{
           <div className="space-y-3">
             <Button
               className="w-full font-semibold"
-              style={{ background: BLUE, color: "white" }}
+              style={{ background: IRIS, color: "white" }}
             >
               HKI Button
             </Button>
             <div
               className="relative p-4 rounded-xl border-2 cursor-default"
               style={{
-                borderColor: `${BLUE}65`,
-                background: `${BLUE}0b`,
-                boxShadow: `0 4px 16px ${BLUE}20`,
+                borderColor: `${IRIS}65`,
+                background: `${IRIS}0b`,
+                boxShadow: `0 4px 16px ${IRIS}20`,
               }}
             >
               <div
                 className="absolute top-0 left-0 right-0 h-0.5 rounded-t-xl"
                 style={{
-                  background: `linear-gradient(90deg, transparent, ${BLUE}, transparent)`,
+                  background: `linear-gradient(90deg, transparent, ${IRIS}, transparent)`,
                 }}
               />
               <p className="text-sm font-semibold mb-0.5">HKI Custom Card</p>
@@ -1058,10 +1085,10 @@ const BANNER_CONFIG: Record<
   { icon: React.ElementType; color: string; bg: string }
 > = {
   success: { icon: CheckCircle2, color: "#10B981", bg: "#10B98110" },
-  info: { icon: Info, color: BLUE, bg: `${BLUE}10` },
-  loading: { icon: BrainCircuit, color: BLUE, bg: `${BLUE}10` },
+  info: { icon: Info, color: IRIS, bg: `${IRIS}10` },
+  loading: { icon: BrainCircuit, color: IRIS, bg: `${IRIS}10` },
   warning: { icon: AlertTriangle, color: "#F59E0B", bg: "#F59E0B10" },
-  error: { icon: XCircle, color: RED, bg: `${RED}10` },
+  error: { icon: XCircle, color: PULSE, bg: `${PULSE}10` },
 };
 
 function StatesSection() {
@@ -1134,8 +1161,8 @@ function StatesSection() {
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center"
               style={{
-                background: `${BLUE}0d`,
-                border: `1.5px dashed ${BLUE}45`,
+                background: `${IRIS}0d`,
+                border: `1.5px dashed ${IRIS}45`,
               }}
             >
               <StreamIcon id="pkg" size={24} />
@@ -1149,7 +1176,7 @@ function StatesSection() {
             <Button
               size="sm"
               variant="outline"
-              style={{ borderColor: `${BLUE}40`, color: BLUE }}
+              style={{ borderColor: `${IRIS}40`, color: IRIS }}
             >
               Create Stream
             </Button>
@@ -1226,21 +1253,21 @@ function SideNav({ active }: { active: string }) {
             href={`#${id}`}
             className="group relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-all duration-150"
             style={{
-              color: on ? BLUE : "var(--muted-foreground)",
-              background: on ? `${BLUE}0e` : "transparent",
+              color: on ? IRIS : "var(--muted-foreground)",
+              background: on ? `${IRIS}0e` : "transparent",
               fontWeight: on ? 600 : 400,
             }}
           >
             {on && (
               <div
                 className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full"
-                style={{ background: BLUE }}
+                style={{ background: IRIS }}
               />
             )}
             <span
               className="text-[9px] font-mono tabular-nums shrink-0"
               style={{
-                color: on ? BLUE : "var(--muted-foreground)",
+                color: on ? IRIS : "var(--muted-foreground)",
                 opacity: on ? 1 : 0.45,
               }}
             >
@@ -1293,7 +1320,7 @@ export default function UIShowcase() {
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
               style={{
-                background: `linear-gradient(135deg, ${BLUE}, ${INDIGO})`,
+                background: `linear-gradient(135deg, ${IRIS}, ${INDIGO})`,
               }}
             >
               <Palette className="w-3.5 h-3.5 text-white" />
@@ -1313,7 +1340,7 @@ export default function UIShowcase() {
             <Badge
               className="text-white text-[10px] font-bold tracking-wide hidden sm:inline-flex"
               style={{
-                background: `linear-gradient(90deg, ${BLUE}, ${INDIGO})`,
+                background: `linear-gradient(90deg, ${IRIS}, ${INDIGO})`,
               }}
             >
               @hki/ui
@@ -1341,12 +1368,12 @@ export default function UIShowcase() {
             <div
               className="h-px w-10"
               style={{
-                background: `linear-gradient(90deg, ${BLUE}, transparent)`,
+                background: `linear-gradient(90deg, ${IRIS}, transparent)`,
               }}
             />
             <span
               className="text-[10px] font-black uppercase tracking-[0.25em]"
-              style={{ color: BLUE }}
+              style={{ color: IRIS }}
             >
               Custom-Built
             </span>
@@ -1359,7 +1386,7 @@ export default function UIShowcase() {
             <span className="text-foreground">HKI </span>
             <span
               style={{
-                background: `linear-gradient(135deg, ${BLUE} 10%, ${INDIGO} 55%, ${RED} 100%)`,
+                background: `linear-gradient(135deg, ${IRIS} 10%, ${INDIGO} 55%, ${PULSE} 100%)`,
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",

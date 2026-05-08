@@ -27,8 +27,8 @@
 
 import { useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Paperclip, Mic } from 'lucide-react';
-import { cn } from '@hki/ui';
+import { Activity, FolderClosed, Mic, Paperclip, ShieldCheck } from 'lucide-react';
+import { cn, StreamIcon, STREAM_ICON_OPTIONS } from '@hki/ui';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -51,17 +51,21 @@ import { useVoiceRecorder } from './use-voice-recorder';
 
 // ── Capsule style builder ───────────────────────────────────────────────
 
+const KNOWN_STREAM_ICON_IDS = new Set(
+  STREAM_ICON_OPTIONS.map((option) => option.id),
+);
+
 function capsuleStyle(state: InteractionState, dragActive: boolean) {
   const base = {
     padding: 6,
-    borderRadius: '9999px',
+    borderRadius: 28,
     transition: `all ${TRANSITION.normal}s cubic-bezier(${EASE.join(',')})`,
   };
 
   if (dragActive) {
     return {
       ...base,
-      backgroundColor: 'var(--capsule-bg-focus)',
+      background: 'var(--capsule-bg-focus)',
       boxShadow: 'var(--capsule-shadow-focus), inset 0 0 0 1.5px color-mix(in srgb, var(--primary) 60%, transparent)',
     };
   }
@@ -70,22 +74,66 @@ function capsuleStyle(state: InteractionState, dragActive: boolean) {
     case 'focus':
       return {
         ...base,
-        backgroundColor: 'var(--capsule-bg-focus)',
+        background: 'var(--capsule-bg-focus)',
         boxShadow: 'var(--capsule-shadow-focus)',
       };
     case 'hover':
       return {
         ...base,
-        backgroundColor: 'var(--capsule-bg-hover)',
+        background: 'var(--capsule-bg-hover)',
         boxShadow: 'var(--capsule-shadow-hover), inset 0 0 0 1px var(--capsule-border-hover)',
       };
     default:
       return {
         ...base,
-        backgroundColor: 'var(--capsule-bg)',
+        background: 'var(--capsule-bg)',
         boxShadow: 'var(--capsule-shadow-idle), inset 0 0 0 1px var(--capsule-border)',
       };
   }
+}
+
+function formatScopeLabel(scope: string | undefined): string {
+  if (!scope || scope === 'global') return 'General HKI context';
+  return scope
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function isRenderableScopeIcon(icon: string | null | undefined): icon is string {
+  return Boolean(icon && icon.trim() && icon !== 'global');
+}
+
+function isEmojiIcon(icon: string | null | undefined): boolean {
+  if (!icon) return false;
+  return Array.from(icon).some((char) => (char.codePointAt(0) ?? 0) > 0xff);
+}
+
+function PromptScopeGlyph({ icon }: { icon: string | null }) {
+  if (
+    icon &&
+    KNOWN_STREAM_ICON_IDS.has(
+      icon as (typeof STREAM_ICON_OPTIONS)[number]['id'],
+    )
+  ) {
+    return (
+      <StreamIcon
+        id={icon as (typeof STREAM_ICON_OPTIONS)[number]['id']}
+        size={13}
+        className="agentic-prompt-context-icon"
+        aria-hidden
+      />
+    );
+  }
+
+  if (isEmojiIcon(icon)) {
+    return (
+      <span className="agentic-prompt-context-emoji" aria-hidden>
+        {icon}
+      </span>
+    );
+  }
+
+  return <ShieldCheck className="agentic-prompt-context-icon" aria-hidden />;
 }
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -105,7 +153,13 @@ export function PromptInput({
   maxAttachments,
   onSendingStateChange,
   activeProjectId,
+  activeProjectName,
   activeScope,
+  activeScopeName,
+  activeScopeIcon,
+  isScopeLocked,
+  runtimeStateLabel,
+  runtimeStateTone,
 }: PromptInputProps) {
   // ── Text + send hook ────────────────────────────────────────────────
   const {
@@ -222,6 +276,11 @@ export function PromptInput({
 
   // ── Combined send ───────────────────────────────────────────────────
   const canSend = canSendText || (hasAttachments && readyAttachments.length > 0);
+  const scopeLabel = activeScopeName?.trim() || formatScopeLabel(activeScope);
+  const projectLabel = activeProjectName?.trim() || (activeProjectId ? 'Project selected' : null);
+  const stateLabel = runtimeStateLabel ?? (isLoading ? 'Working' : 'Ready');
+  const stateTone = runtimeStateTone ?? (isLoading ? 'working' : 'ready');
+  const scopeIcon = isRenderableScopeIcon(activeScopeIcon) ? activeScopeIcon : null;
 
   const handleSend = useCallback(async () => {
     // If there are attachments that haven't been uploaded yet, upload them first
@@ -303,7 +362,7 @@ export function PromptInput({
         animate={{ scale: currentState === 'focus' ? 1.002 : 1 }}
         transition={{ duration: TRANSITION.fast, ease: EASE }}
         className={cn(
-          'relative overflow-hidden',
+          'agentic-prompt-capsule relative overflow-hidden',
           'backdrop-blur-2xl backdrop-saturate-150',
         )}
         style={styles}
@@ -350,106 +409,143 @@ export function PromptInput({
 
         {/* Inner glass layer */}
         <div
-          className="flex items-center gap-2"
+          className={cn(
+            'agentic-prompt-inner relative z-10 flex flex-col gap-1.5',
+            currentState === 'focus' && 'agentic-prompt-inner--focus',
+          )}
           style={{
             padding: 4,
-            borderRadius: 100,
-            background:
-              currentState === 'focus' ? 'var(--capsule-inner-focus)' : 'transparent',
-            transition: `background ${TRANSITION.fast}s`,
+            borderRadius: 22,
+            transition: `background ${TRANSITION.fast}s, box-shadow ${TRANSITION.fast}s`,
           }}
         >
-          {/* Attachment button */}
-          {enableAttachments && (
-            <ActionButton
-              icon={Paperclip}
-              size={sizing.button}
-              iconSize={sizing.icon}
-              disabled={disabled || isRecording}
-              tooltip="Attach files"
-              ariaLabel="Attach files"
-              onClick={openFilePicker}
-              badge={hasAttachments ? attachments.length : undefined}
-            />
-          )}
+          <div className="agentic-prompt-context" aria-label="Prompt context">
+            <span
+              className="agentic-prompt-context-chip"
+              data-kind="scope"
+              data-tone={isScopeLocked ? 'locked' : 'scope'}
+              title={isScopeLocked ? `Locked to ${scopeLabel}` : `Scope: ${scopeLabel}`}
+            >
+              <PromptScopeGlyph icon={scopeIcon} />
+              <span className="agentic-prompt-context-label">{scopeLabel}</span>
+            </span>
 
-          {/* Textarea or Voice Overlay */}
-          <AnimatePresence mode="wait">
-            {isRecording ? (
-              <VoiceRecorderOverlay
-                key="voice"
-                formattedTime={formattedTime}
-                onStop={stopRecording}
-                onCancel={cancelRecording}
-              />
-            ) : (
-              <motion.textarea
-                key="textarea"
-                ref={inputRef}
-                value={prompt}
-                onChange={(e) => handlePromptChange(e.target.value)}
-                onKeyDown={(e) => {
-                  // Override: send on Enter (with or without attachments)
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  } else {
-                    handleKeyDown(e);
-                  }
-                }}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                placeholder={placeholder}
-                disabled={disabled || isLoading}
-                rows={1}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                aria-label="Message input"
-                aria-describedby={
-                  prompt.length > CHAR_WARN_THRESHOLD ? 'char-count' : undefined
-                }
-                className={cn(
-                  'flex-1 bg-transparent resize-none outline-none min-w-0 mx-2',
-                  'text-foreground placeholder:text-muted-foreground/60',
-                  'leading-relaxed',
-                  size === 'large'
-                    ? 'text-base py-3 min-h-11'
-                    : 'text-[15px] py-2.5 min-h-10',
-                  'max-h-50',
-                  'transition-colors duration-150',
-                )}
-                style={{ fontWeight: 400, letterSpacing: '-0.01em' }}
-              />
+            {projectLabel && (
+              <span
+                className="agentic-prompt-context-chip"
+                data-kind="project"
+                data-tone="project"
+                title={`Project: ${projectLabel}`}
+              >
+                <FolderClosed className="agentic-prompt-context-icon" aria-hidden />
+                <span className="agentic-prompt-context-label">{projectLabel}</span>
+              </span>
             )}
-          </AnimatePresence>
 
-          {/* Right actions */}
-          <div className="flex items-center gap-1">
-            {/* Voice button */}
-            {enableVoice && (
+            <span
+              className="agentic-prompt-context-chip"
+              data-kind="runtime"
+              data-tone={stateTone}
+              title={`Agent state: ${stateLabel}`}
+            >
+              <Activity className="agentic-prompt-context-icon" aria-hidden />
+              <span className="agentic-prompt-context-label">{stateLabel}</span>
+            </span>
+          </div>
+
+          <div className="flex w-full items-center gap-2">
+            {/* Attachment button */}
+            {enableAttachments && (
               <ActionButton
-                icon={Mic}
+                icon={Paperclip}
                 size={sizing.button}
                 iconSize={sizing.icon}
-                disabled={disabled || isLoading}
-                tooltip={isRecording ? 'Stop recording' : 'Voice input'}
-                ariaLabel={isRecording ? 'Stop recording' : 'Voice input'}
-                onClick={toggleRecording}
-                active={isRecording}
+                disabled={disabled || isRecording}
+                tooltip="Attach files"
+                ariaLabel="Attach files"
+                onClick={openFilePicker}
+                badge={hasAttachments ? attachments.length : undefined}
               />
             )}
 
-            {/* Send / Stop button — dual-mode like ChatGPT */}
-            <SendButton
-              onClick={handleSend}
-              disabled={!canSend}
-              isLoading={isLoading}
-              isStoppable={isSending}
-              onStop={cancelSend}
-              size={sizing.button}
-              iconSize={sizing.icon}
-            />
+            {/* Textarea or Voice Overlay */}
+            <AnimatePresence mode="wait">
+              {isRecording ? (
+                <VoiceRecorderOverlay
+                  key="voice"
+                  formattedTime={formattedTime}
+                  onStop={stopRecording}
+                  onCancel={cancelRecording}
+                />
+              ) : (
+                <motion.textarea
+                  key="textarea"
+                  ref={inputRef}
+                  value={prompt}
+                  onChange={(e) => handlePromptChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Override: send on Enter (with or without attachments)
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    } else {
+                      handleKeyDown(e);
+                    }
+                  }}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  placeholder={placeholder}
+                  disabled={disabled || isLoading}
+                  rows={1}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  aria-label="Message input"
+                  aria-describedby={
+                    prompt.length > CHAR_WARN_THRESHOLD ? 'char-count' : undefined
+                  }
+                  className={cn(
+                    'flex-1 bg-transparent resize-none outline-none min-w-0 mx-2',
+                    'text-foreground placeholder:text-muted-foreground/60',
+                    'leading-relaxed',
+                    size === 'large'
+                      ? 'text-base py-3 min-h-11'
+                      : 'text-[15px] py-2.5 min-h-10',
+                    'max-h-50',
+                    'transition-colors duration-150',
+                  )}
+                  style={{ fontWeight: 400, letterSpacing: 0 }}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Right actions */}
+            <div className="flex items-center gap-1">
+              {/* Voice button */}
+              {enableVoice && (
+                <ActionButton
+                  icon={Mic}
+                  size={sizing.button}
+                  iconSize={sizing.icon}
+                  disabled={disabled || isLoading}
+                  tooltip={isRecording ? 'Stop recording' : 'Voice input'}
+                  ariaLabel={isRecording ? 'Stop recording' : 'Voice input'}
+                  onClick={toggleRecording}
+                  active={isRecording}
+                />
+              )}
+
+              {/* Send / Stop button — dual-mode like ChatGPT */}
+              <SendButton
+                onClick={handleSend}
+                disabled={!canSend}
+                isLoading={isLoading}
+                isStoppable={isSending}
+                onStop={cancelSend}
+                size={sizing.button}
+                iconSize={sizing.icon}
+              />
+            </div>
           </div>
         </div>
 

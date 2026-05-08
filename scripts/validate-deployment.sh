@@ -150,10 +150,10 @@ check_dockerfiles_exist() {
     log_check "Dockerfiles exist for all services"
 
     services=(
-        "knowledge-api/Dockerfile"
-        "orchestrator-service/Dockerfile"
-        "ingestion-pipeline-service/Dockerfile"
-        "analytics-service/Dockerfile"
+        "services/knowledge-api/Dockerfile"
+        "services/orchestrator-service/Dockerfile"
+        "services/ingestion-pipeline-service/Dockerfile"
+        "services/analytics-service/Dockerfile"
         "apps/agentic/Dockerfile"
     )
 
@@ -172,11 +172,11 @@ check_terraform_dirs() {
     log_check "Terraform directories exist"
 
     tf_dirs=(
-        "knowledge-api/tf"
-        "orchestrator-service/tf"
-        "ingestion-pipeline-service/tf"
-        "analytics-service/tf"
-        "k8s/tf"
+        "services/knowledge-api/tf"
+        "services/orchestrator-service/tf"
+        "services/ingestion-pipeline-service/tf"
+        "services/analytics-service/tf"
+        "deploy/k8s/tf"
     )
 
     for tf_dir in "${tf_dirs[@]}"; do

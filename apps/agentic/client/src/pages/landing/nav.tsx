@@ -42,25 +42,7 @@ export function Nav({ onNavigate }: NavProps) {
       }
       actions={
         <div className="flex items-center gap-1.5">
-          <a
-            href="#features"
-            className="hidden md:block px-3 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-          >
-            Framework
-          </a>
-          <a
-            href="#readiness"
-            className="hidden md:block px-3 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-          >
-            Conformance
-          </a>
-          <a
-            href="#roles"
-            className="hidden lg:block px-3 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-          >
-            Roles
-          </a>
-          <div className="w-px h-5 bg-border/40 mx-1.5 hidden sm:block" />
+          <div className="w-px h-5 bg-border/40 mx-1 hidden sm:block" />
           <button
             onClick={toggleTheme}
             className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"

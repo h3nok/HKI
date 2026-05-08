@@ -1,194 +1,299 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1620 620" role="img" aria-labelledby="title desc">
-  <title id="title">HKI request flow</title>
-  <desc id="desc">A step-by-step request flow under HKI where the gateway resolves one active domain, ambiguous scope fails closed, and a signed scope envelope propagates through the orchestrator, knowledge service, and domain-scoped store.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 720" role="img" aria-labelledby="rf-title rf-desc">
+  <title id="rf-title">HKI request flow</title>
+  <desc id="rf-desc">Six-step request lifecycle under HKI: request arrives, gateway resolves one active domain (fail-closed on ambiguity), signed scope envelope is created, orchestrator carries the label, knowledge service enforces it, domain-scoped store returns only matching artifacts.</desc>
+
   <defs>
     <style>
       :root { color-scheme: light dark; }
       svg {
-        --page: #f8fafc; --surface: #ffffff; --surface-2: #f1f5f9;
-        --text: #0f172a; --muted: #475569; --rule: #cbd5e1; --line: #64748b; --arrow: #64748b;
-        --safe-fill: #ecfdf5; --safe-stroke: #059669; --safe-text: #065f46;
-        --policy-fill: #eef2ff; --policy-stroke: #4f46e5; --policy-text: #3730a3;
-        --warn-fill: #fff7ed; --warn-stroke: #ea580c; --warn-text: #9a3412;
-        --danger-fill: #fef2f2; --danger-stroke: #dc2626; --danger-text: #991b1b;
-        --glow-warn: rgba(234,88,12,0.18); --glow-danger: rgba(220,38,38,0.18);
-        --glow-safe: rgba(5,150,105,0.18); --glow-policy: rgba(79,70,229,0.18);
-        font-family: Inter, "Segoe UI", Arial, sans-serif;
+        --page:    #f6f8fc;
+        --panel:   #ffffff;
+        --panel-s: #f0f4f9;
+        --border:  #dde3ee;
+        --text:    #0d1829;
+        --muted:   #5a6a85;
+        --line:    #8fa3bf;
+        --arrow:   #6b83a0;
+
+        --safe-bg:   #edfbf5; --safe-bd:  #22c37a; --safe-tx:  #105c38;
+        --pol-bg:    #eef0ff; --pol-bd:   #5c6ee8; --pol-tx:   #2f3fa6;
+        --warn-bg:   #fff8ed; --warn-bd:  #f0872a; --warn-tx:  #854200;
+        --dan-bg:    #fff1f1; --dan-bd:   #e84040; --dan-tx:   #8b0000;
+
+        --safe-glow: rgba(34,195,122,0.12);
+        --pol-glow:  rgba(92,110,232,0.12);
+        --warn-glow: rgba(240,135,42,0.12);
+        --dan-glow:  rgba(232,64,64,0.12);
+
+        font-family: Inter, "Segoe UI", system-ui, sans-serif;
       }
       @media (prefers-color-scheme: dark) {
         svg {
-          --page: #09111a; --surface: #0f172a; --surface-2: #111c2d;
-          --text: #e2e8f0; --muted: #94a3b8; --rule: #334155; --line: #7dd3fc; --arrow: #7dd3fc;
-          --safe-fill: #0e2c28; --safe-stroke: #34d399; --safe-text: #bbf7d0;
-          --policy-fill: #1f2451; --policy-stroke: #a78bfa; --policy-text: #ddd6fe;
-          --warn-fill: #3a220b; --warn-stroke: #fb923c; --warn-text: #fed7aa;
-          --danger-fill: #3a1618; --danger-stroke: #f87171; --danger-text: #fecaca;
-          --glow-warn: rgba(251,146,60,0.22); --glow-danger: rgba(248,113,113,0.22);
-          --glow-safe: rgba(52,211,153,0.22); --glow-policy: rgba(167,139,250,0.22);
+          --page:    #080f1a;
+          --panel:   #0d1829;
+          --panel-s: #111f30;
+          --border:  #1a2d47;
+          --text:    #e4ecf8;
+          --muted:   #7a94b8;
+          --line:    #3b9fd6;
+          --arrow:   #3b9fd6;
+
+          --safe-bg:  #07231a; --safe-bd: #2de08a; --safe-tx: #7df0b8;
+          --pol-bg:   #0c1240; --pol-bd:  #818cf8; --pol-tx:  #c7d2fe;
+          --warn-bg:  #211100; --warn-bd: #f59a40; --warn-tx: #fdd49e;
+          --dan-bg:   #200808; --dan-bd:  #f87171; --dan-tx:  #fca5a5;
+
+          --safe-glow: rgba(45,224,138,0.16);
+          --pol-glow:  rgba(129,140,248,0.16);
+          --warn-glow: rgba(245,154,64,0.16);
+          --dan-glow:  rgba(248,113,113,0.16);
         }
       }
-      .page { fill: var(--page); }
-      .heading { fill: var(--text); font-size: 38px; font-weight: 800; }
-      .subheading { fill: var(--muted); font-size: 17px; }
-      .card { stroke-width: 2.5; }
-      .safe { fill: var(--safe-fill); stroke: var(--safe-stroke); filter: url(#glow-safe); }
-      .policy { fill: var(--policy-fill); stroke: var(--policy-stroke); filter: url(#glow-policy); }
-      .warn { fill: var(--warn-fill); stroke: var(--warn-stroke); filter: url(#glow-warn); }
-      .danger { fill: var(--danger-fill); stroke: var(--danger-stroke); filter: url(#glow-danger); }
-      .surface { fill: var(--surface); stroke: var(--rule); stroke-width: 2; filter: url(#panel-shadow); }
-      .safe-text { fill: var(--safe-text); } .policy-text { fill: var(--policy-text); }
-      .warn-text { fill: var(--warn-text); } .danger-text { fill: var(--danger-text); }
-      .title { fill: var(--text); font-size: 19px; font-weight: 700; }
-      .body { fill: var(--muted); font-size: 14px; }
-      .step { fill: var(--muted); font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-      .flow { fill: none; stroke: var(--line); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
-      .flow.block { stroke: var(--danger-stroke); stroke-dasharray: 12 8; marker-end: url(#block-arrow); }
-      .fail-label { fill: var(--danger-text); font-size: 14px; font-weight: 700; }
-      .num { font-size: 14px; font-weight: 800; fill: #fff; }
-      .num-bg { fill: var(--line); }
+
+      /* Base */
+      .bg    { fill: var(--page); }
+      .panel { fill: var(--panel); stroke: var(--border); stroke-width: 1.5; }
+
+      /* Typography */
+      .h1   { fill: var(--text);  font-size: 42px; font-weight: 800; letter-spacing: -0.8px; }
+      .sub  { fill: var(--muted); font-size: 16px; }
+      .chip { fill: var(--muted); font-size: 11px; font-weight: 700;
+              letter-spacing: 0.12em; text-transform: uppercase; }
+      .ttl  { font-size: 17px; font-weight: 700; }
+      .body { font-size: 13px; fill: var(--muted); }
+
+      /* Cards */
+      .card { stroke-width: 1.8; }
+      .safe { fill: var(--safe-bg); stroke: var(--safe-bd); filter: url(#gs); }
+      .pol  { fill: var(--pol-bg);  stroke: var(--pol-bd);  filter: url(#gp); }
+      .warn { fill: var(--warn-bg); stroke: var(--warn-bd); filter: url(#gw); }
+      .dan  { fill: var(--dan-bg);  stroke: var(--dan-bd);  filter: url(#gd); }
+
+      .safe-t { fill: var(--safe-tx); }
+      .pol-t  { fill: var(--pol-tx); }
+      .warn-t { fill: var(--warn-tx); }
+      .dan-t  { fill: var(--dan-tx); }
+
+      /* Step number badges */
+      .nb   { fill: var(--line); }
+      .num  { font-size: 12px; font-weight: 800; fill: #fff; }
+
+      /* Arrows */
+      .flow  { fill: none; stroke: var(--line);    stroke-width: 2.5;
+               stroke-linecap: round; stroke-linejoin: round;
+               marker-end: url(#arr); }
+      .block { fill: none; stroke: var(--dan-bd);  stroke-width: 2.5;
+               stroke-linecap: round; stroke-dasharray: 10 7;
+               marker-end: url(#barr); }
+
+      /* Gateway emphasis ring */
+      .gw-ring { fill: none; stroke: var(--safe-bd); stroke-width: 1.2; opacity: 0.35; }
+
+      /* Dot grid */
+      .dot { fill: var(--muted); opacity: 0.055; }
     </style>
-    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--arrow)" />
+
+    <marker id="arr"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 1.5 L 8.5 5 L 0 8.5 Q 2.5 5 0 1.5 Z" fill="var(--arrow)"/>
     </marker>
-    <marker id="block-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--danger-stroke)" />
+    <marker id="barr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 1.5 L 8.5 5 L 0 8.5 Q 2.5 5 0 1.5 Z" fill="var(--dan-bd)"/>
     </marker>
-    <filter id="panel-shadow" x="-4%" y="-4%" width="110%" height="112%">
-      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.12"/>
+
+    <filter id="ps" x="-3%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#0a1628" flood-opacity="0.08"/>
     </filter>
-    <filter id="glow-warn" x="-12%" y="-18%" width="124%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-warn)" flood-opacity="1"/>
+    <filter id="gs" x="-18%" y="-22%" width="136%" height="150%">
+      <feDropShadow dx="0" dy="4" stdDeviation="9" flood-color="var(--safe-glow)" flood-opacity="1"/>
     </filter>
-    <filter id="glow-danger" x="-12%" y="-18%" width="124%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-danger)" flood-opacity="1"/>
+    <filter id="gp" x="-18%" y="-22%" width="136%" height="150%">
+      <feDropShadow dx="0" dy="4" stdDeviation="9" flood-color="var(--pol-glow)"  flood-opacity="1"/>
     </filter>
-    <filter id="glow-safe" x="-12%" y="-18%" width="124%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-safe)" flood-opacity="1"/>
+    <filter id="gw" x="-18%" y="-22%" width="136%" height="150%">
+      <feDropShadow dx="0" dy="4" stdDeviation="9" flood-color="var(--warn-glow)" flood-opacity="1"/>
     </filter>
-    <filter id="glow-policy" x="-12%" y="-18%" width="124%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="var(--glow-policy)" flood-opacity="1"/>
+    <filter id="gd" x="-18%" y="-22%" width="136%" height="150%">
+      <feDropShadow dx="0" dy="4" stdDeviation="9" flood-color="var(--dan-glow)"  flood-opacity="1"/>
     </filter>
-    <pattern id="dot-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-      <circle cx="2" cy="2" r="1.2" fill="#8090a0" opacity="0.06"/>
+
+    <!-- Dot-grid texture -->
+    <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle class="dot" cx="2" cy="2" r="1.3"/>
     </pattern>
   </defs>
 
-  <rect class="page" x="0" y="0" width="1620" height="620" rx="36" />
-  <rect x="0" y="0" width="1620" height="620" rx="36" fill="url(#dot-grid)"/>
+  <!-- ── Background ──────────────────────────────────────── -->
+  <rect class="bg" x="0" y="0" width="1920" height="720" rx="0"/>
+  <rect x="0" y="0" width="1920" height="720" fill="url(#dots)"/>
 
-  <!-- Decorative accent -->
-  <rect x="70" y="26" width="100" height="5" rx="3" fill="var(--safe-stroke)" opacity="0.6" />
-  <rect x="180" y="26" width="50" height="5" rx="3" fill="var(--policy-stroke)" opacity="0.4" />
+  <!-- ── Header ─────────────────────────────────────────── -->
+  <!-- Accent bars -->
+  <rect x="72" y="28" width="90"  height="4" rx="2" fill="var(--safe-bd)" opacity="0.55"/>
+  <rect x="170" y="28" width="44" height="4" rx="2" fill="var(--pol-bd)"  opacity="0.40"/>
 
-  <text class="heading" x="70" y="76">Request flow under HKI</text>
-  <text class="subheading" x="70" y="108">
-    <tspan x="70" dy="0">The request becomes executable only after the system resolves one active domain.</tspan>
-    <tspan x="70" dy="20">From that point on, the scope envelope is part of runtime, not an afterthought.</tspan>
+  <text class="h1" x="72" y="82">Request flow under HKI</text>
+  <text class="sub" x="72" y="114">
+    <tspan x="72" dy="0">The active domain is resolved once at the gateway and signed into every</tspan>
+    <tspan x="72" dy="21">downstream step — retrieval, cache, graph, tools, and jobs never re-derive it.</tspan>
   </text>
 
-  <rect class="surface" x="50" y="162" width="1520" height="430" rx="28" />
+  <!-- ── Main panel ─────────────────────────────────────── -->
+  <!--    x:56  y:156  w:1808  h:520  rx:28               -->
+  <rect class="panel" x="56" y="156" width="1808" height="520" rx="28" filter="url(#ps)"/>
 
-  <!-- Step 1: Request arrives -->
-  <g transform="translate(90 226)">
-    <circle class="num-bg" cx="90" cy="-18" r="14" />
-    <text class="num" x="90" y="-13" text-anchor="middle">1</text>
-    <rect class="card warn" x="0" y="0" width="190" height="108" rx="22" />
-    <text class="step warn-text" x="24" y="28">Request</text>
-    <text class="title warn-text" x="95" y="54" text-anchor="middle">Request arrives</text>
-    <text class="body" x="95" y="76" text-anchor="middle">
-      <tspan x="95" dy="0">User intent, identity, and</tspan>
-      <tspan x="95" dy="16">tenant context enter.</tspan>
+  <!--
+    Six steps, all on the same baseline, evenly spaced.
+    Card width: 244px   Gap: 30px   Total: 6×244 + 5×30 = 1614px
+    Left margin inside panel: (1808-1614)/2 = 97px → absolute x = 56+97 = 153
+    Step centres: 153+122, 153+244+30+122, ...
+      S1: 275   S2: 549   S3: 823   S4: 1097   S5: 1371   S6: 1645
+  -->
+
+  <!-- ── STEP 1 · Request ──────────────────────────────── -->
+  <g transform="translate(153, 208)">
+    <circle class="nb" cx="122" cy="-22" r="14"/>
+    <text class="num" x="122" y="-17" text-anchor="middle">1</text>
+    <text class="chip warn-t" x="122" y="10" text-anchor="middle">Request</text>
+    <rect class="card warn" x="0" y="20" width="244" height="148" rx="20"/>
+    <text class="ttl warn-t" x="122" y="62" text-anchor="middle">Request arrives</text>
+    <text class="body" x="122" y="88" text-anchor="middle">
+      <tspan x="122" dy="0">User intent, identity,</tspan>
+      <tspan x="122" dy="19">and tenant context enter</tspan>
+      <tspan x="122" dy="19">the system boundary.</tspan>
     </text>
   </g>
 
-  <!-- Step 2: Gateway resolves domain -->
-  <g transform="translate(332 226)">
-    <circle class="num-bg" cx="105" cy="-18" r="14" />
-    <text class="num" x="105" y="-13" text-anchor="middle">2</text>
-    <rect class="card safe" x="0" y="0" width="220" height="108" rx="22" />
-    <text class="step safe-text" x="24" y="28">Gateway</text>
-    <text class="title safe-text" x="110" y="54" text-anchor="middle">Resolves one domain</text>
-    <text class="body" x="110" y="76" text-anchor="middle">
-      <tspan x="110" dy="0">Exactly one active domain</tspan>
-      <tspan x="110" dy="16">must be selected here.</tspan>
+  <!-- ── STEP 2 · Gateway (enforcement point) ─────────── -->
+  <g transform="translate(427, 208)">
+    <!-- Outer emphasis ring marking enforcement point -->
+    <rect class="gw-ring" x="-8" y="12" width="260" height="164" rx="26"/>
+    <circle class="nb" cx="122" cy="-22" r="14"/>
+    <text class="num" x="122" y="-17" text-anchor="middle">2</text>
+    <text class="chip safe-t" x="122" y="10" text-anchor="middle">Gateway · Enforcement point</text>
+    <rect class="card safe" x="0" y="20" width="244" height="148" rx="20" stroke-width="2.2"/>
+    <text class="ttl safe-t" x="122" y="62" text-anchor="middle">Resolves one domain</text>
+    <text class="body" x="122" y="88" text-anchor="middle">
+      <tspan x="122" dy="0">Exactly one active domain</tspan>
+      <tspan x="122" dy="19">must be selected here.</tspan>
+      <tspan x="122" dy="19">Ambiguous → fail closed.</tspan>
+    </text>
+    <!-- Lock icon -->
+    <g transform="translate(112, 152)">
+      <rect x="-8" y="-5" width="16" height="13" rx="3" fill="none" stroke="var(--safe-bd)" stroke-width="1.8"/>
+      <path d="M -5,-5 Q -5,-13 0,-13 Q 5,-13 5,-5" fill="none" stroke="var(--safe-bd)" stroke-width="1.8"/>
+      <circle cx="0" cy="2" r="2.2" fill="var(--safe-bd)"/>
+    </g>
+  </g>
+
+  <!-- ── STEP 3 · Scope envelope ──────────────────────── -->
+  <g transform="translate(701, 208)">
+    <circle class="nb" cx="122" cy="-22" r="14"/>
+    <text class="num" x="122" y="-17" text-anchor="middle">3</text>
+    <text class="chip pol-t" x="122" y="10" text-anchor="middle">Scope</text>
+    <rect class="card pol" x="0" y="20" width="244" height="148" rx="20"/>
+    <text class="ttl pol-t" x="122" y="62" text-anchor="middle">Signed scope envelope</text>
+    <text class="body" x="122" y="88" text-anchor="middle">
+      <tspan x="122" dy="0">Active label is bound</tspan>
+      <tspan x="122" dy="19">to the request payload</tspan>
+      <tspan x="122" dy="19">and signed cryptographically.</tspan>
+    </text>
+    <!-- Key icon -->
+    <g transform="translate(108, 152)">
+      <circle cx="-6" cy="0" r="7" fill="none" stroke="var(--pol-bd)" stroke-width="1.8"/>
+      <path d="M -0.5,0 L 16,0 M 13,-4.5 L 13,0 M 9.5,-3.5 L 9.5,0"
+            fill="none" stroke="var(--pol-bd)" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- ── STEP 4 · Orchestrator ─────────────────────────── -->
+  <g transform="translate(975, 208)">
+    <circle class="nb" cx="122" cy="-22" r="14"/>
+    <text class="num" x="122" y="-17" text-anchor="middle">4</text>
+    <text class="chip safe-t" x="122" y="10" text-anchor="middle">Orchestrator</text>
+    <rect class="card safe" x="0" y="20" width="244" height="148" rx="20"/>
+    <text class="ttl safe-t" x="122" y="62" text-anchor="middle">Orchestrator</text>
+    <text class="body" x="122" y="88" text-anchor="middle">
+      <tspan x="122" dy="0">Every downstream call</tspan>
+      <tspan x="122" dy="19">carries the same label.</tspan>
+      <tspan x="122" dy="19">No re-derivation allowed.</tspan>
     </text>
   </g>
 
-  <!-- Step 3: Signed scope envelope -->
-  <g transform="translate(604 226)">
-    <circle class="num-bg" cx="116" cy="-18" r="14" />
-    <text class="num" x="116" y="-13" text-anchor="middle">3</text>
-    <rect class="card policy" x="0" y="0" width="240" height="108" rx="22" />
-    <text class="step policy-text" x="24" y="28">Scope</text>
-    <text class="title policy-text" x="120" y="54" text-anchor="middle">Signed scope envelope</text>
-    <text class="body" x="120" y="76" text-anchor="middle">
-      <tspan x="120" dy="0">The active label is bound</tspan>
-      <tspan x="120" dy="16">to the request payload.</tspan>
+  <!-- ── STEP 5 · Knowledge service ────────────────────── -->
+  <g transform="translate(1249, 208)">
+    <circle class="nb" cx="122" cy="-22" r="14"/>
+    <text class="num" x="122" y="-17" text-anchor="middle">5</text>
+    <text class="chip safe-t" x="122" y="10" text-anchor="middle">Knowledge</text>
+    <rect class="card safe" x="0" y="20" width="244" height="148" rx="20"/>
+    <text class="ttl safe-t" x="122" y="62" text-anchor="middle">Knowledge service</text>
+    <text class="body" x="122" y="88" text-anchor="middle">
+      <tspan x="122" dy="0">Retrieval, cache, graph,</tspan>
+      <tspan x="122" dy="19">and tools stay label-</tspan>
+      <tspan x="122" dy="19">preserving, no exception.</tspan>
     </text>
   </g>
 
-  <!-- Step 4: Orchestrator -->
-  <g transform="translate(896 226)">
-    <circle class="num-bg" cx="110" cy="-18" r="14" />
-    <text class="num" x="110" y="-13" text-anchor="middle">4</text>
-    <rect class="card safe" x="0" y="0" width="228" height="108" rx="22" />
-    <text class="step safe-text" x="24" y="28">Orchestrator</text>
-    <text class="title safe-text" x="114" y="54" text-anchor="middle">Orchestrator</text>
-    <text class="body" x="114" y="76" text-anchor="middle">
-      <tspan x="114" dy="0">Every downstream call</tspan>
-      <tspan x="114" dy="16">carries the same label.</tspan>
+  <!-- ── STEP 6 · Domain-scoped store ──────────────────── -->
+  <g transform="translate(1523, 208)">
+    <circle class="nb" cx="122" cy="-22" r="14"/>
+    <text class="num" x="122" y="-17" text-anchor="middle">6</text>
+    <text class="chip safe-t" x="122" y="10" text-anchor="middle">Store</text>
+    <rect class="card safe" x="0" y="20" width="244" height="148" rx="20"/>
+    <text class="ttl safe-t" x="122" y="62" text-anchor="middle">Domain-scoped store</text>
+    <text class="body" x="122" y="88" text-anchor="middle">
+      <tspan x="122" dy="0">Only artifacts whose label</tspan>
+      <tspan x="122" dy="19">matches the active domain</tspan>
+      <tspan x="122" dy="19">are returned to the caller.</tspan>
+    </text>
+    <!-- Checkmark -->
+    <g transform="translate(112, 152)">
+      <circle cx="0" cy="0" r="10" fill="var(--safe-bd)" opacity="0.18"/>
+      <path d="M -5,0 L -1.5,4 L 6,-5"
+            fill="none" stroke="var(--safe-bd)" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <!-- ── Fail-closed branch ─────────────────────────────── -->
+  <!--  Centre under gateway (step 2 centre = 427+122 = 549)  -->
+  <g transform="translate(389, 444)">
+    <!-- X symbol -->
+    <g transform="translate(160, -28)">
+      <circle cx="0" cy="0" r="18" fill="var(--dan-bg)" stroke="var(--dan-bd)" stroke-width="2"/>
+      <line x1="-9" y1="-9" x2="9" y2="9" stroke="var(--dan-bd)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="9" y1="-9" x2="-9" y2="9" stroke="var(--dan-bd)" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <text class="chip dan-t" x="160" y="10" text-anchor="middle">Fail-closed</text>
+    <rect class="card dan" x="0" y="20" width="320" height="130" rx="20"/>
+    <text class="ttl dan-t" x="160" y="62" text-anchor="middle">Ambiguous scope</text>
+    <text class="body" x="160" y="88" text-anchor="middle">
+      <tspan x="160" dy="0">If the gateway cannot resolve exactly</tspan>
+      <tspan x="160" dy="19">one domain, the request stops here.</tspan>
+      <tspan x="160" dy="19">No silent fallback. No global retry.</tspan>
     </text>
   </g>
 
-  <!-- Step 5: Knowledge service -->
-  <g transform="translate(1176 226)">
-    <circle class="num-bg" cx="110" cy="-18" r="14" />
-    <text class="num" x="110" y="-13" text-anchor="middle">5</text>
-    <rect class="card safe" x="0" y="0" width="228" height="108" rx="22" />
-    <text class="step safe-text" x="24" y="28">Knowledge</text>
-    <text class="title safe-text" x="114" y="54" text-anchor="middle">Knowledge service</text>
-    <text class="body" x="114" y="76" text-anchor="middle">
-      <tspan x="114" dy="0">Retrieval, cache, and graph</tspan>
-      <tspan x="114" dy="16">stay label-preserving.</tspan>
-    </text>
-  </g>
+  <!-- ── Horizontal flow arrows (steps 1→2→3→4→5→6) ───── -->
+  <!-- y = card_top(228) + card_height/2(74) = 302 inside panel → absolute y: 302+offset -->
+  <!-- Each step group has transform="translate(x, 208)" and card starts at y=20 with h=148 -->
+  <!-- Card vertical center: 208 + 20 + 74 = 302 absolute -->
+  <!-- Step right edges: 153+244=397, 427+244=671, 701+244=945, 975+244=1219, 1249+244=1493, 1523+244=1767 -->
+  <!-- Step left edges:  153, 427, 701, 975, 1249, 1523 -->
 
-  <!-- Step 6: Domain-scoped store -->
-  <g transform="translate(1280 478)">
-    <circle class="num-bg" cx="105" cy="-18" r="14" />
-    <text class="num" x="105" y="-13" text-anchor="middle">6</text>
-    <rect class="card safe" x="0" y="0" width="220" height="108" rx="22" />
-    <text class="step safe-text" x="24" y="28">Store</text>
-    <text class="title safe-text" x="110" y="54" text-anchor="middle">Domain-scoped store</text>
-    <text class="body" x="110" y="76" text-anchor="middle">
-      <tspan x="110" dy="0">Only matching labels</tspan>
-      <tspan x="110" dy="16">can return artifacts.</tspan>
-    </text>
-    <text x="110" y="100" text-anchor="middle" font-size="16">✓</text>
-  </g>
+  <path class="flow" d="M 397,302 L 427,302"/>
+  <path class="flow" d="M 671,302 L 701,302"/>
+  <path class="flow" d="M 945,302 L 975,302"/>
+  <path class="flow" d="M 1219,302 L 1249,302"/>
+  <path class="flow" d="M 1493,302 L 1523,302"/>
 
-  <!-- Fail-closed branch -->
-  <g transform="translate(360 478)">
-    <text x="125" y="-22" text-anchor="middle" font-size="18">🚫</text>
-    <rect class="card danger" x="0" y="0" width="260" height="108" rx="22" />
-    <text class="step danger-text" x="24" y="28">Fail-closed</text>
-    <text class="title danger-text" x="130" y="54" text-anchor="middle">Ambiguous scope</text>
-    <text class="body" x="130" y="76" text-anchor="middle">
-      <tspan x="130" dy="0">If the gateway cannot resolve</tspan>
-      <tspan x="130" dy="16">one domain, the request stops.</tspan>
-    </text>
-  </g>
+  <!-- Step 2 → Fail-closed: down from gateway card bottom (549, 376) -->
+  <!-- Gateway card bottom: 208 + 20 + 148 = 376  centre-x: 427+122=549 -->
+  <!-- Fail card top: 444 + 20 = 464  centre-x: 389+160=549 -->
+  <path class="block" d="M 549,376 L 549,416"/>
 
-  <!-- Flow arrows: horizontal chain -->
-  <path class="flow" d="M 280 280 L 332 280" />
-  <path class="flow" d="M 552 280 L 604 280" />
-  <path class="flow" d="M 844 280 L 896 280" />
-  <path class="flow" d="M 1124 280 L 1176 280" />
-  <!-- Step 5 → Step 6 curve down-right -->
-  <path class="flow" d="M 1404 310 C 1450 360, 1460 420, 1420 478" />
-  <!-- Step 2 → Fail-closed down -->
-  <path class="flow block" d="M 442 334 L 442 430 L 460 456" />
+  <!-- ── Fail label alongside the dashed arrow ─────────── -->
+  <text fill="var(--dan-tx)" x="562" y="400" font-size="12" font-weight="700" font-family="Inter, sans-serif">
+    No null scope. No global retry.
+  </text>
 
-  <text class="fail-label" x="460" y="420">No silent fallback.</text>
-  <text class="fail-label" x="460" y="438">No null scope. No global retry.</text>
 </svg>

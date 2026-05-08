@@ -48,9 +48,9 @@ hki-shared = { path = "../shared", editable = true }
 cd apps/ai-platform/
 
 # ✅ Correct - shared/ is accessible
-docker build -f knowledge-api/Dockerfile -t knowledge-api .
-docker build -f orchestrator-service/Dockerfile -t orchestrator-service .
-docker build -f ingestion-pipeline-service/Dockerfile -t ingestion-pipeline .
+docker build -f services/knowledge-api/Dockerfile -t knowledge-api .
+docker build -f services/orchestrator-service/Dockerfile -t orchestrator-service .
+docker build -f services/ingestion-pipeline-service/Dockerfile -t ingestion-pipeline .
 ```
 
 The Dockerfiles already include:
@@ -343,8 +343,8 @@ curl -I https://agentic.cilabs.np.hki.com
 
 ## 📚 Service Documentation
 
-- [Knowledge API](knowledge-api/README.md)
-- [Orchestrator Service](orchestrator-service/README.md)
+- [Knowledge API](services/knowledge-api/README.md)
+- [Orchestrator Service](services/orchestrator-service/README.md)
 - [Ingestion Pipeline Service](ingestion-pipeline-service/DEPLOYMENT.md)
 - [Agentic BFF](agentic/README.md)
 

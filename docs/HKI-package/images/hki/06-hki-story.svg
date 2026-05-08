@@ -147,8 +147,12 @@
       <tspan x="211" dy="16">were safe visibility.</tspan>
     </text>
 
-    <!-- Warning icon + Step 5 -->
-    <text x="211" y="698" text-anchor="middle" font-size="22">⚠</text>
+    <!-- Warning triangle -->
+    <g transform="translate(211,697)">
+      <path d="M 0,-13 L 14,11 L -14,11 Z" fill="none" stroke="var(--danger-stroke)" stroke-width="2.2" stroke-linejoin="round"/>
+      <line x1="0" y1="-6" x2="0" y2="3" stroke="var(--danger-stroke)" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="0" cy="7" r="2" fill="var(--danger-stroke)"/>
+    </g>
     <rect class="card danger" x="56" y="710" width="310" height="96" rx="22" />
     <text class="card-title danger-text" x="211" y="745" text-anchor="middle">Cross-domain bleed</text>
     <text class="card-body" x="211" y="767" text-anchor="middle">

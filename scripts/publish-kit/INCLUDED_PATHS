@@ -1,0 +1,53 @@
+# Whitelist of paths copied from the source monorepo into the public repo.
+
+# One path per line, relative to repo root. Lines starting with # are comments.
+
+# Both files and directories are accepted; directories are copied recursively.
+
+# Core runtime packages
+
+packages/hki-runtime
+packages/hki-runtime-py
+packages/hki-conformance
+packages/hki-conformance-action
+
+# Adapter packages
+
+packages/hki-litellm
+packages/hki-langchain
+packages/hki-llamaindex
+packages/hki-adk
+packages/hki-autogen
+packages/hki-crewai
+
+# End-to-end integration suite
+
+packages/hki-integration-tests
+
+# Examples
+
+examples/threats
+examples/end_to_end_demo.py
+
+# Scripts (the audit/registry/fixer toolchain)
+
+scripts/hki_ast_audit.py
+scripts/hki-ast-audit-ts.mjs
+scripts/build-conformance-registry.mjs
+scripts/audit-hki-conformance.mjs
+scripts/hki-conformance-audit-baseline.json
+scripts/fix-formatter-mangling.py
+
+# Docs
+
+docs/HKI_ROADMAP.md
+docs/HKI_ADAPTERS.md
+docs/HKI_THREATS.md
+docs/HKI_CONFORMANCE.md
+docs/HKI_SECURITY_MAPPING.md
+docs/ARCHITECTURE.md
+
+# TS workspace shared configs (needed by packages/hki-runtime build)
+
+packages/typescript-config
+packages/eslint-config
