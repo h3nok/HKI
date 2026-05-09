@@ -243,7 +243,7 @@ Goal: HKI is independently installable, testable, and citable, in TS and Python.
 | M1   | Decouple repos         | Spec packages (`@hki/runtime`, `hki-runtime` py, `@hki/conformance`, `@hki/sdk`, schema, paper) live in a public `hki-spec/hki` repo; reference platform stays here; cross-links updated. |
 | M2   | Python parity          | `hki-runtime` (py) ships FastAPI middleware + Starlette decorator; Python conformance package mirrors all 28 cases; `pytest` is green; `uv` lockfile committed.                           |
 | M2.1 | FastAPI middleware     | ✅ Done — `hki_runtime.fastapi.HkiMiddleware` enforces envelope on every request; rejects missing/expired/global/wildcard with 401/403; binds envelope into `request.state.hki`.          |
-| M2.2 | Python conformance kit | `hki-conformance` (py) package + `hki-conformance` CLI runs all 28 cases against a Python adapter; reference adapter wraps `hki_runtime`.                                                 |
+| M2.2 | Python conformance kit | ✅ Done — `hki-conformance` (py) in `packages/hki-conformance-py`; 28 parametrized pytest cases + `hki-conformance` CLI with `--min-level` and JSON output; L4 reported; wired to CI. |
 | M3   | SDK as front door      | `@hki/sdk` exports a small typed client: `mintEnvelope`, `verifyEnvelope`, `wrap(client)`, `withDomain(handler)`. Python: `hki_sdk.client`. Examples ship with each.                      |
 | M4   | Schema freeze          | Envelope schema tagged `hki/1.0` in repo; Pydantic + Zod parsers vendored; backward-compat tests committed.                                                                               |
 

@@ -48,6 +48,8 @@
     "test:hki-conformance": "pnpm --dir packages/hki-conformance test",
     "typecheck:hki-conformance": "pnpm --dir packages/hki-conformance typecheck",
     "verify:hki-conformance": "pnpm build:hki-runtime && pnpm build:hki-conformance && pnpm --dir packages/hki-conformance conformance",
+    "test:hki-conformance-py": "cd packages/hki-conformance-py && uv run --extra dev pytest -q",
+    "verify:hki-conformance-py": "cd packages/hki-conformance-py && uv run --extra dev hki-conformance --min-level 3",
     "registry:build": "node scripts/build-conformance-registry.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",

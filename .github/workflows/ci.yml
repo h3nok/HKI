@@ -121,6 +121,9 @@ jobs:
       - name: Sync hki-runtime-py (with dev extras)
         run: cd packages/hki-runtime-py && uv sync --extra dev
 
+      - name: Sync hki-conformance-py (with dev extras)
+        run: cd packages/hki-conformance-py && uv sync --extra dev
+
       - run: pnpm test:hki-runtime-py
       - run: pnpm test:hki-litellm
       - run: pnpm test:hki-langchain
@@ -130,6 +133,8 @@ jobs:
       - run: pnpm test:hki-crewai
       - run: pnpm test:hki-integration
       - run: pnpm test:hki-threats
+      - run: pnpm test:hki-conformance-py
+      - run: pnpm verify:hki-conformance-py
       - run: pnpm audit:hki-ast
 
       - name: Build evidence registry
