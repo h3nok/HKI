@@ -34,6 +34,16 @@
       "types": "./dist/conformance.d.ts",
       "import": "./dist/conformance.mjs",
       "require": "./dist/conformance.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.mjs",
+      "require": "./dist/client.js"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "import": "./dist/schema.mjs",
+      "require": "./dist/schema.js"
     }
   },
   "files": [
@@ -52,7 +62,8 @@
   },
   "dependencies": {
     "@hki/conformance": "workspace:*",
-    "@hki/runtime": "workspace:*"
+    "@hki/runtime": "workspace:*",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@hki/typescript-config": "workspace:*",

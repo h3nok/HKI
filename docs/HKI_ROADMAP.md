@@ -244,8 +244,8 @@ Goal: HKI is independently installable, testable, and citable, in TS and Python.
 | M2   | Python parity          | `hki-runtime` (py) ships FastAPI middleware + Starlette decorator; Python conformance package mirrors all 28 cases; `pytest` is green; `uv` lockfile committed.                           |
 | M2.1 | FastAPI middleware     | ✅ Done — `hki_runtime.fastapi.HkiMiddleware` enforces envelope on every request; rejects missing/expired/global/wildcard with 401/403; binds envelope into `request.state.hki`.          |
 | M2.2 | Python conformance kit | ✅ Done — `hki-conformance` (py) in `packages/hki-conformance-py`; 28 parametrized pytest cases + `hki-conformance` CLI with `--min-level` and JSON output; L4 reported; wired to CI. |
-| M3   | SDK as front door      | `@hki/sdk` exports a small typed client: `mintEnvelope`, `verifyEnvelope`, `wrap(client)`, `withDomain(handler)`. Python: `hki_sdk.client`. Examples ship with each.                      |
-| M4   | Schema freeze          | Envelope schema tagged `hki/1.0` in repo; Pydantic + Zod parsers vendored; backward-compat tests committed.                                                                               |
+| M3   | SDK as front door      | ✅ Done — `@hki/sdk/client` exports `mintEnvelope`, `verifyEnvelope`, `wrap`, `envelopeHeaders`, `withDomain`; Python: `hki_runtime.client` mirrors all five; 17 TS + 16 Py tests pass. |
+| M4   | Schema freeze          | ✅ Done — Zod schemas (`HkiEnvelopeSchema`, `HkiArtifactLabelSchema`, `HkiGatewayTargetSchema`) in `@hki/sdk/schema`; Pydantic v2 models in `hki_runtime.pydantic`; 17 Zod + 19 Pydantic backward-compat tests committed. |
 
 ### Track 2 — Detector product
 
