@@ -80,20 +80,20 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 :root {
   --radius: 0.375rem;
-  --kb-brand-red: #e31837;
+  --kb-brand-red: var(--primary);
   --warning: var(--primary);
 }
 :root:not(.dark) {
   --agentic-light-canvas: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--background) 96%, #b9c5d6) 0%,
-    color-mix(in srgb, var(--background) 88%, #c1cad8) 52%,
-    color-mix(in srgb, var(--background) 92%, var(--primary) 3%) 100%
+    color-mix(in srgb, var(--background) 94%, white) 0%,
+    var(--background) 54%,
+    color-mix(in srgb, var(--background) 92%, var(--foreground) 3%) 100%
   );
   --agentic-light-panel: linear-gradient(
     180deg,
     color-mix(in srgb, var(--card) 98%, white) 0%,
-    color-mix(in srgb, var(--card) 94%, var(--background) 6%) 100%
+    color-mix(in srgb, var(--card) 92%, var(--background) 8%) 100%
   );
   --agentic-light-panel-strong: linear-gradient(
     180deg,
@@ -108,10 +108,10 @@
   --agentic-light-shadow:
     0 1px 2px color-mix(in srgb, var(--foreground) 14%, transparent),
     0 14px 26px -24px color-mix(in srgb, var(--foreground) 34%, transparent),
-    0 28px 56px -44px color-mix(in srgb, var(--primary) 24%, transparent);
+    0 28px 56px -46px color-mix(in srgb, var(--foreground) 18%, transparent);
 
   --sidebar: color-mix(in srgb, var(--card) 94%, var(--background) 6%);
-  --sidebar-accent: color-mix(in srgb, var(--primary) 8%, var(--muted) 92%);
+  --sidebar-accent: color-mix(in srgb, var(--foreground) 4%, var(--muted) 96%);
   --sidebar-border: color-mix(
     in srgb,
     var(--border) 76%,
@@ -155,18 +155,18 @@
     0 0 0 1px color-mix(in srgb, var(--foreground) 8%, transparent),
     0 2px 4px color-mix(in srgb, var(--foreground) 18%, transparent),
     0 16px 30px -22px color-mix(in srgb, var(--foreground) 36%, transparent),
-    0 34px 70px -52px color-mix(in srgb, var(--primary) 34%, transparent);
+    0 34px 70px -52px color-mix(in srgb, var(--foreground) 18%, transparent);
   --capsule-shadow-hover:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     0 0 0 1px color-mix(in srgb, var(--primary) 12%, transparent),
     0 2px 4px color-mix(in srgb, var(--foreground) 18%, transparent),
     0 22px 40px -28px color-mix(in srgb, var(--foreground) 38%, transparent),
-    0 40px 76px -54px color-mix(in srgb, var(--primary) 40%, transparent);
+    0 40px 76px -54px color-mix(in srgb, var(--foreground) 20%, transparent);
   --capsule-shadow-focus:
     inset 0 1px 0 rgba(255, 255, 255, 0.92),
     0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent),
     0 2px 4px color-mix(in srgb, var(--foreground) 16%, transparent),
-    0 24px 48px -32px color-mix(in srgb, var(--primary) 40%, transparent);
+    0 24px 48px -32px color-mix(in srgb, var(--foreground) 18%, transparent);
   --capsule-rail: linear-gradient(
     90deg,
     transparent 0%,
@@ -183,8 +183,8 @@
   );
   --capsule-inner-focus: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--primary) 7%, white) 0%,
-    color-mix(in srgb, var(--card) 92%, var(--primary) 8%) 100%
+    color-mix(in srgb, white 96%, var(--primary) 4%) 0%,
+    color-mix(in srgb, var(--card) 94%, var(--background) 6%) 100%
   );
   --capsule-inner-border: color-mix(in srgb, var(--foreground) 8%, transparent);
 }
@@ -214,7 +214,8 @@
   --capsule-shadow-idle: 0 8px 32px rgba(0, 0, 0, 0.6);
   --capsule-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.8);
   --capsule-shadow-focus:
-    0 0 0 1px rgba(0, 102, 178, 0.6), 0 0 24px -4px rgba(0, 102, 178, 0.4),
+    0 0 0 1px color-mix(in srgb, var(--primary) 60%, transparent),
+    0 0 24px -4px color-mix(in srgb, var(--primary) 40%, transparent),
     0 8px 32px rgba(0, 0, 0, 0.8);
   --capsule-rail: linear-gradient(
     90deg,
@@ -518,7 +519,7 @@ body::before {
 
 /* ═══════════════════════════════════════════════════════════════════════════
    HERO GLOW — Warm ambient radiance behind welcome brand icon
-   Layered radials: HKI Blue center + Red accent + soft vignette.
+   Layered radials: HKI Iris center + Pulse accent + soft vignette.
    Only visible on the welcome screen, fades behind content.
    ═══════════════════════════════════════════════════════════════════════════ */
 .hero-glow {
@@ -538,13 +539,13 @@ body::before {
   background:
     radial-gradient(
       ellipse 100% 100% at 50% 50%,
-      rgba(0, 93, 170, 0.1) 0%,
-      rgba(0, 93, 170, 0.04) 40%,
+      color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+      color-mix(in srgb, var(--primary) 4%, transparent) 40%,
       transparent 70%
     ),
     radial-gradient(
       ellipse 60% 50% at 60% 30%,
-      rgba(227, 24, 55, 0.03) 0%,
+      color-mix(in srgb, var(--secondary) 3%, transparent) 0%,
       transparent 60%
     );
   filter: blur(40px);
@@ -553,13 +554,13 @@ body::before {
   background:
     radial-gradient(
       ellipse 100% 100% at 50% 50%,
-      rgba(0, 93, 170, 0.14) 0%,
-      rgba(0, 93, 170, 0.05) 40%,
+      color-mix(in srgb, var(--primary) 14%, transparent) 0%,
+      color-mix(in srgb, var(--primary) 5%, transparent) 40%,
       transparent 70%
     ),
     radial-gradient(
       ellipse 60% 50% at 60% 30%,
-      rgba(227, 24, 55, 0.04) 0%,
+      color-mix(in srgb, var(--secondary) 4%, transparent) 0%,
       transparent 60%
     );
   filter: blur(50px);
@@ -633,8 +634,8 @@ body::before {
      .surface-accent-top    — 2px top-edge colored accent (stat/category cards)
      .surface-section       — subtle tinted section header background
      .surface-recessed      — panel that sits BELOW canvas (sidebar, code blocks)
-     .surface-tinted-blue   — subtle blue tint (info, primary context)
-     .surface-tinted-red    — subtle red tint (alerts, emphasis)
+     .surface-tinted-blue   — subtle iris tint (info, primary context)
+     .surface-tinted-red    — subtle pulse tint (alerts, emphasis)
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* Accent-edge card — 3px left stripe draws the eye without noise */
@@ -655,7 +656,7 @@ body::before {
   border-bottom-color: rgba(255, 255, 255, 0.07);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.2),
-    -1px 0 8px -2px rgba(0, 102, 178, 0.12);
+    -1px 0 8px -2px color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 /* Top-edge accent — colored top border for stat/category cards */
@@ -685,7 +686,7 @@ body::before {
   border-bottom-color: rgba(255, 255, 255, 0.07);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.2),
-    0 -1px 6px -2px rgba(0, 102, 178, 0.14);
+    0 -1px 6px -2px color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
 /* Section header — subtle tinted background for visual rhythm */
@@ -717,16 +718,16 @@ body::before {
   border: 1px solid color-mix(in srgb, var(--primary) 10%, var(--border));
 }
 .dark .surface-tinted-blue {
-  background: rgba(0, 102, 178, 0.12);
-  border-color: rgba(0, 102, 178, 0.2);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
 }
 .surface-tinted-red {
   background: color-mix(in srgb, var(--secondary) 4%, var(--card));
   border: 1px solid color-mix(in srgb, var(--secondary) 10%, var(--border));
 }
 .dark .surface-tinted-red {
-  background: rgba(227, 24, 55, 0.08);
-  border-color: rgba(227, 24, 55, 0.15);
+  background: color-mix(in srgb, var(--secondary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--secondary) 15%, transparent);
 }
 
 /* Custom animations */
@@ -898,7 +899,7 @@ body::before {
       1px 0 0 rgba(0, 0, 0, 0.06), 2px 0 10px -2px rgba(0, 0, 0, 0.07);
 
     /* Glass chrome — the sidebar/header glass surface border */
-    --glass-chrome-border: rgba(0, 102, 178, 0.16);
+    --glass-chrome-border: color-mix(in srgb, var(--primary) 16%, transparent);
 
     /* Card depth — stronger on Retina */
     --shadow-card:
@@ -909,20 +910,24 @@ body::before {
     --capsule-border-hover: rgba(0, 0, 0, 0.35);
 
     /* Brand-tinted card hairline */
-    --border-card: rgba(0, 102, 178, 0.14);
+    --border-card: color-mix(in srgb, var(--primary) 14%, transparent);
   }
 
   :root.dark {
     /* Dark mode shadows are already stronger, just bump glass border */
-    --glass-chrome-border: rgba(0, 102, 178, 0.16);
-    --glass-floating-border: rgba(0, 102, 178, 0.18);
+    --glass-chrome-border: color-mix(in srgb, var(--primary) 16%, transparent);
+    --glass-floating-border: color-mix(
+      in srgb,
+      var(--primary) 18%,
+      transparent
+    );
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    KNOWLEDGE BASE — Surface Scoping
    Knowledge page now inherits the shared agentic neutral token system.
-   HKI Blue is the accent color (buttons, highlights) — not the surface.
+   HKI Iris is the accent color (buttons, highlights) — not the surface.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Dark mode — welcome page bg fallback ── */
@@ -1163,7 +1168,7 @@ body::before {
   }
 
   .dark .dashboard-shell.admin-control-plane-canvas {
-    background: var(--admin-dashboard-canvas-bg);
+    background: var(--admin-duotone-canvas);
   }
 
   .dark .dashboard-shell.admin-control-plane-canvas::before {
@@ -1839,27 +1844,86 @@ body::before {
       inset 0 1px 0 color-mix(in srgb, white 32%, transparent);
   }
 
-  .agentic-sidebar-brand-signal {
-    width: 1.125rem;
-    height: 0.125rem;
-    border-radius: 999px;
-    background: linear-gradient(
-      90deg,
-      var(--primary) 0%,
-      color-mix(in srgb, var(--kb-brand-red) 78%, var(--primary)) 100%
-    );
+  .agentic-sidebar-command-shell {
+    display: grid;
+    grid-template-columns: minmax(8.5rem, 1fr) auto;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+    padding: 0.1875rem;
+    border: 1px solid color-mix(in srgb, var(--sidebar-border) 68%, transparent);
+    border-radius: 0.5rem;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 88%, var(--sidebar) 12%) 0%,
+        color-mix(in srgb, var(--sidebar-accent) 28%, transparent) 100%
+      ),
+      color-mix(in srgb, var(--sidebar) 90%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
+      0 1px 2px color-mix(in srgb, var(--foreground) 8%, transparent);
   }
 
   .agentic-sidebar-primary-action {
-    min-height: 2rem;
-    border: 1px solid color-mix(in srgb, var(--primary) 34%, transparent);
+    min-height: 2.25rem;
+    padding: 0.25rem 0.75rem 0.25rem 0.3125rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 36%, transparent);
+    border-radius: 0.375rem;
+    color: var(--sidebar-primary-foreground);
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--sidebar-primary) 92%, black 8%) 0%,
+        color-mix(in srgb, var(--sidebar-primary) 84%, var(--primary)) 100%
+      ),
+      var(--sidebar-primary);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+      0 1px 1px color-mix(in srgb, var(--foreground) 14%, transparent);
+  }
+
+  .agentic-sidebar-primary-action-sheen {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.14) 0%,
+        rgba(255, 255, 255, 0.035) 100%
+      ),
+      radial-gradient(
+        circle at 16% 16%,
+        rgba(255, 255, 255, 0.18),
+        transparent 34%
+      );
+  }
+
+  .agentic-sidebar-primary-action-icon {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    border-radius: 0.3125rem;
+    color: currentcolor;
+    background: color-mix(in srgb, white 12%, transparent);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, white 16%, transparent),
+      inset 0 1px 0 color-mix(in srgb, white 20%, transparent);
+  }
+
+  .agentic-sidebar-primary-action span:not(:first-child) {
+    position: relative;
+    z-index: 1;
   }
 
   .agentic-sidebar-primary-action::after {
     content: "";
     position: absolute;
-    left: 0.625rem;
-    right: 0.625rem;
+    left: 0.75rem;
+    right: 0.75rem;
     top: 0;
     height: 1px;
     border-radius: 999px;
@@ -1869,6 +1933,62 @@ body::before {
       rgba(255, 255, 255, 0.44) 45%,
       transparent 100%
     );
+  }
+
+  .agentic-sidebar-command-group {
+    display: inline-flex;
+    align-items: center;
+    height: 2.25rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--sidebar-border) 64%, transparent);
+    border-radius: 0.375rem;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 76%, transparent) 0%,
+        color-mix(in srgb, var(--sidebar-accent) 32%, transparent) 100%
+      ),
+      color-mix(in srgb, var(--sidebar) 86%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 34%, transparent);
+  }
+
+  .agentic-sidebar-command-icon-button {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .agentic-sidebar-command-icon-button + .agentic-sidebar-command-icon-button {
+    border-left: 1px solid
+      color-mix(in srgb, var(--sidebar-border) 58%, transparent);
+  }
+
+  .agentic-sidebar-command-icon-button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, white 18%, transparent) 0%,
+        transparent 48%
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+        color-mix(in srgb, var(--kb-brand-red) 5%, transparent) 100%
+      );
+    transition: opacity 180ms ease;
+  }
+
+  .agentic-sidebar-command-icon-button:hover::before {
+    opacity: 1;
+  }
+
+  .agentic-sidebar-command-icon-button svg {
+    position: relative;
+    z-index: 1;
   }
 
   .agentic-sidebar-icon-button,
@@ -1927,6 +2047,40 @@ body::before {
     padding-top: 0.125rem;
   }
 
+  .agentic-conversation-group-header {
+    background: transparent;
+  }
+
+  .agentic-conversation-group-header:hover {
+    background: color-mix(in srgb, var(--primary) 5%, transparent);
+  }
+
+  .agentic-conversation-group-count {
+    border: 1px solid color-mix(in srgb, var(--sidebar-border) 42%, transparent);
+    background: color-mix(in srgb, var(--sidebar-accent) 42%, transparent);
+    color: color-mix(in srgb, var(--sidebar-muted-foreground) 82%, transparent);
+  }
+
+  .agentic-sidebar-empty-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--sidebar-border) 64%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 64%, transparent) 0%,
+        color-mix(in srgb, var(--sidebar-accent) 38%, transparent) 100%
+      ),
+      color-mix(in srgb, var(--sidebar) 86%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 28%, transparent),
+      0 1px 2px color-mix(in srgb, var(--foreground) 8%, transparent);
+  }
+
   .agentic-project-folder,
   .agentic-conversation-item {
     isolation: isolate;
@@ -1945,15 +2099,28 @@ body::before {
     background:
       linear-gradient(
         90deg,
-        color-mix(in srgb, var(--primary) 12%, transparent) 0%,
-        color-mix(in srgb, var(--kb-brand-red) 5%, transparent) 100%
+        color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+        color-mix(in srgb, var(--kb-brand-red) 4%, transparent) 100%
       ),
-      repeating-linear-gradient(
-        90deg,
-        transparent 0 26px,
-        color-mix(in srgb, var(--foreground) 4%, transparent) 26px 27px,
-        transparent 27px 54px
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 18%, transparent) 0%,
+        transparent 100%
       );
+    transition: opacity 180ms ease;
+  }
+
+  .agentic-conversation-item::after {
+    content: "";
+    position: absolute;
+    left: 0.3125rem;
+    top: 0.625rem;
+    bottom: 0.625rem;
+    z-index: 0;
+    width: 2px;
+    border-radius: 999px;
+    opacity: 0;
+    background: var(--agentic-interface-rail);
     transition: opacity 180ms ease;
   }
 
@@ -1977,8 +2144,68 @@ body::before {
       0 10px 20px -22px color-mix(in srgb, var(--primary) 38%, transparent);
   }
 
+  .agentic-conversation-item[data-active="true"]::after {
+    opacity: 0.9;
+  }
+
   .agentic-conversation-item[data-status="running"] {
     border-color: color-mix(in srgb, var(--primary) 24%, transparent);
+  }
+
+  .agentic-conversation-status-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    margin-top: 0.0625rem;
+    border-radius: 0.375rem;
+    border: 1px solid color-mix(in srgb, currentcolor 12%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
+      0 1px 1px color-mix(in srgb, var(--foreground) 7%, transparent);
+  }
+
+  .agentic-conversation-status-glyph[data-status="running"] {
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+      0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent);
+  }
+
+  .agentic-conversation-subline {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+    margin-top: 0.1875rem;
+    color: color-mix(in srgb, var(--sidebar-muted-foreground) 78%, transparent);
+  }
+
+  .agentic-conversation-preview {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.6875rem;
+    line-height: 1.1rem;
+  }
+
+  .agentic-conversation-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 6.75rem;
+    min-width: 0;
+    flex: 0 1 auto;
+    border-radius: 0.3125rem;
+    border: 1px solid color-mix(in srgb, var(--sidebar-border) 52%, transparent);
+    background: color-mix(in srgb, var(--sidebar-accent) 38%, transparent);
+    padding: 0.0625rem 0.3125rem;
+    color: color-mix(in srgb, var(--sidebar-muted-foreground) 84%, transparent);
+    font-size: 0.625rem;
+    line-height: 0.875rem;
   }
 
   .agentic-project-folder[data-active="true"] {
@@ -2750,16 +2977,16 @@ body::before {
       8px 0 24px -20px rgba(0, 0, 0, 0.36);
   }
 
-  /* Override sidebar accent for KB sidebar — HKI Blue */
+  /* Override sidebar accent for KB sidebar — HKI Iris / Pulse */
   .kb-sidebar-shell {
-    --sidebar-accent: rgba(0, 102, 178, 0.12);
+    --sidebar-accent: color-mix(in srgb, var(--primary) 10%, transparent);
     --sidebar-accent-foreground: var(--primary);
-    --kb-brand-red: #e31837;
+    --kb-brand-red: var(--primary);
   }
 
   .dark .kb-sidebar-shell {
-    --sidebar-accent: rgba(0, 102, 178, 0.22);
-    --sidebar-accent-foreground: #cce5f5;
+    --sidebar-accent: color-mix(in srgb, var(--primary) 18%, transparent);
+    --sidebar-accent-foreground: color-mix(in srgb, var(--primary) 54%, white);
   }
 
   .kb-sidebar-shell .dashboard-nav-button {
@@ -2789,7 +3016,7 @@ body::before {
     color: var(--primary);
   }
 
-  /* KB active nav — restrained blue tint; left accent bar is the primary cue */
+  /* KB active nav — restrained iris tint; left accent bar is the primary cue */
   :root:not(.dark) .kb-sidebar-shell .dashboard-nav-button[data-active="true"] {
     background: color-mix(in srgb, var(--primary) 8%, var(--card));
     border-color: color-mix(in srgb, var(--primary) 20%, var(--border));
@@ -2833,1255 +3060,6 @@ body::before {
   }
   .dark .kb-sidebar-shell .dashboard-nav-button[data-active="true"]:active {
     background: inherit;
-  }
-
-  .admin-sidebar-shell {
-    --sidebar: hsl(var(--background));
-    --sidebar-foreground: hsl(var(--foreground));
-    --sidebar-border: hsl(var(--border));
-    --sidebar-accent: hsl(var(--primary));
-    --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-primary: hsl(var(--primary));
-    --sidebar-primary-foreground: hsl(var(--primary-foreground));
-    --sidebar-ring: hsl(var(--ring));
-    position: relative;
-    isolation: isolate;
-  }
-
-  .admin-sidebar-shell::after {
-    content: "";
-    position: absolute;
-    top: 1rem;
-    bottom: 1rem;
-    right: 0;
-    width: 1px;
-    pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--primary) 28%, transparent) 0%,
-      color-mix(in srgb, var(--border) 72%, transparent) 12%,
-      color-mix(in srgb, var(--border) 68%, transparent) 88%,
-      transparent 100%
-    );
-    opacity: 0.82;
-  }
-
-  .admin-sidebar-shell [data-slot="sidebar-inner"] {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-  }
-
-  :root:not(.dark) .admin-sidebar-shell [data-slot="sidebar-inner"] {
-    background:
-      radial-gradient(
-        28rem 20rem at 0% 0%,
-        color-mix(in srgb, var(--primary) 7%, transparent) 0%,
-        transparent 74%
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--card) 97%, white) 0%,
-        color-mix(in srgb, var(--card) 92%, var(--primary) 4%) 100%
-      );
-    border: 1px solid color-mix(in srgb, var(--primary) 10%, var(--border) 90%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.76),
-      8px 0 24px -28px rgba(15, 23, 42, 0.16),
-      0 20px 40px -42px color-mix(in srgb, var(--primary) 16%, transparent);
-  }
-
-  .dark .admin-sidebar-shell [data-slot="sidebar-inner"] {
-    background:
-      radial-gradient(
-        26rem 16rem at 0% 0%,
-        color-mix(in srgb, var(--primary) 10%, transparent) 0%,
-        transparent 76%
-      ),
-      linear-gradient(180deg, #10161f 0%, #0e141c 100%);
-    border: 1px solid
-      color-mix(in srgb, var(--primary) 10%, rgba(255, 255, 255, 0.08));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.02),
-      8px 0 20px -22px rgba(0, 0, 0, 0.4),
-      0 22px 36px -38px color-mix(in srgb, var(--primary) 18%, transparent);
-  }
-
-  .admin-sidebar-shell [data-slot="sidebar-inner"]::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      radial-gradient(
-        28rem 16rem at 0% 0%,
-        color-mix(in srgb, var(--primary) 5%, transparent) 0%,
-        transparent 72%
-      ),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 22%);
-    opacity: 0.75;
-  }
-
-  .admin-sidebar-shell [data-slot="sidebar-inner"]::after {
-    content: "";
-    position: absolute;
-    top: 1rem;
-    bottom: 1rem;
-    left: 0;
-    width: 2px;
-    pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--primary) 88%, transparent) 0%,
-      color-mix(in srgb, var(--primary) 34%, transparent) 24%,
-      color-mix(in srgb, var(--primary) 10%, transparent) 72%,
-      transparent 100%
-    );
-    opacity: 0.62;
-  }
-
-  .admin-sidebar-section-row {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  .admin-sidebar-section-index {
-    display: inline-flex;
-    min-width: 1.65rem;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--primary) 10%, var(--border) 90%);
-    background: color-mix(in srgb, var(--muted) 72%, transparent);
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    color: color-mix(in srgb, var(--muted-foreground) 82%, transparent);
-  }
-
-  .admin-sidebar-section-line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--primary) 14%, transparent) 0%,
-      color-mix(in srgb, var(--border) 70%, transparent) 100%
-    );
-    opacity: 0.9;
-  }
-
-  .admin-sidebar-shell .dashboard-nav-button {
-    position: relative;
-    overflow: hidden;
-    border: 1px solid transparent;
-    background: transparent;
-    box-shadow: none;
-    transition:
-      background-color 180ms ease,
-      border-color 180ms ease,
-      box-shadow 180ms ease,
-      color 180ms ease,
-      transform 180ms ease;
-  }
-
-  .admin-sidebar-shell .dashboard-nav-button::before {
-    content: none;
-    position: absolute;
-    left: 0.7rem;
-    top: 0.7rem;
-    bottom: 0.7rem;
-    width: 2px;
-    border-radius: 999px;
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--primary) 96%, white) 0%,
-      color-mix(in srgb, var(--primary) 46%, transparent) 100%
-    );
-    opacity: 0;
-    transform: scaleY(0.72);
-    transition:
-      opacity 180ms ease,
-      transform 180ms ease;
-  }
-
-  .admin-sidebar-shell .dashboard-nav-button::after {
-    content: none;
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--primary) 10%, transparent) 0%,
-      transparent 64%
-    );
-    opacity: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    transition: opacity 180ms ease;
-  }
-
-  .admin-sidebar-shell .dashboard-nav-button:active::after {
-    animation: none;
-    opacity: 1;
-  }
-
-  .admin-sidebar-shell .dashboard-nav-badge,
-  .admin-sidebar-shell .dashboard-nav-shortcut,
-  .admin-sidebar-shell .dashboard-nav-external,
-  .admin-sidebar-shell .dashboard-nav-icon {
-    transition:
-      color 180ms ease,
-      background-color 180ms ease,
-      border-color 180ms ease,
-      box-shadow 180ms ease;
-  }
-
-  .admin-sidebar-nav-button {
-    align-items: center;
-  }
-
-  .admin-sidebar-nav-copy {
-    display: grid;
-    min-width: 0;
-    gap: 0.15rem;
-  }
-
-  .admin-sidebar-nav-label {
-    font-size: 14px;
-    line-height: 1.15;
-    color: inherit;
-    font-weight: 600;
-  }
-
-  .admin-sidebar-nav-meta {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--muted-foreground) 74%, transparent);
-  }
-
-  .admin-sidebar-nav-rail {
-    display: none;
-  }
-
-  .admin-sidebar-nav-badge,
-  .admin-sidebar-nav-shortcut {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    border: 0;
-    background: transparent;
-    color: color-mix(in srgb, var(--muted-foreground) 84%, transparent);
-    padding: 0;
-  }
-
-  .admin-sidebar-nav-external {
-    color: color-mix(in srgb, var(--muted-foreground) 72%, transparent);
-  }
-
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="false"]:hover {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card) 94%, white) 0%,
-      color-mix(in srgb, var(--card) 88%, var(--primary) 6%) 100%
-    );
-    border-color: color-mix(in srgb, var(--primary) 16%, var(--border));
-    color: var(--foreground);
-    box-shadow:
-      inset 0 1px 0
-        color-mix(in srgb, var(--primary-foreground) 64%, transparent),
-      0 12px 18px -24px rgba(15, 23, 42, 0.12),
-      0 16px 24px -30px color-mix(in srgb, var(--primary) 22%, transparent);
-  }
-
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"] {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, white 80%, var(--primary) 20%) 0%,
-      color-mix(in srgb, var(--card) 72%, var(--primary) 18%) 100%
-    );
-    border-color: color-mix(in srgb, var(--primary) 28%, var(--border) 72%);
-    color: var(--foreground);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, white 78%, var(--primary) 22%),
-      0 14px 20px -24px color-mix(in srgb, var(--primary) 26%, transparent);
-  }
-
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="false"]:hover::before,
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]::before {
-    opacity: 0;
-    transform: none;
-  }
-
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="false"]:hover::after,
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]::after {
-    opacity: 0;
-  }
-
-  .admin-sidebar-shell .dashboard-nav-icon,
-  .dark .admin-sidebar-shell .dashboard-nav-icon {
-    background: color-mix(in srgb, var(--muted) 72%, transparent);
-    border-color: color-mix(in srgb, var(--primary) 8%, transparent);
-    box-shadow: none;
-    color: color-mix(in srgb, var(--muted-foreground) 82%, transparent);
-  }
-
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="false"]:hover
-    .dashboard-nav-icon {
-    background: color-mix(in srgb, white 74%, var(--primary) 26%);
-    border-color: color-mix(in srgb, var(--primary) 18%, var(--border) 82%);
-    color: color-mix(in srgb, var(--primary) 88%, var(--foreground) 12%);
-  }
-
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .dashboard-nav-icon {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, white 68%, var(--primary) 32%) 0%,
-      color-mix(in srgb, var(--card) 58%, var(--primary) 42%) 100%
-    );
-    border-color: color-mix(in srgb, var(--primary) 26%, var(--border) 74%);
-    color: var(--primary);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.42),
-      0 10px 16px -18px color-mix(in srgb, var(--primary) 24%, transparent);
-  }
-
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .admin-sidebar-nav-meta {
-    color: color-mix(in srgb, var(--primary) 74%, var(--muted-foreground) 26%);
-  }
-
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .admin-sidebar-nav-rail {
-    opacity: 0;
-  }
-
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .dashboard-nav-badge {
-    background: color-mix(in srgb, var(--primary) 12%, transparent);
-    color: var(--primary);
-    box-shadow: none;
-  }
-
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .dashboard-nav-shortcut,
-  :root:not(.dark)
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .dashboard-nav-external {
-    color: color-mix(in srgb, var(--primary) 82%, transparent);
-  }
-
-  .admin-sidebar-shell .dashboard-nav-button:focus-visible {
-    outline: none;
-    box-shadow:
-      0 0 0 2px color-mix(in srgb, var(--primary) 24%, transparent),
-      0 0 0 4px color-mix(in srgb, var(--primary) 10%, transparent);
-  }
-
-  .dark .admin-sidebar-shell .dashboard-nav-button:focus-visible {
-    box-shadow:
-      0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent),
-      0 0 0 4px rgba(255, 255, 255, 0.06);
-  }
-
-  .dark .admin-sidebar-shell .dashboard-nav-button[data-active="false"]:hover {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, #141a22 94%, var(--primary) 6%) 0%,
-      color-mix(in srgb, #121821 90%, var(--primary) 10%) 100%
-    );
-    border-color: color-mix(
-      in srgb,
-      var(--primary) 12%,
-      rgba(255, 255, 255, 0.08)
-    );
-    color: color-mix(in srgb, var(--foreground) 94%, var(--primary) 6%);
-    box-shadow: 0 10px 16px -24px rgba(0, 0, 0, 0.28);
-  }
-
-  .dark .admin-sidebar-shell .dashboard-nav-button[data-active="true"] {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, #131a23 88%, var(--primary) 12%) 0%,
-      color-mix(in srgb, #121821 74%, var(--primary) 26%) 100%
-    );
-    border-color: color-mix(
-      in srgb,
-      var(--primary) 28%,
-      rgba(255, 255, 255, 0.1)
-    );
-    color: color-mix(in srgb, white 92%, var(--primary) 8%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.04),
-      0 12px 18px -24px rgba(0, 0, 0, 0.32);
-  }
-
-  .dark
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="false"]:hover::before,
-  .dark .admin-sidebar-shell .dashboard-nav-button[data-active="true"]::before {
-    opacity: 0;
-    transform: none;
-  }
-
-  .dark
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="false"]:hover::after,
-  .dark .admin-sidebar-shell .dashboard-nav-button[data-active="true"]::after {
-    opacity: 0;
-  }
-
-  .dark .admin-sidebar-shell .dashboard-nav-icon {
-    background: color-mix(in srgb, var(--card) 88%, white 12%);
-    border-color: rgba(255, 255, 255, 0.05);
-    color: var(--muted-foreground);
-    box-shadow: none;
-  }
-
-  .dark
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="false"]:hover
-    .admin-sidebar-nav-rail {
-    opacity: 0;
-  }
-
-  .dark
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .admin-sidebar-nav-rail {
-    opacity: 0;
-  }
-
-  .dark
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="false"]:hover
-    .dashboard-nav-icon {
-    background: color-mix(in srgb, var(--card) 82%, var(--primary) 18%);
-    border-color: color-mix(
-      in srgb,
-      var(--primary) 18%,
-      rgba(255, 255, 255, 0.08)
-    );
-    color: color-mix(in srgb, var(--foreground) 86%, var(--primary) 14%);
-  }
-
-  .dark
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .dashboard-nav-icon {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--primary) 74%, #16324b 26%) 0%,
-      color-mix(in srgb, var(--primary) 58%, #12263a 42%) 100%
-    );
-    border-color: color-mix(
-      in srgb,
-      var(--primary) 34%,
-      rgba(255, 255, 255, 0.14)
-    );
-    color: #f7fbff;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      0 12px 18px -20px color-mix(in srgb, var(--primary) 42%, transparent);
-  }
-
-  .dark .admin-sidebar-nav-badge,
-  .dark .admin-sidebar-nav-shortcut {
-    background: color-mix(in srgb, var(--card) 90%, var(--background) 10%);
-    border-color: color-mix(
-      in srgb,
-      var(--primary) 10%,
-      rgba(255, 255, 255, 0.08)
-    );
-    color: var(--muted-foreground);
-  }
-
-  .dark
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .dashboard-nav-badge {
-    background: color-mix(in srgb, var(--primary) 18%, transparent);
-    color: white;
-    box-shadow: none;
-  }
-
-  .dark
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .dashboard-nav-shortcut,
-  .dark
-    .admin-sidebar-shell
-    .dashboard-nav-button[data-active="true"]
-    .dashboard-nav-external {
-    color: color-mix(in srgb, white 82%, var(--primary) 18%);
-  }
-
-  .admin-sidebar-shell {
-    --sidebar: color-mix(in srgb, var(--primary) 5%, var(--background));
-    --sidebar-foreground: var(--foreground);
-    --sidebar-accent: transparent;
-    --sidebar-accent-foreground: var(--foreground);
-    --sidebar-primary: var(--primary);
-    --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-ring: var(--primary);
-  }
-
-  .admin-sidebar-shell [data-slot="sidebar-inner"] {
-    border: 0 !important;
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--primary) 13%, white) 0%,
-      color-mix(in srgb, var(--background) 88%, white) 42%,
-      color-mix(in srgb, var(--primary) 7%, var(--card)) 100%
-    );
-    backdrop-filter: blur(20px) saturate(1.08);
-    box-shadow:
-      inset -1px 0 0 color-mix(in srgb, white 68%, transparent),
-      10px 0 34px -30px color-mix(in srgb, var(--primary) 44%, transparent),
-      18px 0 50px -44px rgba(15, 23, 42, 0.22);
-  }
-
-  .dark .admin-sidebar-shell [data-slot="sidebar-inner"] {
-    border: 0 !important;
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--primary) 20%, #0d141d) 0%,
-      #0f151e 44%,
-      color-mix(in srgb, var(--primary) 10%, #0b1119) 100%
-    );
-    box-shadow:
-      inset -1px 0 0 rgba(255, 255, 255, 0.025),
-      12px 0 30px -26px rgba(0, 0, 0, 0.54),
-      18px 0 54px -46px color-mix(in srgb, var(--primary) 34%, black);
-  }
-
-  .admin-sidebar-brand {
-    min-height: 4.9rem;
-    border: 0;
-    overflow: hidden;
-    color: white;
-    background:
-      radial-gradient(
-        120% 100% at 0% 0%,
-        rgba(255, 255, 255, 0.16) 0%,
-        rgba(255, 255, 255, 0) 58%
-      ),
-      linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--primary) 86%, #063a3c) 0%,
-        color-mix(in srgb, var(--primary) 74%, #243d35) 58%,
-        color-mix(in srgb, var(--primary) 68%, var(--secondary) 32%) 100%
-      );
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.22),
-      0 16px 28px -24px color-mix(in srgb, var(--primary) 70%, transparent),
-      0 20px 42px -36px color-mix(in srgb, var(--secondary) 38%, transparent);
-  }
-
-  .admin-sidebar-brand:hover {
-    background:
-      radial-gradient(
-        120% 100% at 0% 0%,
-        rgba(255, 255, 255, 0.19) 0%,
-        rgba(255, 255, 255, 0) 58%
-      ),
-      linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--primary) 92%, #063a3c) 0%,
-        color-mix(in srgb, var(--primary) 72%, #243d35) 58%,
-        color-mix(in srgb, var(--primary) 64%, var(--secondary) 36%) 100%
-      );
-  }
-
-  .admin-sidebar-brand-mark-shell {
-    background: rgba(255, 255, 255, 0.13);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.22),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-      0 14px 22px -20px rgba(0, 0, 0, 0.44);
-  }
-
-  .admin-sidebar-brand-mark {
-    --ops-icon-iris: rgba(255, 255, 255, 0.92);
-    --ops-icon-pulse: color-mix(in srgb, var(--secondary) 92%, white);
-    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22));
-  }
-
-  .admin-sidebar-brand-status {
-    position: absolute;
-    right: 0.18rem;
-    bottom: 0.18rem;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 999px;
-    box-shadow:
-      0 0 0 2px rgba(255, 255, 255, 0.82),
-      0 7px 12px -10px rgba(0, 0, 0, 0.48);
-  }
-
-  .admin-sidebar-brand-status.is-healthy {
-    background: color-mix(in srgb, var(--primary) 70%, white);
-  }
-
-  .admin-sidebar-brand-status.is-warning {
-    background: color-mix(in srgb, var(--warning) 86%, white);
-  }
-
-  .admin-sidebar-brand-eyebrow {
-    color: rgba(255, 255, 255, 0.78);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
-  }
-
-  .admin-sidebar-brand-title {
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
-  }
-
-  .admin-sidebar-nav-button {
-    isolation: isolate;
-    border: 0 !important;
-    background: transparent !important;
-    color: color-mix(in srgb, var(--foreground) 72%, var(--muted-foreground));
-    box-shadow: none !important;
-    transition:
-      color 180ms ease,
-      transform 180ms ease;
-  }
-
-  .admin-sidebar-nav-button::before {
-    content: "";
-    position: absolute;
-    inset: 0.15rem;
-    z-index: 0;
-    border-radius: 0.72rem;
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--primary) 12%, transparent) 0%,
-      color-mix(in srgb, var(--secondary) 6%, transparent) 100%
-    );
-    opacity: 0;
-    transform: scaleX(0.96);
-    transition:
-      opacity 180ms ease,
-      transform 180ms ease;
-  }
-
-  .admin-sidebar-nav-button > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .admin-sidebar-nav-button:hover::before,
-  .admin-sidebar-nav-button[data-active="true"]::before {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-
-  .admin-sidebar-nav-button:hover {
-    color: color-mix(in srgb, var(--primary) 42%, var(--foreground)) !important;
-    transform: translateX(2px);
-  }
-
-  .admin-sidebar-nav-button[data-active="true"] {
-    color: color-mix(in srgb, var(--primary) 54%, var(--foreground)) !important;
-    transform: translateX(2px);
-  }
-
-  .admin-sidebar-nav-button:active {
-    background: transparent !important;
-    color: color-mix(in srgb, var(--primary) 58%, var(--foreground)) !important;
-  }
-
-  .admin-sidebar-nav-text {
-    min-width: 0;
-    letter-spacing: 0;
-  }
-
-  .admin-sidebar-nav-icon {
-    background: color-mix(in srgb, var(--primary) 9%, transparent);
-    color: color-mix(in srgb, var(--primary) 74%, var(--muted-foreground));
-    box-shadow: inset 0 1px 0
-      color-mix(in srgb, var(--foreground) 10%, transparent);
-  }
-
-  .admin-sidebar-nav-button:hover .admin-sidebar-nav-icon,
-  .admin-sidebar-nav-button[data-active="true"] .admin-sidebar-nav-icon {
-    background: linear-gradient(
-      135deg,
-      color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 92%,
-          var(--foreground)
-        )
-        0%,
-      color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 58%,
-          var(--admin-duotone-b, var(--secondary)) 42%
-        )
-        100%
-    );
-    color: var(--background);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--background) 22%, transparent),
-      0 10px 18px -15px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 54%,
-          transparent
-        );
-  }
-
-  .admin-sidebar-nav-button[data-active="true"] .admin-sidebar-nav-shortcut,
-  .admin-sidebar-nav-button[data-active="true"] .admin-sidebar-nav-count {
-    color: var(--primary);
-  }
-
-  .admin-sidebar-nav-count {
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
-    color: var(--primary);
-  }
-
-  .admin-sidebar-nav-shortcut {
-    color: color-mix(in srgb, var(--muted-foreground) 54%, transparent);
-  }
-
-  :root:not(.dark) .admin-sidebar-shell [data-slot="sidebar-inner"] {
-    background:
-      radial-gradient(
-        28rem 20rem at 0% 0%,
-        color-mix(in srgb, var(--primary) 9%, transparent) 0%,
-        transparent 74%
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--card) 96%, transparent) 0%,
-        color-mix(in srgb, var(--background) 92%, var(--card)) 100%
-      );
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
-      8px 0 24px -28px color-mix(in srgb, var(--foreground) 16%, transparent),
-      0 20px 40px -42px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 18%,
-          transparent
-        );
-  }
-
-  :root:not(.dark) .admin-sidebar-nav-button::before {
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--primary) 11%, transparent) 0%,
-      color-mix(in srgb, var(--secondary) 5%, transparent) 100%
-    );
-  }
-
-  :root:not(.dark) .admin-sidebar-nav-button[data-active="true"] {
-    color: color-mix(
-      in srgb,
-      var(--admin-duotone-a, var(--primary)) 62%,
-      var(--foreground)
-    ) !important;
-  }
-
-  :root:not(.dark) .admin-sidebar-nav-icon {
-    background: color-mix(
-      in srgb,
-      var(--admin-duotone-a, var(--primary)) 8%,
-      var(--card)
-    );
-    color: color-mix(
-      in srgb,
-      var(--admin-duotone-a, var(--primary)) 76%,
-      var(--foreground)
-    );
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
-      0 10px 18px -18px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 22%,
-          transparent
-        );
-  }
-
-  :root:not(.dark) .admin-metric-card {
-    background:
-      radial-gradient(
-        17rem 12rem at 0% 0%,
-        color-mix(in srgb, var(--primary) 5%, transparent) 0%,
-        transparent 76%
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--card) 93%, transparent) 0%,
-        color-mix(in srgb, var(--card) 84%, var(--background)) 100%
-      ) !important;
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
-      0 14px 24px -24px color-mix(in srgb, var(--foreground) 20%, transparent),
-      0 28px 54px -44px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 28%,
-          transparent
-        ) !important;
-  }
-
-  :root:not(.dark) .admin-metric-card:hover {
-    filter: saturate(1.09);
-    transform: translateY(-3px);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 9%, transparent),
-      0 20px 34px -30px color-mix(in srgb, var(--foreground) 24%, transparent),
-      0 36px 72px -52px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 34%,
-          transparent
-        ),
-      0 40px 82px -68px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-b, var(--secondary)) 22%,
-          transparent
-        ) !important;
-  }
-
-  :root:not(.dark) .admin-surface-card {
-    background:
-      radial-gradient(
-        34rem 18rem at 0% 0%,
-        color-mix(in srgb, var(--primary) 6%, transparent) 0%,
-        transparent 76%
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--card) 92%, transparent) 0%,
-        color-mix(in srgb, var(--card) 84%, var(--background)) 100%
-      ) !important;
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
-      0 16px 28px -28px color-mix(in srgb, var(--foreground) 20%, transparent),
-      0 30px 62px -50px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 28%,
-          transparent
-        ),
-      0 34px 70px -62px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-b, var(--secondary)) 20%,
-          transparent
-        ) !important;
-  }
-
-  :root:not(.dark) .admin-surface-card:hover {
-    filter: saturate(1.08);
-    transform: translateY(-3px);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 9%, transparent),
-      0 22px 38px -32px color-mix(in srgb, var(--foreground) 24%, transparent),
-      0 40px 78px -54px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 34%,
-          transparent
-        ),
-      0 44px 90px -68px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-b, var(--secondary)) 24%,
-          transparent
-        ) !important;
-  }
-
-  :root:not(.dark) .admin-surface-hero {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card) 94%, transparent) 0%,
-      color-mix(in srgb, var(--card) 86%, var(--background)) 100%
-    );
-    box-shadow:
-      0 18px 32px -30px color-mix(in srgb, var(--foreground) 20%, transparent),
-      0 30px 58px -50px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 28%,
-          transparent
-        ),
-      0 34px 70px -60px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-b, var(--secondary)) 18%,
-          transparent
-        );
-  }
-
-  :root:not(.dark) .admin-surface-hero:hover {
-    filter: saturate(1.08);
-    transform: translateY(-2px);
-    box-shadow:
-      0 24px 40px -32px color-mix(in srgb, var(--foreground) 24%, transparent),
-      0 42px 80px -58px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-a, var(--primary)) 36%,
-          transparent
-        ),
-      0 46px 92px -72px
-        color-mix(
-          in srgb,
-          var(--admin-duotone-b, var(--secondary)) 24%,
-          transparent
-        ) !important;
-  }
-
-  .admin-sidebar-soft-button,
-  .admin-sidebar-user-trigger {
-    border: 0 !important;
-    background: transparent !important;
-    color: color-mix(in srgb, var(--muted-foreground) 82%, transparent);
-  }
-
-  .admin-sidebar-soft-button:hover,
-  .admin-sidebar-user-trigger:hover,
-  .admin-sidebar-user-trigger[data-state="open"] {
-    background: color-mix(in srgb, var(--primary) 9%, transparent) !important;
-    color: var(--foreground);
-  }
-
-  .dark .admin-sidebar-nav-button {
-    color: color-mix(in srgb, var(--foreground) 70%, var(--muted-foreground));
-  }
-
-  .dark .admin-sidebar-nav-button::before {
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--primary) 22%, transparent) 0%,
-      color-mix(in srgb, var(--secondary) 9%, transparent) 100%
-    );
-  }
-
-  .dark .admin-sidebar-nav-button[data-active="true"] {
-    color: color-mix(
-      in srgb,
-      var(--foreground) 86%,
-      var(--admin-duotone-a, var(--primary)) 14%
-    ) !important;
-  }
-
-  .dark .admin-sidebar-nav-icon {
-    background: color-mix(in srgb, var(--primary) 12%, transparent);
-    color: color-mix(
-      in srgb,
-      var(--admin-duotone-a, var(--primary)) 78%,
-      var(--foreground) 22%
-    );
-    box-shadow: inset 0 1px 0
-      color-mix(in srgb, var(--foreground) 4%, transparent);
-  }
-
-  .dark
-    .admin-sidebar-nav-button[data-active="true"]
-    .admin-sidebar-nav-shortcut,
-  .dark .admin-sidebar-nav-button[data-active="true"] .admin-sidebar-nav-count {
-    color: color-mix(
-      in srgb,
-      var(--foreground) 78%,
-      var(--admin-duotone-a, var(--primary)) 22%
-    );
-  }
-
-  .dark .admin-sidebar-soft-button:hover,
-  .dark .admin-sidebar-user-trigger:hover,
-  .dark .admin-sidebar-user-trigger[data-state="open"] {
-    background: color-mix(in srgb, var(--primary) 14%, transparent) !important;
-  }
-
-  .dashboard-shell.admin-control-plane-canvas,
-  .admin-sidebar-shell {
-    --admin-duotone-a: var(--primary);
-    --admin-duotone-b: color-mix(
-      in srgb,
-      var(--primary) 42%,
-      var(--muted-foreground)
-    );
-    --admin-duotone-canvas-a: 6%;
-    --admin-duotone-canvas-b: 3%;
-    --admin-duotone-surface-a: 5%;
-    --admin-duotone-surface-b: 2%;
-    --admin-duotone-surface-base-a: 95%;
-    --admin-duotone-surface-base-b: 98%;
-    --admin-duotone-sidebar-a: 8%;
-    --admin-duotone-sidebar-b: 3%;
-    --admin-duotone-brand-a: 24%;
-    --admin-duotone-brand-hover-a: 30%;
-    --admin-duotone-brand-b: 14%;
-    --admin-logo-base: var(--foreground);
-    --admin-logo-ink: var(--background);
-    --admin-dashboard-canvas-bg:
-      radial-gradient(
-        60rem 28rem at 10% 12%,
-        color-mix(
-            in srgb,
-            var(--admin-duotone-a) var(--admin-duotone-canvas-a),
-            transparent
-          )
-          0%,
-        transparent 72%
-      ),
-      radial-gradient(
-        42rem 22rem at 96% 18%,
-        color-mix(
-            in srgb,
-            var(--admin-duotone-b) var(--admin-duotone-canvas-b),
-            transparent
-          )
-          0%,
-        transparent 74%
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(
-            in srgb,
-            var(--background) var(--admin-duotone-surface-base-a),
-            var(--admin-duotone-a)
-          )
-          0%,
-        color-mix(
-            in srgb,
-            var(--background) var(--admin-duotone-surface-base-b),
-            var(--admin-duotone-b)
-          )
-          100%
-      );
-    --admin-sidebar-shell-bg: linear-gradient(
-      165deg,
-      color-mix(
-          in srgb,
-          var(--admin-duotone-a) var(--admin-duotone-sidebar-a),
-          var(--background)
-        )
-        0%,
-      color-mix(in srgb, var(--background) 92%, var(--card)) 48%,
-      color-mix(
-          in srgb,
-          var(--admin-duotone-b) var(--admin-duotone-sidebar-b),
-          var(--card)
-        )
-        100%
-    );
-    --admin-sidebar-shell-shadow:
-      inset -1px 0 0 color-mix(in srgb, var(--foreground) 8%, transparent),
-      10px 0 32px -30px
-        color-mix(in srgb, var(--admin-duotone-a) 34%, transparent),
-      18px 0 46px -42px color-mix(in srgb, var(--foreground) 18%, transparent);
-    --admin-sidebar-brand-bg:
-      radial-gradient(
-        88% 100% at 8% 0%,
-        color-mix(
-            in srgb,
-            var(--admin-duotone-a) var(--admin-duotone-brand-a),
-            transparent
-          )
-          0%,
-        transparent 64%
-      ),
-      linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--admin-logo-base) 88%, var(--admin-duotone-a))
-          0%,
-        color-mix(in srgb, var(--admin-logo-base) 82%, var(--admin-duotone-a))
-          58%,
-        color-mix(in srgb, var(--admin-logo-base) 78%, var(--admin-duotone-b))
-          100%
-      );
-    --admin-sidebar-brand-bg-hover:
-      radial-gradient(
-        88% 100% at 8% 0%,
-        color-mix(
-            in srgb,
-            var(--admin-duotone-a) var(--admin-duotone-brand-hover-a),
-            transparent
-          )
-          0%,
-        transparent 64%
-      ),
-      linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--admin-logo-base) 84%, var(--admin-duotone-a))
-          0%,
-        color-mix(in srgb, var(--admin-logo-base) 78%, var(--admin-duotone-a))
-          58%,
-        color-mix(in srgb, var(--admin-logo-base) 74%, var(--admin-duotone-b))
-          100%
-      );
-    --admin-sidebar-brand-shadow:
-      0 18px 32px -28px
-        color-mix(in srgb, var(--admin-duotone-a) 42%, transparent),
-      0 24px 46px -40px
-        color-mix(in srgb, var(--admin-duotone-b) 20%, transparent);
-    --admin-sidebar-brand-label-bg: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--admin-logo-base) 84%, transparent) 0%,
-      color-mix(in srgb, var(--admin-logo-base) 68%, transparent) 100%
-    );
-    --admin-sidebar-brand-label-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--admin-logo-ink) 10%, transparent),
-      0 12px 24px -20px
-        color-mix(in srgb, var(--admin-logo-base) 50%, transparent);
-    --admin-sidebar-brand-eyebrow-color: color-mix(
-      in srgb,
-      var(--admin-duotone-a) 34%,
-      var(--admin-logo-ink)
-    );
-    --admin-sidebar-brand-title-color: var(--admin-logo-ink);
-    --admin-sidebar-brand-mark-bg: color-mix(
-      in srgb,
-      var(--admin-logo-ink) 10%,
-      transparent
-    );
-    --admin-sidebar-brand-mark-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--admin-logo-ink) 12%, transparent),
-      0 14px 24px -22px
-        color-mix(in srgb, var(--admin-logo-base) 56%, transparent);
-    --admin-sidebar-brand-status-ring: color-mix(
-      in srgb,
-      var(--admin-logo-base) 76%,
-      transparent
-    );
-    --admin-sidebar-brand-status-bg: color-mix(
-      in srgb,
-      var(--admin-duotone-a) 82%,
-      var(--admin-logo-ink)
-    );
-  }
-
-  .dark .dashboard-shell.admin-control-plane-canvas,
-  .dark .admin-sidebar-shell {
-    --admin-logo-base: var(--background);
-    --admin-logo-ink: var(--foreground);
-  }
-
-  .dashboard-shell.admin-control-plane-canvas {
-    background: var(--admin-dashboard-canvas-bg) !important;
-  }
-
-  .admin-sidebar-shell [data-slot="sidebar-inner"] {
-    background: var(--admin-sidebar-shell-bg) !important;
-    box-shadow: var(--admin-sidebar-shell-shadow) !important;
-  }
-
-  .admin-sidebar-brand {
-    isolation: isolate;
-    overflow: hidden;
-    background: transparent !important;
-    box-shadow: none !important;
-    color: var(--admin-sidebar-brand-title-color);
-    transition:
-      background 180ms ease,
-      color 180ms ease,
-      transform 180ms ease;
-  }
-
-  .admin-sidebar-brand::before {
-    content: none;
-  }
-
-  .admin-sidebar-brand:hover::before {
-    opacity: 1;
-  }
-
-  .admin-sidebar-brand > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .admin-sidebar-brand:hover {
-    background: color-mix(
-      in srgb,
-      var(--foreground) 4%,
-      transparent
-    ) !important;
-    transform: translateY(-1px);
-  }
-
-  .admin-sidebar-brand-copy {
-    max-width: 100%;
-    background: transparent;
-    padding: 0;
-    box-shadow: none;
-    backdrop-filter: none;
-  }
-
-  .admin-sidebar-brand-mark-shell {
-    background: color-mix(
-      in srgb,
-      var(--admin-duotone-a) 10%,
-      transparent
-    ) !important;
-    box-shadow: inset 0 0 0 1px
-      color-mix(in srgb, var(--border) 76%, transparent) !important;
-    backdrop-filter: none;
-  }
-
-  .admin-sidebar-brand-mark {
-    --ops-icon-iris: color-mix(
-      in srgb,
-      var(--admin-logo-ink) 74%,
-      var(--admin-duotone-a) 26%
-    );
-    --ops-icon-pulse: color-mix(
-      in srgb,
-      var(--admin-duotone-b) 56%,
-      var(--admin-logo-ink)
-    );
-    filter: none;
-  }
-
-  .admin-sidebar-brand-eyebrow {
-    color: color-mix(
-      in srgb,
-      var(--muted-foreground) 84%,
-      transparent
-    ) !important;
-    text-shadow: none !important;
-  }
-
-  .admin-sidebar-brand-title {
-    color: var(--admin-sidebar-brand-title-color) !important;
-    text-shadow: none !important;
   }
 
   .kb-sidebar-brand-card,
@@ -5482,11 +4460,7 @@ body::before {
   .dashboard-shell.admin-control-plane-canvas,
   .admin-sidebar-shell {
     --admin-duotone-a: var(--primary);
-    --admin-duotone-b: color-mix(
-      in srgb,
-      var(--primary) 42%,
-      var(--muted-foreground)
-    );
+    --admin-duotone-b: var(--secondary);
     --admin-duotone-rail: linear-gradient(
       90deg,
       var(--admin-duotone-a) 0%,
@@ -5602,46 +4576,44 @@ body::before {
   :root:not(.dark) .admin-sidebar-shell {
     --admin-duotone-canvas: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--background) 90%, var(--admin-duotone-a)) 0%,
-      color-mix(in srgb, var(--muted) 76%, var(--background)) 46%,
-      color-mix(in srgb, var(--background) 92%, var(--muted-foreground)) 100%
+      color-mix(in srgb, var(--background) 92%, white) 0%,
+      var(--background) 48%,
+      color-mix(in srgb, var(--background) 94%, var(--foreground) 3%) 100%
     );
     --admin-duotone-surface: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--card) 96%, white) 0%,
-      color-mix(in srgb, var(--card) 92%, var(--muted)) 100%
+      color-mix(in srgb, var(--card) 98%, white) 0%,
+      color-mix(in srgb, var(--card) 93%, var(--background) 7%) 100%
     );
     --admin-duotone-surface-hover: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--card) 95%, white) 0%,
-      color-mix(in srgb, var(--card) 88%, var(--admin-duotone-a)) 100%
+      color-mix(in srgb, var(--card) 99%, white) 0%,
+      color-mix(in srgb, var(--card) 91%, var(--background) 9%) 100%
     );
     --admin-duotone-panel: linear-gradient(
       180deg,
       color-mix(in srgb, var(--card) 97%, white) 0%,
-      color-mix(in srgb, var(--card) 90%, var(--muted)) 100%
+      color-mix(in srgb, var(--card) 92%, var(--background) 8%) 100%
     );
     --admin-duotone-inset: linear-gradient(
       180deg,
       color-mix(in srgb, var(--muted) 90%, var(--background)) 0%,
-      color-mix(in srgb, var(--muted) 84%, var(--admin-duotone-a)) 100%
+      color-mix(in srgb, var(--muted) 86%, var(--card)) 100%
     );
     --admin-duotone-shadow:
       inset 0 1px 0 color-mix(in srgb, white 52%, transparent),
       0 1px 2px -1px color-mix(in srgb, var(--foreground) 18%, transparent),
-      0 14px 26px -20px color-mix(in srgb, var(--foreground) 26%, transparent),
-      0 30px 58px -50px
-        color-mix(in srgb, var(--admin-duotone-a) 24%, transparent);
+      0 10px 18px -20px color-mix(in srgb, var(--foreground) 18%, transparent),
+      0 20px 34px -36px color-mix(in srgb, var(--foreground) 12%, transparent);
     --admin-duotone-shadow-hover:
       inset 0 1px 0 color-mix(in srgb, white 58%, transparent),
-      0 2px 4px -3px color-mix(in srgb, var(--foreground) 22%, transparent),
-      0 18px 34px -24px color-mix(in srgb, var(--foreground) 30%, transparent),
-      0 34px 64px -52px
-        color-mix(in srgb, var(--admin-duotone-a) 30%, transparent);
+      0 2px 4px -3px color-mix(in srgb, var(--foreground) 18%, transparent),
+      0 12px 22px -24px color-mix(in srgb, var(--foreground) 18%, transparent),
+      0 24px 42px -44px color-mix(in srgb, var(--foreground) 14%, transparent);
     --admin-duotone-active: linear-gradient(
       135deg,
-      color-mix(in srgb, var(--admin-duotone-a) 14%, transparent) 0%,
-      color-mix(in srgb, var(--muted-foreground) 6%, transparent) 100%
+      color-mix(in srgb, var(--admin-duotone-a) 9%, transparent) 0%,
+      color-mix(in srgb, var(--foreground) 4%, transparent) 100%
     );
   }
 
@@ -5649,22 +4621,34 @@ body::before {
     background: var(--admin-duotone-canvas) !important;
   }
 
+  .admin-sidebar-shell {
+    position: relative;
+    isolation: isolate;
+    --sidebar: color-mix(in srgb, var(--background) 96%, var(--card));
+    --sidebar-foreground: var(--foreground);
+    --sidebar-accent: color-mix(in srgb, var(--foreground) 4%, transparent);
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-ring: var(--primary);
+  }
+
   :root:not(.dark) .dashboard-shell.admin-control-plane-canvas::before {
     background-image:
       linear-gradient(
         90deg,
-        color-mix(in srgb, var(--admin-duotone-a) 10%, transparent) 1px,
+        color-mix(in srgb, var(--foreground) 4.5%, transparent) 1px,
         transparent 1px
       ),
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--admin-duotone-a) 8%, transparent) 1px,
+        color-mix(in srgb, var(--foreground) 3.8%, transparent) 1px,
         transparent 1px
       ),
       linear-gradient(
         135deg,
         transparent 0 46%,
-        color-mix(in srgb, var(--admin-duotone-a) 11%, transparent) 46% 46.5%,
+        color-mix(in srgb, var(--foreground) 5.5%, transparent) 46% 46.5%,
         transparent 46.5% 100%
       ),
       linear-gradient(
@@ -5689,7 +4673,7 @@ body::before {
       color-mix(in srgb, black 28%, transparent) 42%,
       transparent 82%
     );
-    opacity: 0.48;
+    opacity: 0.22;
   }
 
   :root:not(.dark) .dashboard-shell.admin-control-plane-canvas::after {
@@ -5697,7 +4681,7 @@ body::before {
       linear-gradient(
         120deg,
         transparent 0 58%,
-        color-mix(in srgb, var(--admin-duotone-a) 10%, transparent) 58% 58.35%,
+        color-mix(in srgb, var(--admin-duotone-a) 6%, transparent) 58% 58.35%,
         transparent 58.35% 100%
       ),
       linear-gradient(
@@ -5709,8 +4693,7 @@ body::before {
       repeating-linear-gradient(
         90deg,
         transparent 0 3.1rem,
-        color-mix(in srgb, var(--admin-duotone-a) 7%, transparent) 3.1rem
-          3.16rem,
+        color-mix(in srgb, var(--foreground) 3.5%, transparent) 3.1rem 3.16rem,
         transparent 3.16rem 6.2rem
       );
     background-position:
@@ -5727,10 +4710,13 @@ body::before {
       color-mix(in srgb, black 16%, transparent) 34%,
       transparent 76%
     );
-    opacity: 0.5;
+    opacity: 0.2;
   }
 
   .admin-sidebar-shell [data-slot="sidebar-inner"] {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     background:
       radial-gradient(
         42rem 22rem at 0% 0%,
@@ -5755,85 +4741,24 @@ body::before {
     background:
       radial-gradient(
         36rem 20rem at 0% 0%,
-        color-mix(in srgb, var(--admin-duotone-a) 22%, transparent) 0%,
+        color-mix(in srgb, var(--admin-duotone-a) 6%, transparent) 0%,
         transparent 74%
       ),
       linear-gradient(
         170deg,
-        color-mix(in srgb, var(--admin-duotone-a) 20%, var(--card)) 0%,
-        color-mix(in srgb, var(--admin-duotone-a) 12%, var(--background)) 56%,
-        color-mix(in srgb, var(--admin-duotone-b) 14%, var(--background)) 100%
+        color-mix(in srgb, var(--card) 96%, var(--background)) 0%,
+        color-mix(in srgb, var(--background) 96%, var(--card)) 56%,
+        color-mix(in srgb, var(--background) 94%, var(--foreground) 2%) 100%
       ) !important;
     box-shadow:
-      inset -1px 0 0
-        color-mix(in srgb, var(--admin-duotone-a) 26%, var(--border)),
-      12px 0 24px -24px color-mix(in srgb, var(--foreground) 20%, transparent),
-      18px 0 40px -36px
-        color-mix(in srgb, var(--admin-duotone-a) 34%, transparent) !important;
-  }
-
-  .admin-sidebar-brand {
-    min-height: 4.55rem;
-    border: 1px solid
-      color-mix(in srgb, var(--admin-duotone-a) 18%, var(--border)) !important;
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--card) 96%, var(--admin-duotone-a)) 0%,
-      color-mix(in srgb, var(--card) 94%, var(--muted-foreground)) 100%
-    ) !important;
-    color: var(--foreground) !important;
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, white 36%, transparent),
-      0 8px 18px -16px color-mix(in srgb, var(--foreground) 22%, transparent) !important;
-  }
-
-  .admin-sidebar-brand:hover {
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--card) 94%, var(--admin-duotone-a)) 0%,
-      color-mix(in srgb, var(--card) 93%, var(--muted-foreground)) 100%
-    ) !important;
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
-      0 10px 20px -17px color-mix(in srgb, var(--foreground) 24%, transparent) !important;
-  }
-
-  :root:not(.dark) .admin-sidebar-brand {
-    border-color: color-mix(
-      in srgb,
-      var(--admin-duotone-a) 18%,
-      var(--border)
-    ) !important;
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--card) 94%, white) 0%,
-      color-mix(in srgb, var(--card) 86%, var(--admin-duotone-a)) 100%
-    ) !important;
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, white 58%, transparent),
-      0 1px 2px -1px color-mix(in srgb, var(--foreground) 18%, transparent),
-      0 12px 22px -18px color-mix(in srgb, var(--foreground) 18%, transparent) !important;
-  }
-
-  :root:not(.dark) .admin-sidebar-brand:hover {
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--card) 99%, var(--admin-duotone-a)) 0%,
-      color-mix(in srgb, var(--card) 98%, var(--muted-foreground)) 100%
-    ) !important;
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, white 62%, transparent),
-      0 2px 4px -3px color-mix(in srgb, var(--foreground) 16%, transparent) !important;
+      inset -1px 0 0 color-mix(in srgb, var(--border) 82%, var(--foreground) 6%),
+      10px 0 18px -24px color-mix(in srgb, var(--foreground) 12%, transparent),
+      14px 0 28px -34px color-mix(in srgb, var(--foreground) 10%, transparent) !important;
   }
 
   .admin-sidebar-brand::before {
     content: none !important;
     display: none !important;
-  }
-
-  .admin-sidebar-brand:hover::before {
-    opacity: 1;
-    transform: none;
   }
 
   .admin-sidebar-brand-copy {
@@ -5867,57 +4792,21 @@ body::before {
     filter: none !important;
   }
 
-  .admin-sidebar-brand-mark-shell {
-    background: color-mix(
-      in srgb,
-      var(--card) 88%,
-      var(--admin-duotone-a)
-    ) !important;
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent),
-      0 8px 16px -14px color-mix(in srgb, var(--foreground) 28%, transparent) !important;
-  }
-
-  :root:not(.dark) .admin-sidebar-brand-mark-shell {
-    background: color-mix(
-      in srgb,
-      var(--card) 96%,
-      var(--admin-duotone-a)
-    ) !important;
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, white 56%, transparent),
-      0 1px 2px -1px color-mix(in srgb, var(--foreground) 16%, transparent) !important;
-  }
-
-  .admin-sidebar-brand-mark {
-    --ops-icon-iris: color-mix(
-      in srgb,
-      var(--foreground) 86%,
-      var(--admin-duotone-a)
-    );
-    --ops-icon-pulse: color-mix(
-      in srgb,
-      var(--admin-duotone-a) 58%,
-      var(--foreground)
-    );
-    filter: none !important;
-  }
-
   .admin-sidebar-brand {
     min-height: 3.25rem !important;
     position: relative;
     isolation: isolate;
     border: 1px solid
-      color-mix(in srgb, var(--admin-duotone-a) 24%, var(--border)) !important;
+      color-mix(in srgb, var(--border) 84%, var(--foreground) 8%) !important;
     background:
       linear-gradient(
         135deg,
-        color-mix(in srgb, var(--admin-duotone-a) 16%, var(--card)) 0%,
-        color-mix(in srgb, var(--admin-duotone-b) 12%, var(--card)) 100%
+        color-mix(in srgb, var(--card) 98%, white) 0%,
+        color-mix(in srgb, var(--card) 92%, var(--background)) 100%
       ),
       radial-gradient(
         90% 120% at 0% 0%,
-        color-mix(in srgb, var(--admin-duotone-a) 20%, transparent) 0%,
+        color-mix(in srgb, var(--admin-duotone-a) 7%, transparent) 0%,
         transparent 62%
       ) !important;
     box-shadow: none !important;
@@ -5928,18 +4817,18 @@ body::before {
     background:
       linear-gradient(
         135deg,
-        color-mix(in srgb, var(--admin-duotone-a) 22%, var(--card)) 0%,
-        color-mix(in srgb, var(--admin-duotone-b) 16%, var(--card)) 100%
+        color-mix(in srgb, var(--card) 99%, white) 0%,
+        color-mix(in srgb, var(--card) 91%, var(--background)) 100%
       ),
       radial-gradient(
         90% 120% at 0% 0%,
-        color-mix(in srgb, var(--admin-duotone-a) 28%, transparent) 0%,
+        color-mix(in srgb, var(--admin-duotone-a) 10%, transparent) 0%,
         transparent 62%
       ) !important;
     border-color: color-mix(
       in srgb,
-      var(--admin-duotone-a) 42%,
-      var(--border)
+      var(--border) 76%,
+      var(--foreground) 10%
     ) !important;
     box-shadow: none !important;
   }
@@ -5954,13 +4843,13 @@ body::before {
     background-image:
       linear-gradient(
         90deg,
-        color-mix(in srgb, var(--admin-duotone-a) 24%, transparent) 0 1px,
+        color-mix(in srgb, var(--foreground) 5%, transparent) 0 1px,
         transparent 1px 2.6rem
       ),
       linear-gradient(
         140deg,
         transparent 0 52%,
-        color-mix(in srgb, var(--admin-duotone-b) 16%, transparent) 52% 52.4%,
+        color-mix(in srgb, var(--admin-duotone-b) 9%, transparent) 52% 52.4%,
         transparent 52.4% 100%
       );
     background-size:
@@ -5969,7 +4858,7 @@ body::before {
     background-position:
       right -2rem top 0,
       right -3rem top 0;
-    opacity: 0.58;
+    opacity: 0.52;
   }
 
   .admin-sidebar-brand > * {
@@ -5980,24 +4869,29 @@ body::before {
   :root:not(.dark) .admin-sidebar-brand,
   :root:not(.dark) .admin-sidebar-brand:hover {
     border: 1px solid
-      color-mix(in srgb, var(--admin-duotone-a) 22%, var(--border)) !important;
+      color-mix(in srgb, var(--border) 84%, var(--foreground) 8%) !important;
   }
 
   .admin-sidebar-brand-mark-shell,
   :root:not(.dark) .admin-sidebar-brand-mark-shell {
     background: linear-gradient(
       135deg,
-      color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) 0%,
-      color-mix(in srgb, var(--admin-duotone-b) 14%, transparent) 100%
+      color-mix(in srgb, var(--admin-duotone-a) 8%, transparent) 0%,
+      color-mix(in srgb, var(--admin-duotone-b) 5%, transparent) 100%
     ) !important;
     box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--admin-duotone-a) 32%, var(--border)),
-      0 8px 16px -14px color-mix(in srgb, var(--admin-duotone-a) 38%, transparent) !important;
+      inset 0 0 0 1px
+        color-mix(in srgb, var(--border) 72%, var(--admin-duotone-a) 18%),
+      0 8px 16px -14px color-mix(in srgb, var(--foreground) 18%, transparent) !important;
   }
 
   .admin-sidebar-brand-mark {
     --ops-icon-iris: color-mix(in srgb, var(--primary) 82%, var(--foreground));
-    --ops-icon-pulse: color-mix(in srgb, var(--primary) 56%, var(--foreground));
+    --ops-icon-pulse: color-mix(
+      in srgb,
+      var(--secondary) 78%,
+      var(--foreground)
+    );
   }
 
   .admin-sidebar-brand-eyebrow {
@@ -6093,13 +4987,13 @@ body::before {
     background-image:
       linear-gradient(
         90deg,
-        color-mix(in srgb, var(--admin-duotone-a) 26%, transparent) 0 1px,
+        color-mix(in srgb, var(--foreground) 6%, transparent) 0 1px,
         transparent 1px 3.2rem
       ),
       linear-gradient(
         135deg,
         transparent 0 50%,
-        color-mix(in srgb, var(--admin-duotone-a) 16%, transparent) 50% 50.45%,
+        color-mix(in srgb, var(--foreground) 5%, transparent) 50% 50.45%,
         transparent 50.45% 100%
       ),
       linear-gradient(
@@ -6122,7 +5016,7 @@ body::before {
       color-mix(in srgb, black 18%, transparent) 42%,
       color-mix(in srgb, black 56%, transparent) 100%
     );
-    opacity: 0.7;
+    opacity: 0.48;
     pointer-events: none;
   }
 
@@ -6139,6 +5033,18 @@ body::before {
     transform: translateY(-1px);
   }
 
+  :root:not(.dark)
+    .dashboard-shell.admin-control-plane-canvas
+    :is(
+      .admin-surface-card,
+      .admin-surface-hero,
+      .admin-metric-card,
+      .admin-preview-row
+    ):hover {
+    filter: none;
+    transform: translateY(-0.5px);
+  }
+
   .dashboard-shell.admin-control-plane-canvas
     :is(
       .admin-surface-inset,
@@ -6151,8 +5057,7 @@ body::before {
     background: var(--admin-duotone-inset) !important;
     box-shadow:
       inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
-      0 12px 24px -24px
-        color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) !important;
+      0 12px 24px -24px color-mix(in srgb, var(--foreground) 12%, transparent) !important;
   }
 
   :root:not(.dark)
@@ -6201,12 +5106,43 @@ body::before {
     ) {
     background: color-mix(
       in srgb,
-      var(--admin-duotone-a) 12%,
+      var(--admin-duotone-a) 8%,
       transparent
     ) !important;
     color: color-mix(
       in srgb,
-      var(--admin-duotone-a) 74%,
+      var(--admin-duotone-a) 76%,
+      var(--foreground)
+    ) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-icon-positive {
+    background: color-mix(in srgb, var(--success) 9%, transparent) !important;
+    color: color-mix(in srgb, var(--success) 68%, var(--foreground)) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-icon-warning {
+    background: color-mix(
+      in srgb,
+      var(--admin-duotone-b) 10%,
+      transparent
+    ) !important;
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-b) 78%,
+      var(--foreground)
+    ) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-icon-critical {
+    background: color-mix(
+      in srgb,
+      var(--destructive) 9%,
+      transparent
+    ) !important;
+    color: color-mix(
+      in srgb,
+      var(--destructive) 70%,
       var(--foreground)
     ) !important;
   }
@@ -6278,7 +5214,7 @@ body::before {
     ) {
     background: color-mix(
       in srgb,
-      var(--admin-duotone-a) 12%,
+      var(--admin-duotone-a) 8%,
       transparent
     ) !important;
     color: color-mix(
@@ -6287,6 +5223,37 @@ body::before {
       var(--foreground)
     ) !important;
     border: 0 !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-pill-positive {
+    background: color-mix(in srgb, var(--success) 9%, transparent) !important;
+    color: color-mix(in srgb, var(--success) 66%, var(--foreground)) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-pill-warning {
+    background: color-mix(
+      in srgb,
+      var(--admin-duotone-b) 10%,
+      transparent
+    ) !important;
+    color: color-mix(
+      in srgb,
+      var(--admin-duotone-b) 78%,
+      var(--foreground)
+    ) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-pill-critical {
+    background: color-mix(
+      in srgb,
+      var(--destructive) 9%,
+      transparent
+    ) !important;
+    color: color-mix(
+      in srgb,
+      var(--destructive) 68%,
+      var(--foreground)
+    ) !important;
   }
 
   .dashboard-shell.admin-control-plane-canvas .admin-pill-neutral {
@@ -6302,8 +5269,8 @@ body::before {
     background: var(--admin-duotone-panel) !important;
     box-shadow:
       inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
-      0 14px 24px -24px
-        color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) !important;
+      0 8px 16px -22px
+        color-mix(in srgb, var(--admin-duotone-a) 12%, transparent) !important;
   }
 
   .dashboard-shell.admin-control-plane-canvas .admin-breadcrumb-bar {
@@ -6312,8 +5279,8 @@ body::before {
     background: var(--admin-duotone-panel) !important;
     box-shadow:
       inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
-      0 14px 24px -24px
-        color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) !important;
+      0 8px 16px -22px
+        color-mix(in srgb, var(--admin-duotone-a) 12%, transparent) !important;
   }
 
   .admin-sidebar-nav-button::before,
@@ -6324,14 +5291,51 @@ body::before {
   }
 
   .admin-sidebar-nav-button {
-    color: color-mix(in srgb, var(--foreground) 88%, var(--admin-duotone-a)) !important;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 0 !important;
+    background: transparent !important;
+    color: color-mix(
+      in srgb,
+      var(--foreground) 92%,
+      var(--muted-foreground)
+    ) !important;
+    box-shadow: none !important;
+    transition:
+      color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-sidebar-nav-button::before {
+    content: "";
+    position: absolute;
+    inset: 0.15rem;
+    z-index: 0;
+    border-radius: 0.72rem;
+    opacity: 0;
+    transform: scaleX(0.96);
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+  .admin-sidebar-nav-button > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .admin-sidebar-nav-button:hover::before,
+  .admin-sidebar-nav-button[data-active="true"]::before {
+    opacity: 1;
+    transform: scaleX(1);
   }
 
   .admin-sidebar-nav-button:hover,
   .admin-sidebar-nav-button[data-active="true"] {
     color: color-mix(
       in srgb,
-      var(--admin-duotone-a) 72%,
+      var(--admin-duotone-a) 68%,
       var(--foreground)
     ) !important;
   }
@@ -6340,13 +5344,12 @@ body::before {
     border: 0 !important;
     background: color-mix(
       in srgb,
-      var(--card) 82%,
-      var(--admin-duotone-a)
+      var(--card) 88%,
+      var(--background)
     ) !important;
     box-shadow:
       inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
-      0 10px 18px -20px
-        color-mix(in srgb, var(--admin-duotone-a) 18%, transparent) !important;
+      0 10px 18px -20px color-mix(in srgb, var(--foreground) 12%, transparent) !important;
   }
 
   .admin-sidebar-nav-button:hover .admin-sidebar-nav-icon,
@@ -6368,6 +5371,24 @@ body::before {
     ) !important;
   }
 
+  .admin-sidebar-nav-button:focus-visible {
+    outline: none !important;
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--admin-duotone-a) 24%, transparent),
+      0 0 0 4px color-mix(in srgb, var(--foreground) 7%, transparent) !important;
+  }
+
+  .admin-sidebar-soft-button,
+  .admin-sidebar-user-trigger {
+    border: 0 !important;
+    background: transparent !important;
+    color: color-mix(
+      in srgb,
+      var(--muted-foreground) 82%,
+      transparent
+    ) !important;
+  }
+
   .admin-sidebar-soft-button:hover,
   .admin-sidebar-user-trigger:hover,
   .admin-sidebar-user-trigger[data-state="open"] {
@@ -6375,7 +5396,11 @@ body::before {
   }
 
   .admin-sidebar-section-label {
-    color: color-mix(in srgb, var(--admin-duotone-a) 74%, var(--foreground)) !important;
+    color: color-mix(
+      in srgb,
+      var(--muted-foreground) 84%,
+      var(--foreground)
+    ) !important;
   }
 
   .kb-self-service-shell {
@@ -6844,5 +5869,1513 @@ body::before {
   }
   50% {
     outline-color: hsl(var(--primary));
+  }
+}
+
+/* Strict HKI duotone pass: Iris primary + neutral surfaces only. */
+:root,
+.light {
+  --hki-pulse-25: var(--hki-iris-25);
+  --hki-pulse-50: var(--hki-iris-50);
+  --hki-pulse-100: var(--hki-iris-100);
+  --hki-pulse-200: var(--hki-iris-200);
+  --hki-pulse-300: var(--hki-iris-300);
+  --hki-pulse-400: var(--hki-iris-400);
+  --hki-pulse-500: var(--hki-iris-500);
+  --hki-pulse-600: var(--hki-iris-600);
+  --hki-pulse-700: var(--hki-iris-700);
+  --hki-pulse-800: var(--hki-iris-800);
+  --hki-pulse-900: var(--hki-iris-900);
+  --hki-red-25: var(--hki-iris-25);
+  --hki-red-50: var(--hki-iris-50);
+  --hki-red-100: var(--hki-iris-100);
+  --hki-red-200: var(--hki-iris-200);
+  --hki-red-300: var(--hki-iris-300);
+  --hki-red-400: var(--hki-iris-400);
+  --hki-red-500: var(--hki-iris-500);
+  --hki-red-600: var(--hki-iris-600);
+  --hki-red-700: var(--hki-iris-700);
+  --hki-red-800: var(--hki-iris-800);
+  --hki-red-900: var(--hki-iris-900);
+  --kb-brand-red: var(--primary);
+  --secondary: var(--primary);
+  --secondary-hover: var(--primary-hover);
+  --secondary-active: var(--primary-active);
+  --secondary-muted: var(--primary-muted);
+  --destructive: var(--primary);
+  --destructive-hover: var(--primary-hover);
+  --destructive-muted: var(--primary-muted);
+  --accent-secondary: var(--primary);
+  --accent-secondary-hover: var(--primary-hover);
+  --accent-secondary-active: var(--primary-active);
+  --accent-secondary-light: var(--primary-muted);
+  --success: var(--primary);
+  --success-hover: var(--primary-hover);
+  --success-muted: var(--primary-muted);
+  --warning: var(--primary);
+  --warning-hover: var(--primary-hover);
+  --warning-muted: var(--primary-muted);
+  --info: var(--primary);
+  --info-hover: var(--primary-hover);
+  --info-muted: var(--primary-muted);
+  --chart-1: var(--primary);
+  --chart-2: var(--muted-foreground);
+  --chart-3: var(--primary-hover);
+  --chart-4: var(--foreground);
+  --chart-5: var(--primary-muted);
+  --chart-6: var(--border);
+  --chart-7: var(--primary-active);
+  --chart-8: var(--muted);
+  --chart-9: var(--primary);
+  --chart-10: var(--muted-foreground);
+  --chart-pulse: var(--primary);
+  --chart-emerald: var(--primary);
+  --chart-amber: var(--muted-foreground);
+  --chart-violet: var(--primary);
+  --chart-cyan: var(--primary);
+  --chart-rose: var(--muted-foreground);
+  --chart-indigo: var(--primary);
+  --chart-orange: var(--muted-foreground);
+  --chart-teal: var(--primary);
+  --gradient-brand: var(--primary);
+  --gradient-brand-reverse: var(--primary);
+  --gradient-brand-vertical: var(--primary);
+  --gradient-brand-horizontal: var(--primary);
+  --gradient-brand-subtle: var(--primary-muted);
+  --gradient-brand-light: var(--primary-muted);
+  --gradient-blue: var(--primary);
+  --gradient-blue-light: var(--primary-muted);
+  --gradient-red: var(--primary);
+  --gradient-red-light: var(--primary-muted);
+  --gradient-surface: var(--background);
+  --gradient-subtle: var(--muted);
+  --gradient-elevated: var(--card);
+  --gradient-shimmer: transparent;
+  --agentic-light-canvas: var(--background);
+  --agentic-light-panel: var(--card);
+  --agentic-light-panel-strong: var(--card);
+  --capsule-bg: var(--card);
+  --capsule-bg-hover: var(--card);
+  --capsule-bg-focus: var(--card);
+  --capsule-rail: var(--primary);
+  --capsule-inner-bg: var(--background);
+  --capsule-inner-focus: var(--background);
+}
+
+.dark {
+  --destructive: var(--primary);
+  --destructive-hover: var(--primary-hover);
+  --destructive-muted: var(--primary-muted);
+  --success: var(--primary);
+  --success-hover: var(--primary-hover);
+  --success-muted: var(--primary-muted);
+  --warning: var(--primary);
+  --warning-hover: var(--primary-hover);
+  --warning-muted: var(--primary-muted);
+  --info: var(--primary);
+  --info-hover: var(--primary-hover);
+  --info-muted: var(--primary-muted);
+}
+
+:is(
+  .dashboard-shell,
+  .admin-control-plane-canvas,
+  .kb-self-service-shell,
+  .agentic-app-shell
+) {
+  background: var(--background) !important;
+  background-image: none !important;
+}
+
+:is(
+  .admin-surface-card,
+  .admin-surface-panel,
+  .admin-surface-inset,
+  .kb-self-service-panel,
+  .kb-self-service-inset,
+  .kb-self-service-field,
+  .kb-self-service-chip,
+  .kb-self-service-graphic,
+  .agentic-sidebar-command-shell,
+  .agentic-sidebar-identity-panel,
+  .surface-tinted-blue,
+  .surface-tinted-red,
+  .surface-accent-left
+) {
+  background: var(--card) !important;
+  background-image: none !important;
+}
+
+:is(
+  .admin-surface-card,
+  .admin-surface-panel,
+  .kb-self-service-panel,
+  .kb-self-service-graphic,
+  .agentic-sidebar-command-shell,
+  .agentic-sidebar-identity-panel
+)::before,
+:is(
+  .admin-surface-card,
+  .admin-surface-panel,
+  .kb-self-service-panel,
+  .kb-self-service-graphic,
+  .agentic-sidebar-command-shell,
+  .agentic-sidebar-identity-panel
+)::after {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+:is(
+  .agentic-sidebar-primary-action,
+  .kb-duotone-accent-solid,
+  .admin-primary-action
+) {
+  background: var(--primary) !important;
+  background-image: none !important;
+  color: var(--primary-foreground) !important;
+}
+
+:is(
+  [class*="text-blue-"],
+  [class*="text-sky-"],
+  [class*="text-cyan-"],
+  [class*="text-violet-"],
+  [class*="text-purple-"],
+  [class*="text-red-"],
+  [class*="text-rose-"],
+  [class*="text-emerald-"],
+  [class*="text-green-"],
+  [class*="text-amber-"],
+  [class*="text-orange-"],
+  [class*="text-yellow-"]
+) {
+  color: var(--primary) !important;
+}
+
+:is(
+  [class*="border-blue-"],
+  [class*="border-sky-"],
+  [class*="border-cyan-"],
+  [class*="border-violet-"],
+  [class*="border-purple-"],
+  [class*="border-red-"],
+  [class*="border-rose-"],
+  [class*="border-emerald-"],
+  [class*="border-green-"],
+  [class*="border-amber-"],
+  [class*="border-orange-"],
+  [class*="border-yellow-"],
+  [class*="ring-blue-"],
+  [class*="ring-sky-"],
+  [class*="ring-cyan-"],
+  [class*="ring-violet-"],
+  [class*="ring-purple-"],
+  [class*="ring-red-"],
+  [class*="ring-rose-"],
+  [class*="ring-emerald-"],
+  [class*="ring-green-"],
+  [class*="ring-amber-"],
+  [class*="ring-orange-"],
+  [class*="ring-yellow-"]
+) {
+  border-color: color-mix(
+    in srgb,
+    var(--primary) 30%,
+    var(--border)
+  ) !important;
+  --tw-ring-color: color-mix(
+    in srgb,
+    var(--primary) 30%,
+    transparent
+  ) !important;
+}
+
+:is(
+  [class*="bg-blue-"],
+  [class*="bg-sky-"],
+  [class*="bg-cyan-"],
+  [class*="bg-violet-"],
+  [class*="bg-purple-"],
+  [class*="bg-red-"],
+  [class*="bg-rose-"],
+  [class*="bg-emerald-"],
+  [class*="bg-green-"],
+  [class*="bg-amber-"],
+  [class*="bg-orange-"],
+  [class*="bg-yellow-"]
+) {
+  background-color: color-mix(
+    in srgb,
+    var(--primary) 12%,
+    transparent
+  ) !important;
+}
+
+:is(
+  [class~="bg-blue-500"],
+  [class~="bg-blue-600"],
+  [class~="bg-blue-700"],
+  [class~="bg-sky-500"],
+  [class~="bg-cyan-500"],
+  [class~="bg-violet-500"],
+  [class~="bg-purple-500"],
+  [class~="bg-red-500"],
+  [class~="bg-red-600"],
+  [class~="bg-red-700"],
+  [class~="bg-rose-500"],
+  [class~="bg-rose-600"],
+  [class~="bg-rose-700"],
+  [class~="bg-emerald-500"],
+  [class~="bg-green-500"],
+  [class~="bg-amber-500"],
+  [class~="bg-orange-500"],
+  [class~="bg-yellow-500"]
+) {
+  background-color: var(--primary) !important;
+}
+
+:is(
+  [class*="fill-blue-"],
+  [class*="fill-sky-"],
+  [class*="fill-cyan-"],
+  [class*="fill-violet-"],
+  [class*="fill-purple-"],
+  [class*="fill-red-"],
+  [class*="fill-rose-"],
+  [class*="fill-emerald-"],
+  [class*="fill-green-"],
+  [class*="fill-amber-"],
+  [class*="fill-orange-"],
+  [class*="fill-yellow-"]
+) {
+  fill: var(--primary) !important;
+}
+
+:is(
+  [class*="stroke-blue-"],
+  [class*="stroke-sky-"],
+  [class*="stroke-cyan-"],
+  [class*="stroke-violet-"],
+  [class*="stroke-purple-"],
+  [class*="stroke-red-"],
+  [class*="stroke-rose-"],
+  [class*="stroke-emerald-"],
+  [class*="stroke-green-"],
+  [class*="stroke-amber-"],
+  [class*="stroke-orange-"],
+  [class*="stroke-yellow-"]
+) {
+  stroke: var(--primary) !important;
+}
+
+:is([class*="bg-gradient"], [class*="bg-linear"]) {
+  background-image: none !important;
+}
+
+/* Shared HKI page primitives for Admin, Knowledge, and future app shells. */
+:root,
+.light {
+  --hki-page-bg: var(--background);
+  --hki-page-panel: var(--card);
+  --hki-page-inset: color-mix(in srgb, var(--background) 86%, var(--card));
+  --hki-page-border: color-mix(
+    in srgb,
+    var(--border) 82%,
+    var(--foreground) 6%
+  );
+  --hki-page-border-strong: color-mix(
+    in srgb,
+    var(--border) 68%,
+    var(--foreground) 14%
+  );
+  --hki-page-shadow:
+    0 1px 2px color-mix(in srgb, var(--foreground) 8%, transparent),
+    0 18px 42px -36px color-mix(in srgb, var(--foreground) 26%, transparent);
+  --hki-sidebar-bg: color-mix(in srgb, var(--background) 74%, var(--card));
+  --hki-sidebar-panel: color-mix(in srgb, var(--card) 96%, var(--background));
+  --hki-sidebar-panel-hover: color-mix(
+    in srgb,
+    var(--card) 92%,
+    var(--primary) 8%
+  );
+  --hki-sidebar-border: color-mix(
+    in srgb,
+    var(--border) 74%,
+    var(--foreground) 10%
+  );
+  --hki-sidebar-muted: color-mix(
+    in srgb,
+    var(--muted-foreground) 78%,
+    var(--foreground)
+  );
+}
+
+.dark {
+  --hki-page-bg: color-mix(in srgb, var(--background) 94%, var(--card) 6%);
+  --hki-page-panel: color-mix(in srgb, var(--card) 76%, var(--background) 24%);
+  --hki-page-inset: color-mix(in srgb, var(--background) 86%, var(--card) 14%);
+  --hki-page-border: color-mix(in srgb, var(--foreground) 8%, transparent);
+  --hki-page-border-strong: color-mix(
+    in srgb,
+    var(--foreground) 13%,
+    transparent
+  );
+  --hki-page-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--foreground) 3%, transparent),
+    0 10px 22px -28px color-mix(in srgb, black 42%, transparent);
+  --hki-sidebar-bg: #07090b;
+  --hki-sidebar-panel: #0b0e11;
+  --hki-sidebar-panel-hover: color-mix(
+    in srgb,
+    var(--primary) 8%,
+    var(--hki-sidebar-panel)
+  );
+  --hki-sidebar-border: color-mix(in srgb, var(--foreground) 14%, transparent);
+  --hki-sidebar-muted: color-mix(
+    in srgb,
+    var(--foreground) 58%,
+    var(--hki-sidebar-bg)
+  );
+}
+
+:where(
+  .hki-page-shell,
+  .dashboard-shell.admin-control-plane-canvas,
+  .kb-self-service-shell
+) {
+  background: var(--hki-page-bg) !important;
+  background-image: none !important;
+}
+
+:where(
+  .hki-panel,
+  .admin-surface-card,
+  .admin-surface-panel,
+  .admin-surface-hero,
+  .admin-metric-card,
+  .admin-panel-primary,
+  .admin-data-panel,
+  .kb-self-service-panel
+) {
+  border: 1px solid var(--hki-page-border) !important;
+  background: var(--hki-page-panel) !important;
+  background-image: none !important;
+  box-shadow: var(--hki-page-shadow) !important;
+}
+
+:where(.hki-inset, .admin-surface-inset, .kb-self-service-inset) {
+  border: 1px solid var(--hki-page-border) !important;
+  background: var(--hki-page-inset) !important;
+  background-image: none !important;
+  box-shadow: inset 0 1px 0
+    color-mix(in srgb, var(--foreground) 4%, transparent) !important;
+}
+
+:where(.hki-field, .kb-self-service-field) {
+  border: 1px solid var(--hki-page-border-strong) !important;
+  background: var(--hki-page-panel) !important;
+  background-image: none !important;
+}
+
+:is(.admin-sidebar-shell, .kb-sidebar-shell) [data-slot="sidebar-inner"] {
+  background: var(--hki-sidebar-bg) !important;
+  background-image: none !important;
+  border-right: 1px solid var(--hki-sidebar-border) !important;
+  box-shadow: none !important;
+}
+
+:is(.admin-sidebar-shell, .kb-sidebar-shell)
+  [data-slot="sidebar-inner"]::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--primary);
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+:is(.admin-sidebar-shell, .kb-sidebar-shell)
+  [data-slot="sidebar-inner"]::after {
+  display: none !important;
+}
+
+.hki-sidebar-brand {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 4rem;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--hki-sidebar-border) !important;
+  border-radius: 0.875rem;
+  background: var(--hki-sidebar-panel) !important;
+  background-image: none !important;
+  color: var(--foreground) !important;
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  text-decoration: none;
+  box-shadow: none !important;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.hki-sidebar-brand:hover {
+  background: var(--hki-sidebar-panel-hover) !important;
+  border-color: color-mix(
+    in srgb,
+    var(--primary) 24%,
+    var(--hki-sidebar-border)
+  ) !important;
+}
+
+.hki-sidebar-brand:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 42%, transparent);
+  outline-offset: 2px;
+}
+
+.hki-sidebar-brand--collapsed {
+  min-height: 3rem;
+  justify-content: center;
+  padding: 0.45rem;
+}
+
+.hki-sidebar-brand__mark {
+  --ops-icon-iris: var(--primary);
+  --ops-icon-pulse: var(--primary);
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid
+    color-mix(in srgb, var(--primary) 24%, var(--hki-sidebar-border));
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
+  color: var(--primary);
+}
+
+.hki-sidebar-brand--collapsed .hki-sidebar-brand__mark {
+  height: 2.25rem;
+  width: 2.25rem;
+}
+
+.hki-sidebar-brand__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.hki-sidebar-brand__eyebrow {
+  overflow: hidden;
+  color: var(--hki-sidebar-muted);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hki-sidebar-brand__title {
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1.08;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hki-sidebar-section-label {
+  color: var(--hki-sidebar-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 720;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+:is(.admin-sidebar-nav-button, .kb-sidebar-shell .dashboard-nav-button) {
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: color-mix(
+    in srgb,
+    var(--foreground) 82%,
+    var(--muted-foreground)
+  ) !important;
+  box-shadow: none !important;
+}
+
+:is(.admin-sidebar-nav-button, .kb-sidebar-shell .dashboard-nav-button):hover {
+  border-color: var(--hki-sidebar-border) !important;
+  background: var(--hki-sidebar-panel-hover) !important;
+  color: var(--foreground) !important;
+}
+
+:is(
+  .admin-sidebar-nav-button,
+  .kb-sidebar-shell .dashboard-nav-button
+)[data-active="true"],
+:is(
+  .admin-sidebar-nav-button,
+  .kb-sidebar-shell .dashboard-nav-button
+)[data-active="true"] {
+  border-color: color-mix(
+    in srgb,
+    var(--primary) 24%,
+    var(--hki-sidebar-border)
+  ) !important;
+  background: color-mix(in srgb, var(--primary) 13%, transparent) !important;
+  color: var(--foreground) !important;
+}
+
+/* Final surface deblur pass: keep duotone, remove glass blur from shell surfaces. */
+:is(
+    .dashboard-breadcrumb,
+    .admin-breadcrumb-bar,
+    .kb-self-service-nav,
+    .kb-self-service-footer,
+    .admin-governance-table,
+    .admin-surface-card,
+    .admin-surface-panel,
+    .admin-surface-hero,
+    .admin-metric-card,
+    .admin-panel-primary,
+    .admin-data-panel,
+    .admin-preview-row,
+    .hki-panel,
+    .hki-inset
+  ) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+:is(
+    .dashboard-shell.admin-control-plane-canvas,
+    .admin-sidebar-shell,
+    .kb-sidebar-shell,
+    .kb-self-service-shell
+  ) {
+  filter: none !important;
+}
+
+:is(.admin-sidebar-nav-icon, .kb-sidebar-shell .dashboard-nav-icon) {
+  background: color-mix(in srgb, var(--foreground) 5%, transparent) !important;
+  border-color: transparent !important;
+  color: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+:is(
+    .admin-sidebar-nav-button,
+    .kb-sidebar-shell .dashboard-nav-button
+  )[data-active="true"]
+  :is(.admin-sidebar-nav-icon, .dashboard-nav-icon),
+:is(
+    .admin-sidebar-nav-button,
+    .kb-sidebar-shell .dashboard-nav-button
+  )[data-active="true"]
+  :is(.admin-sidebar-nav-icon, .dashboard-nav-icon) {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+:is(.admin-sidebar-user-trigger, .kb-sidebar-user-card) {
+  border: 1px solid var(--hki-sidebar-border) !important;
+  background: var(--hki-sidebar-panel) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.dark :is(.admin-sidebar-shell, .kb-sidebar-shell) {
+  --sidebar: var(--hki-sidebar-bg);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-accent: var(--hki-sidebar-panel-hover);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+}
+
+.dark :is(.admin-sidebar-shell, .kb-sidebar-shell) [data-slot="sidebar-inner"] {
+  background: var(--hki-sidebar-bg) !important;
+  background-image: none !important;
+  box-shadow: inset -1px 0 0 var(--hki-sidebar-border) !important;
+}
+
+.dark .hki-sidebar-brand {
+  background: var(--hki-sidebar-panel) !important;
+  border-color: var(--hki-sidebar-border) !important;
+  box-shadow: inset 0 1px 0
+    color-mix(in srgb, var(--foreground) 3%, transparent) !important;
+}
+
+.dark .hki-sidebar-brand__mark {
+  background: color-mix(in srgb, var(--primary) 7%, transparent) !important;
+  border-color: color-mix(
+    in srgb,
+    var(--primary) 24%,
+    var(--hki-sidebar-border)
+  ) !important;
+}
+
+.dark .dashboard-shell.admin-control-plane-canvas {
+  --admin-duotone-a: var(--primary);
+  --admin-duotone-b: color-mix(
+    in srgb,
+    var(--muted-foreground) 56%,
+    var(--primary) 44%
+  );
+  background: var(--hki-page-bg) !important;
+  background-image: none !important;
+  color-scheme: dark;
+}
+
+.dark .dashboard-shell.admin-control-plane-canvas::before,
+.dark .dashboard-shell.admin-control-plane-canvas::after {
+  background: transparent !important;
+  background-image: none !important;
+  opacity: 0 !important;
+}
+
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  :is(
+    .admin-surface-card,
+    .admin-surface-panel,
+    .admin-surface-hero,
+    .admin-metric-card,
+    .admin-panel-primary,
+    .admin-data-panel
+  ) {
+  border-color: var(--hki-page-border) !important;
+  background: var(--hki-page-panel) !important;
+  background-image: none !important;
+  box-shadow: var(--hki-page-shadow) !important;
+  filter: none !important;
+}
+
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  :is(
+    .admin-surface-card,
+    .admin-surface-panel,
+    .admin-surface-hero,
+    .admin-metric-card,
+    .admin-panel-primary,
+    .admin-data-panel
+  ):hover {
+  border-color: var(--hki-page-border-strong) !important;
+  background: color-mix(
+    in srgb,
+    var(--hki-page-panel) 92%,
+    var(--primary) 8%
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
+    0 10px 22px -30px color-mix(in srgb, black 44%, transparent) !important;
+  transform: none !important;
+}
+
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  :is(
+    .admin-surface-card,
+    .admin-surface-panel,
+    .admin-surface-hero,
+    .admin-metric-card,
+    .admin-panel-primary,
+    .admin-data-panel
+  )::before,
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  :is(
+    .admin-surface-card,
+    .admin-surface-panel,
+    .admin-surface-hero,
+    .admin-metric-card,
+    .admin-panel-primary,
+    .admin-data-panel
+  )::after {
+  background: transparent !important;
+  background-image: none !important;
+  opacity: 0 !important;
+}
+
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  :is(.admin-surface-inset, .admin-field) {
+  border-color: var(--hki-page-border) !important;
+  background: var(--hki-page-inset) !important;
+  background-image: none !important;
+  box-shadow: inset 0 1px 0
+    color-mix(in srgb, var(--foreground) 3%, transparent) !important;
+}
+
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  :is(.dashboard-breadcrumb, .admin-breadcrumb-bar) {
+  backdrop-filter: none !important;
+  background: color-mix(
+    in srgb,
+    var(--hki-page-panel) 92%,
+    var(--hki-page-bg)
+  ) !important;
+  box-shadow: inset 0 1px 0
+    color-mix(in srgb, var(--foreground) 4%, transparent) !important;
+}
+
+.dark .dashboard-shell.admin-control-plane-canvas .admin-card-header {
+  border-bottom: 1px solid var(--hki-page-border) !important;
+  background: color-mix(
+    in srgb,
+    var(--hki-page-panel) 86%,
+    var(--foreground) 3%
+  ) !important;
+  background-image: none !important;
+}
+
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  :is(
+    .admin-pill-primary,
+    .admin-pill-positive,
+    .admin-pill-warning,
+    .admin-pill-critical
+  ) {
+  border: 1px solid
+    color-mix(in srgb, var(--primary) 22%, var(--hki-page-border)) !important;
+  background: color-mix(in srgb, var(--primary) 10%, transparent) !important;
+  color: color-mix(in srgb, var(--primary) 78%, var(--foreground)) !important;
+}
+
+.dark .dashboard-shell.admin-control-plane-canvas .admin-pill-neutral {
+  border: 1px solid var(--hki-page-border) !important;
+  background: color-mix(in srgb, var(--foreground) 6%, transparent) !important;
+  color: var(--muted-foreground) !important;
+}
+
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  :is(
+    .admin-icon-primary,
+    .admin-icon-positive,
+    .admin-icon-warning,
+    .admin-icon-critical
+  ) {
+  background: color-mix(in srgb, var(--primary) 11%, transparent) !important;
+  color: var(--primary) !important;
+}
+
+.dark .dashboard-shell.admin-control-plane-canvas .admin-icon-neutral {
+  background: color-mix(in srgb, var(--foreground) 6%, transparent) !important;
+  color: var(--muted-foreground) !important;
+}
+
+/* Admin/KB dark shell reset: keep dark available, but remove the teal wash. */
+.dark :is(.admin-sidebar-shell, .kb-sidebar-shell),
+.dark
+  :is(.admin-sidebar-shell, .kb-sidebar-shell)[data-slot="sidebar-container"],
+.dark
+  :is(.admin-sidebar-shell, .kb-sidebar-shell)
+  [data-slot="sidebar-container"],
+.dark :is(.admin-sidebar-shell, .kb-sidebar-shell) [data-slot="sidebar-inner"] {
+  background: var(--hki-sidebar-bg) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.dark :is(.admin-sidebar-shell, .kb-sidebar-shell) [data-slot="sidebar-inner"] {
+  border-right: 1px solid var(--hki-sidebar-border) !important;
+}
+
+.dark
+  :is(.admin-sidebar-shell, .kb-sidebar-shell)
+  [data-slot="sidebar-inner"]::before {
+  background: var(--primary) !important;
+  opacity: 0.42 !important;
+}
+
+.dark :is(.admin-sidebar-nav-button, .kb-sidebar-shell .dashboard-nav-button) {
+  background: transparent !important;
+  color: color-mix(
+    in srgb,
+    var(--foreground) 84%,
+    var(--muted-foreground)
+  ) !important;
+}
+
+.dark
+  :is(
+    .admin-sidebar-nav-button,
+    .kb-sidebar-shell .dashboard-nav-button
+  )[data-active="true"] {
+  border-color: color-mix(
+    in srgb,
+    var(--primary) 20%,
+    var(--hki-sidebar-border)
+  ) !important;
+  background: color-mix(in srgb, var(--primary) 9%, transparent) !important;
+  color: var(--foreground) !important;
+}
+
+.dark :is(.admin-sidebar-nav-icon, .kb-sidebar-shell .dashboard-nav-icon) {
+  background: color-mix(in srgb, var(--foreground) 6%, transparent) !important;
+  color: var(--primary) !important;
+}
+
+.dark
+  :is(
+    .admin-sidebar-nav-button,
+    .kb-sidebar-shell .dashboard-nav-button
+  )[data-active="true"]
+  :is(.admin-sidebar-nav-icon, .dashboard-nav-icon) {
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent) !important;
+  background: color-mix(in srgb, var(--primary) 14%, transparent) !important;
+  color: var(--primary) !important;
+}
+
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  :is(.admin-surface-inset, .admin-field, .admin-tab-list, .admin-preview-row) {
+  border-color: var(--hki-page-border) !important;
+  background: var(--hki-page-inset) !important;
+  background-image: none !important;
+  box-shadow: inset 0 1px 0
+    color-mix(in srgb, var(--foreground) 3%, transparent) !important;
+}
+
+/* Governance console primitive: distinctive internal admin page frame. */
+.admin-internal-page-frame {
+  padding-top: 1.125rem;
+}
+
+.admin-governance-frame {
+  --admin-governance-surface: var(--hki-page-panel);
+  --admin-governance-inset: var(--hki-page-inset);
+  --admin-governance-border: var(--hki-page-border);
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-governance-frame__masthead {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(24rem, 37rem);
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--admin-governance-border);
+  border-radius: 1rem;
+  background: var(--admin-governance-surface) !important;
+  background-image: none !important;
+  box-shadow: var(--hki-page-shadow) !important;
+}
+
+.admin-governance-frame__masthead::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.32rem;
+  background: var(--primary);
+}
+
+.admin-governance-frame__identity {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1.35rem 1.45rem 1.35rem 1.6rem;
+}
+
+.admin-governance-frame__seal {
+  display: flex;
+  height: 3rem;
+  width: 3rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--admin-governance-border));
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
+  color: var(--primary);
+}
+
+.admin-governance-frame__eyebrow,
+.admin-governance-registry__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  color: color-mix(in srgb, var(--primary) 72%, var(--foreground));
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 720;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.admin-governance-frame__eyebrow > span {
+  height: 0.45rem;
+  width: 0.45rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+
+.admin-governance-frame__identity h1 {
+  margin-top: 0.65rem;
+  color: var(--foreground);
+  font-size: clamp(1.7rem, 2.4vw, 2.25rem);
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1.05;
+}
+
+.admin-governance-frame__identity p {
+  margin-top: 0.55rem;
+  max-width: 58rem;
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.admin-governance-frame__dock {
+  display: grid;
+  align-content: space-between;
+  gap: 1rem;
+  border-left: 1px solid var(--admin-governance-border);
+  background: var(--admin-governance-inset);
+  padding: 1rem;
+}
+
+.admin-governance-frame__action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-governance-frame__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.admin-governance-frame__metric {
+  display: grid;
+  min-height: 4.75rem;
+  align-content: space-between;
+  border: 1px solid var(--admin-governance-border);
+  border-radius: 0.8rem;
+  background: var(--admin-governance-surface);
+  padding: 0.7rem;
+}
+
+.admin-governance-frame__metric.is-primary,
+.admin-governance-frame__metric.is-positive,
+.admin-governance-frame__metric.is-warning {
+  border-color: color-mix(in srgb, var(--primary) 26%, var(--admin-governance-border));
+  background: color-mix(in srgb, var(--primary) 6%, var(--admin-governance-surface));
+}
+
+.admin-governance-frame__metric-value {
+  color: var(--foreground);
+  font-size: 1.65rem;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.admin-governance-frame__metric-label {
+  color: color-mix(in srgb, var(--foreground) 68%, var(--muted-foreground));
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 720;
+  letter-spacing: 0.14em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.admin-governance-frame__body,
+.admin-governance-registry__body {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.admin-governance-registry {
+  overflow: hidden;
+  border: 1px solid var(--admin-governance-border);
+  border-radius: 1rem;
+  background: var(--admin-governance-surface);
+  box-shadow: var(--hki-page-shadow);
+}
+
+.admin-governance-registry__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  border-bottom: 1px solid var(--admin-governance-border);
+  background: var(--admin-governance-inset);
+  padding: 0.9rem 1rem;
+}
+
+.admin-governance-registry__header h2 {
+  margin-top: 0.35rem;
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 740;
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+
+.admin-governance-registry__header p {
+  margin-top: 0.25rem;
+  max-width: 48rem;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.admin-governance-registry__tools {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.7rem;
+}
+
+.admin-governance-registry__count {
+  white-space: nowrap;
+  border: 1px solid
+    color-mix(in srgb, var(--primary) 18%, var(--admin-governance-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
+  color: color-mix(in srgb, var(--primary) 72%, var(--foreground));
+  padding: 0.35rem 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.admin-governance-toolbar {
+  display: flex;
+  min-width: min(24rem, 40vw);
+  align-items: center;
+}
+
+.admin-governance-toolbar .admin-field {
+  border-color: var(--admin-governance-border) !important;
+  background: var(--admin-governance-surface) !important;
+}
+
+.admin-governance-registry__body {
+  padding: 0.8rem;
+}
+
+.admin-governance-notice {
+  border-color: var(--admin-governance-border) !important;
+  background: var(--admin-governance-inset) !important;
+  background-image: none !important;
+  border-radius: 0.8rem !important;
+  padding: 0.7rem 0.85rem !important;
+}
+
+.admin-governance-form {
+  border: 1px solid var(--admin-governance-border) !important;
+  background: var(--admin-governance-surface) !important;
+  background-image: none !important;
+  box-shadow: var(--hki-page-shadow) !important;
+}
+
+.admin-governance-form::before,
+.admin-governance-form::after {
+  content: none !important;
+  display: none !important;
+}
+
+.admin-governance-table {
+  border: 1px solid var(--admin-governance-border) !important;
+  border-radius: 0.8rem !important;
+  background: var(--admin-governance-surface) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.admin-governance-table thead {
+  background: var(--admin-governance-inset) !important;
+}
+
+.admin-governance-table th {
+  padding-block: 0.75rem !important;
+  font-size: 0.68rem !important;
+}
+
+.admin-governance-table td {
+  padding-block: 0.85rem !important;
+}
+
+.admin-governance-table tbody {
+  border-color: var(--admin-governance-border) !important;
+}
+
+.admin-governance-table tr:hover {
+  background: color-mix(in srgb, var(--primary) 4%, transparent) !important;
+}
+
+.admin-governance-table :is(th, td) {
+  border-color: var(--admin-governance-border) !important;
+}
+
+.dark .admin-governance-frame {
+  --admin-governance-surface: color-mix(
+    in srgb,
+    var(--card) 74%,
+    var(--background) 26%
+  );
+  --admin-governance-inset: color-mix(
+    in srgb,
+    var(--background) 88%,
+    var(--card) 12%
+  );
+}
+
+@media (max-width: 980px) {
+  .admin-governance-frame__masthead,
+  .admin-governance-registry__header {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-governance-frame__dock {
+    border-left: 0 !important;
+    border-top: 1px solid var(--admin-governance-border) !important;
+  }
+
+  .admin-governance-frame__metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .admin-governance-registry__tools,
+  .admin-governance-toolbar {
+    width: 100%;
+    min-width: 0;
+    justify-content: stretch;
+  }
+}
+
+@layer components {
+  .dashboard-shell.admin-control-plane-canvas .admin-command-banner {
+    isolation: isolate;
+    border-color: color-mix(in srgb, var(--primary) 26%, var(--hki-page-border)) !important;
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary) 18%, transparent) 0%,
+        color-mix(in srgb, var(--primary) 6%, transparent) 58%,
+        transparent 100%
+      ),
+      color-mix(in srgb, var(--hki-page-panel) 62%, transparent) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--foreground) 7%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, var(--primary) 12%, transparent),
+      0 18px 34px -30px color-mix(in srgb, black 44%, transparent) !important;
+    backdrop-filter: blur(26px) saturate(1.18) !important;
+    -webkit-backdrop-filter: blur(26px) saturate(1.18) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-command-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--foreground) 5%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        135deg,
+        transparent 0 58%,
+        color-mix(in srgb, var(--primary) 10%, transparent) 58% 58.4%,
+        transparent 58.4% 100%
+      );
+    background-position:
+      right 1rem top 0,
+      right -4rem top -1rem;
+    background-size:
+      7rem 100%,
+      28rem 16rem;
+    mask-image: linear-gradient(90deg, transparent 0%, black 58%, black 100%);
+    opacity: 0.42;
+    pointer-events: none;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas .admin-command-banner::after {
+    content: "";
+    position: absolute;
+    inset: -35%;
+    z-index: 0;
+    background: radial-gradient(
+      30rem 18rem at var(--admin-pointer-x, 72%) var(--admin-pointer-y, 38%),
+      color-mix(in srgb, var(--primary) 24%, transparent) 0%,
+      transparent 70%
+    );
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    .admin-command-banner__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hki-ai-text {
+    background-image: linear-gradient(
+      90deg,
+      var(--foreground),
+      color-mix(in srgb, var(--primary) 82%, var(--foreground)),
+      color-mix(in srgb, var(--primary) 56%, var(--foreground))
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 18px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+
+  :root:not(.dark)
+    .dashboard-shell.admin-control-plane-canvas
+    .admin-command-banner {
+    border-color: color-mix(in srgb, var(--primary) 22%, var(--border)) !important;
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+        color-mix(in srgb, var(--primary) 4%, transparent) 62%,
+        transparent 100%
+      ),
+      color-mix(in srgb, white 68%, transparent) !important;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 68%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, var(--primary) 10%, transparent),
+      0 1px 2px -1px color-mix(in srgb, var(--foreground) 16%, transparent),
+      0 18px 36px -34px color-mix(in srgb, var(--foreground) 18%, transparent) !important;
+  }
+
+  .dark
+    .dashboard-shell.admin-control-plane-canvas
+    .admin-command-banner {
+    border-color: color-mix(in srgb, var(--primary) 30%, var(--hki-page-border)) !important;
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary) 22%, transparent) 0%,
+        color-mix(in srgb, var(--primary) 8%, transparent) 62%,
+        transparent 100%
+      ),
+      color-mix(in srgb, var(--hki-page-panel) 58%, transparent) !important;
+  }
+
+  .dashboard-shell.admin-control-plane-canvas
+    .admin-command-banner__operator-panel {
+    border-color: color-mix(in srgb, var(--primary) 18%, var(--hki-page-border)) !important;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--primary) 9%, transparent),
+        color-mix(in srgb, var(--foreground) 5%, transparent)
+      ),
+      color-mix(in srgb, var(--hki-page-inset) 68%, transparent) !important;
+    backdrop-filter: blur(14px) saturate(1.08);
+    -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  }
+
+  .admin-command-banner__service-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 1.65rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 12%, var(--hki-page-border));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--hki-page-inset) 64%, transparent);
+    color: color-mix(in srgb, var(--foreground) 74%, var(--muted-foreground));
+    padding: 0.22rem 0.55rem;
+    font-size: 0.68rem;
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  .admin-command-banner__service-chip[data-ok="false"] {
+    border-style: dashed;
+    color: var(--muted-foreground);
+  }
+
+  .admin-command-banner__service-dot {
+    height: 0.42rem;
+    width: 0.42rem;
+    border-radius: 999px;
+    background: var(--primary);
+  }
+
+  .admin-command-banner__service-chip[data-ok="false"]
+    .admin-command-banner__service-dot {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--primary);
+  }
+
+  .admin-command-banner__service-latency {
+    color: color-mix(in srgb, var(--primary) 76%, var(--foreground));
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+  }
+
+  /* Authoritative dark sidebar: flat duotone, no blur, no glow. */
+  :is(.dark, [data-theme="dark"]) :is(.admin-sidebar-shell, .kb-sidebar-shell) {
+    --admin-duotone-a: var(--primary);
+    --admin-duotone-b: var(--primary);
+    --hki-sidebar-bg: #07090b;
+    --hki-sidebar-panel: #0b0e11;
+    --hki-sidebar-panel-hover: color-mix(in srgb, var(--primary) 8%, #0b0e11);
+    --hki-sidebar-border: color-mix(in srgb, var(--foreground) 13%, transparent);
+    --hki-sidebar-muted: color-mix(in srgb, var(--foreground) 58%, #07090b);
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(
+      .admin-sidebar-shell,
+      .kb-sidebar-shell,
+      .admin-sidebar-shell [data-slot="sidebar-container"],
+      .kb-sidebar-shell [data-slot="sidebar-container"],
+      .admin-sidebar-shell [data-slot="sidebar-inner"],
+      .kb-sidebar-shell [data-slot="sidebar-inner"]
+    ) {
+    background-color: var(--hki-sidebar-bg) !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(.admin-sidebar-shell, .kb-sidebar-shell)
+    [data-slot="sidebar-inner"] {
+    border-right: 1px solid var(--hki-sidebar-border) !important;
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(.admin-sidebar-shell, .kb-sidebar-shell)
+    [data-slot="sidebar-inner"]::before,
+  :is(.dark, [data-theme="dark"])
+    :is(.admin-sidebar-shell, .kb-sidebar-shell)
+    [data-slot="sidebar-inner"]::after,
+  :is(.dark, [data-theme="dark"]) .admin-sidebar-nav-button::before,
+  :is(.dark, [data-theme="dark"]) .hki-sidebar-brand::before,
+  :is(.dark, [data-theme="dark"]) .hki-sidebar-brand::after {
+    content: none !important;
+    display: none !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    opacity: 0 !important;
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(
+      .hki-sidebar-brand,
+      .admin-sidebar-user-trigger,
+      .admin-sidebar-soft-button,
+      .kb-sidebar-user-card
+    ) {
+    border-color: var(--hki-sidebar-border) !important;
+    background-color: var(--hki-sidebar-panel) !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(
+      .hki-sidebar-brand:hover,
+      .admin-sidebar-user-trigger:hover,
+      .admin-sidebar-soft-button:hover,
+      .admin-sidebar-user-trigger[data-state="open"],
+      .kb-sidebar-user-card:hover
+    ) {
+    border-color: color-mix(in srgb, var(--primary) 22%, var(--hki-sidebar-border)) !important;
+    background-color: var(--hki-sidebar-panel-hover) !important;
+    background-image: none !important;
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(.admin-sidebar-nav-button, .kb-sidebar-shell .dashboard-nav-button) {
+    border: 1px solid transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    color: color-mix(in srgb, var(--foreground) 84%, var(--muted-foreground)) !important;
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(
+      .admin-sidebar-nav-button:hover,
+      .kb-sidebar-shell .dashboard-nav-button:hover
+    ) {
+    border-color: color-mix(in srgb, var(--primary) 18%, var(--hki-sidebar-border)) !important;
+    background-color: var(--hki-sidebar-panel-hover) !important;
+    background-image: none !important;
+    color: var(--foreground) !important;
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(
+      .admin-sidebar-nav-button[data-active="true"],
+      .kb-sidebar-shell .dashboard-nav-button[data-active="true"]
+    ) {
+    border-color: color-mix(in srgb, var(--primary) 26%, var(--hki-sidebar-border)) !important;
+    background-color: color-mix(in srgb, var(--primary) 11%, #0b0e11) !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    color: var(--foreground) !important;
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(.admin-sidebar-nav-icon, .kb-sidebar-shell .dashboard-nav-icon) {
+    border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent) !important;
+    background-color: color-mix(in srgb, var(--foreground) 6%, transparent) !important;
+    background-image: none !important;
+    color: var(--primary) !important;
+    box-shadow: none !important;
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(
+      .admin-sidebar-nav-button:hover,
+      .admin-sidebar-nav-button[data-active="true"],
+      .kb-sidebar-shell .dashboard-nav-button:hover,
+      .kb-sidebar-shell .dashboard-nav-button[data-active="true"]
+    )
+    :is(.admin-sidebar-nav-icon, .dashboard-nav-icon) {
+    border-color: color-mix(in srgb, var(--primary) 24%, transparent) !important;
+    background-color: color-mix(in srgb, var(--primary) 16%, transparent) !important;
+    background-image: none !important;
+    color: var(--primary) !important;
+  }
+
+  :is(.dark, [data-theme="dark"])
+    :is(.hki-sidebar-section-label, .hki-sidebar-brand__eyebrow) {
+    color: var(--hki-sidebar-muted) !important;
   }
 }

@@ -40,6 +40,38 @@ export interface RequestJwtPayload {
   stream_id?: string;
 }
 
+export interface HkiRequestEnvelope {
+  envelope_version: "hki.request.v1";
+  token_type: "HS256 JWT";
+  issuer: string;
+  audience: string;
+  subject: string;
+  principal: {
+    id: string;
+    name: string;
+    role: string;
+    groups: string[];
+  };
+  organization: {
+    id: string;
+  };
+  boundary: {
+    scope: string;
+    scopes: string[];
+    stream_id?: string;
+    hermetic: boolean;
+  };
+  issued_at: string;
+  expires_at: string;
+  ttl_seconds: number;
+  token_material: "redacted";
+}
+
+export interface SignedRequestJwt {
+  token: string;
+  envelope: HkiRequestEnvelope;
+}
+
 function normalizePrincipalToken(value: string): string {
   return value.trim().toLowerCase();
 }
@@ -78,20 +110,18 @@ function collectRequestGroups(user: User): string[] {
   return Array.from(groups);
 }
 
-/** Mint a short-lived request JWT for a downstream service call. */
-export async function signRequestJwt(
+function buildRequestJwtPayload(
   user: User,
   scope?: string,
   scopes?: string[]
-): Promise<string> {
-  const now = Math.floor(Date.now() / 1000);
+): RequestJwtPayload {
   const runtimeScope = resolveRuntimeScope({
     scope,
     scopes,
     hermetic: isKbHermeticIsolationEnabled(),
   });
 
-  return new SignJWT({
+  return {
     sub: String(user.id),
     name: user.name || "",
     role: user.role || "viewer",
@@ -100,11 +130,70 @@ export async function signRequestJwt(
     scopes: runtimeScope.scopes,
     groups: collectRequestGroups(user),
     stream_id: runtimeScope.streamId,
-  })
+  };
+}
+
+function buildHkiRequestEnvelope(
+  payload: RequestJwtPayload,
+  issuedAtSeconds: number
+): HkiRequestEnvelope {
+  return {
+    envelope_version: "hki.request.v1",
+    token_type: "HS256 JWT",
+    issuer: ISSUER,
+    audience: AUDIENCE,
+    subject: payload.sub,
+    principal: {
+      id: payload.sub,
+      name: payload.name,
+      role: payload.role,
+      groups: payload.groups,
+    },
+    organization: {
+      id: payload.org_id,
+    },
+    boundary: {
+      scope: payload.scope,
+      scopes: payload.scopes,
+      ...(payload.stream_id ? { stream_id: payload.stream_id } : {}),
+      hermetic: isKbHermeticIsolationEnabled(),
+    },
+    issued_at: new Date(issuedAtSeconds * 1000).toISOString(),
+    expires_at: new Date(
+      (issuedAtSeconds + REQUEST_JWT_TTL_SECONDS) * 1000
+    ).toISOString(),
+    ttl_seconds: REQUEST_JWT_TTL_SECONDS,
+    token_material: "redacted",
+  };
+}
+
+/** Mint a short-lived request JWT plus sanitized envelope metadata. */
+export async function signRequestJwtWithEnvelope(
+  user: User,
+  scope?: string,
+  scopes?: string[]
+): Promise<SignedRequestJwt> {
+  const now = Math.floor(Date.now() / 1000);
+  const payload = buildRequestJwtPayload(user, scope, scopes);
+  const token = await new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setIssuer(ISSUER)
     .setAudience(AUDIENCE)
     .setIssuedAt(now)
     .setExpirationTime(now + REQUEST_JWT_TTL_SECONDS)
     .sign(getSigningKey());
+
+  return {
+    token,
+    envelope: buildHkiRequestEnvelope(payload, now),
+  };
+}
+
+/** Mint a short-lived request JWT for a downstream service call. */
+export async function signRequestJwt(
+  user: User,
+  scope?: string,
+  scopes?: string[]
+): Promise<string> {
+  return (await signRequestJwtWithEnvelope(user, scope, scopes)).token;
 }

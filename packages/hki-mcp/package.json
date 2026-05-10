@@ -1,0 +1,76 @@
+{
+  "name": "@hki/mcp",
+  "version": "0.1.0",
+  "description": "Hermetic Knowledge Isolation middleware for Model Context Protocol (MCP) servers. Enforces domain binding on tool, resource, and prompt registries.",
+  "license": "MIT",
+  "author": "Henok Ghebrechristos",
+  "homepage": "https://github.com/h3nok/HKI",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/h3nok/HKI.git",
+    "directory": "packages/hki-mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/h3nok/HKI/issues"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "agent-security",
+    "agentic-ai",
+    "ai-governance",
+    "hki",
+    "isolation",
+    "mcp",
+    "model-context-protocol",
+    "zero-trust"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "prebuild": "node ../../scripts/ensure-package-built.mjs ../hki-runtime",
+    "prepack": "pnpm build",
+    "pretest": "node ../../scripts/ensure-package-built.mjs ../hki-runtime",
+    "pretypecheck": "node ../../scripts/ensure-package-built.mjs ../hki-runtime",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0 || ^0.8.0"
+  },
+  "peerDependenciesMeta": {
+    "@modelcontextprotocol/sdk": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@hki/runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "@hki/typescript-config": "workspace:*",
+    "@types/node": "^24.12.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vite": "7.3.2",
+    "vitest": "4.1.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

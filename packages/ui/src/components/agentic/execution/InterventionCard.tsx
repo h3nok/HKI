@@ -41,7 +41,7 @@ const ACTION_CONFIG: Record<
   },
   retry_modified: {
     icon: RotateCcw,
-    label: 'Modify & Retry',
+    label: 'Approve & Retry',
     textColorClass: 'text-amber-600 dark:text-amber-500',
     bgClass: 'bg-amber-500/10',
     borderColorClass: 'border-amber-500/20',

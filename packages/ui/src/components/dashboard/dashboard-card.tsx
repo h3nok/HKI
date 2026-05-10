@@ -64,7 +64,7 @@ export const DashboardCard = React.forwardRef<HTMLButtonElement, DashboardCardPr
           "hover:shadow-md dark:hover:shadow-none",
           "hover:border-black/[0.08] dark:hover:border-white/[0.1]",
           "transition-all duration-200 w-full",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2] dark:focus-visible:ring-[#3397D7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#faf9f7] dark:focus-visible:ring-offset-[#111111]",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B] dark:focus-visible:ring-[#1FA9A5] focus-visible:ring-offset-2 focus-visible:ring-offset-[#faf9f7] dark:focus-visible:ring-offset-[#111111]",
           className
         )}
         style={{
@@ -80,8 +80,8 @@ export const DashboardCard = React.forwardRef<HTMLButtonElement, DashboardCardPr
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
               style={{
-                backgroundColor: iconBg ?? `${iconColor ?? "#0066B2"}12`,
-                color: iconColor ?? "#0066B2",
+                backgroundColor: iconBg ?? `${iconColor ?? "#0E7C7B"}12`,
+                color: iconColor ?? "#0E7C7B",
               }}
             >
               {icon}
@@ -103,7 +103,7 @@ export const DashboardCard = React.forwardRef<HTMLButtonElement, DashboardCardPr
           )}
         </div>
 
-        <h2 className="text-lg font-semibold text-[#1a1a19] dark:text-[#E6EDF3] mb-1.5 group-hover:text-[#0066B2] dark:group-hover:text-[#66B1E1] transition-colors">
+        <h2 className="text-lg font-semibold text-[#1a1a19] dark:text-[#E6EDF3] mb-1.5 group-hover:text-[#0E7C7B] dark:group-hover:text-[#3DCBC6] transition-colors">
           {title}
         </h2>
 

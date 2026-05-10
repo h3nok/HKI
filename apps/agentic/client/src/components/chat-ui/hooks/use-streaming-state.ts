@@ -27,6 +27,7 @@ const PHASE_LABELS: Record<string, string> = {
   tool_call: "Calling tool…",
   executing: "Executing…",
   tool_result: "Processing results…",
+  hki_envelope: "Sealing HKI envelope…",
   knowledge_retrieval: "Searching domain knowledge…",
   guardrail: "Checking safety…",
   prompt_stack: "Composing prompt…",
@@ -116,6 +117,7 @@ const EXECUTION_EVENT_TYPES = new Set([
   "step_failed",
   "replanning",
   "knowledge_retrieval",
+  "hki_envelope",
   "prompt_stack",
 ]);
 

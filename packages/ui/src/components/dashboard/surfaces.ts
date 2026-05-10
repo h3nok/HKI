@@ -18,8 +18,8 @@
  *   - Large text (≥ 18px bold / ≥ 24px): 3:1 ratio
  *   - UI components & graphical objects: 3:1 ratio
  *
- * Light mode: cool blue-tinted neutrals (HKI Blue brand presence)
- * Dark mode: blue-tinted dark surfaces (~4% #0066B2 mix for cohesive brand feel)
+ * Light mode: cool iris-tinted neutrals (HKI Iris brand presence)
+ * Dark mode: iris-tinted dark surfaces (~4% #0E7C7B mix for cohesive brand feel)
  */
 
 export const surface = {
@@ -93,7 +93,7 @@ export const border = {
   /** Interactive hover border */
   hover: "hover:border-[#c5cdd8] dark:hover:border-[#40464b]",
   /** Focus border */
-  focus: "focus:border-[#0066B2] dark:focus:border-[#3397D7]",
+  focus: "focus:border-[#0E7C7B] dark:focus:border-[#1FA9A5]",
 } as const;
 
 /**
@@ -144,7 +144,7 @@ export const shadow = {
  * 3px offset, high-contrast brand ring
  */
 export const focusRing =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2] dark:focus-visible:ring-[#3397D7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f6f8fb] dark:focus-visible:ring-offset-[#101417]";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B] dark:focus-visible:ring-[#1FA9A5] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f6f8fb] dark:focus-visible:ring-offset-[#101417]";
 
 /**
  * Status color palettes — WCAG AA compliant

@@ -39,8 +39,12 @@ import {
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { a } from "./theme";
-import { AdminPageHeader } from "./components/AdminPageHeader";
-import { SettingsButton } from "./components";
+import {
+  GovernanceFrame,
+  GovernanceNotice,
+  GovernanceRegistry,
+  SettingsButton,
+} from "./components";
 import {
   ALL_ROLES,
   DEFAULT_STANDARD_ROLE,
@@ -362,48 +366,46 @@ export default function UsersPage() {
   }).length;
 
   return (
-    <div className="space-y-6">
-      <AdminPageHeader
-        title="Users & Access"
-        description="Manage control-plane access, role elevation, and domain scope. New users should stay on the standard viewer path until you intentionally expand their permissions."
-        icon={Users}
-        action={
-          !showInvite ? (
-            <SettingsButton
-              onClick={() => {
-                setShowInvite(true);
-                setInviteResult(null);
-              }}
-              size="sm"
-              variant="brand"
-              className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold"
-            >
-              <UserPlus className="h-3.5 w-3.5" /> Invite User
-            </SettingsButton>
-          ) : undefined
-        }
-        stats={[
-          {
-            label: "Users total",
-            value: String(totalUsers),
-            tone: "primary",
-          },
-          {
-            label: "Active accounts",
-            value: String(activeUsers),
-            tone: activeUsers > 0 ? "positive" : "neutral",
-          },
-          {
-            label: "Elevated roles",
-            value: String(elevatedUsers),
-            tone: elevatedUsers > 0 ? "warning" : "neutral",
-          },
-        ]}
-      />
-
+    <GovernanceFrame
+      title="Users & Access"
+      description="Manage control-plane access, role elevation, and domain scope. New users should stay on the standard viewer path until you intentionally expand their permissions."
+      icon={Users}
+      action={
+        !showInvite ? (
+          <SettingsButton
+            onClick={() => {
+              setShowInvite(true);
+              setInviteResult(null);
+            }}
+            size="sm"
+            variant="brand"
+            className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold"
+          >
+            <UserPlus className="h-3.5 w-3.5" /> Invite User
+          </SettingsButton>
+        ) : undefined
+      }
+      metrics={[
+        {
+          label: "Users total",
+          value: String(totalUsers),
+          tone: "primary",
+        },
+        {
+          label: "Active accounts",
+          value: String(activeUsers),
+          tone: activeUsers > 0 ? "positive" : "neutral",
+        },
+        {
+          label: "Elevated roles",
+          value: String(elevatedUsers),
+          tone: elevatedUsers > 0 ? "warning" : "neutral",
+        },
+      ]}
+    >
       {/* ── Invite Form ── */}
       {showInvite && (
-        <div className={cn(a.card, "rounded-2xl shadow-sm")}>
+        <div className={cn(a.card, "admin-governance-form rounded-xl")}>
           <div className="flex items-center justify-between px-5 py-3 border-b border-border/50">
             <div className="flex items-center gap-2">
               <div
@@ -611,189 +613,188 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Search bar */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name, email, or department..."
-            className={cn(
-              a.field,
-              "w-full pl-9 pr-3 py-2 text-sm rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            )}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground/72">
-          {usersQ.data?.total ?? 0} users
-        </p>
-      </div>
-
-      <div
-        className={cn(
-          a.inset,
-          "rounded-xl border px-4 py-3 text-xs text-muted-foreground"
-        )}
-      >
-        Platform Admins manage enterprise role tiers here. Domain membership is
-        managed separately in the Domains column and determines where a user is
-        allowed to operate.
-      </div>
-
-      {/* Users table */}
-      <HkiTable
-        loading={usersQ.isLoading}
-        loadingRows={6}
-        loadingCols={6}
-        emptyState={
-          !usersQ.isLoading && (usersQ.data?.users ?? []).length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
-              <Users className="w-8 h-8 text-muted-foreground/30" />
-              <p className="text-sm font-medium text-foreground">
-                No users found
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {search
-                  ? `No results for "${search}"`
-                  : "Users will appear here once they sign in."}
-              </p>
+      <GovernanceRegistry
+        title="Access Registry"
+        description="Role tier, domain membership, and account state by operator."
+        countLabel={`${usersQ.data?.total ?? 0} users`}
+        tools={
+          <div className="admin-governance-toolbar">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search by name, email, or department..."
+                className={cn(
+                  a.field,
+                  "w-full rounded-lg py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                )}
+              />
             </div>
-          ) : undefined
+          </div>
         }
       >
-        <HkiThead sticky>
-          <HkiTr noHover>
-            <HkiTh>User</HkiTh>
-            <HkiTh>Role</HkiTh>
-            <HkiTh>Domains</HkiTh>
-            <HkiTh>Last Active</HkiTh>
-            <HkiTh align="center">Status</HkiTh>
-            <HkiTh align="right">Actions</HkiTh>
-          </HkiTr>
-        </HkiThead>
-        <HkiTbody>
-          {(usersQ.data?.users ?? []).map((u: any) => {
-            const isSelf = u.id === user?.id;
-            return (
-              <HkiTr
-                key={u.id}
-                className={cn(
-                  "transition-all duration-300 hover:bg-muted/60 dark:hover:bg-muted/30",
-                  !u.isActive && "opacity-50"
-                )}
-              >
-                <HKITd>
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-primary-foreground font-semibold shrink-0 text-[11px]"
-                      style={{ background: "var(--primary)" }}
-                    >
-                      {(u.name || u.email || "U").slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium text-foreground truncate">
-                        {u.name || "Unnamed"}
-                        {isSelf && (
-                          <span className="text-xs text-muted-foreground ml-1">
-                            (you)
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground truncate">
-                        {u.email || "—"}
-                      </div>
-                    </div>
-                  </div>
-                </HKITd>
-                <HKITd>
-                  <RoleDropdown
-                    userId={u.id}
-                    currentRole={u.role}
-                    isSelf={isSelf}
-                  />
-                </HKITd>
-                <HKITd>
-                  <div className="flex items-center gap-2">
-                    {(u.assignedStreams ?? []).length > 0 ? (
-                      <div className="flex items-center gap-1 flex-wrap">
-                        {(u.assignedStreams as string[])
-                          .slice(0, 3)
-                          .map((sid: string) => {
-                            const stream = (streamsQ.data ?? []).find(
-                              (s: any) => s.id === sid
-                            );
-                            return stream ? (
-                              <span
-                                key={sid}
-                                className={cn(
-                                  a.inset,
-                                  "inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-md text-muted-foreground transition-all hover:-translate-y-px"
-                                )}
-                                title={stream.name}
-                              >
-                                {stream.icon} {stream.name}
-                              </span>
-                            ) : null;
-                          })}
-                        {(u.assignedStreams as string[]).length > 3 && (
-                          <span className="text-[10px] text-muted-foreground">
-                            +{(u.assignedStreams as string[]).length - 3}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-muted-foreground/65">
-                        Global (default)
-                      </span>
-                    )}
-                    <StreamAssignDropdown
-                      userId={u.id}
-                      current={u.assignedStreams ?? []}
-                      allStreams={streamsQ.data ?? []}
-                    />
-                  </div>
-                </HKITd>
-                <HKITd className="text-xs text-muted-foreground">
-                  {u.lastSignedIn
-                    ? new Date(u.lastSignedIn).toLocaleDateString()
-                    : "—"}
-                </HKITd>
-                <HKITd className="text-center">
-                  <span
-                    className={cn(
-                      "px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-widest border",
-                      u.isActive ? a.pillPositive : a.pillNeutral
-                    )}
-                  >
-                    {u.isActive ? "Active" : "Inactive"}
-                  </span>
-                </HKITd>
-                <HKITd className="text-right">
-                  {!isSelf && (
-                    <button
-                      onClick={() => toggleActiveMut.mutate({ userId: u.id })}
-                      className={cn(
-                        "p-1.5 rounded-md transition-colors",
-                        u.isActive
-                          ? "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-                      )}
-                      title={u.isActive ? "Deactivate" : "Activate"}
-                    >
-                      {u.isActive ? (
-                        <UserX className="w-3.5 h-3.5" />
-                      ) : (
-                        <UserCheck className="w-3.5 h-3.5" />
-                      )}
-                    </button>
+        <GovernanceNotice className="text-xs leading-5 text-muted-foreground">
+          Platform Admins manage enterprise role tiers here. Domain membership
+          is managed separately in the Domains column and determines where a
+          user is allowed to operate.
+        </GovernanceNotice>
+
+        {/* Users table */}
+        <HkiTable
+          wrapperClassName="admin-governance-table admin-governance-table--registry"
+          loading={usersQ.isLoading}
+          loadingRows={6}
+          loadingCols={6}
+          emptyState={
+            !usersQ.isLoading && (usersQ.data?.users ?? []).length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
+                <Users className="w-8 h-8 text-muted-foreground/30" />
+                <p className="text-sm font-medium text-foreground">
+                  No users found
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {search
+                    ? `No results for "${search}"`
+                    : "Users will appear here once they sign in."}
+                </p>
+              </div>
+            ) : undefined
+          }
+        >
+          <HkiThead sticky>
+            <HkiTr noHover>
+              <HkiTh>User</HkiTh>
+              <HkiTh>Role</HkiTh>
+              <HkiTh>Domains</HkiTh>
+              <HkiTh>Last Active</HkiTh>
+              <HkiTh align="center">Status</HkiTh>
+              <HkiTh align="right">Actions</HkiTh>
+            </HkiTr>
+          </HkiThead>
+          <HkiTbody>
+            {(usersQ.data?.users ?? []).map((u: any) => {
+              const isSelf = u.id === user?.id;
+              return (
+                <HkiTr
+                  key={u.id}
+                  className={cn(
+                    "transition-all duration-300 hover:bg-muted/60 dark:hover:bg-muted/30",
+                    !u.isActive && "opacity-50"
                   )}
-                </HKITd>
-              </HkiTr>
-            );
-          })}
-        </HkiTbody>
-      </HkiTable>
-    </div>
+                >
+                  <HKITd>
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-primary-foreground font-semibold shrink-0 text-[11px]"
+                        style={{ background: "var(--primary)" }}
+                      >
+                        {(u.name || u.email || "U").slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">
+                          {u.name || "Unnamed"}
+                          {isSelf && (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              (you)
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground truncate">
+                          {u.email || "—"}
+                        </div>
+                      </div>
+                    </div>
+                  </HKITd>
+                  <HKITd>
+                    <RoleDropdown
+                      userId={u.id}
+                      currentRole={u.role}
+                      isSelf={isSelf}
+                    />
+                  </HKITd>
+                  <HKITd>
+                    <div className="flex items-center gap-2">
+                      {(u.assignedStreams ?? []).length > 0 ? (
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {(u.assignedStreams as string[])
+                            .slice(0, 3)
+                            .map((sid: string) => {
+                              const stream = (streamsQ.data ?? []).find(
+                                (s: any) => s.id === sid
+                              );
+                              return stream ? (
+                                <span
+                                  key={sid}
+                                  className={cn(
+                                    a.inset,
+                                    "inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-md text-muted-foreground transition-all hover:-translate-y-px"
+                                  )}
+                                  title={stream.name}
+                                >
+                                  {stream.icon} {stream.name}
+                                </span>
+                              ) : null;
+                            })}
+                          {(u.assignedStreams as string[]).length > 3 && (
+                            <span className="text-[10px] text-muted-foreground">
+                              +{(u.assignedStreams as string[]).length - 3}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/65">
+                          Global (default)
+                        </span>
+                      )}
+                      <StreamAssignDropdown
+                        userId={u.id}
+                        current={u.assignedStreams ?? []}
+                        allStreams={streamsQ.data ?? []}
+                      />
+                    </div>
+                  </HKITd>
+                  <HKITd className="text-xs text-muted-foreground">
+                    {u.lastSignedIn
+                      ? new Date(u.lastSignedIn).toLocaleDateString()
+                      : "—"}
+                  </HKITd>
+                  <HKITd className="text-center">
+                    <span
+                      className={cn(
+                        "px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-widest border",
+                        u.isActive ? a.pillPositive : a.pillNeutral
+                      )}
+                    >
+                      {u.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </HKITd>
+                  <HKITd className="text-right">
+                    {!isSelf && (
+                      <button
+                        onClick={() => toggleActiveMut.mutate({ userId: u.id })}
+                        className={cn(
+                          "p-1.5 rounded-md transition-colors",
+                          u.isActive
+                            ? "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                        )}
+                        title={u.isActive ? "Deactivate" : "Activate"}
+                      >
+                        {u.isActive ? (
+                          <UserX className="w-3.5 h-3.5" />
+                        ) : (
+                          <UserCheck className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    )}
+                  </HKITd>
+                </HkiTr>
+              );
+            })}
+          </HkiTbody>
+        </HkiTable>
+      </GovernanceRegistry>
+    </GovernanceFrame>
   );
 }

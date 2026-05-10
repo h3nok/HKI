@@ -15,7 +15,10 @@ import { nanoid } from "nanoid";
 import { broadcastThoughtTrace } from "./websocket";
 import { hasPermission } from "./auth/rbac";
 import type { Role } from "./auth/rbac";
-import { signRequestJwt } from "./auth/sign-request-jwt";
+import {
+  signRequestJwtWithEnvelope,
+  type HkiRequestEnvelope,
+} from "./auth/sign-request-jwt";
 import { ORCHESTRATOR_URL } from "./service-client";
 import { createLogger } from "./_core/logger";
 import {
@@ -161,7 +164,10 @@ function extractFinalResponseMetadata(
 ): Record<string, any> {
   for (let idx = events.length - 1; idx >= 0; idx -= 1) {
     const event = events[idx];
-    if (event.type === "final_response" && event.metadata) {
+    if (
+      (event.type === "final_response" || event.type === "response_metadata") &&
+      event.metadata
+    ) {
       return event.metadata;
     }
   }
@@ -205,8 +211,74 @@ function extractLiveResponseChunk(
 function shouldPersistTraceEvent(event: OrchestratorTraceEvent): boolean {
   return (
     event.type !== "final_response_chunk" &&
+    event.type !== "response_metadata" &&
     !isLegacyFinalResponsePreview(event)
   );
+}
+
+function buildHkiEnvelopeTraceEvent(
+  envelope: HkiRequestEnvelope,
+  step = 0
+): OrchestratorTraceEvent {
+  const boundary = envelope.boundary.stream_id || envelope.boundary.scope;
+  return {
+    type: "hki_envelope",
+    step,
+    content: `HKI envelope sealed for ${boundary}`,
+    metadata: {
+      hki_envelope: envelope,
+      summary: {
+        issuer: envelope.issuer,
+        audience: envelope.audience,
+        org_id: envelope.organization.id,
+        scope: envelope.boundary.scope,
+        scopes: envelope.boundary.scopes,
+        stream_id: envelope.boundary.stream_id,
+        ttl_seconds: envelope.ttl_seconds,
+        token_material: envelope.token_material,
+      },
+    },
+    timestamp: envelope.issued_at,
+  };
+}
+
+function queueTraceEventForPersistence(
+  event: OrchestratorTraceEvent,
+  pendingTraceRows: Array<{
+    id: string;
+    messageId: string;
+    scope: string;
+    step: number;
+    type: string;
+    content: string;
+    metadata?: string;
+  }>,
+  assistantMessageId: string,
+  activeScope: string
+) {
+  if (!shouldPersistTraceEvent(event)) return;
+  pendingTraceRows.push({
+    id: nanoid(),
+    messageId: assistantMessageId,
+    scope: activeScope,
+    step: event.step ?? 0,
+    type: event.type as any,
+    content: event.content,
+    metadata: event.metadata ? JSON.stringify(event.metadata) : undefined,
+  });
+}
+
+function broadcastTraceEvent(
+  conversationId: string,
+  event: OrchestratorTraceEvent
+) {
+  broadcastThoughtTrace(conversationId, {
+    type: event.type as any,
+    step: event.step,
+    content: event.content,
+    metadata: event.metadata,
+    timestamp: new Date(event.timestamp ?? Date.now()),
+  });
 }
 
 function buildAssistantProvenance(
@@ -381,6 +453,7 @@ interface StreamAgentConfig {
       approval_mode?: "never" | "sensitive_only" | "always";
       sensitive_tools?: string[];
       require_approval_tools?: string[];
+      approved_tools?: string[];
       deny_tools?: string[];
       risk_overrides?: Record<string, "low" | "medium" | "high">;
     };
@@ -395,6 +468,91 @@ interface StreamAgentConfig {
     };
     guardrail_config?: Record<string, boolean>;
   };
+}
+
+type InterventionAction = "retry" | "retry_modified" | "skip" | "abort";
+
+type InterventionResume = {
+  planId: string;
+  failedStepId?: string;
+  action: InterventionAction;
+  toolName?: string;
+  toolArguments?: Record<string, unknown>;
+  userNote?: string;
+};
+
+function uniqueStrings(values: Array<string | null | undefined>): string[] {
+  return Array.from(
+    new Set(values.map(value => value?.trim()).filter(Boolean) as string[])
+  );
+}
+
+function applyInterventionGrantToStreamConfig(
+  streamConfig: StreamAgentConfig | null,
+  intervention?: InterventionResume
+): StreamAgentConfig | null {
+  if (
+    !intervention ||
+    !["retry", "retry_modified"].includes(intervention.action) ||
+    !intervention.toolName
+  ) {
+    return streamConfig;
+  }
+
+  const baseConfig = streamConfig ?? {};
+  const basePolicy = baseConfig.execution_policy ?? {};
+  const baseToolPermissions = basePolicy.tool_permissions ?? {};
+  const approvedTools = uniqueStrings([
+    ...(baseToolPermissions.approved_tools ?? []),
+    intervention.toolName,
+  ]);
+
+  return {
+    ...baseConfig,
+    execution_policy: {
+      ...basePolicy,
+      tool_permissions: {
+        ...baseToolPermissions,
+        approved_tools: approvedTools,
+      },
+    },
+  };
+}
+
+function formatToolArguments(
+  value: Record<string, unknown> | undefined
+): string {
+  if (!value || Object.keys(value).length === 0) return "none";
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "unavailable";
+  }
+}
+
+function buildInterventionResumePrompt(input: InterventionResume): string {
+  const toolLabel = input.toolName ? `\`${input.toolName}\`` : "the gated tool";
+  const note = input.userNote?.trim()
+    ? `\nUser note: ${input.userNote.trim()}`
+    : "";
+
+  if (input.action === "abort") {
+    return `Abort plan ${input.planId}. Do not run ${toolLabel}. Summarize that the gated action was stopped and no further tool action was taken.${note}`;
+  }
+
+  if (input.action === "skip") {
+    return `Continue plan ${input.planId} by skipping ${toolLabel}. Do not run the gated tool. Provide the best answer from already available context and clearly state what was skipped.${note}`;
+  }
+
+  return [
+    `Human approval granted for ${toolLabel} in plan ${input.planId}.`,
+    input.failedStepId ? `Resume failed step ${input.failedStepId}.` : "",
+    `Use this approval only for the approved tool and continue the paused task.`,
+    `Approved arguments: ${formatToolArguments(input.toolArguments)}.`,
+    note,
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function isLocalGatewayUrl(url?: string): boolean {
@@ -930,6 +1088,7 @@ async function processConversationMessageStream({
   assistantMessageId,
   activeScope,
   downstreamScopes,
+  intervention,
 }: {
   db: DbClient;
   user: User;
@@ -938,6 +1097,7 @@ async function processConversationMessageStream({
   assistantMessageId: string;
   activeScope: string;
   downstreamScopes: string[];
+  intervention?: InterventionResume;
 }): Promise<void> {
   const traceEvents: OrchestratorTraceEvent[] = [];
   let finalContent = "";
@@ -974,12 +1134,25 @@ async function processConversationMessageStream({
     history.reverse();
 
     const downstreamScope = getDownstreamRuntimeScope(activeScope);
-    const authToken = await signRequestJwt(
+    const { token: authToken, envelope } = await signRequestJwtWithEnvelope(
       user,
       downstreamScope,
       downstreamScopes
     );
-    const streamConfig = await loadStreamConfig(activeScope);
+    const hkiEnvelopeEvent = buildHkiEnvelopeTraceEvent(envelope);
+    traceEvents.push(hkiEnvelopeEvent);
+    broadcastTraceEvent(conversationId, hkiEnvelopeEvent);
+    queueTraceEventForPersistence(
+      hkiEnvelopeEvent,
+      pendingTraceRows,
+      assistantMessageId,
+      activeScope
+    );
+
+    const streamConfig = applyInterventionGrantToStreamConfig(
+      await loadStreamConfig(activeScope),
+      intervention
+    );
     const streamPayload = {
       conversation_id: conversationId,
       message: inputContent,
@@ -1021,7 +1194,10 @@ async function processConversationMessageStream({
           metadata: event.metadata,
           timestamp: new Date(event.timestamp ?? Date.now()),
         });
-      } else if (event.type !== "final_response") {
+      } else if (
+        event.type !== "final_response" &&
+        event.type !== "response_metadata"
+      ) {
         broadcastThoughtTrace(conversationId, {
           type: event.type as any,
           step: event.step,
@@ -1032,15 +1208,12 @@ async function processConversationMessageStream({
       }
 
       if (shouldPersistTraceEvent(event)) {
-        pendingTraceRows.push({
-          id: nanoid(),
-          messageId: assistantMessageId,
-          scope: activeScope,
-          step: event.step ?? 0,
-          type: event.type as any,
-          content: event.content,
-          metadata: event.metadata ? JSON.stringify(event.metadata) : undefined,
-        });
+        queueTraceEventForPersistence(
+          event,
+          pendingTraceRows,
+          assistantMessageId,
+          activeScope
+        );
       }
 
       if (event.type === "tool_result" && event.metadata?.result) {
@@ -1121,7 +1294,8 @@ async function processConversationMessageStream({
         guardrails = event.metadata.report;
       }
       if (
-        event.type === "final_response" &&
+        (event.type === "final_response" ||
+          event.type === "response_metadata") &&
         event.metadata?.confidence != null &&
         event.metadata.confidence > 0
       ) {
@@ -1730,10 +1904,15 @@ export const chatRouter = router({
 
         try {
           const downstreamScope = getDownstreamRuntimeScope(activeScope);
-          const devAuthToken = await signRequestJwt(
-            ctx.user,
-            downstreamScope,
-            downstreamScopes
+          const { token: devAuthToken, envelope } =
+            await signRequestJwtWithEnvelope(
+              ctx.user,
+              downstreamScope,
+              downstreamScopes
+            );
+          broadcastTraceEvent(
+            input.conversationId,
+            buildHkiEnvelopeTraceEvent(envelope)
           );
           const streamConfig = await loadStreamConfig(activeScope);
           const streamPayload = {
@@ -1775,6 +1954,10 @@ export const chatRouter = router({
               });
             } else if (event.type === "final_response") {
               devFinalContent = event.content;
+              if (event.metadata) {
+                devFinalMetadata = event.metadata;
+              }
+            } else if (event.type === "response_metadata") {
               if (event.metadata) {
                 devFinalMetadata = event.metadata;
               }
@@ -1973,6 +2156,124 @@ export const chatRouter = router({
         assistantMessageId,
         activeScope,
         downstreamScopes,
+      });
+
+      return {
+        messageId: assistantMessageId,
+        content: "Thinking...",
+      };
+    }),
+
+  respondToIntervention: protectedProcedure
+    .input(
+      z.object({
+        conversationId: z.string(),
+        planId: z.string().min(1),
+        failedStepId: z.string().optional(),
+        action: z.enum(["retry", "retry_modified", "skip", "abort"]),
+        toolName: z.string().trim().min(1).optional(),
+        toolArguments: z.record(z.string(), z.unknown()).optional(),
+        userNote: z.string().max(2000).optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (!hasPermission(ctx.user.role as Role, "chat:write")) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have permission to respond to interventions",
+        });
+      }
+
+      if (
+        ["retry", "retry_modified"].includes(input.action) &&
+        !input.toolName
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Approval response is missing the gated tool name",
+        });
+      }
+
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Intervention resume requires the database-backed stack",
+        });
+      }
+
+      const [conversation] = await db
+        .select({ userId: conversations.userId, scope: conversations.scope })
+        .from(conversations)
+        .where(eq(conversations.id, input.conversationId))
+        .limit(1);
+      if (!conversation || conversation.userId !== ctx.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Conversation not found",
+        });
+      }
+
+      const allowedScopes = await getAllowedChatScopes(
+        ctx.user,
+        db,
+        conversation.scope
+      );
+      assertAuthorizedChatScope(
+        conversation.scope,
+        allowedScopes,
+        "You no longer have access to this conversation's value stream"
+      );
+
+      const activeScope = resolveRequestedChatScope(
+        conversation.scope,
+        allowedScopes
+      );
+      const downstreamScopes = getDownstreamScopes(activeScope);
+      const intervention: InterventionResume = {
+        planId: input.planId,
+        failedStepId: input.failedStepId,
+        action: input.action,
+        toolName: input.toolName,
+        toolArguments: input.toolArguments,
+        userNote: input.userNote,
+      };
+      const resumePrompt = buildInterventionResumePrompt(intervention);
+
+      const userMessageId = nanoid();
+      const userCreatedAt = new Date();
+      await db.insert(messages).values({
+        id: userMessageId,
+        conversationId: input.conversationId,
+        scope: activeScope,
+        role: "user",
+        content: resumePrompt,
+        createdAt: userCreatedAt,
+      });
+
+      const assistantMessageId = nanoid();
+      await db.insert(messages).values({
+        id: assistantMessageId,
+        conversationId: input.conversationId,
+        scope: activeScope,
+        role: "assistant",
+        content: "Thinking...",
+        createdAt: new Date(userCreatedAt.getTime() + 1000),
+      });
+      await db
+        .update(conversations)
+        .set({ updatedAt: new Date() })
+        .where(eq(conversations.id, input.conversationId));
+
+      void processConversationMessageStream({
+        db,
+        user: ctx.user,
+        conversationId: input.conversationId,
+        inputContent: resumePrompt,
+        assistantMessageId,
+        activeScope,
+        downstreamScopes,
+        intervention,
       });
 
       return {

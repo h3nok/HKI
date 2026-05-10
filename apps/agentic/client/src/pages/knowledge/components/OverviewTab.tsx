@@ -503,7 +503,10 @@ export default function OverviewTab({
 
   const queueSummary = useMemo(() => {
     const runningCount = scopedJobs.filter(
-      job => job.status !== "completed" && job.status !== "failed"
+      job =>
+        job.status !== "completed" &&
+        job.status !== "failed" &&
+        job.status !== "cancelled"
     ).length;
     const failedCount = scopedJobs.filter(
       job => job.status === "failed"

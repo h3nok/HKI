@@ -10,6 +10,11 @@ export { FeatureListCard } from "./feature-list-card";
 export { SettingsHero } from "./settings-hero";
 export { SettingsRail } from "./settings-rail";
 export {
+  GovernanceFrame,
+  GovernanceNotice,
+  GovernanceRegistry,
+} from "./GovernanceFrame";
+export {
   SectionPill,
   ActionAffordance,
   SettingsButton,

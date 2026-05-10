@@ -33,7 +33,7 @@ export function ThemeProvider({
   return (
     <SharedThemeProvider
       defaultTheme={defaultTheme}
-      storageKey="agentic-theme"
+      storageKey="agentic-theme-v2"
       attribute="class"
       enableSystem={false}
       disableTransitionOnChange

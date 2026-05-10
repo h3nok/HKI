@@ -53,23 +53,27 @@
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist",
+    "prebuild": "node ../../scripts/ensure-package-built.mjs ../hki-runtime && node ../../scripts/ensure-package-built.mjs ../hki-conformance",
     "prepack": "pnpm build",
+    "pretest": "node ../../scripts/ensure-package-built.mjs ../hki-runtime && node ../../scripts/ensure-package-built.mjs ../hki-conformance",
+    "pretypecheck": "node ../../scripts/ensure-package-built.mjs ../hki-runtime && node ../../scripts/ensure-package-built.mjs ../hki-conformance",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   },
   "dependencies": {
     "@hki/conformance": "workspace:*",
     "@hki/runtime": "workspace:*",
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@hki/typescript-config": "workspace:*",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "4.1.4"
+    "vite": "7.3.2",
+    "vitest": "4.1.5"
   },
   "publishConfig": {
     "access": "public"

@@ -44,7 +44,7 @@ const TIER_COLORS: Record<BadgeTier, string[][]> = {
 export function fireConfetti(options?: ConfettiOptions & { tier?: BadgeTier }) {
   const { origin = { x: 0.5, y: 0.3 }, particleCount = 80, spread = 70, tier } = options ?? {};
 
-  const colors = tier ? TIER_COLORS[tier]?.flat() : ['#10b981', '#0066B2', '#f59e0b', '#7c3aed', '#ef4444'];
+  const colors = tier ? TIER_COLORS[tier]?.flat() : ['#10b981', '#0E7C7B', '#f59e0b', '#7c3aed', '#ef4444'];
 
   // Main burst
   confetti({

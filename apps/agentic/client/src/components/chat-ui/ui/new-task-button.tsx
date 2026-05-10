@@ -2,7 +2,7 @@
  * NewTaskButton — Hermetic Platform
  *
  * Brand-native design using HKI's visual identity:
- * - Red (#E31837) accent line — the HKI "action" color
+ * - HKI Iris accent line — the HKI action color
  * - Blue (#005DAA) icon tint — trust & intelligence
  * - Warm neutrals, compact, warehouse-efficient layout
  * - No fluff — direct, value-focused (like HKI itself)

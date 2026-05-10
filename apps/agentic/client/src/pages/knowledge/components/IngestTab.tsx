@@ -3699,7 +3699,7 @@ function PipelineJobsFeed({
       refetchInterval: query => {
         const jobs = query.state.data?.jobs ?? [];
         const hasActive = jobs.some(
-          (j: any) => !["completed", "failed"].includes(j.status)
+          (j: any) => !["completed", "failed", "cancelled"].includes(j.status)
         );
         if (hasActive) return JOB_WS_FALLBACK_POLL_MS;
         if (pollCount > 30) return false; // stop polling after ~60s idle
@@ -3716,7 +3716,7 @@ function PipelineJobsFeed({
   useEffect(() => {
     const jobs = jobsQ.data?.jobs ?? [];
     const hasActive = jobs.some(
-      (j: any) => !["completed", "failed"].includes(j.status)
+      (j: any) => !["completed", "failed", "cancelled"].includes(j.status)
     );
     if (hasActive) {
       setPollCount(0);
@@ -3759,10 +3759,10 @@ function PipelineJobsFeed({
   });
 
   const activeJobs = jobs.filter(
-    (j: any) => !["completed", "failed"].includes(j.status)
+    (j: any) => !["completed", "failed", "cancelled"].includes(j.status)
   );
   const recentJobs = jobs
-    .filter((j: any) => ["completed", "failed"].includes(j.status))
+    .filter((j: any) => ["completed", "failed", "cancelled"].includes(j.status))
     .slice(0, 8);
   const completedCount = jobs.filter(
     (j: any) => j.status === "completed"

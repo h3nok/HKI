@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   AGENTIC APP THEME — Cool Blue-Shift Override
+   AGENTIC APP THEME — Architectural Paper Override
 
    This file ONLY overrides primitive tokens (color-neutral-*)
    to give the Agentic app its unique visual identity.
@@ -7,37 +7,37 @@
    Apps should NEVER redefine semantic tokens like --background, --card, etc.
    Instead, override the PRIMITIVES that feed into them.
 
-   LIGHT: Defined blue-gray canvas + white cards with an intentionally wider
-          surface gap. The app is operational software, so the light theme
-          favors crisp edges, readable hierarchy, and subdued contrast.
+   LIGHT: Neutral paper canvas + white cards with controlled graphite edges.
+          Brand color is reserved for command emphasis, focus, and thin rails,
+          not broad fills. This keeps the duotone identity intentional.
    DARK:  Navy-shifted neutrals with wide gaps for clear depth.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
   /* ─────────────────────────────────────────────────────────────────────────
-     AGENTIC LIGHT MODE — Cool Blue-Tint Canvas
+     AGENTIC LIGHT MODE — Neutral Paper Canvas
 
-     The canvas is cool and visibly recessed so white panels do not wash into
+     The canvas is neutral and visibly recessed so white panels do not wash into
      the page. Muted and border steps are strong enough to hold shape on
-     high-DPI displays.
+     high-DPI displays without tinting every surface teal.
      ───────────────────────────────────────────────────────────────────────── */
   --color-neutral-0: #ffffff; /* Pure white — card / popover / modal surface */
-  --color-neutral-25: #f3f6fa; /* Near-white — lifted cards */
-  --color-neutral-50: #d2dae7; /* App background — recessed blue-gray canvas */
-  --color-neutral-75: #c2ccdb; /* Recessed — table rows, sidebar wells */
-  --color-neutral-100: #b5c0d0; /* Muted — code blocks, inset surfaces */
-  --color-neutral-150: #9ca8ba; /* Interactive bg / border-muted — visible */
-  --color-neutral-200: #7f8b9f; /* Borders — visible even at 60% opacity */
-  --color-neutral-300: #5f6d82; /* Borders (medium) / border-hover */
-  --color-neutral-400: #415066; /* Placeholder text */
-  --color-neutral-500: #2f3d52; /* Secondary text — WCAG AA on white */
-  --color-neutral-600: #1d2a3d; /* Body text — strong slate */
-  --color-neutral-700: #0d1727; /* Headings — near-black blue-slate */
-  --color-neutral-800: #1a1f2e; /* Dark surfaces */
-  --color-neutral-850: #151a26;
-  --color-neutral-900: #0e1219; /* Near black */
-  --color-neutral-925: #0a0d14;
-  --color-neutral-950: #060810;
+  --color-neutral-25: #fafbf9; /* Lifted paper */
+  --color-neutral-50: #f3f5f3; /* App background — recessed paper canvas */
+  --color-neutral-75: #ecefed; /* Table rows, sidebar wells */
+  --color-neutral-100: #e4e8e6; /* Muted — code blocks, inset surfaces */
+  --color-neutral-150: #d6dcd9; /* Interactive bg / border-muted */
+  --color-neutral-200: #c4ccc8; /* Borders — visible at 60% opacity */
+  --color-neutral-300: #a9b4af; /* Borders (medium) / border-hover */
+  --color-neutral-400: #7d8984; /* Placeholder text */
+  --color-neutral-500: #5f6a66; /* Secondary text — WCAG AA on white */
+  --color-neutral-600: #454f4b; /* Body text — graphite */
+  --color-neutral-700: #26302d; /* Headings — near-black graphite */
+  --color-neutral-800: #1d2422; /* Dark surfaces */
+  --color-neutral-850: #171d1b;
+  --color-neutral-900: #101614; /* Near black */
+  --color-neutral-925: #0b100f;
+  --color-neutral-950: #060a09;
 }
 
 .dark {

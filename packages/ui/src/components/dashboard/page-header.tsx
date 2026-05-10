@@ -34,13 +34,13 @@ export function PageHeader({
         <div className="flex items-center gap-4">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: "#0066B214", color: "#0066B2" }}
+            style={{ background: "#0E7C7B14", color: "#0E7C7B" }}
           >
             {icon}
           </div>
           <div>
             {subtitle && (
-              <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#0066B2] dark:text-[#3397D7] block mb-0.5">
+              <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#0E7C7B] dark:text-[#1FA9A5] block mb-0.5">
                 {subtitle}
               </span>
             )}
@@ -53,7 +53,7 @@ export function PageHeader({
       </div>
       {description && (
         <div className="mt-3 pl-14">
-          <div className="h-0.5 w-8 rounded-full mb-2.5" style={{ background: "#0066B2" }} />
+          <div className="h-0.5 w-8 rounded-full mb-2.5" style={{ background: "#0E7C7B" }} />
           <p className="text-[13px] text-[#6f6e6b] dark:text-[#a3a29f] max-w-lg leading-relaxed">
             {description}
           </p>

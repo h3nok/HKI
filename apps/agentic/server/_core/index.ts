@@ -5,8 +5,7 @@ import path from "path";
 import { validateEnv } from "./env";
 import { buildAgenticReadinessPayload } from "./hvsi-audit";
 import { createRouteRateLimiter } from "./rate-limit";
-import { createServer } from "http";
-import net from "net";
+import { createServer, type Server } from "http";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import googleAuthRoutes from "../auth/google-routes";
@@ -24,23 +23,59 @@ const staticFallbackRateLimit = createRouteRateLimiter({
   message: "Too many page requests. Please try again shortly.",
 });
 
-function isPortAvailable(port: number): Promise<boolean> {
-  return new Promise(resolve => {
-    const server = net.createServer();
-    server.listen(port, () => {
-      server.close(() => resolve(true));
-    });
-    server.on("error", () => resolve(false));
+function isAddressInUse(error: unknown): error is NodeJS.ErrnoException {
+  return (
+    error instanceof Error &&
+    (error as NodeJS.ErrnoException).code === "EADDRINUSE"
+  );
+}
+
+function listenOnce(server: Server, port: number): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      server.off("error", onError);
+      server.off("listening", onListening);
+    };
+    const onError = (error: Error) => {
+      cleanup();
+      reject(error);
+    };
+    const onListening = () => {
+      cleanup();
+      resolve(port);
+    };
+
+    server.once("error", onError);
+    server.once("listening", onListening);
+    server.listen(port);
   });
 }
 
-async function findAvailablePort(startPort: number = 9001): Promise<number> {
-  for (let port = startPort; port < startPort + 20; port++) {
-    if (await isPortAvailable(port)) {
-      return port;
+async function listenWithFallback(
+  server: Server,
+  preferredPort: number
+): Promise<number> {
+  const allowFallback =
+    process.env.NODE_ENV === "development" &&
+    process.env.HKI_DEV_PORT_FALLBACK !== "false";
+  const maxAttempts = allowFallback ? 20 : 1;
+
+  for (let offset = 0; offset < maxAttempts; offset += 1) {
+    const port = preferredPort + offset;
+    try {
+      return await listenOnce(server, port);
+    } catch (error) {
+      if (!isAddressInUse(error) || offset === maxAttempts - 1) {
+        throw error;
+      }
+      logger.warn(
+        { preferredPort, busyPort: port, nextPort: port + 1 },
+        "Port busy during listen; trying alternate development port"
+      );
     }
   }
-  throw new Error(`No available port found starting from ${startPort}`);
+
+  throw new Error(`No available port found starting from ${preferredPort}`);
 }
 
 async function startServer() {
@@ -137,11 +172,6 @@ async function startServer() {
   });
 
   const preferredPort = parseInt(process.env.PORT || "9001");
-  const port = await findAvailablePort(preferredPort);
-
-  if (port !== preferredPort) {
-    logger.info({ preferredPort, port }, "Port busy, using alternate");
-  }
 
   // Setup WebSocket server
   logger.info("Setting up WebSocket server");
@@ -159,12 +189,11 @@ async function startServer() {
       );
     });
 
-  server.listen(port, () => {
-    logger.info(
-      { port, ws: `/ws` },
-      `Agentic BFF running on http://localhost:${port}/`
-    );
-  });
+  const port = await listenWithFallback(server, preferredPort);
+  logger.info(
+    { port, preferredPort, ws: `/ws` },
+    `Agentic BFF running on http://localhost:${port}/`
+  );
 }
 
 startServer().catch(err => {

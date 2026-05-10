@@ -48,13 +48,13 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 // ── Brand ──────────────────────────────────────────────────────────────────────
 
 const IRIS = "#0E7C7B";
-const PULSE = "#E07A1F";
+const PULSE = IRIS;
 const PRIMARY = "var(--primary)";
 const DOMAIN_STRUCTURE =
   "var(--stream-icon-structure, var(--color-brand-iris-500, #0E7C7B))";
 const DOMAIN_ACCENT =
-  "var(--stream-icon-accent, var(--color-brand-pulse-500, #E07A1F))";
-const INDIGO = "#6366F1";
+  "var(--stream-icon-accent, var(--color-brand-iris-500, #0E7C7B))";
+const INDIGO = IRIS;
 const SHOWCASE_HEADING_FONT =
   (FONT_FAMILY as typeof FONT_FAMILY & { heading?: string }).heading ??
   '"Plus Jakarta Sans", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
@@ -343,8 +343,8 @@ function BrandSection() {
             },
             {
               color: PULSE,
-              label: "HKI Pulse",
-              hex: "#E07A1F",
+              label: "HKI Iris",
+              hex: "#0E7C7B",
               usage: "Accent — signals, highlights, active marks",
             },
             {

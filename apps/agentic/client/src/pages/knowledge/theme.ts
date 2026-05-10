@@ -1,7 +1,7 @@
 /**
- * Knowledge Platform — HKI Blue Accent Theme
+ * Knowledge Platform — HKI Iris Accent Theme
  *
- * Neutral surfaces from the shared agentic design system + HKI Blue accent.
+ * Neutral surfaces from the shared agentic design system + HKI Iris accent.
  * Cards float on the gray canvas via layered shadows, subtle borders, and depth.
  *
  * Surface hierarchy (5 levels — visually distinct in both light & dark):
@@ -27,7 +27,7 @@
  *
  * Color strategy:
  *   Surfaces are neutral (shared design system tokens).
- *   Accent is HKI Blue via @hki/ui tokens (buttons, highlights, links).
+ *   Accent is HKI Iris via @hki/ui tokens (buttons, highlights, links).
  *
  * Usage:
  *   import { k } from '../theme';
@@ -71,7 +71,7 @@ const DUOTONE_ICON_HOVER = "kb-duotone-icon-hover";
 // ── Tailwind class tokens ────────────────────────────────────────────────────
 
 export const k = {
-  // ── Accent — HKI Blue ──
+  // ── Accent — HKI Iris ──
   accentText: DUOTONE_ACCENT_TEXT,
   brandRedText: "kb-brand-red-text",
   accentBg: "bg-primary",
@@ -212,10 +212,10 @@ export const k = {
     "border border-primary/20",
   ].join(" "),
 
-  // ── Selected / hover state — HKI Blue system ──
-  /** Selected nav item, tab, or list row — semi-transparent HKI Blue */
+  // ── Selected / hover state — HKI Iris system ──
+  /** Selected nav item, tab, or list row — semi-transparent HKI Iris */
   selected: [DUOTONE_FILL, "font-semibold"].join(" "),
-  /** Hover for interactive items — lighter HKI Blue tint */
+  /** Hover for interactive items — lighter HKI Iris tint */
   hover: DUOTONE_HOVER,
   /** Active tab with border accent */
   activeTab: [DUOTONE_SURFACE_ACTIVE, "ring-1 ring-primary/20"].join(" "),
@@ -224,7 +224,7 @@ export const k = {
     DUOTONE_SURFACE_ACTIVE,
     "text-foreground",
     "ring-1 ring-primary/15",
-    "shadow-[0_12px_22px_-18px_rgba(0,93,170,0.24)]",
+    "shadow-[0_12px_22px_-18px_rgba(14,124,123,0.24)]",
   ].join(" "),
   sidebarNavIdle: [
     "text-muted-foreground",
@@ -266,7 +266,7 @@ export const k = {
   ].join(" "),
 
   // ── Lift — restrained depth for focused/active elements ──
-  glow: "shadow-[0_12px_24px_-20px_rgba(0,102,178,0.22)] dark:shadow-[0_16px_28px_-24px_rgba(51,153,204,0.28)]",
+  glow: "shadow-[0_12px_24px_-20px_rgba(14,124,123,0.22)] dark:shadow-[0_16px_28px_-24px_rgba(61,203,198,0.28)]",
 } as const;
 
 // ── Pipeline polling config ──────────────────────────────────────────────────
@@ -275,7 +275,13 @@ export const k = {
 export const JOB_POLL_INTERVAL_MS = 3_000;
 
 /** Job statuses that are considered "terminal" (no more polling needed) */
-export const TERMINAL_JOB_STATUSES = new Set(["completed", "failed"]);
+export const TERMINAL_JOB_STATUSES = new Set([
+  "completed",
+  "failed",
+  "cancelled",
+  "timeout",
+  "expired",
+]);
 
 /** Check if any jobs in a list are still active (need polling) */
 export function hasActiveJobs(jobs: Array<{ status: string }>): boolean {
@@ -289,7 +295,7 @@ export function hasActiveJobs(jobs: Array<{ status: string }>): boolean {
  * Each domain gets a deterministic slot so the color is stable
  * across sessions — same domain always gets the same color.
  *
- * Null stream (global view) always gets the primary (HKI Blue) slot.
+ * Null stream (global view) always gets the primary (HKI Iris) slot.
  */
 const STREAM_PALETTE = [
   // text / bg / ring
@@ -343,7 +349,7 @@ const STREAM_PALETTE = [
   },
 ] as const;
 
-/** Global (no stream) always uses HKI Blue. */
+/** Global (no stream) always uses HKI Iris. */
 const GLOBAL_SLOT = {
   text: "text-primary",
   bg: "bg-primary/10",
@@ -353,7 +359,7 @@ const GLOBAL_SLOT = {
 
 /**
  * Returns stable color tokens for a given stream ID.
- * Pass `null` or `""` to get the global (HKI Blue) slot.
+ * Pass `null` or `""` to get the global (HKI Iris) slot.
  */
 export function streamColorToken(streamId: string | null | undefined) {
   if (!streamId) return GLOBAL_SLOT;

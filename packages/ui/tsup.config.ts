@@ -69,5 +69,7 @@ export default defineConfig(options => ({
   sourcemap: true,
   clean: !options.watch, // Only clean on full builds, not in watch mode
   external: ["react", "react-dom", "react-grid-layout", "react-resizable"],
-  treeshake: true,
+  // Let esbuild handle tree shaking here. tsup's Rollup treeshake pass strips
+  // package-level "use client" directives and creates noisy RSC warnings.
+  treeshake: false,
 }));

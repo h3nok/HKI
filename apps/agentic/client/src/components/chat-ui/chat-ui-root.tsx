@@ -4,8 +4,8 @@
  *
  * Design Principles:
  * - No-Washout warm neutrals (never pure white backgrounds)
- * - HKI Blue (#0066B2) for primary actions
- * - HKI Red (#E31837) for emphasis
+ * - HKI Iris (#0E7C7B) for primary actions
+ * - HKI Iris for emphasis
  * - Soft shadows + hairline borders for depth
  * - Smooth 200-300ms transitions
  */
@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { AgenticIcon } from "../ui/icons/AgenticIcon";
 import { KnowledgeIcon } from "../ui/icons/KnowledgeIcon";
-import { OpsIcon } from "../ui/icons/OpsIcon";
 import {
   Tooltip,
   TooltipTrigger,
@@ -34,8 +33,11 @@ import {
 import { ToolbarAction } from "./ui/toolbar-action";
 import { TaskSidebar } from "./task-sidebar/task-sidebar";
 import { TracesSidebar } from "./traces-sidebar/traces-sidebar";
-import { TaskMessages } from "./task-messages/task-messages";
-import { ErrorBoundary } from "@hki/ui";
+import {
+  TaskMessages,
+  type InterventionResponseRequest,
+} from "./task-messages/task-messages";
+import { ErrorBoundary, HkiMark } from "@hki/ui";
 import { PromptInput } from "./prompt-input";
 import type { PromptRuntimeTone } from "./prompt-input";
 import { SuggestionGrid } from "./suggestions/suggestion-grid";
@@ -295,7 +297,9 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
   const canUseChatVoice = canViewFeature("release.chat.voice");
   const canUseChatRerun = canViewFeature("release.chat.rerun");
   const canUseClearAllTasks = canViewFeature("release.chat.clearAllTasks");
-  const canUseActivityPanel = canViewFeature("debug.chat.activityPanel");
+  const canUseActivityPanel =
+    canViewFeature("release.chat.activityPanel") ||
+    canViewFeature("debug.chat.activityPanel");
   const canRecordChatFeedback = role === "admin" || role === "manager";
   const [autoPromptsByScope, setAutoPromptsByScope] = useState<
     Record<string, string[]>
@@ -412,11 +416,11 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
     executionPlan,
     pendingIntervention,
     liveResponseContent,
-    sendWsMessage,
   } = useStreamingState(taskID);
 
   const { createTask, isLoading: isTaskCreating } = useCreateTask(userId);
   const { sendMessage, isLoading: isQuickActionSending } = useSendMessage();
+  const utils = trpc.useUtils();
   const [isPromptSending, setIsPromptSending] = useState(false);
   const sendingLockRef = useRef(false); // Guards against false-resets during PromptInput remount (first message only)
   const messageCountAtSendRef = useRef<number | null>(null); // Track message count when a send started
@@ -424,6 +428,19 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
   const clearSendingTimeoutRef = useRef<number | null>(null);
   const { data: taskData, isLoading: isMessagesLoading } =
     useTaskMessages(taskID);
+
+  const latestInspectableAgentMessageId = useMemo(() => {
+    const messages = taskData?.messages ?? [];
+    return (
+      [...messages].reverse().find(message => {
+        if (message.content.type !== "text") return false;
+        if (message.content.author !== "agent") return false;
+        if (message.streaming_status === "STREAMING") return false;
+        const text = message.content.content.trim().toLowerCase();
+        return text !== "thinking" && text !== "thinking...";
+      })?.id ?? null
+    );
+  }, [taskData?.messages]);
 
   useEffect(() => {
     if (!taskID || isScopeLocked) return;
@@ -514,9 +531,26 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
     setIsPromptSending(true);
   }, [taskData?.messages?.length]);
 
+  const interventionMutation = trpc.chat.respondToIntervention.useMutation({
+    onSuccess: (_result, variables) => {
+      utils.chat.getTask.invalidate({
+        conversationId: variables.conversationId,
+      });
+      utils.chat.getTasks.invalidate();
+    },
+    onError: error => {
+      clearPendingSend();
+      toast.error(error.message || "Failed to resume the paused action.");
+    },
+  });
+
   // Robust sending detection: combines prompt-driven busy state with explicit
   // quick-action / suggestion sends so the thinking UI appears immediately.
-  const isAgentBusy = isPromptSending || isQuickActionSending || isTaskCreating;
+  const isAgentBusy =
+    isPromptSending ||
+    isQuickActionSending ||
+    isTaskCreating ||
+    interventionMutation.isPending;
   const promptRuntimeState = useMemo<{
     label: string;
     tone: PromptRuntimeTone;
@@ -620,8 +654,30 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
 
   const toggleTracesSidebar = useCallback(() => {
     if (!canUseActivityPanel) return;
-    setIsTracesSidebarOpen(prev => !prev);
-  }, [canUseActivityPanel]);
+    if (isTracesSidebarOpen) {
+      setSelectedMessageId(null);
+      setIsTracesSidebarOpen(false);
+      return;
+    }
+    setSelectedMessageId(
+      isAgentStreaming ? null : latestInspectableAgentMessageId
+    );
+    setIsTracesSidebarOpen(true);
+  }, [
+    canUseActivityPanel,
+    isAgentStreaming,
+    isTracesSidebarOpen,
+    latestInspectableAgentMessageId,
+  ]);
+
+  const handleInspectMessageActivity = useCallback(
+    (message: TaskMessage) => {
+      if (!canUseActivityPanel) return;
+      setSelectedMessageId(message.id);
+      setIsTracesSidebarOpen(true);
+    },
+    [canUseActivityPanel]
+  );
 
   useEffect(() => {
     if (!canUseActivityPanel && isTracesSidebarOpen) {
@@ -878,6 +934,45 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
     setPromptValue(prev => quote + prev);
   }, []);
 
+  const handleInterventionAction = useCallback(
+    async ({ intervention, action }: InterventionResponseRequest) => {
+      if (!taskID || interventionMutation.isPending) return;
+
+      const scratchpad = intervention.scratchpadSummary ?? {};
+      const toolName =
+        typeof scratchpad.tool === "string" ? scratchpad.tool : undefined;
+      const rawArguments = scratchpad.arguments;
+      const toolArguments =
+        rawArguments &&
+        typeof rawArguments === "object" &&
+        !Array.isArray(rawArguments)
+          ? (rawArguments as Record<string, unknown>)
+          : undefined;
+
+      beginPendingSend();
+      try {
+        await interventionMutation.mutateAsync({
+          conversationId: taskID,
+          planId: intervention.planId,
+          failedStepId: intervention.failedStepId || undefined,
+          action,
+          toolName,
+          toolArguments,
+        });
+        toast.success(
+          action === "abort"
+            ? "Stopped the gated action."
+            : action === "skip"
+              ? "Resuming without the gated tool."
+              : "Approval sent. Resuming the paused step."
+        );
+      } catch {
+        // The mutation onError owns the visible failure state.
+      }
+    },
+    [beginPendingSend, interventionMutation, taskID]
+  );
+
   const contentPadding = LAYOUT.chat.contentPadding;
   const chatMaxWidth = LAYOUT.chat.maxWidth;
   const inputPaddingY = LAYOUT.chat.inputPaddingY;
@@ -988,7 +1083,12 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
                   className="platform-nav-link"
                 >
                   <a href="/admin" aria-label="Open Admin Hub">
-                    <OpsIcon size={16} className="h-4 w-4" aria-hidden />
+                    <HkiMark
+                      size={16}
+                      variant="color"
+                      className="h-4 w-4"
+                      aria-hidden
+                    />
                     <span className="hidden text-xs sm:inline">Admin</span>
                   </a>
                 </ToolbarAction>
@@ -1101,7 +1201,7 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
                       liveResponseContent={liveResponseContent}
                       executionPlan={executionPlan}
                       pendingIntervention={pendingIntervention}
-                      sendWsMessage={sendWsMessage}
+                      onInterventionAction={handleInterventionAction}
                       suggestedFollowUps={suggestedFollowUps}
                       onSuggestionSelect={handleSuggestion}
                       onRegenerate={
@@ -1109,6 +1209,7 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
                       }
                       onPin={handlePin}
                       onReply={handleReply}
+                      onInspectActivity={handleInspectMessageActivity}
                       canRecordFeedback={canRecordChatFeedback}
                       canOpenKnowledgeLibrary={canUseKnowledgeLibrary}
                       knowledgeLibraryScopeId={activeScope}

@@ -140,7 +140,7 @@ interface KBSegmentedControlProps<K extends string = string> {
 
 /**
  * Unified active state: `kb-duotone-fill shadow-sm`
- * Matches HKI Blue design token — used consistently on every KB tab.
+ * Matches HKI Iris design token — used consistently on every KB tab.
  */
 export function KBSegmentedControl<K extends string = string>({
   items,

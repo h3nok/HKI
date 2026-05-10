@@ -66,7 +66,7 @@ export default function StatusCard({
       headerContent={
         <div className="flex items-center justify-between gap-2 px-4 py-3.5">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-primary/12 bg-primary/8 text-primary/80 shadow-[0_10px_20px_-16px_rgba(0,93,170,0.3)] dark:border-white/8 dark:bg-white/4 dark:text-primary dark:shadow-none">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-primary/12 bg-primary/8 text-primary/80 shadow-[0_10px_20px_-16px_rgba(14,124,123,0.3)] dark:border-white/8 dark:bg-white/4 dark:text-primary dark:shadow-none">
               <Icon className="w-3.5 h-3.5" />
             </span>
             <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/80 truncate">

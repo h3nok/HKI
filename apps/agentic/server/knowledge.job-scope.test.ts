@@ -6,6 +6,7 @@ import type { User } from "../drizzle/schema";
 const mocks = vi.hoisted(() => ({
   getDb: vi.fn(),
   serviceJsonTyped: vi.fn(),
+  startJobWatcher: vi.fn(),
 }));
 
 vi.mock("./db", () => ({
@@ -22,6 +23,12 @@ vi.mock("./service-client", () => ({
   VECTOR_STORE_URL: "http://vector.test",
   ANALYTICS_URL: "http://analytics.test",
   ORCHESTRATOR_URL: "http://orchestrator.test",
+}));
+
+vi.mock("./job-watcher", () => ({
+  startJobWatcher: mocks.startJobWatcher,
+  isTerminalJobStatus: (status: string | null | undefined) =>
+    status === "completed" || status === "failed",
 }));
 
 vi.mock("ioredis", () => {
@@ -173,6 +180,12 @@ describe("knowledge job stream scoping", () => {
 
     expect(result.jobs.map(job => job.id)).toEqual(["job-pharmacy"]);
     expect(result.total).toBe(1);
+    expect(mocks.startJobWatcher).toHaveBeenCalledWith(
+      "job-pharmacy",
+      1,
+      expect.objectContaining({ id: 1 }),
+      "pharmacy"
+    );
     expect(mocks.serviceJsonTyped).toHaveBeenCalledWith(
       "http://pipeline.test/v1/jobs?limit=10&offset=0",
       expect.objectContaining({
@@ -205,5 +218,82 @@ describe("knowledge job stream scoping", () => {
         isGlobalScope: false,
       })
     );
+    expect(mocks.startJobWatcher).not.toHaveBeenCalled();
+  });
+
+  it("bootstraps watcher when loading active job detail", async () => {
+    mocks.serviceJsonTyped.mockResolvedValue({
+      job: makeJob({
+        id: "job-pharmacy",
+        streamId: "pharmacy",
+        status: "queued",
+      }),
+      stagesCompleted: [],
+    });
+
+    const { appRouter } = await import("./routers");
+    const caller = appRouter.createCaller(makeCtx());
+
+    await caller.knowledge.getJob({
+      jobId: "job-pharmacy",
+      valueStreamId: "pharmacy",
+    });
+
+    expect(mocks.startJobWatcher).toHaveBeenCalledWith(
+      "job-pharmacy",
+      1,
+      expect.objectContaining({ id: 1 }),
+      "pharmacy"
+    );
+  });
+
+  it("cancels a job within the selected stream", async () => {
+    mocks.serviceJsonTyped.mockResolvedValue({
+      job: makeJob({
+        id: "job-pharmacy",
+        streamId: "pharmacy",
+        status: "cancelled",
+      }),
+      stagesCompleted: ["extracting", "cleaning"],
+    });
+
+    const { appRouter } = await import("./routers");
+    const caller = appRouter.createCaller(makeCtx());
+
+    const response = await caller.knowledge.cancelJob({
+      jobId: "job-pharmacy",
+      valueStreamId: "pharmacy",
+    });
+
+    expect(response.job.status).toBe("cancelled");
+    expect(mocks.serviceJsonTyped).toHaveBeenCalledWith(
+      "http://pipeline.test/v1/jobs/job-pharmacy/cancel",
+      expect.objectContaining({
+        scopes: ["pharmacy"],
+        isGlobalScope: false,
+      }),
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("rejects cancelling a job returned from another stream", async () => {
+    mocks.serviceJsonTyped.mockResolvedValue({
+      job: makeJob({
+        id: "job-optical",
+        streamId: "optical",
+        status: "cancelled",
+      }),
+      stagesCompleted: [],
+    });
+
+    const { appRouter } = await import("./routers");
+    const caller = appRouter.createCaller(makeCtx());
+
+    await expect(
+      caller.knowledge.cancelJob({
+        jobId: "job-optical",
+        valueStreamId: "pharmacy",
+      })
+    ).rejects.toThrow(/Job not found in selected value stream/);
   });
 });

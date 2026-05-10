@@ -54,6 +54,7 @@ log(`Checking ${baseUrl}`);
 const html = await expectHtml("/");
 await expectHtml("/chat");
 await expectHtml("/knowledge");
+await expectHtml("/admin");
 
 const assets = [
   ...extractAssets(
@@ -82,7 +83,7 @@ console.log(
     {
       status: "passed",
       baseUrl,
-      checkedPaths: ["/", "/chat", "/knowledge"],
+      checkedPaths: ["/", "/chat", "/knowledge", "/admin"],
       checkedAssets: assets.length,
       totalAssetBytes,
     },

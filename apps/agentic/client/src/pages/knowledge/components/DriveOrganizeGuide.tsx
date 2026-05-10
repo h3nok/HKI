@@ -1495,7 +1495,7 @@ export default function DriveOrganizeGuide({
                   className={cn(
                     "flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all select-none",
                     attested
-                      ? "border-primary/35 bg-primary/8 shadow-[0_16px_36px_-28px_rgba(0,93,170,0.65)]"
+                      ? "border-primary/35 bg-primary/8 shadow-[0_16px_36px_-28px_rgba(14,124,123,0.65)]"
                       : "border-border/30 hover:border-primary/45 hover:bg-primary/[0.035]"
                   )}
                 >

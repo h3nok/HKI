@@ -7,6 +7,8 @@ runtime contract easier to enforce, test, operate, or adopt.
 ## Start Here
 
 - Read `README.md` for the current local-dev and deployment entrypoints.
+- Read `docs/COMMUNITY_ENABLEMENT.md` to choose the right contribution lane and
+  understand what is public API, reference implementation, or experimental.
 - Read `docs/HKI-package/HERMETIC-KNOWLEDGE-ISOLATION.md` for the isolation model.
 - Read `docs/SCOPED_AGENTIC_ROUTING.md` before changing agent, retrieval, memory,
   cache, tool, or trace behavior.
@@ -14,6 +16,8 @@ runtime contract easier to enforce, test, operate, or adopt.
   paths.
 - Read `docs/FIRST_SETUP.md` before first-time setup or local environment changes.
 - Read `docs/TESTING.md` before choosing validation scope for a change.
+- Read `docs/DEPENDENCY_POLICY.md` before changing package versions, Node,
+  pnpm, dependency overrides, or install-script approvals.
 - Read `docs/SERVICE_BOUNDARIES.md` before editing multiple services in one branch.
 
 ## Working Rules
@@ -27,6 +31,21 @@ runtime contract easier to enforce, test, operate, or adopt.
 - Do not introduce new runtime `global` fallback behavior, null-scope reads, or
   cross-domain wildcard queries. Use explicit admin-plane paths or publication
   workflows and run `pnpm audit:hki`.
+
+## Contribution Lanes
+
+Choose one primary lane per PR:
+
+- Standard and docs.
+- Runtime packages.
+- Conformance and evidence.
+- Framework or storage adapters.
+- Reference services.
+- Agentic UI.
+- Community operations.
+
+If a change crosses lanes, call out the boundary in the PR summary and validate
+at least one producer and one consumer path.
 
 ## Validation
 
@@ -43,3 +62,5 @@ runtime contract easier to enforce, test, operate, or adopt.
 - Keep changes scoped to one functional area when practical.
 - Call out migrations, secret changes, rollout ordering, and manual follow-up in the PR description.
 - Prefer follow-up issues over leaving open-ended TODO lists in service READMEs.
+- Use `.github/PULL_REQUEST_TEMPLATE.md` and include the exact validation
+  commands you ran.

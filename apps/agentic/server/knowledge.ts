@@ -55,7 +55,7 @@ import {
   type KnowledgeRelease as KnowledgeReleaseRow,
 } from "../drizzle/schema";
 import { eq, and, inArray, or, desc } from "drizzle-orm";
-import { startJobWatcher } from "./job-watcher";
+import { isTerminalJobStatus, startJobWatcher } from "./job-watcher";
 import {
   requireAuthorizedStreamId,
   resolveAuthorizedStreamId,
@@ -430,6 +430,13 @@ function resolveKnowledgeRuntimeStreamId(
     allowGlobalSelection: false,
     missingSelectionMessage,
   });
+}
+
+function shouldWatchJob(
+  job: Pick<IngestionJob, "id" | "status" | "streamId">
+): boolean {
+  if (!job.id || !job.streamId) return false;
+  return !isTerminalJobStatus(job.status);
 }
 
 interface EvalSuiteCaseDraft {
@@ -1610,6 +1617,10 @@ export const knowledgeRouter = router({
       const jobs = response.jobs.filter(
         job => job.streamId === resolvedStreamId
       );
+      for (const job of jobs) {
+        if (!shouldWatchJob(job)) continue;
+        startJobWatcher(job.id, ctx.user.id, ctx.user, resolvedStreamId);
+      }
       return {
         ...response,
         jobs,
@@ -1634,6 +1645,42 @@ export const knowledgeRouter = router({
       const response = await serviceJsonTyped<JobStatusResponse>(
         `${KNOWLEDGE_PIPELINE_URL}/v1/jobs/${input.jobId}`,
         scopedRequestContext(ctx, resolvedStreamId)
+      );
+      if (response.job.streamId !== resolvedStreamId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Job not found in selected value stream",
+        });
+      }
+      if (shouldWatchJob(response.job)) {
+        startJobWatcher(
+          response.job.id,
+          ctx.user.id,
+          ctx.user,
+          resolvedStreamId
+        );
+      }
+      return response;
+    }),
+
+  /** Cancel an active ingestion job. */
+  cancelJob: knowledgeWriteProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        valueStreamId: z.string().max(64).optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }): Promise<JobStatusResponse> => {
+      const resolvedStreamId = resolveKnowledgeRuntimeStreamId(
+        ctx,
+        input.valueStreamId,
+        "Select a value stream before cancelling KB processing jobs"
+      );
+      const response = await serviceJsonTyped<JobStatusResponse>(
+        `${KNOWLEDGE_PIPELINE_URL}/v1/jobs/${input.jobId}/cancel`,
+        scopedRequestContext(ctx, resolvedStreamId),
+        { method: "POST" }
       );
       if (response.job.streamId !== resolvedStreamId) {
         throw new TRPCError({

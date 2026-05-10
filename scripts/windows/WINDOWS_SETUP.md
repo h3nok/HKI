@@ -13,7 +13,7 @@ Ensure you have the following installed:
 
 - **Python 3.12+** - `python --version`
 - **uv** - `pip install uv`
-- **Node.js 20+** - `node --version`
+- **Node.js 24+** - `node --version`
 - **pnpm 9+** - `npm install -g pnpm`
 - **Docker Desktop** - Running and configured
 - **PowerShell 5.1+** - Default on Windows

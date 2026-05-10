@@ -46,7 +46,7 @@ export function NotFoundPage({ onGoHome, className }: NotFoundPageProps) {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
               onClick={onGoHome}
-              className="bg-[#0066B2] hover:bg-[#00528E] text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all"
+              className="bg-[#0E7C7B] hover:bg-[#0B6261] text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all"
             >
               <Home className="w-4 h-4 mr-2" />
               Go Home

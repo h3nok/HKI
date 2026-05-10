@@ -31,6 +31,7 @@ class JobStatus(enum.StrEnum):
     CHUNKING = "chunking"  # Splitting into segments
     EMBEDDING = "embedding"  # Generating vectors (delegated to vector-store)
     INDEXING = "indexing"  # Storing in vector store
+    CANCELLED = "cancelled"
     COMPLETED = "completed"
     FAILED = "failed"
 

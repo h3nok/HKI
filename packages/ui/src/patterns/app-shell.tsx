@@ -108,7 +108,7 @@ export function AppShell({
         <div className="flex items-center gap-3 h-16 px-6 border-b border-gray-100">
           {brandIcon}
           {!collapsed && (
-            <span className="font-semibold text-lg text-[#E31837B2] truncate fade-in">
+            <span className="font-semibold text-lg text-primary truncate fade-in">
               {brandName}
             </span>
           )}
@@ -192,7 +192,7 @@ export function AppShell({
               <Space className="cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors">
                 <Avatar 
                   size="default" 
-                  style={{ backgroundColor: '#E31837B2' }}
+                  style={{ backgroundColor: 'var(--primary)' }}
                 >
                   {user?.initials || 'U'}
                 </Avatar>

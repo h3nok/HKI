@@ -22,6 +22,7 @@
     "build:framework": "turbo run build --filter='./packages/*' --ui=stream",
     "build:hki-runtime": "pnpm --dir packages/hki-runtime build",
     "build:hki-conformance": "pnpm --dir packages/hki-conformance build",
+    "build:hki-mcp": "pnpm --dir packages/hki-mcp build",
     "build:hki-sdk": "pnpm --dir packages/sdk build",
     "audit:ui-tokens": "node scripts/audit-ui-tokens.mjs",
     "audit:ui-tokens:strict": "node scripts/audit-ui-tokens.mjs --strict",
@@ -47,7 +48,12 @@
     "test:hki-threats": "cd packages/hki-runtime-py && uv run --extra dev pytest -q ../../examples/threats",
     "test:hki-conformance": "pnpm --dir packages/hki-conformance test",
     "typecheck:hki-conformance": "pnpm --dir packages/hki-conformance typecheck",
+    "test:hki-mcp": "pnpm --dir packages/hki-mcp test",
+    "typecheck:hki-mcp": "pnpm --dir packages/hki-mcp typecheck",
     "verify:hki-conformance": "pnpm build:hki-runtime && pnpm build:hki-conformance && pnpm --dir packages/hki-conformance conformance",
+    "evidence:hki-services": "node scripts/hki-service-evidence.mjs",
+    "evidence:hki": "pnpm verify:hki-conformance && pnpm evidence:hki-services",
+    "probe:smoke": "pnpm build:hki-runtime && pnpm build:hki-conformance && pnpm --dir packages/hki-conformance probe:smoke",
     "test:hki-conformance-py": "cd packages/hki-conformance-py && uv run --extra dev pytest -q",
     "verify:hki-conformance-py": "cd packages/hki-conformance-py && uv run --extra dev hki-conformance --min-level 3",
     "registry:build": "node scripts/build-conformance-registry.mjs",
@@ -59,14 +65,14 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.30.0",
-    "@commitlint/cli": "^20.5.0",
-    "@commitlint/config-conventional": "^20.5.0",
+    "@changesets/cli": "^2.31.0",
+    "@commitlint/cli": "^21.0.0",
+    "@commitlint/config-conventional": "^21.0.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "prettier": "^3.8.1",
-    "turbo": "^2.8.19",
-    "typescript": "^6.0.3"
+    "lint-staged": "^17.0.3",
+    "prettier": "^3.8.3",
+    "turbo": "^2.9.12",
+    "typescript": "^5.9.3"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -80,46 +86,8 @@
       "prettier --write"
     ]
   },
-  "pnpm": {
-    "allowedDeprecatedVersions": {
-      "@esbuild-kit/core-utils": "3.3.2",
-      "@esbuild-kit/esm-loader": "2.6.5",
-      "node-domexception": "1.0.0"
-    },
-    "overrides": {
-      "@unhead/vue": "^2.1.13",
-      "@types/react": "^19.0.0",
-      "@types/react-dom": "^19.0.0",
-      "axios": "^1.15.0",
-      "defu": "^6.1.5",
-      "drizzle-orm": "^0.45.2",
-      "tailwindcss>nanoid": "3.3.7",
-      "fdir>picomatch": "^4.0.4",
-      "follow-redirects": "^1.16.0",
-      "minimatch": "^10.2.3",
-      "minimatch>brace-expansion": "^5.0.5",
-      "micromatch>picomatch": "^2.3.2",
-      "rollup": "^4.59.0",
-      "flatted": "^3.4.0",
-      "undici": "^7.24.4",
-      "fast-xml-parser": "^5.5.7",
-      "ajv": "^6.14.0",
-      "esbuild": "^0.25.0",
-      "tar": "^7.5.11",
-      "lodash": "^4.17.23",
-      "lodash-es": "^4.18.0",
-      "next": "^16.2.3",
-      "path-to-regexp": "^8.4.0",
-      "picomatch": "^4.0.4",
-      "qs": "^6.14.2",
-      "dompurify": "^3.4.0",
-      "unhead": "^2.1.13",
-      "vite": "^7.3.2",
-      "yaml": "^2.8.3"
-    }
-  },
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "pnpm@11.0.9",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   }
 }

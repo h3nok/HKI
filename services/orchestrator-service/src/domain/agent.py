@@ -758,6 +758,7 @@ class AdkAgent:
                 "approval_mode": policy.tool_permissions.approval_mode.value,
                 "sensitive_tools": list(policy.tool_permissions.sensitive_tools),
                 "require_approval_tools": list(policy.tool_permissions.require_approval_tools),
+                "approved_tools": list(policy.tool_permissions.approved_tools),
                 "deny_tools": list(policy.tool_permissions.deny_tools),
                 "risk_overrides": {
                     tool_name: risk.value
@@ -840,6 +841,8 @@ class AdkAgent:
         self, spec: src.domain.tools.ToolSpec, policy: src.domain.models.ExecutionPolicy
     ) -> bool:
         permissions = policy.tool_permissions
+        if spec.name in permissions.approved_tools:
+            return False
         if spec.name in permissions.require_approval_tools:
             return True
         if permissions.approval_mode == src.domain.models.ApprovalMode.ALWAYS:

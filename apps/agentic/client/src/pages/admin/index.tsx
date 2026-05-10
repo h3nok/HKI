@@ -21,6 +21,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  HkiMark,
 } from "@hki/ui";
 import {
   LayoutDashboard,
@@ -40,7 +41,6 @@ import {
   SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
-import { OpsIcon } from "@/components/ui/icons/OpsIcon";
 import {
   Sidebar,
   SidebarContent,
@@ -57,6 +57,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { BreadcrumbBar } from "@/components/ui/breadcrumb-bar";
+import {
+  AppSidebarBrand,
+  AppSidebarSectionLabel,
+} from "@/components/ui/app-shell-primitives";
 import { usePermissions } from "@/_core/hooks/usePermissions";
 import { openBugReport } from "@/_core/support";
 import {
@@ -193,7 +197,7 @@ function resolvePageFromPath(pathname: string): AdminPage {
 
 export default function AdminLayout() {
   const { role } = usePermissions();
-  usePageMeta("Control Plane — Hermetic", "/favicon-ops.svg");
+  usePageMeta("Control Plane — Hermetic", "/favicon.svg");
 
   const isAdmin = role === "admin";
 
@@ -295,43 +299,19 @@ function AdminSidebar() {
         "border-r-0 bg-sidebar shadow-none"
       )}
     >
-      {/* ── Header: Editorial brand block ── */}
+      {/* ── Header: shared product brand primitive ── */}
       <SidebarHeader
-        className={cn(isCollapsed ? "px-0 py-3" : "px-4 pt-3.5 pb-2.5")}
+        className={cn(isCollapsed ? "px-2 py-3" : "px-4 pt-4 pb-3")}
       >
-        <button
+        <AppSidebarBrand
+          collapsed={isCollapsed}
+          eyebrow="HKI Ops"
+          title="Control Plane"
+          ariaLabel="Control Plane Home"
           onClick={() => setLocation("/admin")}
-          className={cn(
-            "admin-sidebar-brand group/brand relative flex items-center rounded-xl transition-colors duration-200",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-            isCollapsed
-              ? "w-full justify-center px-0 py-2"
-              : "gap-2 px-2.5 py-2"
-          )}
-          aria-label="Control Plane Home"
-        >
-          <div
-            className={cn(
-              "admin-sidebar-brand-mark-shell relative flex shrink-0 items-center justify-center rounded-xl",
-              isCollapsed ? "size-9" : "size-9"
-            )}
-          >
-            <OpsIcon
-              className="admin-sidebar-brand-mark"
-              size={isCollapsed ? 24 : 24}
-            />
-          </div>
-          {!isCollapsed && (
-            <div className="admin-sidebar-brand-copy flex min-w-0 flex-col">
-              <span className="admin-sidebar-brand-eyebrow font-mono text-[10px] uppercase tracking-[0.12em] leading-none">
-                HKI Ops
-              </span>
-              <span className="admin-sidebar-brand-title mt-0.5 text-[14px] font-semibold tracking-[-0.005em] leading-tight">
-                Control Plane
-              </span>
-            </div>
-          )}
-        </button>
+          className="admin-sidebar-product-brand"
+          icon={<HkiMark size={24} variant="color" />}
+        />
       </SidebarHeader>
 
       {/* ── Navigation: Chapters ── */}
@@ -340,9 +320,9 @@ function AdminSidebar() {
           <SidebarGroup key={group.label} className="shrink-0 py-1.5">
             {!isCollapsed && (
               <div className="px-3.5 pt-2 pb-1.5 first:pt-1.5">
-                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground/72">
+                <AppSidebarSectionLabel>
                   {group.label}
-                </span>
+                </AppSidebarSectionLabel>
               </div>
             )}
             <SidebarGroupContent>
@@ -705,7 +685,7 @@ function AdminContent() {
           <DashboardPage />
         ) : (
           <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="w-full mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <div className="admin-internal-page-frame w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
               {guardedPage === "streams" && <StreamsPage />}
               {guardedPage === "users" && isAdmin && <UsersPage />}
               {guardedPage === "features" && isAdmin && <FeatureControlsPage />}

@@ -11,8 +11,8 @@ export const colors = {
   // Primitive colors (raw values)
   primitive: {
     // HKI Brand (standardized across all apps)
-    hkiBlue: '#0066B2',
-    hkiRed: '#E31837',
+    hkiBlue: '#0E7C7B',
+    hkiRed: '#0E7C7B',
     
     // Neutrals
     white: '#FFFFFF',
@@ -148,39 +148,39 @@ export const colors = {
         dark: '#4B5563',       // gray-600
       },
       focus: {
-        light: '#3B82F6',      // blue-500
-        dark: '#60A5FA',       // blue-400
+        light: '#0E7C7B',      // HKI Iris
+        dark: '#3DCBC6',       // HKI Iris 300
       },
     },
     
     // Interactive states
     interactive: {
       primary: {
-        default: '#0066B2',    // HKI Blue
-        hover: '#00528E',
-        active: '#003E6B',
+        default: '#0E7C7B',    // HKI Iris
+        hover: '#0B6261',
+        active: '#094948',
         disabled: '#9CA3AF',
       },
       secondary: {
-        default: '#E31837',    // HKI Red
-        hover: '#B91C1C',
-        active: '#991B1B',
-        disabled: '#FCA5A5',
+        default: '#0E7C7B',    // Legacy alias -> HKI Iris
+        hover: '#0B6261',
+        active: '#094948',
+        disabled: '#A8F0EB',
       },
       success: {
-        default: '#22C55E',
-        hover: '#16A34A',
-        active: '#15803D',
+        default: '#0E7C7B',
+        hover: '#0B6261',
+        active: '#094948',
       },
       warning: {
-        default: '#EAB308',
-        hover: '#CA8A04',
-        active: '#A16207',
+        default: '#0E7C7B',
+        hover: '#0B6261',
+        active: '#094948',
       },
       danger: {
-        default: '#EF4444',
-        hover: '#DC2626',
-        active: '#B91C1C',
+        default: '#0E7C7B',
+        hover: '#0B6261',
+        active: '#094948',
       },
     },
   },
@@ -412,10 +412,10 @@ export const composite = {
   
   // Gradients
   gradient: {
-    brand: 'linear-gradient(135deg, #0066B2 0%, #E31837 100%)',
-    blue: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-    purple: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
-    mesh: 'radial-gradient(at 40% 20%, #3B82F6 0px, transparent 50%), radial-gradient(at 80% 0%, #8B5CF6 0px, transparent 50%), radial-gradient(at 0% 50%, #60A5FA 0px, transparent 50%)',
+    brand: '#0E7C7B',
+    blue: '#0E7C7B',
+    purple: '#0E7C7B',
+    mesh: '#F9FAFB',
   },
 } as const;
 

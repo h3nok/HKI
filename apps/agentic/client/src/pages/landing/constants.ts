@@ -26,13 +26,13 @@ import {
 // ── Token aliases ───────────────────────────────────────────────────────
 export const COLORS = {
   iris: "var(--hki-iris-500)",
-  pulse: "var(--hki-pulse-500)",
-  success: "var(--success-500)",
-  warning: "var(--warning-500)",
-  info: "var(--info-500)",
-  violet: "var(--chart-violet)",
-  cyan: "var(--chart-cyan)",
-  orange: "var(--chart-orange)",
+  pulse: "var(--hki-iris-500)",
+  success: "var(--hki-iris-500)",
+  warning: "var(--hki-iris-500)",
+  info: "var(--hki-iris-500)",
+  violet: "var(--hki-iris-500)",
+  cyan: "var(--hki-iris-500)",
+  orange: "var(--hki-iris-500)",
 } as const;
 
 // ── Motion preset ───────────────────────────────────────────────────────

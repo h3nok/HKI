@@ -13,7 +13,7 @@ import {
   Building2,
   Globe,
 } from "lucide-react";
-import { cn, NotificationCenter } from "@hki/ui";
+import { cn, HkiMark, NotificationCenter } from "@hki/ui";
 import {
   Tooltip,
   TooltipTrigger,
@@ -25,7 +25,6 @@ import { BreadcrumbBar } from "@/components/ui/breadcrumb-bar";
 import { useTheme } from "@/contexts/ThemeContext";
 import { buildChatWorkspaceHref } from "@/_core/workspace-navigation";
 import { AgenticIcon } from "@/components/ui/icons/AgenticIcon";
-import { OpsIcon } from "@/components/ui/icons/OpsIcon";
 import type { KnowledgeTab } from "../types";
 import { useKB } from "../context/KnowledgeContext";
 import ServiceHealthIndicator from "../components/ServiceHealthIndicator";
@@ -129,7 +128,11 @@ export default function KnowledgeBreadcrumb({
                     className="platform-nav-link inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     aria-label="Enterprise Admin Hub"
                   >
-                    <OpsIcon size={14} className="w-3.5 h-3.5" />
+                    <HkiMark
+                      size={14}
+                      variant="color"
+                      className="w-3.5 h-3.5"
+                    />
                     <span className="hidden sm:inline">Admin</span>
                   </a>
                 </TooltipTrigger>

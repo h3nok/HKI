@@ -9,6 +9,7 @@ import { getPipelineStatusLabel } from "../../pipelineCopy";
 function getProgressPercent(status: string): number {
   if (status === "completed") return 100;
   if (status === "failed") return 0;
+  if (status === "cancelled") return 0;
   const idx = STATUS_TO_STAGE_INDEX[status] ?? 0;
   return Math.round((idx / (PIPELINE_STAGES.length - 1)) * 100);
 }
@@ -28,7 +29,8 @@ interface JobRowProps {
 function JobRow({ job, isSelected, onSelect }: JobRowProps) {
   const isCompleted = job.status === "completed";
   const isFailed = job.status === "failed";
-  const isActive = !isCompleted && !isFailed;
+  const isCancelled = job.status === "cancelled";
+  const isActive = !isCompleted && !isFailed && !isCancelled;
   const progress = getProgressPercent(job.status);
 
   return (
@@ -46,6 +48,8 @@ function JobRow({ job, isSelected, onSelect }: JobRowProps) {
           <CheckCircle className="w-4 h-4 text-primary shrink-0" />
         ) : isFailed ? (
           <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+        ) : isCancelled ? (
+          <XCircle className="w-4 h-4 text-muted-foreground shrink-0" />
         ) : (
           <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
         )}
@@ -58,12 +62,19 @@ function JobRow({ job, isSelected, onSelect }: JobRowProps) {
             </span>
             <Badge
               variant={
-                isCompleted ? "success" : isFailed ? "destructive" : "secondary"
+                isCompleted
+                  ? "success"
+                  : isFailed
+                    ? "destructive"
+                    : isCancelled
+                      ? "outline"
+                      : "secondary"
               }
               className={cn(
                 "text-xs px-1.5 py-0 h-4 uppercase tracking-wider shrink-0",
                 isCompleted && "bg-primary text-white",
                 isFailed && "bg-red-500 text-white",
+                isCancelled && "border-border/40 text-muted-foreground",
                 isActive && "bg-blue-500 text-white"
               )}
             >
@@ -79,6 +90,7 @@ function JobRow({ job, isSelected, onSelect }: JobRowProps) {
               indicatorClassName={cn(
                 isCompleted && "bg-primary",
                 isFailed && "bg-red-500",
+                isCancelled && "bg-muted-foreground/40",
                 isActive && "bg-primary"
               )}
             />
@@ -160,7 +172,7 @@ export function JobTimeline({
   }
 
   return (
-    <div className="space-y-0.5 max-h-[460px] overflow-y-auto">
+    <div className="space-y-0.5 max-h-115 overflow-y-auto">
       {jobs.slice(0, 25).map(job => (
         <JobRow
           key={job.id}

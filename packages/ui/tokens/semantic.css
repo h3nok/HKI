@@ -67,12 +67,12 @@
   --primary-foreground: var(--color-neutral-0);
   --primary-muted: var(--color-brand-iris-50);
 
-  /* Secondary — HKI Pulse (emphasis, AI signal) */
-  --secondary: var(--color-brand-pulse-500);
-  --secondary-hover: var(--color-brand-pulse-600);
-  --secondary-active: var(--color-brand-pulse-700);
+  /* Secondary — duotone-compatible alias of primary */
+  --secondary: var(--color-brand-iris-500);
+  --secondary-hover: var(--color-brand-iris-600);
+  --secondary-active: var(--color-brand-iris-700);
   --secondary-foreground: var(--color-neutral-0);
-  --secondary-muted: var(--color-brand-pulse-50);
+  --secondary-muted: var(--color-brand-iris-50);
 
   /* Accent — Highlighted/selected states */
   --accent: var(--color-brand-iris-50);
@@ -83,29 +83,29 @@
      §4 STATUS COLORS — Semantic Feedback
      ═══════════════════════════════════════════════════════════════════════════ */
 
-  /* Destructive/Error */
-  --destructive: var(--color-error-500);
-  --destructive-hover: var(--color-error-600);
+  /* Destructive/Error — duotone signal; copy/icons carry severity. */
+  --destructive: var(--color-brand-iris-500);
+  --destructive-hover: var(--color-brand-iris-600);
   --destructive-foreground: var(--color-neutral-0);
-  --destructive-muted: var(--color-error-50);
+  --destructive-muted: var(--color-brand-iris-50);
 
   /* Success */
-  --success: var(--color-success-500);
-  --success-hover: var(--color-success-600);
+  --success: var(--color-brand-iris-500);
+  --success-hover: var(--color-brand-iris-600);
   --success-foreground: var(--color-neutral-0);
-  --success-muted: var(--color-success-50);
+  --success-muted: var(--color-brand-iris-50);
 
   /* Warning */
-  --warning: var(--color-warning-500);
-  --warning-hover: var(--color-warning-600);
+  --warning: var(--color-brand-iris-500);
+  --warning-hover: var(--color-brand-iris-600);
   --warning-foreground: var(--color-neutral-0);
-  --warning-muted: var(--color-warning-50);
+  --warning-muted: var(--color-brand-iris-50);
 
   /* Info */
-  --info: var(--color-info-500);
-  --info-hover: var(--color-info-600);
+  --info: var(--color-brand-iris-500);
+  --info-hover: var(--color-brand-iris-600);
   --info-foreground: var(--color-neutral-0);
-  --info-muted: var(--color-info-50);
+  --info-muted: var(--color-brand-iris-50);
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §5 BORDERS & DIVIDERS
@@ -168,16 +168,16 @@
   /* ═══════════════════════════════════════════════════════════════════════════
      §10 DATA VISUALIZATION — Charts
      ═══════════════════════════════════════════════════════════════════════════ */
-  --chart-1: var(--color-data-1);
-  --chart-2: var(--color-data-2);
-  --chart-3: var(--color-data-3);
-  --chart-4: var(--color-data-4);
-  --chart-5: var(--color-data-5);
-  --chart-6: var(--color-data-6);
-  --chart-7: var(--color-data-7);
-  --chart-8: var(--color-data-8);
-  --chart-9: var(--color-data-9);
-  --chart-10: var(--color-data-10);
+  --chart-1: var(--color-brand-iris-500);
+  --chart-2: var(--color-neutral-700);
+  --chart-3: var(--color-brand-iris-700);
+  --chart-4: var(--color-neutral-500);
+  --chart-5: var(--color-brand-iris-300);
+  --chart-6: var(--color-neutral-800);
+  --chart-7: var(--color-brand-iris-600);
+  --chart-8: var(--color-neutral-400);
+  --chart-9: var(--color-brand-iris-400);
+  --chart-10: var(--color-neutral-600);
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §11 OVERLAYS & BACKDROPS
@@ -213,27 +213,10 @@
   /* ═══════════════════════════════════════════════════════════════════════════
      §15 GRADIENTS
      ═══════════════════════════════════════════════════════════════════════════ */
-  --gradient-brand: linear-gradient(
-    135deg,
-    var(--primary) 0%,
-    var(--secondary) 100%
-  );
-  --gradient-brand-subtle: linear-gradient(
-    135deg,
-    var(--primary-muted) 0%,
-    var(--secondary-muted) 100%
-  );
-  --gradient-surface: linear-gradient(
-    180deg,
-    var(--background) 0%,
-    var(--muted) 100%
-  );
-  --gradient-shimmer: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(255 255 255 / 0.4) 50%,
-    transparent 100%
-  );
+  --gradient-brand: var(--primary);
+  --gradient-brand-subtle: var(--primary-muted);
+  --gradient-surface: var(--background);
+  --gradient-shimmer: transparent;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §16 FOCUS & SELECTION
@@ -279,36 +262,36 @@
   --primary-foreground: var(--color-neutral-900);
   --primary-muted: rgb(14 124 123 / 0.15);
 
-  --secondary: var(--color-brand-pulse-400);
-  --secondary-hover: var(--color-brand-pulse-300);
-  --secondary-active: var(--color-brand-pulse-200);
+  --secondary: var(--color-brand-iris-400);
+  --secondary-hover: var(--color-brand-iris-300);
+  --secondary-active: var(--color-brand-iris-200);
   --secondary-foreground: var(--color-neutral-900);
-  --secondary-muted: rgb(224 122 31 / 0.12);
+  --secondary-muted: rgb(14 124 123 / 0.15);
 
   --accent: rgb(14 124 123 / 0.15);
   --accent-hover: rgb(14 124 123 / 0.25);
   --accent-foreground: var(--color-brand-iris-300);
 
   /* §4 Status Colors — Brighter for visibility */
-  --destructive: var(--color-error-400);
-  --destructive-hover: var(--color-error-300);
+  --destructive: var(--color-brand-iris-400);
+  --destructive-hover: var(--color-brand-iris-300);
   --destructive-foreground: var(--color-neutral-900);
-  --destructive-muted: rgb(239 68 68 / 0.15);
+  --destructive-muted: rgb(14 124 123 / 0.15);
 
-  --success: var(--color-success-400);
-  --success-hover: var(--color-success-300);
+  --success: var(--color-brand-iris-400);
+  --success-hover: var(--color-brand-iris-300);
   --success-foreground: var(--color-neutral-900);
-  --success-muted: rgb(34 197 94 / 0.15);
+  --success-muted: rgb(14 124 123 / 0.15);
 
-  --warning: var(--color-warning-400);
-  --warning-hover: var(--color-warning-300);
+  --warning: var(--color-brand-iris-400);
+  --warning-hover: var(--color-brand-iris-300);
   --warning-foreground: var(--color-neutral-900);
-  --warning-muted: rgb(245 158 11 / 0.15);
+  --warning-muted: rgb(14 124 123 / 0.15);
 
-  --info: var(--color-info-400);
-  --info-hover: var(--color-info-300);
+  --info: var(--color-brand-iris-400);
+  --info-hover: var(--color-brand-iris-300);
   --info-foreground: var(--color-neutral-900);
-  --info-muted: rgb(14 165 233 / 0.15);
+  --info-muted: rgb(14 124 123 / 0.15);
 
   /* §5 Borders */
   --border: var(--color-neutral-700);
@@ -359,15 +342,15 @@
 
   /* §10 Charts — Brighter */
   --chart-1: var(--color-brand-iris-400);
-  --chart-2: var(--color-brand-pulse-400);
-  --chart-3: var(--color-success-400);
-  --chart-4: var(--color-warning-400);
-  --chart-5: var(--color-info-400);
-  --chart-6: #06b6d4;
-  --chart-7: #ec4899;
-  --chart-8: #84cc16;
-  --chart-9: #f97316;
-  --chart-10: #14b8a6;
+  --chart-2: var(--color-neutral-300);
+  --chart-3: var(--color-brand-iris-300);
+  --chart-4: var(--color-neutral-500);
+  --chart-5: var(--color-brand-iris-200);
+  --chart-6: var(--color-neutral-200);
+  --chart-7: var(--color-brand-iris-500);
+  --chart-8: var(--color-neutral-400);
+  --chart-9: var(--color-brand-iris-600);
+  --chart-10: var(--color-neutral-100);
 
   /* §11 Overlays */
   --overlay: rgb(0 0 0 / 0.7);
@@ -383,17 +366,10 @@
   --scrollbar-thumb-hover: var(--color-neutral-500);
 
   /* §15 Gradients */
-  --gradient-surface: linear-gradient(
-    180deg,
-    var(--color-neutral-850) 0%,
-    var(--color-neutral-900) 100%
-  );
-  --gradient-shimmer: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(255 255 255 / 0.1) 50%,
-    transparent 100%
-  );
+  --gradient-brand: var(--primary);
+  --gradient-brand-subtle: var(--primary-muted);
+  --gradient-surface: var(--background);
+  --gradient-shimmer: transparent;
 
   /* §16 Focus & Selection */
   --selection-bg: rgb(14 124 123 / 0.3);
@@ -418,7 +394,7 @@
     --muted-foreground: var(--color-neutral-400);
     --primary: var(--color-brand-iris-400);
     --primary-foreground: var(--color-neutral-900);
-    --secondary: var(--color-brand-pulse-400);
+    --secondary: var(--color-brand-iris-400);
     --secondary-foreground: var(--color-neutral-900);
     --border: var(--color-neutral-700);
     --input: var(--color-neutral-800);

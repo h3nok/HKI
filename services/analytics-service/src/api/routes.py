@@ -178,6 +178,10 @@ async def usage_summary(
 ) -> dict[str, typing.Any]:
     """Return aggregated usage metrics scoped to the caller org and stream."""
     store: src.adapters.database.EventStoreProtocol = _get_store(request)
+    normalized_org_id: str = (org_id or identity.org_id).strip() or identity.org_id
+    if normalized_org_id != identity.org_id:
+        raise fastapi.HTTPException(status_code=403, detail="Organization access denied")
+
     normalized_stream_id: str = (stream_id or "").strip()
     if not normalized_stream_id and identity.scope != "global":
         normalized_stream_id: str = identity.scope
@@ -192,7 +196,7 @@ async def usage_summary(
         raise fastapi.HTTPException(status_code=403, detail="Stream access denied")
 
     summary: src.adapters.database.UsageSummary = await store.summarize(
-        org_id=org_id or identity.org_id,
+        org_id=normalized_org_id,
         stream_id=normalized_stream_id or None,
     )
     return {

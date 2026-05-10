@@ -45,8 +45,8 @@ export interface WizardProps {
 
 /* ── Constants ────────────────────────────────────────────────────── */
 
-const BLUE = "#0066B2";
-const RED = "#E31837";
+const BLUE = "#0E7C7B";
+const RED = BLUE;
 /* ── Wizard ───────────────────────────────────────────────────────── */
 
 /**
@@ -90,7 +90,7 @@ export function Wizard({
 }: WizardProps) {
   const isFirst = activeStep === 0;
   const isLast = activeStep === steps.length - 1;
-  const gradient = `linear-gradient(135deg, ${accentColor} 0%, ${accentColorEnd} 100%)`;
+  const gradient = accentColorEnd === accentColor ? accentColor : accentColor;
 
   const handleNext = () => {
     const current = steps[activeStep];
@@ -194,7 +194,7 @@ export function Wizard({
             <button
               type="button"
               onClick={onCancel}
-              className="px-5 py-2 rounded-lg text-[#6f6e6b] dark:text-[#a3a29f] hover:text-[#1a1a19] dark:hover:text-[#f5f4f1] hover:bg-[#eae9e6] dark:hover:bg-[#242424] transition-colors text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2]"
+              className="px-5 py-2 rounded-lg text-[#6f6e6b] dark:text-[#a3a29f] hover:text-[#1a1a19] dark:hover:text-[#f5f4f1] hover:bg-[#eae9e6] dark:hover:bg-[#242424] transition-colors text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B]"
             >
               Cancel
             </button>
@@ -203,7 +203,7 @@ export function Wizard({
             <button
               type="button"
               onClick={handleBack}
-              className="px-5 py-2 rounded-lg text-[#6f6e6b] dark:text-[#a3a29f] hover:text-[#1a1a19] dark:hover:text-[#f5f4f1] hover:bg-[#eae9e6] dark:hover:bg-[#242424] border border-[#e0dfdc] dark:border-[#333333] transition-colors text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2]"
+              className="px-5 py-2 rounded-lg text-[#6f6e6b] dark:text-[#a3a29f] hover:text-[#1a1a19] dark:hover:text-[#f5f4f1] hover:bg-[#eae9e6] dark:hover:bg-[#242424] border border-[#e0dfdc] dark:border-[#333333] transition-colors text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B]"
             >
               Back
             </button>

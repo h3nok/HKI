@@ -1,7 +1,7 @@
 /**
  * HKI Value Stream Icon Set
  * HKI domain palette: Iris carries boundary structure,
- * Pulse marks the active identifying detail on each icon.
+ * Iris marks both boundary structure and active detail.
  *
  * Icon IDs (≤8 chars, fits varchar(8) in DB):
  *   "global" | "pharma" | "fresh" | "optical" | "ecom" | "wh" |
@@ -15,11 +15,11 @@
 const DOMAIN_STRUCTURE =
   "var(--stream-icon-structure, var(--color-brand-iris-500, #0E7C7B))";
 const DOMAIN_ACCENT =
-  "var(--stream-icon-accent, var(--color-brand-pulse-500, #E07A1F))";
+  "var(--stream-icon-accent, var(--color-brand-iris-500, #0E7C7B))";
 const DOMAIN_STRUCTURE_FILL =
   "var(--stream-icon-structure-fill, color-mix(in srgb, var(--stream-icon-structure, var(--color-brand-iris-500, #0E7C7B)) 14%, transparent))";
 const DOMAIN_ACCENT_FILL =
-  "var(--stream-icon-accent-fill, color-mix(in srgb, var(--stream-icon-accent, var(--color-brand-pulse-500, #E07A1F)) 16%, transparent))";
+  "var(--stream-icon-accent-fill, color-mix(in srgb, var(--stream-icon-accent, var(--color-brand-iris-500, #0E7C7B)) 16%, transparent))";
 
 interface VSIconProps {
   size?: number;

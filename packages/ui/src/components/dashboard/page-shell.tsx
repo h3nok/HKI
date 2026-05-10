@@ -83,14 +83,14 @@ export function PageShell({
                         <button
                           type="button"
                           onClick={crumb.onClick}
-                          className="text-sm text-[#8a8986] dark:text-[#6f6e6b] hover:text-[#0066B2] dark:hover:text-[#3397D7] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2] focus-visible:ring-offset-2 rounded-md px-0.5"
+                          className="text-sm text-[#8a8986] dark:text-[#6f6e6b] hover:text-[#0E7C7B] dark:hover:text-[#1FA9A5] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B] focus-visible:ring-offset-2 rounded-md px-0.5"
                         >
                           {crumb.label}
                         </button>
                       ) : (
                         <a
                           href={crumb.href ?? "#"}
-                          className="text-sm text-[#8a8986] dark:text-[#6f6e6b] hover:text-[#0066B2] dark:hover:text-[#3397D7] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2] focus-visible:ring-offset-2 rounded-md px-0.5"
+                          className="text-sm text-[#8a8986] dark:text-[#6f6e6b] hover:text-[#0E7C7B] dark:hover:text-[#1FA9A5] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B] focus-visible:ring-offset-2 rounded-md px-0.5"
                         >
                           {crumb.label}
                         </a>

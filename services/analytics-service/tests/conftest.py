@@ -15,6 +15,7 @@ import pytest
 os.environ["AUTH_ENABLED"] = "false"
 os.environ["DATABASE_URL"] = ""
 os.environ["ENVIRONMENT"] = "test"
+os.environ["HKI_DEV_RUNTIME_SCOPE"] = "global"
 os.environ["OTEL_ENABLED"] = "false"
 os.environ["CORS_ORIGINS"] = '["http://localhost:9001","http://localhost:9002","http://localhost:3000"]'
 
@@ -28,6 +29,7 @@ def _disable_auth() -> collections.abc.Generator[None, typing.Any, None]:
             "AUTH_ENABLED": "false",
             "DATABASE_URL": "",
             "ENVIRONMENT": "test",
+            "HKI_DEV_RUNTIME_SCOPE": "global",
             "OTEL_ENABLED": "false",
             "CORS_ORIGINS": '["http://localhost:9001","http://localhost:9002","http://localhost:3000"]',
         },
@@ -36,7 +38,9 @@ def _disable_auth() -> collections.abc.Generator[None, typing.Any, None]:
 
 
 @pytest.fixture()
-def client(_disable_auth) -> collections.abc.Generator[fastapi.testclient.TestClient, typing.Any, None]:
+def client(
+    _disable_auth,
+) -> collections.abc.Generator[fastapi.testclient.TestClient, typing.Any, None]:
     """TestClient with auth disabled."""
     from src.api.app import app
 
@@ -51,5 +55,6 @@ def mock_settings() -> dict[str, str]:
         "DATABASE_URL": "",
         "ENVIRONMENT": "test",
         "AUTH_ENABLED": "false",
+        "HKI_DEV_RUNTIME_SCOPE": "global",
         "OTEL_ENABLED": "false",
     }

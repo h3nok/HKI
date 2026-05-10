@@ -225,7 +225,7 @@ export function ComboboxPicker<T extends string = string>({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="w-full pl-8 pr-3 py-1.5 text-sm bg-[#f5f4f1] dark:bg-[#161616] border border-[#e0dfdc] dark:border-[#333333] rounded-md text-[#3f3e3d] dark:text-[#d1d0cd] placeholder-[#8a8986] dark:placeholder-[#6f6e6b] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#0066B2] dark:focus-visible:ring-[#3397D7] transition-all"
+                className="w-full pl-8 pr-3 py-1.5 text-sm bg-[#f5f4f1] dark:bg-[#161616] border border-[#e0dfdc] dark:border-[#333333] rounded-md text-[#3f3e3d] dark:text-[#d1d0cd] placeholder-[#8a8986] dark:placeholder-[#6f6e6b] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#0E7C7B] dark:focus-visible:ring-[#1FA9A5] transition-all"
               />
             </div>
           </div>
@@ -258,7 +258,7 @@ export function ComboboxPicker<T extends string = string>({
                     "flex items-center gap-2.5 w-full px-2.5 py-2 rounded-md text-sm text-left transition-colors",
                     "focus:outline-none focus-visible:bg-[#f3f2ef] dark:focus-visible:bg-[#242424]",
                     isSelected
-                      ? "bg-[#E6F2FA] dark:bg-[#0066B2]/10 text-[#0066B2] dark:text-[#66B1E1]"
+                      ? "bg-[#D5F8F5] dark:bg-[#0E7C7B]/10 text-[#0E7C7B] dark:text-[#3DCBC6]"
                       : "text-[#3f3e3d] dark:text-[#d1d0cd] hover:bg-[#f3f2ef] dark:hover:bg-[#242424]",
                     option.disabled && "opacity-40 cursor-not-allowed",
                   )}
@@ -281,7 +281,7 @@ export function ComboboxPicker<T extends string = string>({
                         )}
                       </span>
                       {isSelected && (
-                        <Check className="w-4 h-4 shrink-0 text-[#0066B2] dark:text-[#66B1E1]" />
+                        <Check className="w-4 h-4 shrink-0 text-[#0E7C7B] dark:text-[#3DCBC6]" />
                       )}
                     </>
                   )}
@@ -312,8 +312,8 @@ export function ComboboxPicker<T extends string = string>({
             "border-[#e0dfdc] dark:border-[#333333]",
             "bg-[#faf9f7] dark:bg-[#1a1a1a]",
             "text-[#3f3e3d] dark:text-[#d1d0cd]",
-            "hover:border-[#0066B2]/40 dark:hover:border-[#3397D7]/40",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2] dark:focus-visible:ring-[#3397D7]",
+            "hover:border-[#0E7C7B]/40 dark:hover:border-[#1FA9A5]/40",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B] dark:focus-visible:ring-[#1FA9A5]",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             triggerClassName,
           )}

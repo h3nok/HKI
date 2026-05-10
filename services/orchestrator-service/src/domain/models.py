@@ -134,6 +134,7 @@ class ToolPermissionPolicy(BaseModel):
     approval_mode: ApprovalMode = ApprovalMode.SENSITIVE_ONLY
     sensitive_tools: list[str] = Field(default_factory=lambda: ["get_member_info"])
     require_approval_tools: list[str] = Field(default_factory=list)
+    approved_tools: list[str] = Field(default_factory=list)
     deny_tools: list[str] = Field(default_factory=list)
     risk_overrides: dict[str, RiskLevel] = Field(default_factory=dict)
 

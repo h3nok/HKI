@@ -26,7 +26,7 @@ export function ThemeToggle({ theme, onToggle, className }: ThemeToggleProps) {
         "hover:bg-white dark:hover:bg-[#242424]",
         "border border-transparent hover:border-[#e0dfdc] dark:hover:border-[#333333]",
         "transition-all",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2] dark:focus-visible:ring-[#3397D7] focus-visible:ring-offset-2",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B] dark:focus-visible:ring-[#1FA9A5] focus-visible:ring-offset-2",
         className
       )}
       title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}

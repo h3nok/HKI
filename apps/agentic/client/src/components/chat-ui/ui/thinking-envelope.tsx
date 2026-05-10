@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { ThinkingAnimation } from "./thinking-animation";
 import { useFeatureAccess } from "@/_core/hooks/useFeatureAccess";
+import { HkiMark } from "@hki/ui";
 import type { TraceStep } from "../hooks/use-streaming-state";
 import type { TaskMessageAttributes } from "../types";
 
@@ -40,6 +41,7 @@ const STEP_ICONS: Record<string, React.ElementType> = {
   planning: Brain,
   tool_call: Wrench,
   tool_result: Wrench,
+  hki_envelope: HkiMark,
   knowledge_retrieval: BookOpen,
   reflecting: Brain,
 };
@@ -52,6 +54,7 @@ const STEP_LABELS: Record<string, string> = {
   planning: "Planning approach",
   tool_call: "Executing tool",
   tool_result: "Processing result",
+  hki_envelope: "HKI envelope",
   knowledge_retrieval: "Searching domain knowledge",
   reflecting: "Synthesizing response",
   cache_hit: "Cache hit",
@@ -147,6 +150,61 @@ function readNumberField(
     }
   }
   return null;
+}
+
+function readStringArrayField(
+  source: Record<string, unknown> | null | undefined,
+  key: string
+): string[] {
+  const value = source?.[key];
+  if (!Array.isArray(value)) return [];
+  return value.map(item => String(item).trim()).filter(Boolean);
+}
+
+type HkiEnvelopeSummary = {
+  boundaryLabel: string;
+  scope: string | null;
+  scopes: string[];
+  subject: string | null;
+  role: string | null;
+  orgId: string | null;
+  issuedAt: string | null;
+  expiresAt: string | null;
+  ttlSeconds: number | null;
+  hermetic: boolean;
+  tokenMaterial: string | null;
+};
+
+function getHkiEnvelopeSummary(
+  step: TraceStep | null | undefined
+): HkiEnvelopeSummary | null {
+  const envelope = isRecord(step?.metadata?.hki_envelope)
+    ? step?.metadata?.hki_envelope
+    : null;
+  if (!envelope) return null;
+
+  const principal = isRecord(envelope.principal) ? envelope.principal : null;
+  const organization = isRecord(envelope.organization)
+    ? envelope.organization
+    : null;
+  const boundary = isRecord(envelope.boundary) ? envelope.boundary : null;
+  const scope = readStringField(boundary, "scope");
+  const streamId = readStringField(boundary, "stream_id");
+
+  return {
+    boundaryLabel: streamId || scope || "runtime scope",
+    scope,
+    scopes: readStringArrayField(boundary, "scopes"),
+    subject:
+      readStringField(envelope, "subject") || readStringField(principal, "id"),
+    role: readStringField(principal, "role"),
+    orgId: readStringField(organization, "id"),
+    issuedAt: readStringField(envelope, "issued_at"),
+    expiresAt: readStringField(envelope, "expires_at"),
+    ttlSeconds: readNumberField(envelope, "ttl_seconds"),
+    hermetic: boundary?.hermetic === true,
+    tokenMaterial: readStringField(envelope, "token_material"),
+  };
 }
 
 function trackKnowledgeRecord(
@@ -263,6 +321,12 @@ function formatDuration(ms: number): string {
 
 function formatStep(step: TraceStep): string {
   const { type, content, metadata } = step;
+  if (type === "hki_envelope") {
+    const envelope = getHkiEnvelopeSummary(step);
+    return envelope
+      ? `HKI envelope sealed for ${envelope.boundaryLabel}`
+      : "HKI envelope sealed";
+  }
   if (type === "tool_call" && metadata?.tool)
     return metadata.tool.replace(/_/g, " ");
   if (type === "tool_result") {
@@ -293,6 +357,8 @@ function resolveLiveHeadline(
   }
 
   switch (latestStep?.type) {
+    case "hki_envelope":
+      return "Sealing HKI envelope";
     case "knowledge_retrieval":
       return "Gathering evidence";
     case "tool_call":
@@ -492,6 +558,14 @@ export function ThinkingEnvelope({
   const [isExpanded, setIsExpanded] = useState(false);
   const toolPairs = useMemo(() => buildToolPairs(steps), [steps]);
   const showTracePayloads = canViewFeature("debug.chat.tracePayloads");
+  const hkiEnvelopeStep = useMemo(
+    () => visibleSteps.find(step => step.type === "hki_envelope") ?? null,
+    [visibleSteps]
+  );
+  const hkiEnvelope = useMemo(
+    () => getHkiEnvelopeSummary(hkiEnvelopeStep),
+    [hkiEnvelopeStep]
+  );
 
   const reasoningSections = useMemo(
     () =>
@@ -789,6 +863,9 @@ export function ThinkingEnvelope({
 
   const summaryParts = useMemo(() => {
     const parts: string[] = [];
+    if (hkiEnvelope) {
+      parts.push("HKI sealed");
+    }
     if (knowledgeSignals.kbUsed) {
       parts.push("Grounded");
       if (knowledgeSignals.documentCount > 0) {
@@ -806,7 +883,12 @@ export function ThinkingEnvelope({
       parts.push(`${tokenUsage.total_tokens.toLocaleString()} tokens`);
     }
     return parts;
-  }, [knowledgeSignals, tokenUsage?.total_tokens, toolPairs.length]);
+  }, [
+    hkiEnvelope,
+    knowledgeSignals,
+    tokenUsage?.total_tokens,
+    toolPairs.length,
+  ]);
 
   const hasContent =
     dedupedSections.length > 0 ||
@@ -820,14 +902,20 @@ export function ThinkingEnvelope({
   );
   const liveSubline = useMemo(() => {
     if (knowledgeLiveSummary) return knowledgeLiveSummary;
+    if (hkiEnvelope && visibleSteps.length <= 1) {
+      return `${hkiEnvelope.boundaryLabel} · ${hkiEnvelope.ttlSeconds ?? 30}s TTL`;
+    }
     if (visibleSteps.length > 0) {
       return `${visibleSteps.length} trace event${visibleSteps.length === 1 ? "" : "s"}`;
     }
     return "Initializing runtime";
-  }, [knowledgeLiveSummary, visibleSteps.length]);
+  }, [hkiEnvelope, knowledgeLiveSummary, visibleSteps.length]);
   const completedSubline = useMemo(() => {
     const parts: string[] = [];
     const failedTools = toolPairs.filter(pair => pair.error).length;
+    if (hkiEnvelope) {
+      parts.push(`HKI ${hkiEnvelope.boundaryLabel}`);
+    }
     if (knowledgeSignals.kbUsed) {
       const knowledgeParts: string[] = [];
       if (knowledgeSignals.documentCount > 0) {
@@ -863,7 +951,7 @@ export function ThinkingEnvelope({
     if (dedupedSections.length > 0) parts.push("reasoning");
     if (parts.length === 0) return "Expand for details";
     return parts.join(", ");
-  }, [knowledgeSignals.kbUsed, toolPairs, dedupedSections.length]);
+  }, [hkiEnvelope, knowledgeSignals.kbUsed, toolPairs, dedupedSections.length]);
 
   // ── Collapsed post-streaming ──
   if (!isStreaming && hasContent) {
@@ -949,6 +1037,96 @@ export function ThinkingEnvelope({
                 className="border-t border-border/30"
               >
                 <div className="p-4 space-y-3">
+                  {hkiEnvelope && (
+                    <div
+                      className="rounded-xl border p-3"
+                      style={{
+                        borderColor:
+                          "color-mix(in srgb, var(--primary) 22%, var(--border))",
+                        background:
+                          "color-mix(in srgb, var(--primary) 5%, var(--card))",
+                      }}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                          style={{
+                            background:
+                              "color-mix(in srgb, var(--primary) 10%, transparent)",
+                            boxShadow:
+                              "inset 0 0 0 1px color-mix(in srgb, var(--primary) 24%, transparent)",
+                          }}
+                        >
+                          <HkiMark size={18} variant="iris" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p
+                            className="text-[11px] font-bold uppercase tracking-wider"
+                            style={{ color: TRACE_ACCENT }}
+                          >
+                            HKI envelope
+                          </p>
+                          <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+                            Signed request context for{" "}
+                            <span className="font-semibold text-foreground">
+                              {hkiEnvelope.boundaryLabel}
+                            </span>{" "}
+                            with token material redacted.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                        {[
+                          ["Subject", hkiEnvelope.subject],
+                          ["Org", hkiEnvelope.orgId],
+                          ["Role", hkiEnvelope.role],
+                          [
+                            "TTL",
+                            hkiEnvelope.ttlSeconds != null
+                              ? `${hkiEnvelope.ttlSeconds}s`
+                              : null,
+                          ],
+                        ]
+                          .filter(([, value]) => Boolean(value))
+                          .map(([label, value]) => (
+                            <div
+                              key={String(label)}
+                              className="rounded-lg border border-border/40 bg-background/65 px-2.5 py-2"
+                            >
+                              <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                                {label}
+                              </p>
+                              <p className="mt-1 truncate text-[12px] font-semibold text-foreground">
+                                {String(value)}
+                              </p>
+                            </div>
+                          ))}
+                      </div>
+
+                      {hkiEnvelope.scopes.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {hkiEnvelope.scopes.map(scope => (
+                            <span
+                              key={scope}
+                              className="inline-flex rounded-full border px-2 py-1 text-[10px] font-medium"
+                              style={{
+                                borderColor:
+                                  "color-mix(in srgb, var(--primary) 18%, var(--border))",
+                                background:
+                                  "color-mix(in srgb, var(--primary) 6%, var(--background))",
+                                color:
+                                  "color-mix(in srgb, var(--foreground) 76%, var(--primary) 24%)",
+                              }}
+                            >
+                              {scope}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {knowledgeSignals.kbUsed && (
                     <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/4 p-3">
                       <div className="flex items-center gap-2">
@@ -1267,6 +1445,7 @@ export function ThinkingEnvelope({
                 const isLast = i === arr.length - 1;
                 const StepIcon = STEP_ICONS[step.type] || Search;
                 const hasError = Boolean(step.metadata?.result?.error);
+                const isHkiEnvelope = step.type === "hki_envelope";
                 return (
                   <motion.div
                     key={`${step.type}-${i}`}
@@ -1294,6 +1473,12 @@ export function ThinkingEnvelope({
                       >
                         {hasError ? (
                           <AlertTriangle className="w-2.5 h-2.5 text-destructive" />
+                        ) : isHkiEnvelope ? (
+                          <HkiMark
+                            size={10}
+                            variant="iris"
+                            className="h-2.5 w-2.5"
+                          />
                         ) : (
                           <StepIcon
                             className="w-2.5 h-2.5"

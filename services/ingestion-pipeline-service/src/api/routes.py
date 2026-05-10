@@ -18,6 +18,16 @@ from __future__ import annotations
 import re
 import typing
 
+from ..domain.quality_gates import QualityReport
+from ..domain.quality_gates import PIIScanResult
+from ..domain.quality_gates import RedactResult
+from ..domain.rag_evaluation import RAGEvaluationResult
+from ..domain.observability import TraceEvent
+from ..domain.observability import TraceEvent
+from ..domain.observability import TraceSummary
+from ..domain.pre_ingest import PreIngestAnalysis
+from ..domain.pre_ingest import PreIngestAnalysis
+from ..domain.scheduler import JobType
 import fastapi
 import httpx
 import pydantic
@@ -100,6 +110,37 @@ def _parse_csv_tokens(raw: str) -> list[str]:
     return [token.strip() for token in raw.split(",") if token.strip()]
 
 
+def _build_job_status_response(
+    job: src.domain.models.IngestionJob,
+) -> src.domain.models.JobStatusResponse:
+    stage_order: list[str] = [
+        "extracting",
+        "cleaning",
+        "enriching",
+        "chunking",
+        "indexing",
+        "completed",
+    ]
+    current_idx = -1
+
+    if job.status in (
+        src.domain.models.JobStatus.CANCELLED,
+        src.domain.models.JobStatus.COMPLETED,
+    ):
+        current_idx: int = len(stage_order) - 1
+    elif job.status == src.domain.models.JobStatus.FAILED and job.failed_at_stage:
+        if job.failed_at_stage in stage_order:
+            current_idx: int = stage_order.index(job.failed_at_stage)
+    else:
+        for i, stage in enumerate(stage_order):
+            if job.status.value == stage:
+                current_idx: int = i
+                break
+
+    stages_completed: list[str] = stage_order[: max(0, current_idx)]
+    return src.domain.models.JobStatusResponse(job=job, stages_completed=stages_completed)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Ingestion Endpoints
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -128,7 +169,7 @@ async def ingest_text(
     Auth: org_id and JWT are forwarded to the vector-store for
     tenant-scoped storage.
     """
-    pipeline = _get_pipeline(request)
+    pipeline: src.domain.pipeline.IngestionPipeline = _get_pipeline(request)
     publisher: typing.Any | None = _get_publisher(request)
     org_id: typing.Any | str = getattr(identity, "org_id", "default")
     auth_token: str = _extract_bearer_token(request)
@@ -141,7 +182,7 @@ async def ingest_text(
         # Queue mode: create job + publish message
         from src.domain.models import SourceType
 
-        job = await pipeline._create_job(
+        job: src.domain.models.IngestionJob = await pipeline._create_job(
             source_type=SourceType.TEXT,
             title=body.title,
             department=body.department,
@@ -179,7 +220,7 @@ async def ingest_text(
         )
     else:
         # Inline mode: original behavior
-        result = await pipeline.ingest_text(
+        result: src.domain.models.IngestResponse = await pipeline.ingest_text(
             content=body.content,
             title=body.title,
             department=body.department,
@@ -225,7 +266,7 @@ async def ingest_url(
 
     When PUBSUB_ENABLED: publishes to queue. Otherwise inline.
     """
-    pipeline = _get_pipeline(request)
+    pipeline: src.domain.pipeline.IngestionPipeline = _get_pipeline(request)
     publisher: typing.Any | None = _get_publisher(request)
     org_id: typing.Any | str = getattr(identity, "org_id", "default")
     auth_token: str = _extract_bearer_token(request)
@@ -237,7 +278,7 @@ async def ingest_url(
     if publisher and src.core.config.settings.PUBSUB_ENABLED:
         from src.domain.models import SourceType
 
-        job = await pipeline._create_job(
+        job: src.domain.models.IngestionJob = await pipeline._create_job(
             source_type=SourceType.URL,
             source_ref=body.url,
             title=body.title,
@@ -274,7 +315,7 @@ async def ingest_url(
             message="URL job published to queue",
         )
     else:
-        result = await pipeline.ingest_url(
+        result: src.domain.models.IngestResponse = await pipeline.ingest_url(
             url=body.url,
             title=body.title,
             department=body.department,
@@ -304,7 +345,7 @@ async def ingest_url(
 
 
 ALLOWED_EXTENSIONS: set[str] = {"pdf", "docx", "txt", "csv", "md", "markdown"}
-MAX_UPLOAD_SIZE = src.core.config.settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
+MAX_UPLOAD_SIZE: int = src.core.config.settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
 
 
 def _effective_upload_limit_mb(requested_mb: int | None) -> int:
@@ -349,7 +390,7 @@ async def ingest_file(
     The file is read into memory, text is extracted based on the file
     type, and then processed through the standard ingestion pipeline.
     """
-    pipeline = _get_pipeline(request)
+    pipeline: src.domain.pipeline.IngestionPipeline = _get_pipeline(request)
     org_id: typing.Any | str = getattr(identity, "org_id", "default")
     auth_token: str = _extract_bearer_token(request)
     resolved_stream_id: str = _resolve_stream_id(identity, stream_id)
@@ -396,7 +437,7 @@ async def ingest_file(
 
     tag_list: list[str] = [token.strip() for token in tags.split(",") if token.strip()]
 
-    result = await pipeline.ingest_file(
+    result: src.domain.models.IngestResponse = await pipeline.ingest_file(
         file_bytes=file_bytes,
         filename=filename,
         content_type=file.content_type or "",
@@ -453,10 +494,10 @@ async def list_jobs(
     identity: src.core.auth.RequestIdentity = _identity_dependency,
 ) -> JobListResponse:
     """List ingestion jobs for the caller's org, with pagination."""
-    pipeline = _get_pipeline(request)
+    pipeline: src.domain.pipeline.IngestionPipeline = _get_pipeline(request)
     jobs, total = await pipeline.list_jobs(limit=limit, offset=offset)
 
-    visible_jobs = [job for job in jobs if _job_visible(job, identity)]
+    visible_jobs: list[IngestionJob] = [job for job in jobs if _job_visible(job, identity)]
 
     return JobListResponse(
         jobs=[
@@ -492,41 +533,34 @@ async def get_job(
     identity: src.core.auth.RequestIdentity = _identity_dependency,
 ) -> src.domain.models.JobStatusResponse:
     """Get detailed status of a specific ingestion job."""
-    pipeline = _get_pipeline(request)
-    job = await pipeline.get_job(job_id)
+    pipeline: src.domain.pipeline.IngestionPipeline = _get_pipeline(request)
+    job: src.domain.models.IngestionJob | None = await pipeline.get_job(job_id)
 
     if not job or not _job_visible(job, identity):
         raise fastapi.HTTPException(status_code=404, detail=f"Job {job_id} not found")
 
-    # Determine which stages completed based on current status
-    stage_order: list[str] = [
-        "extracting",
-        "cleaning",
-        "enriching",
-        "chunking",
-        "indexing",
-        "completed",
-    ]
-    current_idx = -1
+    return _build_job_status_response(job)
 
-    if job.status == src.domain.models.JobStatus.COMPLETED:
-        current_idx: int = len(stage_order) - 1
-    elif job.status == src.domain.models.JobStatus.FAILED and job.failed_at_stage:
-        # For failed jobs, use the captured failed_at_stage
-        if job.failed_at_stage in stage_order:
-            current_idx: int = stage_order.index(job.failed_at_stage)
-    else:
-        for i, stage in enumerate(stage_order):
-            if job.status.value == stage:
-                current_idx: int = i
-                break
 
-    stages_completed: list[str] = stage_order[: max(0, current_idx)]
+@router.post(
+    "/jobs/{job_id}/cancel",
+    response_model=src.domain.models.JobStatusResponse,
+    tags=["jobs"],
+    summary="Cancel an ingestion job",
+)
+async def cancel_job(
+    job_id: str,
+    request: fastapi.Request,
+    identity: src.core.auth.RequestIdentity = _identity_dependency,
+) -> src.domain.models.JobStatusResponse:
+    """Cancel a queued or in-flight ingestion job."""
+    pipeline: src.domain.pipeline.IngestionPipeline = _get_pipeline(request)
+    job: src.domain.models.IngestionJob | None = await pipeline.cancel_job(job_id)
 
-    return src.domain.models.JobStatusResponse(
-        job=job,
-        stages_completed=stages_completed,
-    )
+    if not job or not _job_visible(job, identity):
+        raise fastapi.HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+    return _build_job_status_response(job)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -571,7 +605,7 @@ async def quality_score(
     """
     from src.domain.quality_gates import score_quality
 
-    report = score_quality(body.text, body.title)
+    report: QualityReport = score_quality(body.text, body.title)
     return QualityScoreResponse(**report.to_dict())
 
 
@@ -603,7 +637,7 @@ async def pii_scan(
     """Scan document text for personally identifiable information."""
     from src.domain.quality_gates import scan_pii
 
-    result = scan_pii(body.text)
+    result: PIIScanResult = scan_pii(body.text)
     return PIIScanResponse(
         pii_detected=result.pii_detected,
         categories_found=result.categories_found,
@@ -648,7 +682,7 @@ async def pii_redact(
     """Replace detected PII with safe placeholder tokens."""
     from src.domain.quality_gates import redact_pii
 
-    result = redact_pii(body.text, categories=body.categories)
+    result: RedactResult = redact_pii(body.text, categories=body.categories)
     return PIIRedactResponse(
         redacted_text=result.redacted_text,
         original_length=result.original_length,
@@ -970,7 +1004,7 @@ async def evaluate_rag_endpoint(
     from src.domain.observability import emit as _obs_emit
 
     _t0: float = _time.perf_counter()
-    result = await evaluate_rag(
+    result: RAGEvaluationResult = await evaluate_rag(
         query=body.query,
         answer=body.answer,
         chunks=chunks_dicts,
@@ -1122,7 +1156,7 @@ async def get_traces(
     """
     from src.domain.observability_provider import get_dashboard_traces
 
-    events = await get_dashboard_traces(limit=limit, operation=operation)
+    events: list[TraceEvent] = await get_dashboard_traces(limit=limit, operation=operation)
     return {
         "traces": [e.to_dict() for e in events],
         "total": len(events),
@@ -1145,7 +1179,7 @@ async def get_trace_summary(
     """
     from src.domain.observability_provider import get_dashboard_summary
 
-    summary = await get_dashboard_summary()
+    summary: TraceSummary = await get_dashboard_summary()
     return summary.to_dict()
 
 
@@ -1190,7 +1224,7 @@ async def pre_ingest_analyze(
             detail="Content cannot be empty",
         )
 
-    analysis = await analyze_content(
+    analysis: PreIngestAnalysis = await analyze_content(
         text=body.content,
         title=body.title,
         value_stream_description=body.value_stream_description,
@@ -1238,7 +1272,7 @@ async def pre_ingest_analyze_file(
     """
     from src.domain.pre_ingest import analyze_content
 
-    pipeline = _get_pipeline(request)
+    pipeline: src.domain.pipeline.IngestionPipeline = _get_pipeline(request)
     filename: str = file.filename or "upload"
     ext: str = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     if ext not in ALLOWED_EXTENSIONS:
@@ -1263,7 +1297,7 @@ async def pre_ingest_analyze_file(
         )
 
     try:
-        extracted = pipeline._extract_file(
+        extracted: src.domain.models.ExtractedContent = pipeline._extract_file(
             file_bytes,
             filename,
             file.content_type or "",
@@ -1277,7 +1311,7 @@ async def pre_ingest_analyze_file(
     doc_title: str = title or filename.rsplit(".", 1)[0]
     auth_token = identity.raw_token if hasattr(identity, "raw_token") else ""
 
-    analysis = await analyze_content(
+    analysis: PreIngestAnalysis = await analyze_content(
         text=extracted.text,
         title=doc_title,
         value_stream_description=value_stream_description,
@@ -1357,10 +1391,10 @@ async def reprocess_document(
 
     Use case: model upgrade, chunk size tuning, metadata re-extraction.
     """
-    pipeline = _get_pipeline(request)
+    pipeline: src.domain.pipeline.IngestionPipeline = _get_pipeline(request)
     auth_token: str = _extract_bearer_token(request)
     org_id: typing.Any | str = getattr(identity, "org_id", "default")
-    api_url = src.core.config.settings.KNOWLEDGE_API_URL
+    api_url: str = src.core.config.settings.KNOWLEDGE_API_URL
 
     # 1. Fetch full content from knowledge-api
     headers: dict[str, str] = {"Authorization": f"Bearer {auth_token}"} if auth_token else {}
@@ -1396,7 +1430,7 @@ async def reprocess_document(
         )
 
     # 3. Re-ingest through the standard pipeline
-    result = await pipeline.ingest_text(
+    result: src.domain.models.IngestResponse = await pipeline.ingest_text(
         content=content,
         title=title,
         department=department,
@@ -1469,10 +1503,10 @@ async def refresh_document(
     """
     import hashlib
 
-    pipeline = _get_pipeline(request)
+    pipeline: src.domain.pipeline.IngestionPipeline = _get_pipeline(request)
     auth_token: str = _extract_bearer_token(request)
     org_id: typing.Any | str = getattr(identity, "org_id", "default")
-    api_url = src.core.config.settings.KNOWLEDGE_API_URL
+    api_url: str = src.core.config.settings.KNOWLEDGE_API_URL
 
     headers: dict[str, str] = {"Authorization": f"Bearer {auth_token}"} if auth_token else {}
     http = request.app.state.http
@@ -1541,7 +1575,7 @@ async def refresh_document(
     document_type = metadata.get("document_type", "general")
     tags = metadata.get("tags", [])
 
-    result = await pipeline.ingest_text(
+    result: src.domain.models.IngestResponse = await pipeline.ingest_text(
         content=new_content,
         title=title,
         department=department,
@@ -1599,7 +1633,7 @@ async def trigger_job(
     try:
         job_type = JobType(body.job_type)
     except ValueError as exc:
-        valid = [j.value for j in JobType]
+        valid: list[str] = [j.value for j in JobType]
         raise fastapi.HTTPException(
             status_code=400,
             detail=f"Unknown job type: {body.job_type}. Valid: {valid}",

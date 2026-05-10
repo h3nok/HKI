@@ -48,6 +48,7 @@ const nodeTypes: NodeTypes = {
 function buildNodesAndEdges(job: PipelineJob | null) {
   const activeIdx = job ? (STATUS_TO_STAGE_INDEX[job.status] ?? -1) : -1;
   const isFailed = job?.status === "failed";
+  const isCancelled = job?.status === "cancelled";
 
   const nodes = PIPELINE_STAGES.map((stage, i) => {
     let status: StageStatus = "idle";
@@ -160,6 +161,11 @@ export function PipelineGraph({ job, isLoading }: PipelineGraphProps) {
             </span>
           )}
         </CardTitle>
+        {job?.status === "cancelled" && (
+          <p className="px-5 pb-1 text-xs text-muted-foreground">
+            This job was cancelled before the pipeline completed.
+          </p>
+        )}
       </CardHeader>
       <CardContent className="px-2 pb-3">
         <div className="w-full h-55">

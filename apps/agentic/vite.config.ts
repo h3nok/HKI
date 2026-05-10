@@ -35,6 +35,7 @@ const rawBuildBranch =
 const buildBranch = rawBuildBranch === "HEAD" ? "" : rawBuildBranch;
 const buildDate =
   process.env.VITE_BUILD_DATE?.trim() || new Date().toISOString();
+const forceOptimizeDeps = process.env.HKI_VITE_FORCE_DEPS === "true";
 
 const plugins = [react(), tailwindcss()];
 
@@ -109,8 +110,10 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ["react", "react-dom", "react-grid-layout", "react-resizable"],
+    force: forceOptimizeDeps,
   },
   envDir: path.resolve(appRoot),
+  cacheDir: path.resolve(appRoot, "node_modules", ".vite"),
   root: path.resolve(appRoot, "client"),
   publicDir: path.resolve(appRoot, "client", "public"),
   build: {

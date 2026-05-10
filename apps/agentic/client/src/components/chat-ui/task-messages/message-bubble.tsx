@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, memo } from "react";
 import { motion } from "framer-motion";
 import {
+  Activity,
   Copy,
   RefreshCw,
   RotateCcw,
@@ -22,6 +23,7 @@ interface MessageBubbleProps {
   onRegenerate?: () => void;
   onPin?: () => void;
   onReply?: () => void;
+  onInspectActivity?: () => void;
   onFeedback?: (messageId: string, sentiment: "up" | "down") => void;
   /** Extra content rendered at the right edge of the action bar (e.g. TrustIndicator) */
   actionSlot?: React.ReactNode;
@@ -38,6 +40,7 @@ export const MessageBubble = memo(function MessageBubble({
   showHeader = true,
   variant = "default",
   onRegenerate,
+  onInspectActivity,
   onFeedback,
   actionSlot,
 }: MessageBubbleProps) {
@@ -191,6 +194,13 @@ export const MessageBubble = memo(function MessageBubble({
                         active={feedback === "down"}
                       />
                     </>
+                  )}
+                  {onInspectActivity && (
+                    <ActionBtn
+                      icon={Activity}
+                      label="Inspect activity"
+                      onClick={onInspectActivity}
+                    />
                   )}
                   {onRegenerate && (
                     <ActionBtn

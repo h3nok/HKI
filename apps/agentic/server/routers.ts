@@ -183,6 +183,11 @@ export const appRouter = router({
           icon: valueStreams.icon,
           isActive: valueStreams.isActive,
           sampleQuestions: valueStreams.sampleQuestions,
+          retrievalStrategy: valueStreams.retrievalStrategy,
+          enabledTools: valueStreams.enabledTools,
+          guardrailConfig: valueStreams.guardrailConfig,
+          memoryConfig: valueStreams.memoryConfig,
+          knowledgeConfig: valueStreams.knowledgeConfig,
         })
         .from(valueStreams)
         .where(eq(valueStreams.isActive, 1))

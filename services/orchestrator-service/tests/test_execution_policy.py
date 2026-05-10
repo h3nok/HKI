@@ -178,6 +178,7 @@ class TestExecutionPolicy:
                 approval_mode=src.domain.models.ApprovalMode.ALWAYS,
                 sensitive_tools=["get_member_info"],
                 require_approval_tools=["run_report"],
+                approved_tools=["get_member_info"],
                 deny_tools=["search_products"],
             ),
             memory=src.domain.models.MemoryPolicy(store_episodes=False, max_semantic_facts=2),
@@ -189,6 +190,7 @@ class TestExecutionPolicy:
         assert summary["enable_planning"] is False
         assert summary["budgets"]["max_turns"] == 4
         assert summary["tool_permissions"]["approval_mode"] == "always"
+        assert summary["tool_permissions"]["approved_tools"] == ["get_member_info"]
         assert summary["tool_permissions"]["deny_tools"] == ["search_products"]
         assert summary["memory"]["store_episodes"] is False
 
@@ -213,6 +215,37 @@ class TestToolApproval:
         assert result["approval_required"] is True
         assert "Human approval required" in result["error"]
         assert result["_tool_meta"]["approval_required"] is True
+
+    @pytest.mark.asyncio
+    async def test_approved_tool_grant_bypasses_single_approval_gate(self) -> None:
+        agent = src.domain.agent.AdkAgent()
+        context = src.domain.agent.ToolRunContext(
+            user_id="user-1",
+            org_id="default",
+            conversation_id="conv-1",
+            scope="global",
+            scopes=["global"],
+            policy=src.domain.models.ExecutionPolicy(
+                tool_permissions=src.domain.models.ToolPermissionPolicy(
+                    approved_tools=["get_member_info"],
+                )
+            ),
+            enabled_tools=["get_member_info"],
+        )
+
+        wrappers: dict[str, typing.Any] = agent._build_tool_wrappers(context)
+
+        with unittest.mock.patch(
+            "src.domain.adk_callbacks.execute_tool_with_hooks",
+            new=unittest.mock.AsyncMock(
+                return_value=({"member_number": "12345"}, 12.0, False)
+            ),
+        ) as execute_tool:
+            result = await wrappers["get_member_info"](member_number="12345")
+
+        execute_tool.assert_awaited_once()
+        assert result["member_number"] == "12345"
+        assert result["_tool_meta"].get("approval_required") is not True
 
 
 class TestConversationalFastPath:

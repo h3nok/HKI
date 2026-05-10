@@ -17,6 +17,7 @@ import { trpc } from "@/lib/trpc";
 import {
   GLOBAL_SCOPE,
   GLOBAL_SCOPE_DEF,
+  normalizeKnowledgeConfig,
   type ValueStreamDef,
 } from "@shared/value-streams";
 
@@ -29,6 +30,32 @@ function parseSampleQuestions(
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed)
       ? parsed.filter((q: unknown) => typeof q === "string")
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function parseJsonObject<T extends Record<string, unknown>>(
+  raw: string | null | undefined
+): T | undefined {
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as T)
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function parseStringArray(raw: string | null | undefined): string[] | undefined {
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.map(item => String(item).trim()).filter(Boolean)
       : undefined;
   } catch {
     return undefined;
@@ -69,6 +96,18 @@ export function useScope(): ScopeState {
         description: s.description,
         icon: s.icon,
         sampleQuestions: parseSampleQuestions(s.sampleQuestions),
+        retrievalStrategy: (s.retrievalStrategy ??
+          undefined) as ValueStreamDef["retrievalStrategy"],
+        enabledTools: parseStringArray(s.enabledTools),
+        guardrailConfig: parseJsonObject(
+          s.guardrailConfig
+        ) as ValueStreamDef["guardrailConfig"],
+        memoryConfig: parseJsonObject(
+          s.memoryConfig
+        ) as ValueStreamDef["memoryConfig"],
+        knowledgeConfig: normalizeKnowledgeConfig(
+          parseJsonObject(s.knowledgeConfig)
+        ),
       }));
     return [GLOBAL_SCOPE_DEF, ...dbStreams];
   }, [streamsQ.data]);

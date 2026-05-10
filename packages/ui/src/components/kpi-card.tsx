@@ -33,9 +33,9 @@ const KPICard = React.forwardRef<HTMLDivElement, KPICardProps>(
       subtitle,
       trend,
       icon,
-      accentColor = "#E31837B2",
+      accentColor = "var(--primary)",
       iconBgColor = "#ebeffe",
-      iconColor = "#E31837B2",
+      iconColor = "var(--primary)",
       loading = false,
       ...props
     },

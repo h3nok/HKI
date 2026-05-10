@@ -7,19 +7,19 @@
 :root {
   /* === Color Palette === */
 
-  /* Primary - HKI Blue (Trust, Technology)
-      Official: #0066B2 - source: AI Platform design tokens */
-  --color-primary-50: #e6f2fa;
-  --color-primary-100: #cce5f5;
-  --color-primary-200: #99cbeb;
-  --color-primary-300: #66b1e1;
-  --color-primary-400: #3397d7;
-  --color-primary-500: #0066b2;
-  --color-primary-600: #00528e;
-  --color-primary-700: #003e6b;
-  --color-primary-800: #002a47;
-  --color-primary-900: #001624;
-  --color-primary-950: #000b12;
+  /* Primary - HKI Iris (Depth, Focus)
+      Official: #0E7C7B - source: AI Platform design tokens */
+  --color-primary-50: #d5f8f5;
+  --color-primary-100: #a8f0eb;
+  --color-primary-200: #6ee0da;
+  --color-primary-300: #3dcbc6;
+  --color-primary-400: #1fa9a5;
+  --color-primary-500: #0e7c7b;
+  --color-primary-600: #0b6261;
+  --color-primary-700: #094948;
+  --color-primary-800: #063030;
+  --color-primary-900: #031818;
+  --color-primary-950: #010c0c;
 
   /* Secondary - Emerald (Success, Action) */
   --color-secondary-50: #ecfdf5;
@@ -61,7 +61,7 @@
   /* Semantic Colors */
   --color-success: var(--color-secondary-600);
   --color-warning: var(--color-accent-500);
-  --color-error: #e31837; /* HKI Red */
+  --color-error: #dc2626;
   --color-info: var(--color-primary-500);
 
   /* === Typography === */

@@ -155,8 +155,8 @@ type TaskMessagesProps = {
   executionPlan?: ExecutionPlanState | null;
   /** Pending human intervention request (null when not paused) */
   pendingIntervention?: InterventionState | null;
-  /** Send a message to the server via WebSocket (for HITL intervention responses) */
-  sendWsMessage?: (message: Record<string, unknown>) => void;
+  /** Submit a human intervention response to the runtime. */
+  onInterventionAction?: (request: InterventionResponseRequest) => void;
   /** LLM-generated follow-up suggestions from the last response (via WebSocket) */
   suggestedFollowUps?: string[];
   /** Called when user clicks a follow-up suggestion chip */
@@ -164,6 +164,7 @@ type TaskMessagesProps = {
   onRegenerate?: (message: TaskMessage) => void;
   onPin?: (message: TaskMessage) => void;
   onReply?: (message: TaskMessage) => void;
+  onInspectActivity?: (message: TaskMessage) => void;
   canRecordFeedback?: boolean;
   canOpenKnowledgeLibrary?: boolean;
   knowledgeLibraryScopeId?: string | null;
@@ -177,6 +178,11 @@ type MessagePair = {
   agentMessages: TaskMessage[];
 };
 
+export type InterventionResponseRequest = {
+  intervention: InterventionState;
+  action: InterventionAction;
+};
+
 function TaskMessagesImpl({
   taskId,
   isSending = false,
@@ -186,12 +192,13 @@ function TaskMessagesImpl({
   liveResponseContent = "",
   executionPlan,
   pendingIntervention,
-  sendWsMessage = () => {},
+  onInterventionAction,
   suggestedFollowUps = [],
   onSuggestionSelect,
   onRegenerate,
   onPin,
   onReply,
+  onInspectActivity,
   canRecordFeedback = false,
   canOpenKnowledgeLibrary = false,
   knowledgeLibraryScopeId,
@@ -671,9 +678,8 @@ function TaskMessagesImpl({
                         pendingIntervention.availableActions as InterventionAction[],
                     }}
                     onAction={(action: InterventionAction) => {
-                      sendWsMessage({
-                        type: "intervention_response",
-                        planId: pendingIntervention.planId,
+                      onInterventionAction?.({
+                        intervention: pendingIntervention,
                         action,
                       });
                     }}
@@ -750,6 +756,13 @@ function TaskMessagesImpl({
                           onRegenerate={
                             onRegenerate
                               ? () => onRegenerate(pair.userMessage)
+                              : undefined
+                          }
+                          onInspectActivity={
+                            onInspectActivity &&
+                            agentMessage.content.type === "text" &&
+                            agentMessage.content.author === "agent"
+                              ? () => onInspectActivity(agentMessage)
                               : undefined
                           }
                           actionSlot={

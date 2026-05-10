@@ -174,11 +174,12 @@ endef
 		init-env validate-env install bootstrap clean-workspace \
         dev-knowledge-api dev-knowledge-api-full \
         dev-ingestion dev-orchestrator dev-analytics dev-services dev-preflight dev-full \
-        dev-kb-auth dev-kb-auth-stop \
+        dev-kb-auth dev-kb-auth-stop dev-service-auth dev-service-auth-stop \
         dev-stop dev-status dev-restart dev-reset \
         infra-up infra-down infra-reset \
         test-services lint-services hki-check hki-audit hki-runtime-check \
-        hki-runtime-py-check hki-conformance-check e2e-test test-prod \
+        hki-runtime-py-check hki-conformance-check hki-service-evidence hki-service-evidence-auth \
+        e2e-test test-prod \
 		kb-test-setup kb-test-run kb-test-search kb-acl-smoke kb-ui-e2e kb-user-cleanup \
         kb-reset \
         reset-test-db \
@@ -241,6 +242,8 @@ help: ## Show this help message
 	@echo "  make dev-services     Restart local background services"
 	@echo "  make dev-kb-auth      Start isolated auth-enabled KB validation stack"
 	@echo "  make dev-kb-auth-stop Stop isolated auth-enabled KB validation stack"
+	@echo "  make dev-service-auth Start all auth-enabled validation services"
+	@echo "  make dev-service-auth-stop Stop all auth-enabled validation services"
 	@echo "  make dev-restart      Restart local services without relaunching infra"
 	@echo "  make dev-reset        Restart Docker infra and local services"
 	@echo "  make dev-status       Show local service port status"
@@ -1049,6 +1052,12 @@ dev-kb-auth: ## Start isolated auth-enabled KB validation stack on :9608/:9609
 dev-kb-auth-stop: ## Stop isolated auth-enabled KB validation stack
 	@bash "$(DEV_STACK_SCRIPT)" stop-kb-auth
 
+dev-service-auth: ## Start auth-enabled service validation stack on :9601/:9608/:9609/:9610
+	@bash "$(DEV_STACK_SCRIPT)" start-service-auth
+
+dev-service-auth-stop: ## Stop auth-enabled service validation stack
+	@bash "$(DEV_STACK_SCRIPT)" stop-service-auth
+
 dev-full: ## Restart local stack and launch agentic UI in foreground
 	@echo ""
 	@echo "╔═══════════════════════════════════════════════════════════════╗"
@@ -1122,6 +1131,22 @@ hki-conformance-check: ## Typecheck, test, and verify the HKI conformance kit
 	pnpm typecheck:hki-conformance
 	pnpm test:hki-conformance
 	pnpm verify:hki-conformance
+
+hki-service-evidence: ## Run service-level HKI evidence probes against running auth-enabled services
+	node scripts/hki-service-evidence.mjs
+
+hki-service-evidence-auth: ## Start auth-enabled validation services, run HKI evidence, then stop them
+	@set -e; \
+	secret="$${HKI_AUTH_SECRET:-$${KB_AUTH_SECRET:-kb-auth-local-dev-secret-1234567890}}"; \
+	trap 'bash "$(DEV_STACK_SCRIPT)" stop-service-auth' EXIT; \
+	bash "$(DEV_STACK_SCRIPT)" start-service-auth; \
+	node scripts/hki-service-evidence.mjs \
+		--knowledge-api-url http://127.0.0.1:9609 \
+		--ingestion-pipeline-url http://127.0.0.1:9608 \
+		--orchestrator-url http://127.0.0.1:9601 \
+		--analytics-url http://127.0.0.1:9610 \
+		--secret "$$secret" \
+		--out artifacts/hki/service-evidence.auth.json
 
 e2e-test: ## Run end-to-end ingestion test (requires dev-services running)
 	@echo "Running E2E ingestion test..."

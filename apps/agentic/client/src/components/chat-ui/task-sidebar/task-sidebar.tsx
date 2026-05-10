@@ -34,6 +34,7 @@ import { SettingsModal } from "../settings/settings-modal";
 import { SidebarHeader } from "./sidebar-header";
 import { SearchOverlay } from "./search-overlay";
 import { ConversationItem } from "./conversation-item";
+import { AgenticIcon } from "@/components/ui/icons/AgenticIcon";
 import {
   ConversationGroup,
   getDateCategory,
@@ -172,74 +173,20 @@ function EmptyState({
       animate={{ opacity: 1, y: 0 }}
       className="text-center pt-24 px-4 flex flex-col items-center justify-center"
     >
-      <div className="relative flex h-20 w-20 items-center justify-center mb-6 mix-blend-plus-lighter">
+      <div className="agentic-sidebar-empty-glyph mb-5">
         {hasSearchQuery ? (
-          <MessageSquareDashed className="w-8 h-8 text-sidebar-muted-foreground/60 relative z-10" />
+          <MessageSquareDashed className="w-6 h-6 text-sidebar-muted-foreground/70" />
         ) : (
-          <>
-            <motion.div
-              animate={{ scale: [1, 1.4, 1], opacity: [0.1, 0.3, 0.1] }}
-              transition={{ duration: 4, ease: "easeInOut", repeat: Infinity }}
-              className="absolute inset-0 bg-primary/40 rounded-full blur-2xl"
-            />
-            <div className="absolute inset-3 bg-primary/10 rounded-full border border-primary/20 backdrop-blur-sm" />
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              className="text-primary/90 relative z-10 drop-shadow-md"
-              style={{ strokeLinecap: "round", strokeLinejoin: "round" }}
-            >
-              <rect
-                x="3"
-                y="3"
-                width="7"
-                height="7"
-                rx="2.5"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              />
-              <rect
-                x="14"
-                y="3"
-                width="7"
-                height="7"
-                rx="2.5"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeDasharray="3 4"
-              />
-              <rect
-                x="3"
-                y="14"
-                width="7"
-                height="7"
-                rx="2.5"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeDasharray="3 4"
-              />
-              <rect
-                x="14"
-                y="14"
-                width="7"
-                height="7"
-                rx="2.5"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              />
-            </svg>
-          </>
+          <AgenticIcon size={28} />
         )}
       </div>
-      <p className="font-extrabold text-[12px] tracking-widest uppercase text-sidebar-foreground/80 mb-2">
-        {hasSearchQuery ? "No matches found" : "Systems Standby"}
+      <p className="font-semibold text-[12px] tracking-[0.08em] uppercase text-sidebar-foreground/78 mb-2">
+        {hasSearchQuery ? "No matches" : "No tasks yet"}
       </p>
       <p className="text-[11px] font-medium text-sidebar-muted-foreground/60 leading-relaxed max-w-50 mx-auto tracking-wide">
         {hasSearchQuery
           ? `No tasks matching "${query}"`
-          : "Agent initialized. Awaiting operational parameters."}
+          : "HKI Agent is ready."}
       </p>
     </motion.div>
   );

@@ -183,6 +183,13 @@ class TestUsageSummary:
         assert "unique_users" in data
         assert "events_by_type" in data
 
+    def test_summary_rejects_cross_org_query(
+        self, client: fastapi.testclient.TestClient
+    ) -> None:
+        resp: httpx.Response = client.get("/v1/events/summary?org_id=other-org")
+        assert resp.status_code == 403
+        assert resp.json()["detail"] == "Organization access denied"
+
     def test_summary_reflects_ingested_events(self, client: fastapi.testclient.TestClient) -> None:
         _ingest(client, {"event_type": "chat.request", "user_id": "u-1"})
         _ingest(client, {"event_type": "tool.call", "user_id": "u-2"})

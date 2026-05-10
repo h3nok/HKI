@@ -1,6 +1,6 @@
 # HKI — Hermetic Knowledge Isolation
 
-**The runtime isolation standard for enterprise agentic systems.**
+**The control framework for the uncharted agentic era.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Standard: HKI 1.0](https://img.shields.io/badge/Standard-HKI%201.0%20Draft-green)](./spec/HKI-1.0.md)
@@ -10,6 +10,13 @@
 ---
 
 > **One request. One active domain. No implicit global visibility.**
+
+The agentic era is uncharted, and enterprises are already at risk. Autonomous
+systems can retrieve, reason, call tools, cache context, retain memory, and
+trigger workflows faster than existing controls can explain or contain. HKI is
+the control framework for that world: signed domains, scoped RAG, scoped MCP
+tools, scoped memory, scoped caches, scoped traces, and explicit knowledge
+publication.
 
 Enterprise AI systems built on RAG, MCP tools, and agentic workflows share a
 structural problem: without a runtime contract, agents silently retrieve, cache,
@@ -30,14 +37,14 @@ optical, travel, membership, and warehouse operations at a Fortune 15 retailer.*
 
 An HKI-conformant runtime must prove:
 
-| Invariant | Requirement |
-|-----------|-------------|
-| **Single label** | Every runtime artifact carries exactly one non-null domain label |
-| **Single active domain** | Every request executes inside exactly one active domain |
-| **Exact-match visibility** | Runtime reads require exact domain equality — no inheritance, no wildcards |
-| **Fail-closed** | Missing, null, `global`, ambiguous, or unauthorized scope fails closed |
-| **Explicit publication** | Cross-domain sharing happens only through explicit publication — never silent fallback |
-| **Plane separation** | Admin-plane cross-domain inspection is unreachable from runtime routes |
+| Invariant                  | Requirement                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------- |
+| **Single label**           | Every runtime artifact carries exactly one non-null domain label                       |
+| **Single active domain**   | Every request executes inside exactly one active domain                                |
+| **Exact-match visibility** | Runtime reads require exact domain equality — no inheritance, no wildcards             |
+| **Fail-closed**            | Missing, null, `global`, ambiguous, or unauthorized scope fails closed                 |
+| **Explicit publication**   | Cross-domain sharing happens only through explicit publication — never silent fallback |
+| **Plane separation**       | Admin-plane cross-domain inspection is unreachable from runtime routes                 |
 
 The full normative standard is in [spec/HKI-1.0.md](./spec/HKI-1.0.md).
 The complete architecture paper is in [docs/HKI-package/HERMETIC-KNOWLEDGE-ISOLATION.md](./docs/HKI-package/HERMETIC-KNOWLEDGE-ISOLATION.md).
@@ -94,22 +101,22 @@ npm install @hki/runtime
 pip install hki-runtime
 ```
 
-| Package | Language | Purpose |
-|---------|----------|---------|
-| [`@hki/runtime`](./packages/hki-runtime) | TypeScript | Envelope validation, artifact visibility, cache keys, gateway decisions, telemetry attributes, JSON Schemas |
-| [`hki-runtime-py`](./packages/hki-runtime-py) | Python | FastAPI middleware, gateway helpers, retrieval adapters, cache derivation, MCP tool router |
-| [`@hki/conformance`](./packages/hki-conformance) | TypeScript | 28-case conformance test suite, CLI runner, machine-readable evidence report |
-| [`hki-conformance-action`](./packages/hki-conformance-action) | GitHub Action | CI/CD conformance gate — fails the build if your adapter does not pass HKI |
+| Package                                                       | Language      | Purpose                                                                                                     |
+| ------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------- |
+| [`@hki/runtime`](./packages/hki-runtime)                      | TypeScript    | Envelope validation, artifact visibility, cache keys, gateway decisions, telemetry attributes, JSON Schemas |
+| [`hki-runtime-py`](./packages/hki-runtime-py)                 | Python        | FastAPI middleware, gateway helpers, retrieval adapters, cache derivation, MCP tool router                  |
+| [`@hki/conformance`](./packages/hki-conformance)              | TypeScript    | 28-case conformance test suite, CLI runner, machine-readable evidence report                                |
+| [`hki-conformance-action`](./packages/hki-conformance-action) | GitHub Action | CI/CD conformance gate — fails the build if your adapter does not pass HKI                                  |
 
 **Framework adapters** (in development):
 
-| Adapter | Framework |
-|---------|-----------|
-| [`hki-langchain`](./packages/hki-langchain) | LangChain |
-| [`hki-llamaindex`](./packages/hki-llamaindex) | LlamaIndex |
-| [`hki-crewai`](./packages/hki-crewai) | CrewAI |
-| [`hki-autogen`](./packages/hki-autogen) | AutoGen |
-| [`hki-adk`](./packages/hki-adk) | Google Agent Development Kit |
+| Adapter                                       | Framework                    |
+| --------------------------------------------- | ---------------------------- |
+| [`hki-langchain`](./packages/hki-langchain)   | LangChain                    |
+| [`hki-llamaindex`](./packages/hki-llamaindex) | LlamaIndex                   |
+| [`hki-crewai`](./packages/hki-crewai)         | CrewAI                       |
+| [`hki-autogen`](./packages/hki-autogen)       | AutoGen                      |
+| [`hki-adk`](./packages/hki-adk)               | Google Agent Development Kit |
 
 ### 3. Run Conformance Against Your Implementation
 
@@ -138,14 +145,14 @@ invariants end-to-end.
 
 ### Services
 
-| Service | Port | Purpose |
-|---------|------|---------|
-| `apps/agentic` | 9001 | React BFF + tRPC control surface |
-| `knowledge-api` | 9509 | Hybrid vector + BM25 + graph search, MCP server, ingestion, taxonomy |
-| `orchestrator-service` | 9501 | ReAct supervisor, intent routing, tool registry, Redis memory, guardrails |
-| `ingestion-pipeline-service` | 9508 | Document upload, chunking, quality gates, async Pub/Sub worker |
-| `analytics-service` | 9510 | Usage analytics, event ingest, query tracing |
-| `litellm-gateway` | 4000 | LLM proxy with auth, routing, quota, and guardrails |
+| Service                      | Port | Purpose                                                                   |
+| ---------------------------- | ---- | ------------------------------------------------------------------------- |
+| `apps/agentic`               | 9001 | React BFF + tRPC control surface                                          |
+| `knowledge-api`              | 9509 | Hybrid vector + BM25 + graph search, MCP server, ingestion, taxonomy      |
+| `orchestrator-service`       | 9501 | ReAct supervisor, intent routing, tool registry, Redis memory, guardrails |
+| `ingestion-pipeline-service` | 9508 | Document upload, chunking, quality gates, async Pub/Sub worker            |
+| `analytics-service`          | 9510 | Usage analytics, event ingest, query tracing                              |
+| `litellm-gateway`            | 4000 | LLM proxy with auth, routing, quota, and guardrails                       |
 
 **Infrastructure:** GKE (Terraform), AlloyDB/pgvector, Redis, Neo4j, Pub/Sub.
 
@@ -153,7 +160,7 @@ invariants end-to-end.
 
 ## Quick Start (Local Development)
 
-**Prerequisites:** Python 3.12+, Node.js 20+, pnpm 10+, Docker 24+, `uv`
+**Prerequisites:** Python 3.12+, Node.js 24+, pnpm 11+, Docker 24+, `uv`
 
 ```bash
 # 1. Clone and set up environment
@@ -193,6 +200,14 @@ pnpm audit:hki              # ratchet known scope fallback debt
 make test-services          # pytest all Python services
 make e2e-test               # end-to-end ingestion test
 ```
+
+## Community
+
+HKI is organized as an open standard plus reusable runtimes, conformance tools,
+adapters, and a production-shaped reference platform. Start with
+[CONTRIBUTING.md](./CONTRIBUTING.md) and
+[docs/COMMUNITY_ENABLEMENT.md](./docs/COMMUNITY_ENABLEMENT.md) to choose the
+right contribution lane and validation bar.
 
 ---
 
@@ -276,5 +291,5 @@ MIT. See [LICENSE](./LICENSE).
 
 ---
 
-*HKI is designed, authored, and maintained by [Henok Ghebrechristos, PhD](https://github.com/h3nok).*
-*Validated in production at enterprise scale.*
+_HKI is designed, authored, and maintained by [Henok Ghebrechristos, PhD](https://github.com/h3nok)._
+_Validated in production at enterprise scale._

@@ -14,8 +14,8 @@ const priorityBadgeVariants = cva(
     variants: {
       priority: {
         CRITICAL: "bg-red-100 text-red-700 border border-red-200",
-        HIGH: "bg-orange-100 text-orange-700 border border-orange-200",
-        MEDIUM: "bg-blue-100 text-blue-700 border border-blue-200",
+        HIGH: "bg-primary/10 text-primary border border-primary/25",
+        MEDIUM: "bg-primary/10 text-primary border border-primary/25",
         LOW: "bg-gray-100 text-gray-600 border border-gray-200",
       },
       size: {
@@ -33,8 +33,8 @@ const priorityBadgeVariants = cva(
 
 const PRIORITY_DOT_COLORS: Record<string, string> = {
   CRITICAL: "bg-red-500",
-  HIGH: "bg-orange-500",
-  MEDIUM: "bg-blue-500",
+  HIGH: "bg-primary",
+  MEDIUM: "bg-primary",
   LOW: "bg-gray-400",
 };
 

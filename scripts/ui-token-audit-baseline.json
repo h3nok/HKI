@@ -1,9 +1,8 @@
 {
-  "generatedAt": "2026-05-04T22:15:20.540Z",
-  "total": 1135,
+  "generatedAt": "2026-05-08T21:53:15.497Z",
+  "total": 610,
   "byRule": {
-    "hex-color": 988,
-    "legacy-retail-domain": 20,
-    "literal-rgb-hsl": 127
+    "hex-color": 566,
+    "literal-rgb-hsl": 44
   }
 }

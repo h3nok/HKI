@@ -4,11 +4,17 @@
  * Hero → Framework → Conformance Path → Roles → CTA
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
-import { AnimatePresence, motion, useInView } from "framer-motion";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import {
+  Archive,
+  ArrowRight,
+  FileSearch,
+  KeyRound,
+  ShieldAlert,
+} from "lucide-react";
 import { cn, HkiMark } from "@hki/ui";
 
 import { Nav } from "./nav";
@@ -26,7 +32,7 @@ function colorMix(color: string, amount: number, base = "transparent") {
 }
 
 function accentGradient(color: string) {
-  return `linear-gradient(90deg, transparent, ${color}, transparent)`;
+  return color;
 }
 
 // ── Full-screen section wrapper ───────────────────────────────────────────────
@@ -43,73 +49,10 @@ function FullSection({
   return (
     <section
       id={id}
-      className={`relative z-10 flex flex-col items-center justify-center px-6 md:px-12 py-16 md:py-20 overflow-visible ${className}`}
+      className={`relative z-10 flex min-h-[calc(100svh-57px)] snap-start scroll-mt-16 flex-col items-center justify-center border-t border-border/20 px-6 py-14 md:px-12 md:py-16 ${className}`}
     >
       {children}
     </section>
-  );
-}
-
-// ── Section marker — numbered visual break between sections ───────────────────
-
-function SectionMarker({ num, label }: { num: string; label: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.5 });
-
-  const scrollToNext = useCallback(() => {
-    const current = ref.current;
-    if (!current) return;
-    const next = current.nextElementSibling as HTMLElement;
-    if (next) {
-      next.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      className="relative z-10 flex flex-col items-center justify-center py-8 md:py-10"
-    >
-      <div
-        aria-hidden
-        className="absolute left-0 right-0 top-1/2 h-px bg-linear-to-r from-transparent via-border/45 to-transparent"
-      />
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6, ease: EASE }}
-        className="relative flex flex-col items-center"
-      >
-        <motion.button
-          onClick={scrollToNext}
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={inView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.55, delay: 0.15, ease: EASE }}
-          className="group relative inline-flex items-center gap-3 rounded-full border border-border/55 bg-background/78 px-4 py-2 shadow-sm backdrop-blur-xl transition-all duration-200 hover:border-primary/30 hover:bg-card/92 hover:shadow-md"
-          aria-label={`Scroll to ${label}`}
-        >
-          <span
-            className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary/80"
-            style={{ fontFamily: HEADING }}
-          >
-            {num}
-          </span>
-          <span className="h-1 w-1 rounded-full bg-primary/45" />
-          <span
-            className="text-[11px] font-bold uppercase tracking-[0.16em] text-foreground/72 transition-colors group-hover:text-foreground"
-            style={{ fontFamily: HEADING }}
-          >
-            {label}
-          </span>
-          <motion.div
-            animate={{ y: [0, 4, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/55 transition-colors group-hover:text-primary" />
-          </motion.div>
-        </motion.button>
-      </motion.div>
-    </div>
   );
 }
 
@@ -134,23 +77,19 @@ const LIVE_AGENT_CONTENT_CLASS =
   "relative z-10 inline-flex items-center gap-2.5 tracking-[0.01em] text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.45)]";
 const LIVE_AGENT_DOT_CLASS =
   "w-1.5 h-1.5 rounded-full animate-pulse bg-white/95 shadow-[0_0_0_3px_rgba(255,255,255,0.18)]";
-const LIVE_AGENT_BACKGROUND =
-  "linear-gradient(135deg, color-mix(in srgb, var(--primary) 86%, #003c3a) 0%, color-mix(in srgb, var(--primary) 58%, #334155) 100%)";
+const LIVE_AGENT_BACKGROUND = "var(--primary)";
 const STATUS_META = {
   live: {
     label: "Live",
-    className:
-      "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30",
+    className: "bg-primary/12 text-primary border border-primary/25",
   },
   api: {
     label: "API Only",
-    className:
-      "bg-blue-500/12 text-blue-600 dark:text-blue-400 border border-blue-500/30",
+    className: "bg-primary/8 text-primary border border-primary/20",
   },
   planned: {
     label: "Planned",
-    className:
-      "bg-slate-500/12 text-slate-600 dark:text-slate-300 border border-slate-500/25",
+    className: "border border-border/50 bg-muted/45 text-muted-foreground/80",
   },
 } as const;
 
@@ -212,10 +151,10 @@ function PlatformCards({
           initial={{ opacity: 0, y: 22 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.55, delay: 0.08, ease: EASE }}
-          className="relative overflow-hidden rounded-lg border border-border/60 bg-card/82 p-5 shadow-2xl shadow-black/10 backdrop-blur-xl dark:bg-card/88 dark:shadow-black/35 sm:p-6 lg:p-7"
+          className="relative overflow-hidden rounded-lg border border-border/60 bg-card/82 p-5 shadow-lg shadow-black/5 backdrop-blur-xl dark:bg-card/88 dark:shadow-black/25 sm:p-6"
           style={{
             borderColor: colorMix(activeLayer.color, 32, "var(--border)"),
-            background: `linear-gradient(135deg, ${colorMix(activeLayer.color, 11, "var(--card)")} 0%, var(--card) 48%, ${colorMix(activeLayer.color, 6, "var(--background)")} 100%)`,
+            background: "var(--card)",
           }}
         >
           <div
@@ -227,7 +166,7 @@ function PlatformCards({
             aria-hidden
             className="absolute inset-0 opacity-[0.08]"
             style={{
-              backgroundImage: `linear-gradient(${colorMix(activeLayer.color, 16)} 1px, transparent 1px), linear-gradient(90deg, ${colorMix(activeLayer.color, 14)} 1px, transparent 1px)`,
+              backgroundImage: "none",
               backgroundSize: "44px 44px",
             }}
           />
@@ -236,7 +175,7 @@ function PlatformCards({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div
-                  className="flex h-14 w-14 items-center justify-center rounded-lg border shadow-lg"
+                  className="flex h-12 w-12 items-center justify-center rounded-lg border shadow-sm"
                   style={{
                     backgroundColor: colorMix(activeLayer.color, 16),
                     borderColor: colorMix(
@@ -248,19 +187,19 @@ function PlatformCards({
                   }}
                 >
                   <ActiveIcon
-                    className="h-6 w-6"
+                    className="h-5 w-5"
                     style={{ color: activeLayer.color }}
                   />
                 </div>
                 <div>
                   <p
-                    className="mb-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/65"
+                    className="mb-1.5 text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground/65"
                     style={{ fontFamily: HEADING }}
                   >
                     Surface {String(activeIndex + 1).padStart(2, "0")}
                   </p>
                   <h3
-                    className="text-2xl font-extrabold leading-tight text-foreground sm:text-3xl"
+                    className="text-xl font-extrabold leading-tight text-foreground sm:text-2xl"
                     style={{ fontFamily: HEADING }}
                   >
                     {activeLayer.label}
@@ -270,14 +209,14 @@ function PlatformCards({
               <SurfaceStatusBadge status={activeLayer.status} />
             </div>
 
-            <div className="mt-8 max-w-xl">
-              <p className="text-lg font-semibold leading-relaxed text-foreground/88">
+            <div className="mt-6 max-w-xl">
+              <p className="text-base font-semibold leading-relaxed text-foreground/88">
                 {activeLayer.subtitle}
               </p>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground/72">
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground/72">
                 {activeLayer.description}
               </p>
-              <p className="mt-5 text-sm leading-relaxed text-muted-foreground/78">
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground/78">
                 <span className="font-semibold text-foreground/85">
                   Best for:
                 </span>{" "}
@@ -285,13 +224,13 @@ function PlatformCards({
               </p>
             </div>
 
-            <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
               {activeLayer.capabilities.slice(0, 6).map((capability, index) => {
                 const isLive = selfService.includes(capability);
                 return (
                   <div
                     key={capability}
-                    className="group relative overflow-hidden rounded-md border border-border/45 bg-background/42 px-3.5 py-3 backdrop-blur-sm transition-colors duration-200 hover:bg-background/66"
+                    className="group relative overflow-hidden rounded-md border border-border/45 bg-background/42 px-3.5 py-2.5 backdrop-blur-sm transition-colors duration-200 hover:bg-background/66"
                   >
                     <div
                       aria-hidden
@@ -303,7 +242,7 @@ function PlatformCards({
                       }}
                     />
                     <div className="flex items-center justify-between gap-3 pl-1.5">
-                      <span className="text-sm font-semibold leading-tight text-foreground/86">
+                      <span className="text-[13px] font-semibold leading-tight text-foreground/86">
                         {capability}
                       </span>
                       <span
@@ -412,10 +351,7 @@ function PlatformCards({
                       borderColor: colorMix(layer.color, 24, "var(--border)"),
                     }}
                   >
-                    <Icon
-                      className="h-4.5 w-4.5"
-                      style={{ color: layer.color }}
-                    />
+                    <Icon className="h-4 w-4" style={{ color: layer.color }} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -454,48 +390,46 @@ function PlatformCards({
   );
 }
 
-// ── Animated count-up for stats ───────────────────────────────────────────────
-
-function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
-  const [val, setVal] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.5 });
-
-  useEffect(() => {
-    if (!inView) return;
-    const start = performance.now();
-    const duration = 1200;
-    const raf = (now: number) => {
-      const t = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - t, 3);
-      setVal(Math.round(ease * to));
-      if (t < 1) requestAnimationFrame(raf);
-    };
-    requestAnimationFrame(raf);
-  }, [inView, to]);
-
-  return (
-    <span ref={ref}>
-      {val}
-      {suffix}
-    </span>
-  );
-}
-
 // ── Hero ──────────────────────────────────────────────────────────────────────
 
 const STATS = [
-  { value: PLATFORM_LAYER_COUNT, suffix: "", label: "Framework Surfaces" },
-  { value: PLATFORM_CAPABILITY_COUNT, suffix: "", label: "Capabilities" },
-  { value: 3, suffix: "", label: "Persona Roles" },
+  { value: PLATFORM_LAYER_COUNT, suffix: "", label: "Control Surfaces" },
+  { value: PLATFORM_CAPABILITY_COUNT, suffix: "", label: "Scoped Controls" },
+  { value: LIVE_LAYER_COUNT, suffix: "", label: "Live Layers" },
   { value: 100, suffix: "%", label: "Vendor Neutral" },
 ] as const;
 
+function HeroProofStrip() {
+  return (
+    <div className="grid w-full max-w-xl grid-cols-2 overflow-hidden rounded-lg border border-border/45 bg-border/35 text-left shadow-sm sm:grid-cols-4">
+      {STATS.map(stat => (
+        <div
+          key={stat.label}
+          className="bg-background/76 px-3.5 py-2.5 backdrop-blur-sm"
+        >
+          <p
+            className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground/54"
+            style={{ fontFamily: HEADING }}
+          >
+            {stat.label}
+          </p>
+          <p
+            className="mt-1 text-xl font-extrabold tabular-nums text-foreground"
+            style={{ fontFamily: HEADING }}
+          >
+            {stat.value}
+            {stat.suffix}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
-    <section className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100svh-170px)] sm:min-h-[calc(100vh-220px)] px-6 text-center">
-      {/* Content block — grid disabled here; outer section whitespace stays interactive */}
-      <div data-no-grid className="flex flex-col items-center">
+    <section className="relative z-10 flex min-h-[calc(100svh-57px)] snap-start scroll-mt-16 flex-col items-center justify-center px-6 py-14 text-center md:py-16">
+      <div className="flex flex-col items-center">
         {/* Icon */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -511,7 +445,7 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.15, ease: EASE }}
-          className="text-3xl sm:text-4xl lg:text-[3.25rem] font-extrabold tracking-[-0.03em] leading-[1.1] mb-5 max-w-3xl"
+          className="mb-5 max-w-3xl text-3xl font-extrabold leading-[1.1] tracking-[-0.03em] sm:text-4xl lg:text-5xl"
           style={{ fontFamily: HEADING }}
         >
           <span className="text-primary">Hermetic</span>{" "}
@@ -523,12 +457,15 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3, ease: EASE }}
-          className="text-sm sm:text-[15px] text-muted-foreground/60 max-w-sm mb-10 leading-relaxed"
+          className="max-w-xl mb-8 text-base sm:text-lg font-medium leading-[1.38] text-foreground/72"
+          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
         >
-          An open implementation standard for secure enterprise agentic
-          platforms, cloud teams, and AI service providers: signed domains,
-          scoped RAG, MCP tools, memory, caches, traces, and explicit knowledge
-          publication.
+          The agentic era is uncharted, and enterprises are{" "}
+          <span className="font-semibold" style={{ color: "var(--secondary)" }}>
+            already at risk.
+          </span>{" "}
+          HKI is the control framework for scoped RAG, MCP tools, memory,
+          caches, and traces before autonomous systems cause damage.
         </motion.p>
 
         {/* CTAs */}
@@ -536,7 +473,7 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.45, ease: EASE }}
-          className="flex flex-col sm:flex-row items-center gap-3 mb-16"
+          className="flex flex-col sm:flex-row items-center gap-3 mb-8"
         >
           <a
             href={HKI_STANDARD_ROUTE}
@@ -567,11 +504,7 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
               background: LIVE_AGENT_BACKGROUND,
             }}
           >
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-linear-to-r from-white/0 via-white/35 to-white/0
-                         translate-x-[-180%] group-hover:translate-x-[620%] transition-transform duration-700 ease-out"
-            />
+            <span aria-hidden className="hidden" />
             <span className={LIVE_AGENT_CONTENT_CLASS}>
               <span className="inline-flex items-center gap-1.5">
                 <span className={LIVE_AGENT_DOT_CLASS} />
@@ -581,9 +514,122 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
             </span>
           </a>
         </motion.div>
+
+        <HeroProofStrip />
       </div>
-      {/* end data-no-grid */}
     </section>
+  );
+}
+
+// ── Risk Thesis ───────────────────────────────────────────────────────────────
+
+const RISK_SIGNALS = [
+  {
+    title: "Scope collapse",
+    desc: "Retrieval, rewritten prompts, and tool plans blend domains unless scope is a runtime invariant.",
+    icon: ShieldAlert,
+  },
+  {
+    title: "Tool overreach",
+    desc: "MCP tools inherit too much context when catalogs, arguments, and calls are not domain-bound.",
+    icon: KeyRound,
+  },
+  {
+    title: "Memory bleed",
+    desc: "Caches and long-lived memory preserve sensitive context beyond the request that created it.",
+    icon: Archive,
+  },
+  {
+    title: "Audit gaps",
+    desc: "Traces prove little when the active domain is missing, mutable, or detached from downstream work.",
+    icon: FileSearch,
+  },
+] as const;
+
+function RiskSection() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.15 });
+
+  return (
+    <FullSection id="risk">
+      <div
+        ref={ref}
+        className="grid w-full max-w-6xl items-center gap-10 px-4 lg:grid-cols-[0.9fr_1.35fr] lg:gap-12"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, ease: EASE }}
+          className="max-w-xl text-center lg:text-left"
+        >
+          <p
+            className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-primary"
+            style={{ fontFamily: HEADING }}
+          >
+            Why HKI Now
+          </p>
+          <h2
+            className="text-xl font-extrabold leading-snug tracking-[-0.015em] text-foreground sm:text-2xl"
+            style={{ fontFamily: HEADING }}
+          >
+            Autonomy changed the risk model.{" "}
+            <span style={{ color: "var(--secondary)" }}>
+              Enterprise controls have to change with it.
+            </span>
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground/70 lg:mx-0">
+            HKI standardizes the control points that keep operating after the
+            first prompt is gone: context, memory, tools, caches, traces, and
+            publication paths.
+          </p>
+          <div className="mt-6 hidden h-px w-24 bg-primary/45 lg:block" />
+        </motion.div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {RISK_SIGNALS.map((signal, index) => {
+            const Icon = signal.icon;
+            return (
+              <motion.div
+                key={signal.title}
+                initial={{ opacity: 0, y: 18 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{
+                  duration: 0.42,
+                  delay: 0.08 + index * 0.06,
+                  ease: EASE,
+                }}
+                className="group relative overflow-hidden rounded-lg border border-border/55 bg-card/70 p-4 shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-card"
+              >
+                <div
+                  aria-hidden
+                  className="absolute inset-x-0 top-0 h-1 bg-primary"
+                />
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-md border border-primary/20 bg-primary/10">
+                    <Icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <span
+                    className="text-[10px] font-extrabold tabular-nums text-muted-foreground/38"
+                    style={{ fontFamily: HEADING }}
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <h3
+                  className="text-sm font-extrabold text-foreground"
+                  style={{ fontFamily: HEADING }}
+                >
+                  {signal.title}
+                </h3>
+                <p className="mt-2.5 text-[13px] leading-relaxed text-muted-foreground/68">
+                  {signal.desc}
+                </p>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </FullSection>
   );
 }
 
@@ -598,46 +644,44 @@ function CapabilitiesSection({
   const inView = useInView(ref, { once: true, amount: 0 });
 
   return (
-    <FullSection id="features" className="py-12 md:py-14">
+    <FullSection id="features" className="py-10 md:py-12">
       <div ref={ref} className="w-full max-w-7xl mx-auto flex flex-col px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, ease: EASE }}
-          className="mb-9"
+          className="mb-7"
         >
           <p
-            className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-primary"
+            className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-primary"
             style={{ fontFamily: HEADING }}
           >
             Architecture
           </p>
           <h2
-            className="max-w-4xl text-3xl font-extrabold leading-tight tracking-[-0.025em] text-foreground sm:text-4xl lg:text-[3.25rem]"
+            className="max-w-3xl text-xl font-extrabold leading-snug tracking-[-0.015em] text-foreground sm:text-2xl lg:text-3xl"
             style={{ fontFamily: HEADING }}
           >
             {PLATFORM_LAYER_COUNT} layers in your stack.{" "}
             <span className="text-primary">One isolation rule.</span>
           </h2>
-          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted-foreground/66">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground/66">
             HKI specifies exactly where domain isolation must hold — from the
             signed scope envelope at the edge to cache keys, graph edges, tool
             calls, and audit traces. Each layer has concrete controls and a
             conformance check.
           </p>
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <CountUp to={LIVE_LAYER_COUNT} /> layers live in the reference
-              stack
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              {LIVE_LAYER_COUNT} layers live in the reference stack
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[11px] font-bold text-sky-600 dark:text-sky-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-              <CountUp to={API_LAYER_COUNT} /> API-only
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/8 px-3 py-1 text-[11px] font-bold text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              {API_LAYER_COUNT} API-only
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-muted/40 px-3 py-1 text-[11px] font-bold text-muted-foreground/80">
-              <CountUp to={PLATFORM_CAPABILITY_COUNT} /> total controls across
-              all layers
+              {PLATFORM_CAPABILITY_COUNT} total controls across all layers
             </span>
           </div>
         </motion.div>
@@ -699,22 +743,22 @@ function EngineeringSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, ease: EASE }}
-          className="text-center mb-12"
+          className="text-center mb-9"
         >
           <p
-            className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-4"
+            className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-primary"
             style={{ fontFamily: HEADING }}
           >
             Conformance Path
           </p>
           <h2
-            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-[-0.025em] text-foreground leading-tight mb-5"
+            className="mb-3 text-xl font-extrabold leading-snug tracking-[-0.015em] text-foreground sm:text-2xl"
             style={{ fontFamily: HEADING }}
           >
             Make isolation observable.{" "}
             <span className="text-primary">Then enforce it.</span>
           </h2>
-          <p className="text-base sm:text-lg text-muted-foreground/60 max-w-2xl mx-auto leading-relaxed">
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-muted-foreground/66">
             The migration path from domain-aware RAG to HKI-conformant agentic
             runtime.
           </p>
@@ -727,13 +771,13 @@ function EngineeringSection() {
             initial={{ scaleX: 0 }}
             animate={inView ? { scaleX: 1 } : {}}
             transition={{ duration: 1.2, delay: 0.3, ease: EASE }}
-            className="hidden sm:block absolute top-14 left-[10%] right-[10%] h-0.5 origin-left"
+            className="absolute left-[10%] right-[10%] top-10 hidden h-px origin-left sm:block"
             style={{
-              background: `linear-gradient(to right, ${COLORS.success}, ${COLORS.iris}, ${COLORS.violet}, ${COLORS.info}, ${COLORS.cyan})`,
+              background: "var(--primary)",
             }}
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-8 sm:gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-5 sm:gap-5">
             {JOURNEY_STEPS.map((step, i) => (
               <motion.div
                 key={step.num}
@@ -748,9 +792,9 @@ function EngineeringSection() {
               >
                 {/* Step circle — sits on the connecting line */}
                 <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center
-                             text-base font-extrabold text-primary-foreground mb-6 shrink-0 relative z-10
-                             ring-[6px] ring-background dark:ring-background shadow-lg"
+                  className="relative z-10 mb-5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full
+                             text-sm font-extrabold text-primary-foreground
+                             ring-[5px] ring-background dark:ring-background shadow-sm"
                   style={{ backgroundColor: step.color, fontFamily: HEADING }}
                 >
                   {step.num}
@@ -758,18 +802,18 @@ function EngineeringSection() {
 
                 <div className="px-2">
                   <h3
-                    className="text-lg font-extrabold text-foreground mb-2 leading-snug"
+                    className="mb-2 text-base font-extrabold leading-snug text-foreground"
                     style={{ fontFamily: HEADING }}
                   >
                     {step.title}
                   </h3>
                   <p
-                    className="text-sm font-semibold mb-3 leading-relaxed"
+                    className="mb-2.5 text-sm font-semibold leading-relaxed"
                     style={{ color: step.color }}
                   >
                     {step.tagline}
                   </p>
-                  <p className="text-sm text-muted-foreground/65 leading-relaxed">
+                  <p className="text-[13px] leading-relaxed text-muted-foreground/65">
                     {step.desc}
                   </p>
                 </div>
@@ -795,22 +839,22 @@ function RolesSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, ease: EASE }}
-          className="text-center mb-10"
+          className="text-center mb-8"
         >
           <p
-            className="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-4"
+            className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-primary"
             style={{ fontFamily: HEADING }}
           >
             Useful by Role
           </p>
           <h2
-            className="text-3xl sm:text-4xl font-extrabold tracking-[-0.025em] text-foreground leading-tight mb-4"
+            className="mb-3 text-xl font-extrabold leading-snug tracking-[-0.015em] text-foreground sm:text-2xl"
             style={{ fontFamily: HEADING }}
           >
             Builders, stewards, and auditors.{" "}
             <span className="text-primary">Same contract.</span>
           </h2>
-          <p className="text-base text-muted-foreground/60 max-w-2xl mx-auto leading-relaxed">
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-muted-foreground/66">
             HKI is useful when it gives every operator a concrete control
             surface, not just an architecture diagram.
           </p>
@@ -830,7 +874,7 @@ function RolesSection() {
                   ease: EASE,
                 }}
                 whileHover={{ scale: 1.02, y: -4 }}
-                className="group relative flex flex-col h-full p-6 rounded-2xl border-2
+                className="group relative flex h-full flex-col rounded-lg border p-5
                            bg-card dark:bg-card/95 backdrop-blur-sm
                            border-border/60 dark:border-border/40
                            shadow-sm hover:shadow-xl
@@ -861,22 +905,22 @@ function RolesSection() {
               >
                 {/* Accent top bar */}
                 <div
-                  className="absolute top-0 left-6 right-6 h-0.75 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  className="absolute left-5 right-5 top-0 h-px rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                   style={{
                     background: accentGradient(role.color),
                   }}
                 />
 
                 {/* Role icon + persona */}
-                <div className="flex items-center gap-3 mb-5">
+                <div className="mb-4 flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
                     style={{
                       backgroundColor: colorMix(role.color, 12),
                       border: `1px solid ${colorMix(role.color, 24, "var(--border)")}`,
                     }}
                   >
-                    <Icon className="w-5 h-5" style={{ color: role.color }} />
+                    <Icon className="h-4 w-4" style={{ color: role.color }} />
                   </div>
                   <span
                     className="text-xs font-extrabold uppercase tracking-[0.18em]"
@@ -888,17 +932,17 @@ function RolesSection() {
 
                 {/* Role headline */}
                 <h3
-                  className="text-base font-bold text-foreground leading-snug mb-5"
+                  className="mb-4 text-base font-bold leading-snug text-foreground"
                   style={{ fontFamily: HEADING }}
                 >
                   {role.title}
                 </h3>
 
                 {/* Divider */}
-                <div className="h-px bg-border/20 mb-4" />
+                <div className="mb-4 h-px bg-border/20" />
 
                 {/* Actions */}
-                <ul className="space-y-3 mt-auto">
+                <ul className="mt-auto space-y-2.5">
                   {role.actions.map(action => {
                     const ActionIcon = action.icon;
                     return (
@@ -948,9 +992,9 @@ function CTASection({ onNavigate }: { onNavigate: (path: string) => void }) {
           initial={{ opacity: 0, scaleX: 0.3 }}
           animate={inView ? { opacity: 1, scaleX: 1 } : {}}
           transition={{ duration: 0.7, ease: EASE }}
-          className="h-0.75 w-20 mx-auto mb-10 rounded-full"
+          className="mx-auto mb-8 h-px w-16 rounded-full"
           style={{
-            background: `linear-gradient(to right, ${COLORS.iris}, ${COLORS.cyan})`,
+            background: "var(--primary)",
           }}
         />
 
@@ -959,10 +1003,10 @@ function CTASection({ onNavigate }: { onNavigate: (path: string) => void }) {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
         >
-          <HkiMark size={48} variant="color" className="mx-auto mb-10" />
+          <HkiMark size={42} variant="color" className="mx-auto mb-8" />
 
           <h2
-            className="text-4xl sm:text-5xl font-extrabold tracking-[-0.03em] text-foreground mb-6 leading-tight"
+            className="mb-5 text-2xl font-extrabold leading-snug tracking-[-0.02em] text-foreground sm:text-3xl"
             style={{ fontFamily: HEADING }}
           >
             Make agentic isolation
@@ -970,7 +1014,7 @@ function CTASection({ onNavigate }: { onNavigate: (path: string) => void }) {
             <span className="text-primary">auditable by default.</span>
           </h2>
 
-          <p className="text-base text-muted-foreground/60 mb-12 max-w-md mx-auto leading-relaxed">
+          <p className="mx-auto mb-9 max-w-md text-sm leading-relaxed text-muted-foreground/66">
             HKI turns "domain-aware" from a claim into a release gate: one
             active domain, exact-domain visibility, publication-only sharing.
           </p>
@@ -1005,11 +1049,7 @@ function CTASection({ onNavigate }: { onNavigate: (path: string) => void }) {
                 background: LIVE_AGENT_BACKGROUND,
               }}
             >
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-linear-to-r from-white/0 via-white/35 to-white/0
-                           translate-x-[-180%] group-hover:translate-x-[620%] transition-transform duration-700 ease-out"
-              />
+              <span aria-hidden className="hidden" />
               <span className={LIVE_AGENT_CONTENT_CLASS}>
                 <span className="inline-flex items-center gap-1.5">
                   <span className={LIVE_AGENT_DOT_CLASS} />
@@ -1041,7 +1081,7 @@ export default function AgenticPlatformLanding() {
   );
 
   return (
-    <div className="relative min-h-screen text-foreground overflow-x-hidden selection:bg-primary/30">
+    <div className="relative h-screen snap-y snap-proximity overflow-x-hidden overflow-y-auto scroll-smooth text-foreground selection:bg-primary/30">
       {/* z-0 — fixed canvas grid background */}
       <AgenticGrid />
       {/* z-50 — sticky nav; grid disabled here */}
@@ -1052,6 +1092,10 @@ export default function AgenticPlatformLanding() {
       <HeroSection onNavigate={navigate} />
       {/* Dense sections: grid disabled */}
       <div data-no-grid>
+        <RiskSection />
+        <CapabilitiesSection onNavigate={navigate} />
+        <EngineeringSection />
+        <RolesSection />
         <CTASection onNavigate={navigate} />
         <Footer />
       </div>

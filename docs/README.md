@@ -16,8 +16,12 @@ Knowledge Isolation reference platform.
   product surfaces, service dependencies, status, gaps, and next actions
 - `ADMIN_CONTROL_PLANE_DASHBOARD_DESIGN.md` - design, feature inventory,
   completeness bar, and careful development plan for the Agentic admin dashboard
+- `COMMUNITY_ENABLEMENT.md` - contribution lanes, public/reference/experimental
+  boundaries, HKI safety bar, and agentic UI review checklist
 - `HKI_CONFORMANCE.md` - implementer-facing conformance bar for runtime scope,
   artifacts, storage, caches, tools, admin plane, and publication
+- `HKI_SERVICE_EVIDENCE.md` - black-box service evidence runner, strict-auth
+  local commands, and hashed bundle format
 - `HKI_PUBLIC_READINESS_PLAN.md` - end-to-end roadmap for making HKI ready for
   public adoption as an open-source standard and reference runtime
 - `SERVICE_PORTS.md` - local and in-cluster port reference

@@ -1,4 +1,4 @@
-import { ArrowUpRight, FileText, Github, Home } from "lucide-react";
+import { ArrowUpRight, FileText, GitBranch, Home } from "lucide-react";
 import { cn } from "@hki/ui";
 
 export type FooterLink = {
@@ -24,7 +24,7 @@ export function ArticleFooter({
             l.icon === "printable"
               ? FileText
               : l.icon === "source"
-                ? Github
+                ? GitBranch
                 : l.icon === "hub"
                   ? Home
                   : undefined;

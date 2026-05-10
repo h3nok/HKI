@@ -6,17 +6,17 @@
  * stacking on the bottom edge, and page-curl shading that darkens
  * toward the binding. Every pixel of the card reads as book.
  *
- * HKI Blue (#0060A9) — contour, text lines
+ * HKI Iris (#0E7C7B) — contour, text lines
  * Ink Neutral (#18212B) — page mass, shadow, paper tint
- * HKI Red  (#E31837) — spine only
+ * HKI Iris duotone — spine only
  */
 
 import { memo } from "react";
 import { cn } from "@hki/ui";
 
-const B = "#0060A9";
+const B = "#0E7C7B";
 const S = "#18212B";
-const R = "#E31837";
+const R = B;
 
 const CSS = `
 @media (prefers-reduced-motion: no-preference) {

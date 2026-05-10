@@ -32,6 +32,12 @@ const ICON_BTN =
   "active:scale-95 transition-all duration-150 " +
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
 
+const COMMAND_ICON_BTN =
+  "agentic-sidebar-command-icon-button flex items-center justify-center w-9 h-9 shrink-0 " +
+  "text-sidebar-muted-foreground hover:text-sidebar-foreground " +
+  "active:scale-95 transition-all duration-150 " +
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
+
 const KNOWN_STREAM_ICON_IDS = new Set(
   STREAM_ICON_OPTIONS.map(option => option.id)
 );
@@ -80,11 +86,8 @@ export function SidebarHeader({
             <AgenticIcon size={26} />
           </span>
           <div className="flex flex-col leading-none gap-0.75 min-w-0">
-            <span className="flex items-center gap-1.5 text-[12px] font-bold tracking-[0.05em] uppercase leading-none text-foreground">
-              <span className="agentic-sidebar-brand-signal" aria-hidden />
-              <span>
-                <span>Hermetic</span> <span>Agentic</span>
-              </span>
+            <span className="text-[12px] font-bold tracking-[0.05em] uppercase leading-none text-foreground">
+              <span>HKI</span> <span>Agent</span>
             </span>
             {activeStreamName && (
               <span className="flex items-center gap-1 text-[10px] text-sidebar-muted-foreground/58 tracking-normal truncate max-w-36">
@@ -107,69 +110,69 @@ export function SidebarHeader({
         )}
       </div>
 
-      <div className="px-3 pb-3 flex items-center gap-1.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <motion.button
-              type="button"
-              onClick={onNewTask}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              className="agentic-sidebar-primary-action group relative flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg
-                         overflow-hidden transition-shadow duration-200
-                         focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--sidebar-primary) 0%, color-mix(in srgb, var(--sidebar-primary) 80%, var(--primary)) 100%)",
-                color: "var(--sidebar-primary-foreground)",
-                boxShadow:
-                  "inset 0 1px 0 color-mix(in srgb, white 18%, transparent), 0 1px 2px color-mix(in srgb, var(--foreground) 14%, transparent), 0 10px 22px -18px color-mix(in srgb, var(--sidebar-primary) 40%, transparent)",
-              }}
-              aria-label="New Task"
-            >
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
-                }}
-              />
-              <SquarePen className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
-              <span className="text-[12px] font-semibold tracking-wide">
-                New Task
-              </span>
-            </motion.button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">New Task</TooltipContent>
-        </Tooltip>
+      <div className="agentic-sidebar-command-wrap px-4 pb-3">
+        <div className="agentic-sidebar-command-shell">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <motion.button
+                type="button"
+                onClick={onNewTask}
+                whileHover={{ scale: 1.002 }}
+                whileTap={{ scale: 0.992 }}
+                className="agentic-sidebar-primary-action group relative flex min-w-0 flex-1 items-center justify-start gap-2 overflow-hidden
+                           transition-shadow duration-200
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                aria-label="New Task"
+              >
+                <span
+                  className="agentic-sidebar-primary-action-sheen absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  aria-hidden="true"
+                />
+                <span className="agentic-sidebar-primary-action-icon">
+                  <SquarePen className="w-3.5 h-3.5" strokeWidth={2.15} />
+                </span>
+                <span className="truncate text-[12px] font-semibold tracking-[0.02em]">
+                  New Task
+                </span>
+              </motion.button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">New Task</TooltipContent>
+          </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={onOpenSearch}
-              aria-label="Search (⌘K)"
-              className={ICON_BTN}
-            >
-              <Search className="w-3.5 h-3.5" strokeWidth={2.5} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Search ⌘K</TooltipContent>
-        </Tooltip>
+          <div
+            className="agentic-sidebar-command-group"
+            role="group"
+            aria-label="Task tools"
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={onOpenSearch}
+                  aria-label="Search (⌘K)"
+                  className={COMMAND_ICON_BTN}
+                >
+                  <Search className="w-3.5 h-3.5" strokeWidth={2.35} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Search ⌘K</TooltipContent>
+            </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={onNewProject}
-              aria-label="New Project"
-              className={ICON_BTN}
-            >
-              <FolderPlus className="w-3.5 h-3.5" strokeWidth={2} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">New Project</TooltipContent>
-        </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={onNewProject}
+                  aria-label="New Project"
+                  className={COMMAND_ICON_BTN}
+                >
+                  <FolderPlus className="w-3.5 h-3.5" strokeWidth={2.15} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">New Project</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
       </div>
 
       <div className="agentic-sidebar-section-rule flex items-center gap-2 px-4 pb-1.5">

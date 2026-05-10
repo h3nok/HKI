@@ -12,7 +12,7 @@
 import { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import { TYPOGRAPHY, SPACING, MOTION } from '@/design-system/tokens';
+import { MOTION } from '@/design-system/tokens';
 
 export type ConversationGroupProps = {
     label: string;
@@ -30,26 +30,24 @@ export const ConversationGroup = memo(function ConversationGroup({
     const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
     return (
-        <div className="mb-2">
+        <div className="mb-1.5">
             {/* Group Header — Refined Command Center Style */}
             <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg
-                           text-foreground/70 hover:text-foreground
-                           hover:bg-primary/5
+                className="agentic-conversation-group-header w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg
+                           text-foreground/68 hover:text-foreground
                            transition-all duration-200 group"
                 aria-expanded={isExpanded}
                 aria-controls={`group-${label.toLowerCase().replace(/\s+/g, '-')}`}
             >
-                <span className="font-semibold uppercase tracking-[0.08em] text-[11px]">
+                <span className="font-semibold uppercase tracking-[0.08em] text-[10px]">
                     {label}
                 </span>
                 <div className="flex items-center gap-2">
                     {count !== undefined && (
-                        <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full
-                                         text-[10px] font-medium tabular-nums
-                                         bg-primary/10 text-primary">
+                        <span className="agentic-conversation-group-count inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-md
+                                         text-[10px] font-medium tabular-nums">
                             {count}
                         </span>
                     )}

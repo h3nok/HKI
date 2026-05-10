@@ -34,6 +34,7 @@ import time
 import typing
 import uuid
 
+from .quality_gates import QualityReport
 import docx.document
 import httpx
 import shared.http_client
@@ -123,7 +124,7 @@ class IngestionPipeline:
     ) -> None:
         self._job_store = job_store
         self._doc_store = document_store
-        self._analytics = analytics
+        self._analytics: src.adapters.analytics_client.AnalyticsClient | None = analytics
         self._http: httpx.AsyncClient = shared.http_client.create_service_client(
             "knowledge-pipeline",
             timeout=60.0,
@@ -232,14 +233,14 @@ class IngestionPipeline:
         """
         # Validate eagerly (before background dispatch)
         byte_count: int = len(content.encode("utf-8"))
-        max_bytes = src.core.config.settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
+        max_bytes: int = src.core.config.settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
         if byte_count > max_bytes:
             raise ValueError(
                 f"Document exceeds maximum size: {byte_count / (1024 * 1024):.1f}MB "
                 f"(limit: {src.core.config.settings.MAX_DOCUMENT_SIZE_MB}MB)"
             )
 
-        job = await self._create_job(
+        job: src.domain.models.IngestionJob = await self._create_job(
             source_type=src.domain.models.SourceType.TEXT,
             title=title,
             department=department,
@@ -295,7 +296,7 @@ class IngestionPipeline:
         """
         Submit a URL for ingestion. Returns immediately with a job ID.
         """
-        job = await self._create_job(
+        job: src.domain.models.IngestionJob = await self._create_job(
             source_type=src.domain.models.SourceType.URL,
             source_ref=url,
             title=title,
@@ -351,14 +352,14 @@ class IngestionPipeline:
         Text is extracted from the file, then processed through the standard
         pipeline (clean → enrich → contextualize → index).
         """
-        max_bytes = src.core.config.settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
+        max_bytes: int = src.core.config.settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
         if len(file_bytes) > max_bytes:
             raise ValueError(
                 f"File exceeds maximum size: {len(file_bytes) / (1024 * 1024):.1f}MB "
                 f"(limit: {src.core.config.settings.MAX_DOCUMENT_SIZE_MB}MB)"
             )
 
-        job = await self._create_job(
+        job: src.domain.models.IngestionJob = await self._create_job(
             source_type=src.domain.models.SourceType.FILE,
             source_ref=source_ref or filename,
             title=title or filename,
@@ -425,7 +426,7 @@ class IngestionPipeline:
                 # Stage 1: Extract
                 job.status = src.domain.models.JobStatus.EXTRACTING
                 await self._persist_job(job)
-                extracted = self._extract_text(content)
+                extracted: src.domain.models.ExtractedContent = self._extract_text(content)
                 job.raw_size_bytes = extracted.byte_count
 
                 # Stages 2–5: shared pipeline
@@ -484,7 +485,7 @@ class IngestionPipeline:
                 # Stage 1: Extract from URL
                 job.status = src.domain.models.JobStatus.EXTRACTING
                 await self._persist_job(job)
-                extracted = await self._extract_url(url)
+                extracted: src.domain.models.ExtractedContent = await self._extract_url(url)
                 job.raw_size_bytes = extracted.byte_count
 
                 # Archive fetched content to GCS
@@ -553,7 +554,7 @@ class IngestionPipeline:
                 # Stage 1: Extract text from file
                 job.status = src.domain.models.JobStatus.EXTRACTING
                 await self._persist_job(job)
-                extracted = self._extract_file(
+                extracted: src.domain.models.ExtractedContent = self._extract_file(
                     file_bytes,
                     filename,
                     content_type,
@@ -633,7 +634,7 @@ class IngestionPipeline:
         # Stage 2: Clean
         job.status = src.domain.models.JobStatus.CLEANING
         await self._persist_job(job)
-        cleaned = self._clean(extracted)
+        cleaned: src.domain.models.CleanedContent = self._clean(extracted)
         job.clean_size_bytes = cleaned.cleaned_length
 
         if self._change_detector and job.source_ref:
@@ -652,7 +653,7 @@ class IngestionPipeline:
         # Stage 3: Enrich (metadata extraction) + quality scoring
         job.status = src.domain.models.JobStatus.ENRICHING
         await self._persist_job(job)
-        enriched = self._enrich(cleaned)
+        enriched: src.domain.models.EnrichedMetadata = self._enrich(cleaned)
         if not title and enriched.title:
             job.title = enriched.title
             title = enriched.title
@@ -666,7 +667,7 @@ class IngestionPipeline:
         try:
             from src.domain.quality_gates import content_hash, score_quality
 
-            qr = score_quality(cleaned.text, title)
+            qr: QualityReport = score_quality(cleaned.text, title)
             quality_report = qr.to_dict()
             trust_score = round(qr.overall_score, 1)
             fingerprint = content_hash(cleaned.text)
@@ -805,7 +806,7 @@ class IngestionPipeline:
         Validates size limits and encoding.
         """
         byte_count: int = len(content.encode("utf-8"))
-        max_bytes = src.core.config.settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
+        max_bytes: int = src.core.config.settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
         if byte_count > max_bytes:
             raise ValueError(
                 f"Document exceeds maximum size: {byte_count / (1024 * 1024):.1f}MB "
@@ -987,7 +988,7 @@ class IngestionPipeline:
         """
         import unicodedata
 
-        text = extracted.text
+        text: str = extracted.text
         original_length: int = len(text)
         changes: list[str] = []
 
@@ -1042,19 +1043,19 @@ class IngestionPipeline:
             - LLM-based topic classification
             - Language detection model
         """
-        text = cleaned.text
+        text: str = cleaned.text
 
         # Title: first line that looks like a heading
         title: str = ""
-        lines = text.split("\n")
+        lines: list[str] = text.split("\n")
         for line in lines[:5]:
-            stripped = line.strip()
+            stripped: str = line.strip()
             if stripped and len(stripped) < 200 and not stripped.endswith("."):
                 title = stripped
                 break
 
         # Word count
-        words = text.split()
+        words: list[str] = text.split()
         word_count: int = len(words)
 
         # Sentence count (rough)
@@ -1087,7 +1088,7 @@ class IngestionPipeline:
         # Topic extraction (top repeated multi-word phrases)
         # Simple approach: find bigrams that appear multiple times
         bigrams: dict[str, int] = {}
-        lower_words = text.lower().split()
+        lower_words: list[str] = text.lower().split()
         for i in range(len(lower_words) - 1):
             bigram: str = f"{lower_words[i]} {lower_words[i + 1]}"
             if all(len(word) > 3 for word in bigram.split()):
@@ -1330,7 +1331,7 @@ class IngestionPipeline:
         try:
             from src.adapters.gemini_client import generate_document_context
 
-            context = await generate_document_context(text, title, department)
+            context: str = await generate_document_context(text, title, department)
             if context:
                 # Prepend context as a header so every chunk inherits it
                 return f"[Document Context: {context}]\n\n{text}"
@@ -1589,10 +1590,89 @@ class IngestionPipeline:
         await self._persist_job(job)
         return job
 
+    async def _expire_stale_job_if_needed(
+        self,
+        job: src.domain.models.IngestionJob,
+    ) -> src.domain.models.IngestionJob:
+        stale_timeout_minutes: int = max(
+            int(src.core.config.settings.JOB_STALE_TIMEOUT_MINUTES),
+            1,
+        )
+        terminal_statuses: set[src.domain.models.JobStatus] = {
+            src.domain.models.JobStatus.CANCELLED,
+            src.domain.models.JobStatus.COMPLETED,
+            src.domain.models.JobStatus.FAILED,
+        }
+        if job.status in terminal_statuses:
+            return job
+
+        now: datetime.datetime = datetime.datetime.now(datetime.UTC)
+        reference_time: datetime.datetime = job.updated_at or job.created_at
+        age: datetime.timedelta = now - reference_time
+        if age < datetime.timedelta(minutes=stale_timeout_minutes):
+            return job
+
+        prior_stage: str = job.status.value
+        job.status = src.domain.models.JobStatus.FAILED
+        job.failed_at_stage = job.failed_at_stage or prior_stage
+        job.error = (
+            f"Job exceeded stale timeout ({stale_timeout_minutes} minutes) "
+            f"while in '{prior_stage}'"
+        )
+        job.updated_at = now
+        job.completed_at = now
+        await self._persist_job(job)
+        src.core.logging.logger.warning(
+            "Marked stale ingestion job as failed",
+            extra={
+                "job_id": job.id,
+                "status": prior_stage,
+                "stale_timeout_minutes": stale_timeout_minutes,
+            },
+        )
+        return job
+
+    async def cancel_job(self, job_id: str) -> src.domain.models.IngestionJob | None:
+        """Best-effort cancellation for a queued or active ingestion job."""
+        if not self._job_store:
+            return None
+
+        job = await self._job_store.get(job_id)
+        if job is None:
+            return None
+
+        terminal_statuses: set[src.domain.models.JobStatus] = {
+            src.domain.models.JobStatus.CANCELLED,
+            src.domain.models.JobStatus.COMPLETED,
+            src.domain.models.JobStatus.FAILED,
+        }
+        if job.status in terminal_statuses:
+            return job
+
+        prior_stage = job.status.value
+        now: datetime.datetime = datetime.datetime.now(datetime.UTC)
+        job.status = src.domain.models.JobStatus.CANCELLED
+        job.failed_at_stage = job.failed_at_stage or prior_stage
+        job.error = "Cancelled by user request"
+        job.updated_at = now
+        job.completed_at = now
+        await self._persist_job(job)
+        src.core.logging.logger.info(
+            "Cancelled ingestion job",
+            extra={
+                "job_id": job.id,
+                "status": prior_stage,
+            },
+        )
+        return job
+
     async def get_job(self, job_id: str) -> src.domain.models.IngestionJob | None:
         """Get an ingestion job by ID from the persistent store."""
         if self._job_store:
-            return await self._job_store.get(job_id)
+            job = await self._job_store.get(job_id)
+            if job is None:
+                return None
+            return await self._expire_stale_job_if_needed(job)
         return None
 
     async def list_jobs(
@@ -1602,5 +1682,9 @@ class IngestionPipeline:
     ) -> tuple[list[src.domain.models.IngestionJob], int]:
         """List all jobs with pagination from the persistent store."""
         if self._job_store:
-            return await self._job_store.list(limit=limit, offset=offset)
+            jobs, total = await self._job_store.list(limit=limit, offset=offset)
+            normalized_jobs: list[src.domain.models.IngestionJob] = []
+            for job in jobs:
+                normalized_jobs.append(await self._expire_stale_job_if_needed(job))
+            return normalized_jobs, total
         return [], 0

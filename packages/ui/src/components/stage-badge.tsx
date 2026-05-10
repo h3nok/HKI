@@ -15,11 +15,11 @@ const stageBadgeVariants = cva(
     variants: {
       stage: {
         INTAKE: "bg-gray-100 text-gray-700 border border-gray-200",
-        TRIAGE: "bg-violet-50 text-violet-700 border border-violet-200",
-        EXPLORE: "bg-sky-50 text-sky-700 border border-sky-200",
-        PILOT: "bg-amber-50 text-amber-700 border border-amber-200",
-        SCALE: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-        OPERATE: "bg-green-50 text-green-700 border border-green-200",
+        TRIAGE: "bg-primary/10 text-primary border border-primary/25",
+        EXPLORE: "bg-primary/10 text-primary border border-primary/25",
+        PILOT: "bg-primary/10 text-primary border border-primary/25",
+        SCALE: "bg-primary/10 text-primary border border-primary/25",
+        OPERATE: "bg-primary/10 text-primary border border-primary/25",
         RETIRE: "bg-gray-100 text-gray-500 border border-gray-200",
       },
       size: {

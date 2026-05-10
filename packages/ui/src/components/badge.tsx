@@ -21,15 +21,15 @@ const badgeVariants = cva(
         outline: "border-border/40 text-foreground hover:bg-accent/50 backdrop-blur-sm font-bold tracking-widest uppercase",
         accent: "border-transparent bg-accent/80 backdrop-blur-md text-accent-foreground shadow-sm hover:bg-accent/90 font-bold tracking-widest uppercase",
         success:
-          "border-[#a7f3d0] dark:border-[#065f46] bg-[#ecfdf5] dark:bg-[#064e3b]/20 text-[#065f46] dark:text-[#6ee7b7] shadow-sm",
+          "border-primary/25 bg-primary/10 text-primary shadow-sm",
         warning:
-          "border-[#fde68a] dark:border-[#78350f] bg-[#fffbeb] dark:bg-[#78350f]/20 text-[#92400e] dark:text-[#fcd34d] shadow-sm",
+          "border-primary/25 bg-primary/10 text-primary shadow-sm",
         "hki-blue":
-          "border-[#99CBEB]/40 dark:border-[#00528E]/40 bg-[#E6F2FA] dark:bg-[#0066B2]/10 text-[#0066B2] dark:text-[#66B1E1] shadow-sm",
+          "border-primary/25 bg-primary/10 text-primary shadow-sm",
         "hki-red":
-          "border-[#F9D1D9]/40 dark:border-[#880E21]/40 bg-[#FCE8EC] dark:bg-[#E31837]/10 text-[#E31837] dark:text-[#F3A3B3] shadow-sm",
+          "border-primary/25 bg-primary/10 text-primary shadow-sm",
         brand:
-          "border-transparent bg-linear-to-r from-[#0066B2] to-[#004A82] text-white shadow-sm",
+          "border-transparent bg-primary text-white shadow-sm",
       },
     },
     defaultVariants: {

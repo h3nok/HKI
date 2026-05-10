@@ -14,9 +14,9 @@ import { healthColor } from "./maturity-model";
 import type { MaturityResult } from "./maturity-model";
 
 // ── Brand palette — sourced from @hki/ui design tokens ────────────────────
-const B_BLUE = HKI_IRIS; // #0066B2
-const B_BLUE_MID = brandColors.blue[400] as string; // #3397D7 — lighter arc start
-const B_BLUE_DEEP = brandColors.blue[700] as string; // #003E6B — deeper arc end
+const B_BLUE = HKI_IRIS; // #0E7C7B
+const B_BLUE_MID = brandColors.blue[400] as string; // #1FA9A5 — lighter arc start
+const B_BLUE_DEEP = brandColors.blue[700] as string; // #094948 — deeper arc end
 const B_RED = "color-mix(in srgb, var(--primary) 72%, var(--foreground) 28%)";
 const B_RED_DEEP =
   "color-mix(in srgb, var(--primary) 52%, var(--foreground) 48%)";

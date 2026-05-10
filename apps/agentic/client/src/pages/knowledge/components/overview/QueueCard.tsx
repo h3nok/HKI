@@ -46,7 +46,7 @@ export default function QueueCard({
   }, [jobsQ.data, selectedStream]);
 
   const activeJobs = jobs.filter(
-    j => !["completed", "failed"].includes(j.status)
+    j => !["completed", "failed", "cancelled"].includes(j.status)
   ).length;
   const failedJobs = jobs.filter(j => j.status === "failed").length;
   const pendingCount = pendingReviews.length;

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { jwtVerify } from "jose";
 
 import type { User } from "../../drizzle/schema";
-import { signRequestJwt } from "./sign-request-jwt";
+import { signRequestJwt, signRequestJwtWithEnvelope } from "./sign-request-jwt";
 
 const ORIGINAL_SERVICE_AUTH_SECRET = process.env.SERVICE_AUTH_SECRET;
 const ORIGINAL_JWT_SECRET = process.env.JWT_SECRET;
@@ -69,6 +69,36 @@ describe("signRequestJwt", () => {
     expect(payload.scopes).toEqual(["pharmacy"]);
     expect(payload.stream_id).toBe("pharmacy");
     expect(payload.org_id).toBe("default");
+  });
+
+  it("returns a sanitized HKI envelope without token material", async () => {
+    process.env.SERVICE_AUTH_SECRET = "unit-test-service-secret";
+    delete process.env.JWT_SECRET;
+    process.env.KB_HERMETIC_ISOLATION = "true";
+
+    const { token, envelope } = await signRequestJwtWithEnvelope(
+      makeUser(),
+      "pharmacy",
+      ["pharmacy"]
+    );
+
+    expect(token).toMatch(/^[^.]+\.[^.]+\.[^.]+$/);
+    expect(envelope.envelope_version).toBe("hki.request.v1");
+    expect(envelope.issuer).toBe("agentic-bff");
+    expect(envelope.audience).toBe("internal-services");
+    expect(envelope.boundary).toMatchObject({
+      scope: "pharmacy",
+      stream_id: "pharmacy",
+      hermetic: true,
+    });
+    expect(envelope.boundary.scopes).toEqual(["pharmacy"]);
+    expect(envelope.principal).toMatchObject({
+      id: "1",
+      name: "Scoped User",
+      role: "admin",
+    });
+    expect(envelope.token_material).toBe("redacted");
+    expect(JSON.stringify(envelope)).not.toContain(token);
   });
 
   it("fails closed when hermetic isolation omits an explicit scope", async () => {

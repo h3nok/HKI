@@ -22,7 +22,22 @@ import type { User } from "../drizzle/schema";
 const log = createLogger("job-watcher");
 
 // Terminal statuses — stop polling once reached.
-const TERMINAL_STATUSES = new Set(["completed", "failed", "cancelled"]);
+const TERMINAL_STATUSES = new Set([
+  "completed",
+  "failed",
+  "cancelled",
+  "timeout",
+  "expired",
+]);
+
+export function isTerminalJobStatus(
+  status: string | null | undefined
+): boolean {
+  const normalized = String(status ?? "")
+    .trim()
+    .toLowerCase();
+  return normalized.length > 0 && TERMINAL_STATUSES.has(normalized);
+}
 
 // Poll interval schedule (ms). Starts fast, slows down over time.
 // Rationale: most text/URL ingestions complete in < 30s; large PDFs take longer.
@@ -131,6 +146,17 @@ async function watchJob(
         signal: AbortSignal.timeout(8_000),
       });
 
+      if (resp.status === 404) {
+        log.info({ jobId }, "Job poll returned 404; treating job as expired");
+        broadcastJobUpdate(userId, {
+          id: jobId,
+          status: "expired",
+          error:
+            "Job record is no longer available. It may have been cleaned up after retention TTL.",
+        });
+        return;
+      }
+
       if (!resp.ok) {
         // Service temporarily unavailable — keep retrying but don't advance schedule.
         log.warn(
@@ -155,7 +181,7 @@ async function watchJob(
         );
       }
 
-      if (TERMINAL_STATUSES.has(currentStatus)) {
+      if (isTerminalJobStatus(currentStatus)) {
         log.info(
           { jobId, status: currentStatus },
           "Job reached terminal state, stopping watcher"

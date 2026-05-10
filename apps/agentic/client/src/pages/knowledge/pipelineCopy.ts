@@ -108,6 +108,12 @@ const ACTIVE_PIPELINE_STATUSES = new Set([
   "indexing",
 ]);
 
+const TERMINAL_PIPELINE_STATUSES = new Set([
+  "completed",
+  "failed",
+  "cancelled",
+]);
+
 function isKnowledgePipelineStage(
   value: string | null | undefined
 ): value is KnowledgePipelineStage {
@@ -131,6 +137,8 @@ export function getPipelineStatusLabel(
   if (status === "manual_check") return "Check Pipeline Status";
   if (status === "queued") return "Queued";
   if (status === "failed") return "Needs Attention";
+  if (status === "cancelled")
+    return tone === "full" ? "Cancelled" : "Cancelled";
 
   if (isKnowledgePipelineStage(status)) {
     const copy = PIPELINE_STAGE_COPY[status];
@@ -147,6 +155,10 @@ export function getPipelineStatusLabel(
     return `${copy.compactLabel} Failed`;
   }
 
+  if (TERMINAL_PIPELINE_STATUSES.has(status)) {
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  }
+
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
@@ -156,6 +168,17 @@ export function getPipelineCoachCopy(opts: {
   error?: string | null;
 }) {
   const { status, failedAtStage, error } = opts;
+
+  if (status === "cancelled") {
+    return {
+      title: "Processing was cancelled",
+      whatHappened: "The job was stopped before it could finish the pipeline.",
+      whyItMatters:
+        "Cancelled jobs do not become searchable knowledge, so the source may need to be added again later.",
+      nextStep:
+        "If this was accidental, start a new ingest job. Otherwise no further action is needed.",
+    };
+  }
 
   if (status === "manual_check") {
     return {

@@ -8,7 +8,6 @@
 import { useCallback, useMemo } from "react";
 
 import {
-  BookOpen,
   MessageSquare,
   ChevronsUpDown,
   LogOut,
@@ -27,6 +26,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  HkiMark,
 } from "@hki/ui";
 import {
   Sidebar,
@@ -41,6 +41,10 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  AppSidebarBrand,
+  AppSidebarSectionLabel,
+} from "@/components/ui/app-shell-primitives";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useFeatureAccess } from "@/_core/hooks/useFeatureAccess";
 import { usePermissions } from "@/_core/hooks/usePermissions";
@@ -199,7 +203,7 @@ export default function KnowledgeSidebar() {
       collapsible="icon"
       className={cn(
         "kb-sidebar-shell border-r-0",
-        // ── Sidebar surface — clean neutral with HKI Blue accent ──
+        // ── Sidebar surface — clean neutral with HKI Iris accent ──
         "[--sidebar-primary:var(--primary)]",
         "[--sidebar-primary-foreground:#ffffff] dark:[--sidebar-primary-foreground:#141820]",
         "**:data-[slot=sidebar-inner]:overflow-hidden",
@@ -213,10 +217,10 @@ export default function KnowledgeSidebar() {
       <SidebarHeader
         className={cn(
           "justify-center",
-          isCollapsed ? "px-0 py-2.5" : "px-0 pt-0 pb-3"
+          isCollapsed ? "px-2 py-3" : "px-4 pt-4 pb-3"
         )}
       >
-        <a
+        <AppSidebarBrand
           href={knowledgeHref}
           onClick={e => {
             if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
@@ -225,42 +229,13 @@ export default function KnowledgeSidebar() {
               setLocation(knowledgeHref);
             }
           }}
-          className={cn(
-            "kb-sidebar-brand-card group/brand flex w-full items-center",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-            isCollapsed
-              ? "justify-center w-full py-3"
-              : ["gap-3.5 px-5 py-4"].join(" ")
-          )}
-          aria-label="Knowledge Domains Home"
-        >
-          <div
-            className={cn(
-              "flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border border-primary/20",
-              k.duoToneFill
-            )}
-          >
-            <BookOpen className="h-5 w-5" />
-          </div>
-          {!isCollapsed && (
-            <div className="min-w-0 flex-1">
-              <div className="min-w-0">
-                <div className={cn(k.heading, "truncate")}>
-                  <span className={k.accentText}>Knowledge</span>{" "}
-                  <span className={k.brandRedText}>Base</span>
-                </div>
-                <div
-                  className={cn(
-                    k.muted,
-                    "mt-1 truncate text-[11px] font-semibold uppercase tracking-[0.22em]"
-                  )}
-                >
-                  HERMETIC
-                </div>
-              </div>
-            </div>
-          )}
-        </a>
+          collapsed={isCollapsed}
+          eyebrow="Hermetic"
+          title="Knowledge Domains"
+          ariaLabel="Knowledge Domains Home"
+          className="kb-sidebar-product-brand"
+          icon={<HkiMark size={24} variant="color" />}
+        />
       </SidebarHeader>
 
       {/* ═══════════════════════════════════════════════════════════════════
@@ -272,9 +247,9 @@ export default function KnowledgeSidebar() {
         {/* ── Domain ── */}
         {!isCollapsed && (
           <div className="px-3.5 pt-2 pb-1">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+            <AppSidebarSectionLabel>
               Domain
-            </span>
+            </AppSidebarSectionLabel>
           </div>
         )}
 
@@ -313,9 +288,9 @@ export default function KnowledgeSidebar() {
         {/* ── Operations ── */}
         {!isCollapsed && (
           <div className="px-3.5 pt-4 pb-1">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+            <AppSidebarSectionLabel>
               Operations
-            </span>
+            </AppSidebarSectionLabel>
           </div>
         )}
 

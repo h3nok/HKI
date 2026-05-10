@@ -17,6 +17,7 @@ export type FeatureFlagKey =
   | "release.chat.attachments"
   | "release.chat.voice"
   | "release.chat.rerun"
+  | "release.chat.activityPanel"
   | "release.chat.clearAllTasks"
   | "release.knowledge.tabs.overview"
   | "release.knowledge.overview.contentReadiness"
@@ -153,6 +154,19 @@ export const FEATURE_FLAG_DEFINITIONS: readonly FeatureFlagDefinition[] = [
     clientVisible: true,
     environments: ["development", "test", "staging", "production"],
     owner: "platform-chat",
+  },
+  {
+    key: "release.chat.activityPanel",
+    category: "release",
+    label: "Chat activity panel",
+    description:
+      "Controls whether the agent activity, safety, context, and workflow sidebar is available in Agent Chat.",
+    defaultEnabled: true,
+    minimumRole: "viewer",
+    adminEditable: true,
+    clientVisible: true,
+    environments: ["development", "test", "staging", "production"],
+    owner: "platform-observability",
   },
   {
     key: "release.chat.clearAllTasks",
@@ -722,6 +736,7 @@ export const FEATURE_FLAG_PRESETS: readonly FeatureFlagPresetDefinition[] = [
       "release.chat.attachments": false,
       "release.chat.voice": false,
       "release.chat.rerun": true,
+      "release.chat.activityPanel": true,
       "release.chat.clearAllTasks": false,
       "release.knowledge.tabs.overview": true,
       "release.knowledge.overview.contentReadiness": true,
@@ -777,6 +792,7 @@ export const FEATURE_FLAG_PRESETS: readonly FeatureFlagPresetDefinition[] = [
       "release.chat.attachments": false,
       "release.chat.voice": false,
       "release.chat.rerun": true,
+      "release.chat.activityPanel": true,
       "release.chat.clearAllTasks": false,
       "release.knowledge.tabs.overview": true,
       "release.knowledge.overview.contentReadiness": true,
@@ -832,6 +848,7 @@ export const FEATURE_FLAG_PRESETS: readonly FeatureFlagPresetDefinition[] = [
       "release.chat.attachments": true,
       "release.chat.voice": true,
       "release.chat.rerun": true,
+      "release.chat.activityPanel": true,
       "release.chat.clearAllTasks": false,
       "release.knowledge.tabs.overview": true,
       "release.knowledge.overview.contentReadiness": true,

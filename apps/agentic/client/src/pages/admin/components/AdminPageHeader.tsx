@@ -42,21 +42,28 @@ export function AdminPageHeader({
       interactive={false}
       elevation="flat"
       size="md"
-      className={cn(a.hero, "relative overflow-hidden rounded-xl", className)}
+      className={cn(
+        a.hero,
+        "admin-page-header relative overflow-hidden rounded-xl",
+        className
+      )}
     >
-      <div className="flex flex-col gap-5 px-6 py-5 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
+      <div className="admin-page-header__main flex flex-col gap-5 px-6 py-5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="admin-page-header__copy min-w-0 flex-1">
           <SectionPill
             label={eyebrow}
             icon={Icon}
-            className={cn(a.pillNeutral, "rounded-full")}
+            className={cn(
+              a.pillNeutral,
+              "admin-page-header__eyebrow rounded-full"
+            )}
           />
 
           <div className="mt-3 flex items-start gap-4">
             <div
               className={cn(
                 a.iconPrimary,
-                "mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                "admin-page-header__icon mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
               )}
             >
               <Icon className="h-5 w-5" />
@@ -74,18 +81,20 @@ export function AdminPageHeader({
         </div>
 
         {action ? (
-          <div className="shrink-0 self-start lg:pl-5">{action}</div>
+          <div className="admin-page-header__action shrink-0 self-start lg:pl-5">
+            {action}
+          </div>
         ) : null}
       </div>
 
       {stats.length > 0 && (
-        <div className={cn(a.dataPanel, "px-6 py-4")}>
-          <div className="flex flex-wrap items-center gap-2">
+        <div className={cn(a.dataPanel, "admin-page-header__stats px-6 py-4")}>
+          <div className="admin-page-header__stats-grid flex flex-wrap items-center gap-2">
             {stats.map(stat => (
               <div
                 key={`${stat.label}:${stat.value}`}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-full px-3 py-1.5",
+                  "admin-page-header__stat inline-flex items-center gap-2 rounded-full px-3 py-1.5",
                   STAT_TONE_CLASS[stat.tone ?? "neutral"]
                 )}
               >

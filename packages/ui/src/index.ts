@@ -20,42 +20,46 @@ export {
  * HKI Innovations Brand Colors
  * Standardized across all AI Platform apps.
  *
- * - HKI Blue: #0066B2 (primary actions, trust, reliability)
- * - HKI Red: #E31837 (emphasis, urgency, important actions)
+ * Canonical palette:
+ * - HKI Iris: #0E7C7B (primary actions, depth, focus)
+ * - Neutral system surfaces for everything else
+ *
+ * The `blue` and `red` keys are legacy compatibility aliases. They both map
+ * to Iris so older app imports do not reintroduce secondary brand hues.
  */
 export const brandColors = {
   name: "HKIs",
   shortName: "Innovations",
   blue: {
-    50: "#E6F2FA",
-    100: "#CCE5F5",
-    200: "#99CBEB",
-    300: "#66B1E1",
-    400: "#3397D7",
-    500: "#0066B2", // ★ Core HKI Blue
-    600: "#00528E",
-    700: "#003E6B",
-    800: "#002A47",
-    900: "#001624",
+    50: "#D5F8F5",
+    100: "#A8F0EB",
+    200: "#6EE0DA",
+    300: "#3DCBC6",
+    400: "#1FA9A5",
+    500: "#0E7C7B", // HKI Iris
+    600: "#0B6261",
+    700: "#094948",
+    800: "#063030",
+    900: "#031818",
   },
   red: {
-    50: "#FCE8EC",
-    100: "#F9D1D9",
-    200: "#F3A3B3",
-    300: "#ED758D",
-    400: "#E74767",
-    500: "#E31837", // ★ Core HKI Red
-    600: "#B6132C",
-    700: "#880E21",
-    800: "#5B0916",
-    900: "#2D050B",
+    50: "#D5F8F5",
+    100: "#A8F0EB",
+    200: "#6EE0DA",
+    300: "#3DCBC6",
+    400: "#1FA9A5",
+    500: "#0E7C7B", // Legacy alias -> HKI Iris
+    600: "#0B6261",
+    700: "#094948",
+    800: "#063030",
+    900: "#031818",
   },
 } as const;
 
 /** HKI Iris — primary brand (Pharos deep teal). */
 export const HKI_IRIS = "#0E7C7B";
-/** HKI Pulse — secondary brand (Pharos warm amber). */
-export const HKI_PULSE = "#E07A1F";
+/** Legacy Pulse alias — resolves to Iris in the strict duotone theme. */
+export const HKI_PULSE = HKI_IRIS;
 /** Full brand object (alias for brandColors) */
 export const BRAND = brandColors;
 

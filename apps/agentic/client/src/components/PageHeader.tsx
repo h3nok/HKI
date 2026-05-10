@@ -1,6 +1,6 @@
 /**
  * Agentic Page Header
- * Executive-grade hero section — lifted card, HKI Blue accents.
+ * Executive-grade hero section — lifted card, HKI Iris accents.
  * Mirrors the IPMS PageHeader component.
  */
 

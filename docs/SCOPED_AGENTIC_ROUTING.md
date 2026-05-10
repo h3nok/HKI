@@ -93,7 +93,8 @@ materialization into domain-local artifacts.
 6. **Constrain retries.** Query rewriting, corrective RAG, and tool retries
    preserve the original envelope.
 7. **Prove it with tests.** Every service must have negative tests for missing,
-   forged, global, and cross-domain runtime access.
+   forged, global, and cross-domain runtime access. The reference app's
+   black-box service proof is `pnpm evidence:hki-services`.
 
 ## Performance Model
 
@@ -159,6 +160,11 @@ Each service should expose black-box tests for these cases:
 - Corrective RAG preserves scope.
 - MCP tool outside the active domain is hidden or denied.
 - Admin cross-domain query cannot be invoked from runtime routes.
+
+The reference evidence runner is documented in
+[HKI Service Evidence](HKI_SERVICE_EVIDENCE.md). It produces a hashed JSON
+bundle for the running service profile and should be attached to releases once
+strict-auth service startup is part of CI.
 
 This is the path from HKI as an architecture to SAR as an industry-standard
 scoped agentic routing discipline.

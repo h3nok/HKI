@@ -48,8 +48,8 @@ const SIGNAL_LABELS: Record<ForwardSignal["key"], string> = {
 };
 
 const RADAR_CENTER = 120;
-const RADAR_RADIUS = 70;
-const RADAR_LABEL_RADIUS = 104;
+const RADAR_RADIUS = 80;
+const RADAR_LABEL_RADIUS = 110;
 
 interface ForwardSignalsPanelProps {
   summary: DashboardSignalsSummary;
@@ -163,9 +163,17 @@ export function ForwardSignalsPanel({ summary }: ForwardSignalsPanelProps) {
         elevation="raised"
         size="md"
         interactive={false}
-        className={cn(a.card, "overflow-hidden rounded-xl")}
+        className={cn(
+          a.card,
+          "admin-forward-signals-card overflow-hidden rounded-xl"
+        )}
       >
-        <div className={cn(a.cardHeader, "flex flex-col gap-3 px-4 pt-4 pb-3")}>
+        <div
+          className={cn(
+            a.cardHeader,
+            "admin-forward-signals-card__header flex flex-col gap-3 px-4 pt-4 pb-3"
+          )}
+        >
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <div
@@ -220,20 +228,20 @@ export function ForwardSignalsPanel({ summary }: ForwardSignalsPanelProps) {
           </div>
         </div>
 
-        <div className="px-3 pb-3 pt-2">
+        <div className="admin-forward-signals-card__body px-3 pb-3 pt-2">
           <div
             className={cn(
               a.inset,
-              "relative overflow-hidden rounded-xl px-2.5 py-3"
+              "admin-forward-signals-card__radar-surface relative overflow-hidden rounded-xl px-2.5 py-3"
             )}
           >
             <div className="grid gap-3">
-              <div className="relative mx-auto aspect-square w-full max-w-48 min-w-0">
+              <div className="admin-forward-signals-card__radar-frame relative mx-auto aspect-square w-full max-w-72 min-w-0 xl:max-w-80">
                 <svg
                   viewBox="0 0 240 240"
                   role="img"
                   aria-label="Forward signal readiness radar"
-                  className="h-full w-full overflow-visible"
+                  className="admin-forward-signals-card__radar h-full w-full overflow-visible"
                 >
                   {[25, 50, 72, 100].map(level => (
                     <polygon
@@ -279,7 +287,7 @@ export function ForwardSignalsPanel({ summary }: ForwardSignalsPanelProps) {
                           x={label.x}
                           y={label.y + 3}
                           textAnchor={textAnchor(label.x)}
-                          className="fill-muted-foreground text-[9px] font-semibold"
+                          className="fill-muted-foreground text-[10px] font-semibold"
                         >
                           {row.shortLabel}
                         </text>
@@ -302,7 +310,7 @@ export function ForwardSignalsPanel({ summary }: ForwardSignalsPanelProps) {
                   <circle
                     cx={RADAR_CENTER}
                     cy={RADAR_CENTER}
-                    r={28}
+                    r={31}
                     fill="var(--card)"
                     stroke="var(--border)"
                     strokeOpacity={0.75}
@@ -327,13 +335,13 @@ export function ForwardSignalsPanel({ summary }: ForwardSignalsPanelProps) {
                 <div className="absolute inset-x-8 bottom-1 h-8 rounded-full bg-primary/8 blur-2xl" />
               </div>
 
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="admin-forward-signals-card__metrics grid grid-cols-3 gap-1.5 border-t border-border/60 pt-2.5">
                 {summaryMetrics.map(metric => (
                   <div
                     key={metric.label}
                     className={cn(
                       SIGNAL_TONES[metric.tone].pill,
-                      "min-w-0 rounded-lg px-1.5 py-1.5"
+                      "admin-forward-signals-card__metric min-w-0 rounded-lg px-1.5 py-1.5"
                     )}
                   >
                     <p className="text-[8px] font-semibold uppercase tracking-normal text-muted-foreground/75">
@@ -346,13 +354,13 @@ export function ForwardSignalsPanel({ summary }: ForwardSignalsPanelProps) {
                 ))}
               </div>
 
-              <div className="divide-y divide-border/45">
+              <div className="admin-forward-signals-card__rows divide-y divide-border/45">
                 {rows.map((row, index) => (
                   <div
                     key={row.key}
                     title={`${row.title}: ${row.label}. ${row.detail}`}
                     className={cn(
-                      "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-1.5 transition-colors hover:bg-background/40",
+                      "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-1 py-1.5 transition-colors hover:bg-background/40",
                       index === 0 && "pt-0"
                     )}
                   >

@@ -123,6 +123,26 @@ export default function PipelinesTab({
       }),
   });
 
+  const cancelJobMut = trpc.knowledge.cancelJob.useMutation({
+    onSuccess: () => {
+      notify({
+        title: "Job cancelled",
+        description: "The running job has been stopped.",
+        severity: "success",
+        group: "pipeline",
+      });
+      jobsQ.refetch();
+      jobDetailQ.refetch();
+    },
+    onError: e =>
+      notify({
+        title: "Cancel failed",
+        description: e.message,
+        severity: "error",
+        group: "pipeline",
+      }),
+  });
+
   const jobs = jobsQ.data?.jobs ?? [];
   const normalizedSearchQuery = deferredSearchQuery.trim().toLowerCase();
   const isSearchPending = searchQuery !== deferredSearchQuery;
@@ -130,8 +150,9 @@ export default function PipelinesTab({
   // ── Derived data ──
   const activeCount = useMemo(
     () =>
-      jobs.filter((j: any) => !["completed", "failed"].includes(j.status))
-        .length,
+      jobs.filter(
+        (j: any) => !["completed", "failed", "cancelled"].includes(j.status)
+      ).length,
     [jobs]
   );
   const completedCount = useMemo(
@@ -149,7 +170,7 @@ export default function PipelinesTab({
     // Status filter
     if (statusFilter === "active")
       result = result.filter(
-        (j: any) => !["completed", "failed"].includes(j.status)
+        (j: any) => !["completed", "failed", "cancelled"].includes(j.status)
       );
     else if (statusFilter === "completed")
       result = result.filter((j: any) => j.status === "completed");
@@ -424,7 +445,14 @@ export default function PipelinesTab({
               detail={expandedJob === job.id ? jobDetailQ.data : null}
               onNavigate={onNavigate}
               onRetry={handleRetry}
+              onCancel={() =>
+                cancelJobMut.mutate({
+                  jobId: job.id,
+                  valueStreamId: job.valueStreamId ?? selectedStream,
+                })
+              }
               isRetrying={reprocessMut.isPending}
+              isCancelling={cancelJobMut.isPending}
             />
           ))}
         </div>
@@ -527,7 +555,9 @@ const PipelineJobRow = memo(function PipelineJobRow({
   detail,
   onNavigate,
   onRetry,
+  onCancel,
   isRetrying,
+  isCancelling,
 }: {
   job: any;
   expanded: boolean;
@@ -535,17 +565,21 @@ const PipelineJobRow = memo(function PipelineJobRow({
   detail: any;
   onNavigate?: (tab: KnowledgeTab, section?: string) => void;
   onRetry?: (documentId: string) => void;
+  onCancel?: () => void;
   isRetrying?: boolean;
+  isCancelling?: boolean;
 }) {
   const meta = JOB_STATUS_META[job.status] ?? JOB_STATUS_META.queued;
   const StatusIcon = meta?.Icon ?? Clock;
   const isCompleted = job.status === "completed";
   const isFailed = job.status === "failed";
-  const isTerminal = isCompleted || isFailed;
+  const isCancelled = job.status === "cancelled";
+  const isTerminal = isCompleted || isFailed || isCancelled;
   const stagesCompleted = detail?.stagesCompleted ?? [];
   const failedAtStage = detail?.job?.failedAtStage ?? null;
   const hasDocument = !!job.documentId;
   const canReAdd = isFailed && !hasDocument && !!onNavigate;
+  const canCancel = !isTerminal && !!onCancel;
 
   const statusLabel = getPipelineStatusLabel(job.status, {
     failedAtStage,
@@ -856,6 +890,23 @@ const PipelineJobRow = memo(function PipelineJobRow({
                     Retry
                   </button>
                 )}
+                {canCancel && (
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      onCancel?.();
+                    }}
+                    disabled={isCancelling}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/18 transition-colors disabled:opacity-40"
+                  >
+                    {isCancelling ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <XCircle className="w-3.5 h-3.5" />
+                    )}
+                    Cancel Job
+                  </button>
+                )}
                 {canReAdd && (
                   <button
                     onClick={() => onNavigate?.("ingest")}
@@ -894,6 +945,8 @@ function arePipelineJobRowPropsEqual(
     onNavigate?: (tab: KnowledgeTab, section?: string) => void;
     onRetry?: (documentId: string) => void;
     isRetrying?: boolean;
+    onCancel?: () => void;
+    isCancelling?: boolean;
   }>,
   next: Readonly<{
     job: any;
@@ -903,6 +956,8 @@ function arePipelineJobRowPropsEqual(
     onNavigate?: (tab: KnowledgeTab, section?: string) => void;
     onRetry?: (documentId: string) => void;
     isRetrying?: boolean;
+    onCancel?: () => void;
+    isCancelling?: boolean;
   }>
 ) {
   return (
@@ -911,7 +966,9 @@ function arePipelineJobRowPropsEqual(
     prev.detail === next.detail &&
     prev.onNavigate === next.onNavigate &&
     prev.onRetry === next.onRetry &&
+    prev.onCancel === next.onCancel &&
     prev.onToggleJob === next.onToggleJob &&
-    prev.isRetrying === next.isRetrying
+    prev.isRetrying === next.isRetrying &&
+    prev.isCancelling === next.isCancelling
   );
 }

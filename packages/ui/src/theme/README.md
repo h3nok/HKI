@@ -29,7 +29,7 @@ import {
 import { colors, surfaces, text, borders } from '@signature/ui';
 
 // Brand colors
-colors.brand.blue[500]  // #2b45c2 - Core brand blue
+colors.brand.blue[500]  // #2b45c2 - Core brand Iris
 colors.brand.red[500]   // #dc2626 - Core brand red
 
 // Warm neutrals (No-Washout palette)

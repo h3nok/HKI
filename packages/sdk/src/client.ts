@@ -20,7 +20,7 @@ import {
 
 function generateId(): string {
   const bytes = new Uint8Array(16);
-  // Node 20+ and modern browsers both expose globalThis.crypto.getRandomValues
+  // Node 24+ and modern browsers both expose globalThis.crypto.getRandomValues
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const webcrypto = (globalThis as any).crypto as { getRandomValues(b: Uint8Array): void };
   webcrypto.getRandomValues(bytes);

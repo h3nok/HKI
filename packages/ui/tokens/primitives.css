@@ -35,20 +35,19 @@
   --color-brand-iris-900: #031818;
   --color-brand-iris-950: #010c0c;
 
-  /* HKI Pulse — Secondary brand, signal, warmth
-     Official: #E07A1F — warm amber (Pharos palette) */
-  --color-brand-pulse-25: #fff8ee;
-  --color-brand-pulse-50: #feebcc;
-  --color-brand-pulse-100: #fdd49a;
-  --color-brand-pulse-200: #fbba68;
-  --color-brand-pulse-300: #f49e3b;
-  --color-brand-pulse-400: #ed8a28;
-  --color-brand-pulse-500: #e07a1f; /* ★ HKI Pulse (warm amber) */
-  --color-brand-pulse-600: #b8611a;
-  --color-brand-pulse-700: #8c4a14;
-  --color-brand-pulse-800: #5e320d;
-  --color-brand-pulse-900: #2f1907;
-  --color-brand-pulse-950: #170c03;
+  /* HKI Pulse — legacy compatibility alias, mapped to Iris for duotone. */
+  --color-brand-pulse-25: #ecfdfc;
+  --color-brand-pulse-50: #d5f8f5;
+  --color-brand-pulse-100: #a8f0eb;
+  --color-brand-pulse-200: #6ee0da;
+  --color-brand-pulse-300: #3dcbc6;
+  --color-brand-pulse-400: #1fa9a5;
+  --color-brand-pulse-500: #0e7c7b;
+  --color-brand-pulse-600: #0b6261;
+  --color-brand-pulse-700: #094948;
+  --color-brand-pulse-800: #063030;
+  --color-brand-pulse-900: #031818;
+  --color-brand-pulse-950: #010c0c;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §2 NEUTRAL SCALE — Clean System Gray
@@ -143,7 +142,7 @@
      - Dark/light mode contrast
      ═══════════════════════════════════════════════════════════════════════════ */
   --color-data-1: #0e7c7b; /* HKI Iris (teal) */
-  --color-data-2: #e07a1f; /* HKI Pulse (amber) */
+  --color-data-2: #0e7c7b; /* HKI Iris duplicate for duotone */
   --color-data-3: #10b981; /* Emerald */
   --color-data-4: #f59e0b; /* Amber */
   --color-data-5: #8b5cf6; /* Violet */

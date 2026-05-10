@@ -12,11 +12,11 @@ import { colors } from './design-system';
  */
 export const signatureTheme: ThemeConfig = {
   token: {
-    colorPrimary: '#0066B2',
-    colorInfo: '#0066B2',
+    colorPrimary: '#0E7C7B',
+    colorInfo: '#0284c7',
     colorSuccess: '#16a34a',
     colorWarning: '#d97706',
-    colorError: '#E31837',
+    colorError: '#dc2626',
     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
     fontSize: 14,
     borderRadius: 6,
@@ -42,7 +42,7 @@ export const signatureTheme: ThemeConfig = {
       algorithm: true,
       controlHeight: 36,
       borderRadius: 6,
-      primaryShadow: '0 2px 0 rgba(0, 102, 178, 0.1)',
+      primaryShadow: '0 2px 0 rgba(14,124,123, 0.12)',
       defaultBorderColor: colors.neutral[200],
       defaultBg: colors.neutral[0],
     },
@@ -58,8 +58,8 @@ export const signatureTheme: ThemeConfig = {
       headerHeight: 64,
     },
     Menu: {
-      itemSelectedBg: '#E6F2FA',
-      itemSelectedColor: '#00528E',
+      itemSelectedBg: '#D5F8F5',
+      itemSelectedColor: '#0B6261',
       itemHoverBg: colors.neutral[75],
       activeBarBorderWidth: 0,
       itemBorderRadius: 6,
@@ -75,13 +75,13 @@ export const signatureTheme: ThemeConfig = {
       colorBgContainer: colors.neutral[0],
       colorBorder: colors.neutral[200],
       hoverBorderColor: colors.neutral[300],
-      activeBorderColor: '#0066B2',
-      activeShadow: '0 0 0 3px rgba(0, 102, 178, 0.15)',
+      activeBorderColor: '#0E7C7B',
+      activeShadow: '0 0 0 3px rgba(14,124,123, 0.16)',
     },
     Select: {
       colorBgContainer: colors.neutral[0],
       colorBorder: colors.neutral[200],
-      optionSelectedBg: '#E6F2FA',
+      optionSelectedBg: '#D5F8F5',
     },
     Modal: {
       contentBg: colors.neutral[0],

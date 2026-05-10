@@ -14,12 +14,15 @@ API conventions:
     - ingest_text() / ingest_url() return immediately with a queued job (background processing).
 """
 
+import datetime
 import types
 import typing
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 import adapters.job_store
+import src.core.config
 import src.domain.models
 import src.domain.pipeline
 
@@ -30,7 +33,7 @@ import src.domain.pipeline
 
 class TestTextExtraction:
     def test_extract_plain_text(self) -> None:
-        result = src.domain.pipeline.IngestionPipeline._extract_text("Hello, this is a test document.")
+        result: src.domain.models.ExtractedContent = src.domain.pipeline.IngestionPipeline._extract_text("Hello, this is a test document.")
         assert result.text == "Hello, this is a test document."
         assert result.byte_count > 0
         assert result.source_type == src.domain.models.SourceType.TEXT
@@ -46,7 +49,7 @@ class TestTextExtraction:
 
     def test_extract_plain_text_size(self) -> None:
         text = "Short document."
-        result = src.domain.pipeline.IngestionPipeline._extract_text(text)
+        result: src.domain.models.ExtractedContent = src.domain.pipeline.IngestionPipeline._extract_text(text)
         assert result.byte_count == len(text.encode("utf-8"))
 
 
@@ -66,30 +69,30 @@ class TestCleaning:
 
     def test_removes_control_characters(self) -> None:
         extracted: src.domain.models.ExtractedContent = self._make_extracted("Hello\x00world\x01test")
-        result = src.domain.pipeline.IngestionPipeline._clean(extracted)
+        result: src.domain.models.CleanedContent = src.domain.pipeline.IngestionPipeline._clean(extracted)
         assert "\x00" not in result.text
         assert "\x01" not in result.text
 
     def test_normalizes_unicode(self) -> None:
         extracted: src.domain.models.ExtractedContent = self._make_extracted("café")
-        result = src.domain.pipeline.IngestionPipeline._clean(extracted)
+        result: src.domain.models.CleanedContent = src.domain.pipeline.IngestionPipeline._clean(extracted)
         assert "caf" in result.text
 
     def test_collapses_blank_lines(self) -> None:
         extracted: src.domain.models.ExtractedContent = self._make_extracted("line1\n\n\n\n\nline2")
-        result = src.domain.pipeline.IngestionPipeline._clean(extracted)
+        result: src.domain.models.CleanedContent = src.domain.pipeline.IngestionPipeline._clean(extracted)
         assert "\n\n\n" not in result.text
 
     def test_strips_trailing_whitespace(self) -> None:
         extracted: src.domain.models.ExtractedContent = self._make_extracted("hello   \nworld   ")
-        result = src.domain.pipeline.IngestionPipeline._clean(extracted)
-        lines = result.text.split("\n")
+        result: src.domain.models.CleanedContent = src.domain.pipeline.IngestionPipeline._clean(extracted)
+        lines: list[str] = result.text.split("\n")
         for line in lines:
             assert line == line.rstrip()
 
     def test_changes_applied_tracked(self) -> None:
         extracted: src.domain.models.ExtractedContent = self._make_extracted("hello\x00\n\n\n\nworld   ")
-        result = src.domain.pipeline.IngestionPipeline._clean(extracted)
+        result: src.domain.models.CleanedContent = src.domain.pipeline.IngestionPipeline._clean(extracted)
         assert len(result.changes_applied) > 0
 
 
@@ -109,45 +112,45 @@ class TestEnrichment:
 
     def test_title_extraction_from_heading(self) -> None:
         text = "Important Document Title\n\nSome body text follows here."
-        result = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
+        result: src.domain.models.EnrichedMetadata = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
         assert "Important Document Title" in result.title
 
     def test_title_fallback(self) -> None:
         # First line ends with "." so it won't match the heading heuristic;
         # the enricher picks the first short non-sentence line as title.
         text = "Short Title\nNo heading here, just regular text content."
-        result = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
+        result: src.domain.models.EnrichedMetadata = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
         assert result.title  # Should extract something
 
     def test_word_count(self) -> None:
         text = "One two three four five."
-        result = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
+        result: src.domain.models.EnrichedMetadata = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
         assert result.word_count == 5
 
     def test_sentence_count(self) -> None:
         text = "First sentence. Second sentence. Third sentence."
-        result = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
+        result: src.domain.models.EnrichedMetadata = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
         assert result.sentence_count == 3
 
     def test_reading_time(self) -> None:
         # 400 words ÷ 200 wpm = 2.0 minutes
         text: str = " ".join(["word"] * 400)
-        result = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
+        result: src.domain.models.EnrichedMetadata = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
         assert result.estimated_reading_time_min >= 1.5
 
     def test_date_extraction(self) -> None:
         text = "This document was created on 2024-01-15. Updated 03/20/2024."
-        result = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
+        result: src.domain.models.EnrichedMetadata = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
         assert len(result.dates_mentioned) >= 1
 
     def test_entity_extraction(self) -> None:
         text = "HKI operates warehouses across the United States."
-        result = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
+        result: src.domain.models.EnrichedMetadata = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
         assert len(result.entities) > 0
 
     def test_topic_extraction(self) -> None:
         text = "inventory management inventory levels inventory tracking supply chain supply chain optimization"
-        result = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
+        result: src.domain.models.EnrichedMetadata = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
         assert len(result.topics) >= 0  # May or may not find topics depending on threshold
 
     def test_extracts_source_id_and_retrieval_terms(self) -> None:
@@ -155,7 +158,7 @@ class TestEnrichment:
             "KB2028004 - EPS Rej NN - Transaction Rejected at Switch or Intermediary\n\n"
             "Enterprise Pharmacy System troubleshooting guidance for pharmacy teams."
         )
-        result = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
+        result: src.domain.models.EnrichedMetadata = src.domain.pipeline.IngestionPipeline._enrich(self._make_cleaned(text))
         assert result.source_id == "KB2028004"
         assert result.system_name == "Enterprise Pharmacy System (EPS)"
         assert "NN" in result.retrieval_terms
@@ -174,14 +177,14 @@ class TestJobTracking:
 
     @pytest.mark.asyncio
     async def test_create_job(self, pipeline: src.domain.pipeline.IngestionPipeline) -> None:
-        job = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Test")
+        job: src.domain.models.IngestionJob = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Test")
         assert job.id
         assert job.status == src.domain.models.JobStatus.QUEUED
         assert job.source_type == src.domain.models.SourceType.TEXT
 
     @pytest.mark.asyncio
     async def test_create_job_with_org_id(self, pipeline: src.domain.pipeline.IngestionPipeline) -> None:
-        job = await pipeline._create_job(
+        job: src.domain.models.IngestionJob = await pipeline._create_job(
             src.domain.models.SourceType.TEXT,
             title="Test",
             org_id="hki",
@@ -190,7 +193,7 @@ class TestJobTracking:
 
     @pytest.mark.asyncio
     async def test_create_job_with_auth_token(self, pipeline: src.domain.pipeline.IngestionPipeline) -> None:
-        job = await pipeline._create_job(
+        job: src.domain.models.IngestionJob = await pipeline._create_job(
             src.domain.models.SourceType.TEXT,
             title="Test",
             auth_token="jwt-token-123",
@@ -199,7 +202,7 @@ class TestJobTracking:
 
     @pytest.mark.asyncio
     async def test_create_job_with_acl_metadata(self, pipeline: src.domain.pipeline.IngestionPipeline) -> None:
-        job = await pipeline._create_job(
+        job: src.domain.models.IngestionJob = await pipeline._create_job(
             src.domain.models.SourceType.TEXT,
             title="Legal Memo",
             classification=src.domain.models.DocumentClassification.RESTRICTED,
@@ -221,14 +224,14 @@ class TestJobTracking:
 
     @pytest.mark.asyncio
     async def test_get_job(self, pipeline: src.domain.pipeline.IngestionPipeline) -> None:
-        job = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Test")
-        retrieved = await pipeline.get_job(job.id)
+        job: src.domain.models.IngestionJob = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Test")
+        retrieved: src.domain.models.IngestionJob | None = await pipeline.get_job(job.id)
         assert retrieved is not None
         assert retrieved.id == job.id
 
     @pytest.mark.asyncio
     async def test_get_nonexistent_job(self, pipeline: src.domain.pipeline.IngestionPipeline) -> None:
-        result = await pipeline.get_job("nonexistent-id")
+        result: src.domain.models.IngestionJob | None = await pipeline.get_job("nonexistent-id")
         assert result is None
 
     @pytest.mark.asyncio
@@ -238,6 +241,74 @@ class TestJobTracking:
         jobs, total = await pipeline.list_jobs()
         assert total >= 2
         assert len(jobs) >= 2
+
+    @pytest.mark.asyncio
+    async def test_get_job_marks_stale_active_job_failed(
+        self,
+        pipeline: src.domain.pipeline.IngestionPipeline,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(src.core.config.settings, "JOB_STALE_TIMEOUT_MINUTES", 1)
+        job: src.domain.models.IngestionJob = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Stale Job")
+        job.status = src.domain.models.JobStatus.EXTRACTING
+        job.updated_at = datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=5)
+        await pipeline._persist_job(job)
+
+        refreshed: src.domain.models.IngestionJob | None = await pipeline.get_job(job.id)
+
+        assert refreshed is not None
+        assert refreshed.status == src.domain.models.JobStatus.FAILED
+        assert refreshed.failed_at_stage == "extracting"
+        assert refreshed.error is not None
+        assert "stale timeout" in refreshed.error
+
+    @pytest.mark.asyncio
+    async def test_get_job_keeps_recent_active_job(
+        self,
+        pipeline: src.domain.pipeline.IngestionPipeline,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(src.core.config.settings, "JOB_STALE_TIMEOUT_MINUTES", 10)
+        job: src.domain.models.IngestionJob = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Fresh Job")
+        job.status = src.domain.models.JobStatus.CLEANING
+        job.updated_at = datetime.datetime.now(datetime.UTC)
+        await pipeline._persist_job(job)
+
+        refreshed: src.domain.models.IngestionJob | None = await pipeline.get_job(job.id)
+
+        assert refreshed is not None
+        assert refreshed.status == src.domain.models.JobStatus.CLEANING
+
+    @pytest.mark.asyncio
+    async def test_cancel_job_marks_active_job_cancelled(
+        self,
+        pipeline: src.domain.pipeline.IngestionPipeline,
+    ) -> None:
+        job: src.domain.models.IngestionJob = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Cancel Me")
+        job.status = src.domain.models.JobStatus.ENRICHING
+        await pipeline._persist_job(job)
+
+        cancelled: src.domain.models.IngestionJob | None = await pipeline.cancel_job(job.id)
+
+        assert cancelled is not None
+        assert cancelled.status == src.domain.models.JobStatus.CANCELLED
+        assert cancelled.failed_at_stage == "enriching"
+        assert cancelled.error == "Cancelled by user request"
+        assert cancelled.completed_at is not None
+
+    @pytest.mark.asyncio
+    async def test_cancel_job_keeps_completed_terminal_state(
+        self,
+        pipeline: src.domain.pipeline.IngestionPipeline,
+    ) -> None:
+        job: src.domain.models.IngestionJob = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Already Done")
+        job.status = src.domain.models.JobStatus.COMPLETED
+        await pipeline._persist_job(job)
+
+        cancelled: src.domain.models.IngestionJob | None = await pipeline.cancel_job(job.id)
+
+        assert cancelled is not None
+        assert cancelled.status == src.domain.models.JobStatus.COMPLETED
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -309,7 +380,7 @@ class TestAsyncPipeline:
         pipeline: src.domain.pipeline.IngestionPipeline,
     ) -> None:
         """ingest_text returns a queued job without waiting."""
-        result = await pipeline.ingest_text(
+        result: src.domain.models.IngestResponse = await pipeline.ingest_text(
             content="Test content for async processing.",
             title="Async Test",
             auth_token="test-jwt",
@@ -461,7 +532,7 @@ class TestVectorStoreForwarding:
         pipeline: src.domain.pipeline.IngestionPipeline,
     ) -> None:
         """ingest_url returns a queued job without waiting."""
-        result = await pipeline.ingest_url(
+        result: src.domain.models.IngestResponse = await pipeline.ingest_url(
             url="https://example.com",
             auth_token="test-jwt",
             org_id="test-org",
@@ -475,11 +546,11 @@ class TestVectorStoreForwarding:
         pipeline: src.domain.pipeline.IngestionPipeline,
     ) -> None:
         """Job should be in the store immediately after ingest_text."""
-        result = await pipeline.ingest_text(
+        result: src.domain.models.IngestResponse = await pipeline.ingest_text(
             content="Persistence test.",
             title="Persist",
         )
-        job = await pipeline.get_job(result.job_id)
+        job: src.domain.models.IngestionJob | None = await pipeline.get_job(result.job_id)
         assert job is not None
         assert job.title == "Persist"
 

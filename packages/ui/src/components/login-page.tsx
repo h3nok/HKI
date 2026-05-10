@@ -99,10 +99,10 @@ const defaultFooterLinks = [
 // ============================================================================
 
 function LoadingState({ branding }: { branding: PlatformBranding }) {
-  const primaryColor = branding.primaryColor || "#0066B2";
+  const primaryColor = branding.primaryColor || "#0E7C7B";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="flex flex-col items-center gap-8">
         <div className="relative">
           {branding.icon || (
@@ -148,8 +148,8 @@ function HeroPanel({
   features?: string[] | undefined;
   copyright?: string | undefined;
 }) {
-  const primaryColor = branding.primaryColor || "#0066B2";
-  const accentColor = branding.accentColor || "#E31837";
+  const primaryColor = branding.primaryColor || "#0E7C7B";
+  const accentColor = branding.accentColor || primaryColor;
 
   return (
     <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
@@ -158,10 +158,10 @@ function HeroPanel({
         <div
           className="absolute inset-0"
           style={{
-            background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}cc 50%, ${primaryColor}99 100%)`,
+            background: primaryColor,
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-black/10" />
       </div>
 
       {/* Decorative elements */}
@@ -169,14 +169,14 @@ function HeroPanel({
         <div
           className="absolute -top-32 -right-32 w-[700px] h-[700px] rounded-full blur-3xl animate-pulse"
           style={{
-            background: `linear-gradient(to bottom left, ${accentColor}4d, ${accentColor}1a, transparent)`,
+            background: `${accentColor}26`,
             animationDuration: "4s",
           }}
         />
         <div
           className="absolute -bottom-48 -left-48 w-[600px] h-[600px] rounded-full blur-3xl animate-pulse"
           style={{
-            background: "linear-gradient(to top right, rgba(255,255,255,0.1), transparent)",
+            background: "rgba(255,255,255,0.08)",
             animationDuration: "6s",
             animationDelay: "2s",
           }}
@@ -185,7 +185,7 @@ function HeroPanel({
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: `linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)`,
+            backgroundImage: "none",
             backgroundSize: "50px 50px",
           }}
         />
@@ -279,7 +279,7 @@ function AuthButton({
           provider.disabled && "opacity-50 cursor-not-allowed"
         )}
         style={{
-          background: `linear-gradient(to right, ${primaryColor}, ${primaryColor}dd)`,
+          background: primaryColor,
           boxShadow: `0 10px 25px -5px ${primaryColor}40`,
         }}
       >
@@ -339,11 +339,11 @@ function LoginForm({
   onAuthStart?: ((provider: AuthProvider) => void) | undefined;
   environment?: "development" | "staging" | "production" | undefined;
 }) {
-  const primaryColor = branding.primaryColor || "#0066B2";
+  const primaryColor = branding.primaryColor || "#0E7C7B";
   const links = footerLinks || defaultFooterLinks;
 
   return (
-    <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-gray-50/50">
+    <div className="flex-1 flex flex-col bg-white">
       {/* Mobile header */}
       <header className="lg:hidden p-6 border-b border-gray-100 bg-white">
         <div className="flex items-center gap-4">
@@ -529,20 +529,20 @@ export const PLATFORM_PRESETS = {
   agentic: {
     name: "Agentic AI",
     tagline: "Enterprise AI Assistant",
-    primaryColor: "#0066B2",
-    accentColor: "#E31837",
+    primaryColor: "#0E7C7B",
+    accentColor: "#0E7C7B",
   },
   ipms: {
     name: "Innovation Hub",
     tagline: "Portfolio Management System",
-    primaryColor: "#0066B2",
-    accentColor: "#E31837",
+    primaryColor: "#0E7C7B",
+    accentColor: "#0E7C7B",
   },
   hub: {
     name: "HKIs",
     tagline: "Technology Innovation Hub",
-    primaryColor: "#0066B2",
-    accentColor: "#E31837",
+    primaryColor: "#0E7C7B",
+    accentColor: "#0E7C7B",
   },
 } as const;
 

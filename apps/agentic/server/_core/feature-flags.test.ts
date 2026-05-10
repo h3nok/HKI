@@ -18,6 +18,18 @@ describe("feature flag evaluation", () => {
     });
 
     expect(result.flags["release.chat.promptGenerator"]).toBe(true);
+    expect(result.flags["release.chat.activityPanel"]).toBe(true);
+  });
+
+  it("ships the chat activity panel as a viewer release surface while keeping raw payloads debug-only", () => {
+    const result = evaluateFeatureFlagsForUser({
+      user: { role: "viewer", valueStreams: "pharmacy" },
+      environment: "production",
+    });
+
+    expect(result.flags["release.chat.activityPanel"]).toBe(true);
+    expect(result.flags["debug.chat.activityPanel"]).toBe(false);
+    expect(result.flags["debug.chat.tracePayloads"]).toBe(false);
   });
 
   it("keeps minimum-role gates enforced even when an override exists", () => {
@@ -67,6 +79,7 @@ describe("feature flag evaluation", () => {
     expect(viewerContext.scopes).toEqual(["global"]);
     expect(viewerContext.permissions.length).toBeGreaterThan(0);
     expect(viewerContext.flags["debug.chat.activityPanel"]).toBe(false);
+    expect(viewerContext.flags["release.chat.activityPanel"]).toBe(true);
     expect(viewerContext.flags["debug.chat.tracePayloads"]).toBe(true);
   });
 
@@ -86,6 +99,7 @@ describe("feature flag evaluation", () => {
     expect(result.flags["release.chat.attachments"]).toBe(false);
     expect(result.flags["release.chat.voice"]).toBe(false);
     expect(result.flags["release.chat.rerun"]).toBe(true);
+    expect(result.flags["release.chat.activityPanel"]).toBe(true);
     expect(result.flags["release.chat.clearAllTasks"]).toBe(false);
     expect(result.flags["release.knowledge.ingest.fileUpload"]).toBe(true);
     expect(result.flags["release.knowledge.ingest.textPaste"]).toBe(false);
@@ -118,6 +132,7 @@ describe("feature flag evaluation", () => {
     expect(result.flags["release.chat.attachments"]).toBe(false);
     expect(result.flags["release.chat.voice"]).toBe(false);
     expect(result.flags["release.chat.rerun"]).toBe(true);
+    expect(result.flags["release.chat.activityPanel"]).toBe(true);
     expect(result.flags["release.chat.clearAllTasks"]).toBe(false);
     expect(result.flags["release.knowledge.validate.testSandbox"]).toBe(true);
     expect(result.flags["release.knowledge.validate.quality"]).toBe(true);
@@ -144,6 +159,7 @@ describe("feature flag evaluation", () => {
 
     expect(result.flags["release.chat.attachments"]).toBe(true);
     expect(result.flags["release.chat.voice"]).toBe(true);
+    expect(result.flags["release.chat.activityPanel"]).toBe(true);
     expect(result.flags["release.knowledge.ingest.textPaste"]).toBe(true);
     expect(result.flags["release.knowledge.ingest.urlCrawl"]).toBe(true);
     expect(result.flags["release.knowledge.ingest.connectors"]).toBe(true);

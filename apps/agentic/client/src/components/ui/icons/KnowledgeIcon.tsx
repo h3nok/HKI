@@ -2,8 +2,8 @@ import React, { useId, useSyncExternalStore } from "react";
 
 const IRIS = "#0E7C7B";
 const IRIS_LIGHT = "#2EA39E";
-const PULSE = "#E07A1F";
-const PULSE_LIGHT = "#F19A4A";
+const PULSE = IRIS;
+const PULSE_LIGHT = IRIS_LIGHT;
 
 function subscribeDark(cb: () => void) {
   const obs = new MutationObserver(cb);

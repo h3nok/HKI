@@ -31,6 +31,7 @@ export const JOB_STATUSES = [
   "chunking",
   "embedding",
   "indexing",
+  "cancelled",
   "completed",
   "failed",
 ] as const;

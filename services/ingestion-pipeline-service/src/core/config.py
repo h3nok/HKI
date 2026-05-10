@@ -15,10 +15,10 @@ Environment Variables:
     DEFAULT_CHUNK_OVERLAP   — Default token overlap between chunks
 """
 
-from shared.config import ServiceSettings
+import shared.config
 
 
-class Settings(ServiceSettings):
+class Settings(shared.config.ServiceSettings):
     """Application settings loaded from environment."""
 
     KB_HERMETIC_ISOLATION: bool = False
@@ -53,6 +53,7 @@ class Settings(ServiceSettings):
     # ── Processing Limits ─────────────────────────────────────────────────
     MAX_DOCUMENT_SIZE_MB: int = 50  # Reject documents larger than this
     MAX_CONCURRENT_JOBS: int = 5  # Parallel ingestion jobs (semaphore)
+    JOB_STALE_TIMEOUT_MINUTES: int = 30  # Auto-fail non-terminal jobs stuck past this age
     DEFAULT_CHUNK_SIZE: int = 512  # Target tokens per chunk
     DEFAULT_CHUNK_OVERLAP: int = 64  # Token overlap between chunks
     DEFAULT_CHUNK_STRATEGY: str = "sentence"  # fixed | sentence | sliding_window

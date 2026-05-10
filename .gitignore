@@ -71,4 +71,5 @@ coverage/
 
 # HKI evidence registry artifact (built by scripts/build-conformance-registry.mjs)
 /conformance.json
+/artifacts/hki/*.json
 scripts/publish-kit/out/

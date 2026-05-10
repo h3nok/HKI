@@ -182,6 +182,7 @@ class RedisJobStore:
         non-terminal ones as failed so the UI doesn't show zombie pipelines.
         """
         terminal: set[str] = {
+            src.domain.models.JobStatus.CANCELLED.value,
             src.domain.models.JobStatus.COMPLETED.value,
             src.domain.models.JobStatus.FAILED.value,
         }

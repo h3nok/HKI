@@ -3,13 +3,11 @@
  * Eliminates duplication across dashboard pages.
  */
 
-/** HKI Blue — matches HKI_IRIS from root */
-const BLUE = "#0066B2";
-/** HKI Red — matches HKI_PULSE from root */
-const RED = "#E31837";
+/** HKI Iris — matches HKI_IRIS from root */
+const BLUE = "#0E7C7B";
 
-/** Blue → Red duotone gradient */
-export const DUOTONE = `linear-gradient(135deg, ${BLUE} 0%, ${RED} 100%)`;
+/** Flat HKI duotone accent */
+export const DUOTONE = BLUE;
 
 /** Smooth ease curve */
 export const EASE = [0.22, 1, 0.36, 1] as const;

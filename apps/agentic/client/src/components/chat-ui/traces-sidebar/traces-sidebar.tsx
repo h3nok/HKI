@@ -41,7 +41,7 @@ import { JsonViewer } from "../ui/json-viewer";
 import { TaskProgressCompact, type TaskStep } from "../ui/task-progress";
 import type { JsonValue, Span } from "../types";
 import { LAYOUT, FONT_FAMILY } from "@/design-system/tokens";
-import { cn, ui } from "@hki/ui";
+import { cn, HkiMark, ui } from "@hki/ui";
 import { useScope } from "@/_core/hooks/useScope";
 
 type TracesSidebarProps = {
@@ -59,6 +59,7 @@ const STEP_NAMES: Record<string, string> = {
   routing: "Routing Request",
   prompt_stack: "Prompt Stack",
   memory_recall: "Recalling Context",
+  hki_envelope: "HKI Envelope",
   thinking: "Reasoning",
   planning: "Planning Approach",
   tool_call: "Tool Execution",
@@ -81,6 +82,56 @@ const STEP_NAMES: Record<string, string> = {
 
 // Internal steps hidden from the activity panel
 const HIDDEN_STEP_TYPES = new Set(["memory_store", "final_response"]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function readString(
+  source: Record<string, unknown> | null | undefined,
+  key: string
+): string | null {
+  const value = source?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function readStringArray(
+  source: Record<string, unknown> | null | undefined,
+  key: string
+): string[] {
+  const value = source?.[key];
+  if (!Array.isArray(value)) return [];
+  return value.map(item => String(item).trim()).filter(Boolean);
+}
+
+function getEnvelopeBoundary(attributes: Record<string, unknown> | undefined): {
+  boundaryLabel: string;
+  scopes: string[];
+  orgId: string | null;
+  subject: string | null;
+  role: string | null;
+} | null {
+  const envelope = isRecord(attributes?.hki_envelope)
+    ? attributes?.hki_envelope
+    : null;
+  if (!envelope) return null;
+
+  const boundary = isRecord(envelope.boundary) ? envelope.boundary : null;
+  const principal = isRecord(envelope.principal) ? envelope.principal : null;
+  const organization = isRecord(envelope.organization)
+    ? envelope.organization
+    : null;
+  const scope = readString(boundary, "scope");
+  const streamId = readString(boundary, "stream_id");
+
+  return {
+    boundaryLabel: streamId || scope || "runtime scope",
+    scopes: readStringArray(boundary, "scopes"),
+    orgId: readString(organization, "id"),
+    subject: readString(envelope, "subject") || readString(principal, "id"),
+    role: readString(principal, "role"),
+  };
+}
 
 // Tab configuration
 const TABS: { id: TabId; label: string; icon: typeof Activity }[] = [
@@ -159,6 +210,14 @@ export function TracesSidebar({
       }
       if (eventType === "prompt_stack") {
         stepName = "Prompt stack composed";
+      }
+      if (eventType === "hki_envelope") {
+        const envelope = getEnvelopeBoundary(
+          lastMessage.metadata as Record<string, unknown> | undefined
+        );
+        stepName = envelope
+          ? `HKI envelope · ${envelope.boundaryLabel}`
+          : "HKI envelope sealed";
       }
       // Structured reasoning sections get their section label + icon
       if (eventType === "thinking" && lastMessage.metadata?.section) {
@@ -381,6 +440,70 @@ export function TracesSidebar({
   /** Context items built from real conversation data & tool invocations */
   const contextItems = useMemo<ContextItem[]>(() => {
     const items: ContextItem[] = [];
+    const executionPolicy = activeScopeDef?.knowledgeConfig?.executionPolicy;
+    const enabledTools = activeScopeDef?.enabledTools ?? [];
+    const approvalMode =
+      executionPolicy?.toolPermissions?.approvalMode ?? "sensitive_only";
+    const memoryEnabled =
+      executionPolicy?.memory?.enabled ?? activeScopeDef?.memoryConfig?.enabled;
+    const retrievalStrategy =
+      activeScopeDef?.retrievalStrategy ?? executionPolicy?.retrievalStrategy;
+
+    if (activeScopeDef) {
+      items.push({
+        id: "ctx-hermetic-boundary",
+        type: "session",
+        title: "Hermetic Boundary",
+        content: [
+          activeScopeDef.name,
+          retrievalStrategy ? `retrieval ${retrievalStrategy}` : null,
+          `${enabledTools.length} tool${enabledTools.length === 1 ? "" : "s"}`,
+          `approvals ${approvalMode.replace(/_/g, " ")}`,
+          `planning ${executionPolicy?.enablePlanning === false ? "off" : "on"}`,
+          `memory ${memoryEnabled === false ? "off" : "on"}`,
+        ]
+          .filter(Boolean)
+          .join(" • "),
+        source: "scope-policy",
+      });
+    }
+
+    if (enabledTools.length > 0) {
+      items.push({
+        id: "ctx-enabled-tools",
+        type: "retrieval",
+        title: "Enabled Tools",
+        content: enabledTools.join(", "),
+        source: "scope-policy",
+        relevance: 1,
+      });
+    }
+
+    const hkiEnvelopeSpan = [...displaySpans]
+      .reverse()
+      .find(span => String(span.attributes?.type) === "hki_envelope");
+    const hkiEnvelope = getEnvelopeBoundary(hkiEnvelopeSpan?.attributes);
+    if (hkiEnvelope) {
+      const parts = [
+        hkiEnvelope.boundaryLabel,
+        hkiEnvelope.orgId ? `org ${hkiEnvelope.orgId}` : null,
+        hkiEnvelope.role ? `role ${hkiEnvelope.role}` : null,
+        hkiEnvelope.scopes.length > 0
+          ? `${hkiEnvelope.scopes.length} scoped claim${hkiEnvelope.scopes.length === 1 ? "" : "s"}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" • ");
+      items.unshift({
+        id: "ctx-hki-envelope",
+        type: "session",
+        title: "HKI Envelope",
+        content: parts,
+        source: "agentic-bff",
+        timestamp: hkiEnvelopeSpan?.start_time,
+      });
+    }
+
     const userMsgs = conversationMessages.filter(
       m => m.content.author === "user"
     );
@@ -495,7 +618,7 @@ export function TracesSidebar({
     }
 
     return items;
-  }, [conversationMessages, displaySpans]);
+  }, [activeScopeDef, conversationMessages, displaySpans]);
 
   /** Estimate token usage from actual message content */
   const { usedTokens, maxTokens } = useMemo(() => {
@@ -530,6 +653,8 @@ export function TracesSidebar({
   // Get step icon based on type
   const getStepIcon = (type: string) => {
     switch (type) {
+      case "hki_envelope":
+        return Shield;
       case "prompt_stack":
         return Layers;
       case "tool_call":
@@ -749,6 +874,7 @@ export function TracesSidebar({
                             span.attributes?.type || "reasoning"
                           );
                           const StepIcon = getStepIcon(type);
+                          const isHkiEnvelope = type === "hki_envelope";
                           const isExpanded = expandedSteps.has(span.id);
                           const isLast = idx === displaySpans.length - 1;
                           const details = Object.fromEntries(
@@ -773,15 +899,23 @@ export function TracesSidebar({
                                   border: "2px solid var(--border)",
                                 }}
                               >
-                                <StepIcon
-                                  className="size-3"
-                                  style={{
-                                    color:
-                                      type === "tool_result"
-                                        ? "var(--success, #22c55e)"
-                                        : "var(--primary)",
-                                  }}
-                                />
+                                {isHkiEnvelope ? (
+                                  <HkiMark
+                                    size={13}
+                                    variant="iris"
+                                    className="size-3"
+                                  />
+                                ) : (
+                                  <StepIcon
+                                    className="size-3"
+                                    style={{
+                                      color:
+                                        type === "tool_result"
+                                          ? "var(--success, #22c55e)"
+                                          : "var(--primary)",
+                                    }}
+                                  />
+                                )}
                               </div>
 
                               {/* Step content */}

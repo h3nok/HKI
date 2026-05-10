@@ -314,6 +314,7 @@ export const thoughtTraceSteps = mysqlTable(
       "handoff",
       "memory_recall",
       "memory_store",
+      "hki_envelope",
       "prompt_stack",
       "knowledge_retrieval",
       "cache_hit",

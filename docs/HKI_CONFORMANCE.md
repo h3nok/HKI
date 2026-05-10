@@ -95,6 +95,18 @@ derivation, gateway target decisions, and signed-scope override rejection. A
 passing report is Level 4 evidence; Level 5 still requires signed release
 artifacts, reproducible CI output, and publication of the evidence bundle.
 
+The reference application also includes a service-level black-box evidence
+runner:
+
+```bash
+pnpm evidence:hki-services
+```
+
+It probes running services with BFF-compatible request JWTs and writes a hashed
+bundle to `artifacts/hki/service-evidence.json`. See
+[HKI Service Evidence](HKI_SERVICE_EVIDENCE.md) for local strict-auth commands
+and bundle format.
+
 The current conformance kit runs 28 cases across envelope validation, artifact
 visibility, cache binding, gateway routing, explicit publication, and scope
 override rejection. It covers missing, expired, unsigned, unsupported-version,
@@ -108,6 +120,7 @@ cross-domain reads, cross-org reads, cache contamination, and `scope` /
 A public HKI release should include:
 
 - `pnpm audit:hki` output with no increased known debt
+- `pnpm evidence:hki-services` output from a strict-auth service profile
 - service-specific conformance test output
 - a list of artifact classes and their domain label source
 - cache key schema for each cache surface

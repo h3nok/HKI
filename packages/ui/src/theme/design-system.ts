@@ -220,7 +220,7 @@ export type GlowIntensity = "sm" | "md";
  * ```tsx
  * // Brand colors
  * colors.brand.iris[500]   // #0E7C7B — HKI Iris (deep teal)
- * colors.brand.pulse[500]  // #E07A1F — HKI Pulse (warm amber)
+ * colors.brand.pulse[500]  // legacy alias -> HKI Iris
  *
  * // Status colors
  * colors.status.success[500]
@@ -234,9 +234,9 @@ export type GlowIntensity = "sm" | "md";
  */
 export const colors = {
   /**
-   * Brand Colors — HKI Iris & Pulse
+   * Brand Colors — HKI Iris plus legacy Pulse aliases
    * - Iris:  #0E7C7B — deep teal, depth, focus
-   * - Pulse: #E07A1F — warm amber, signal, warmth
+   * - Pulse: compatibility alias mapped to Iris in strict duotone
    */
   brand: {
     iris: {
@@ -254,18 +254,18 @@ export const colors = {
       950: "#010C0C",
     },
     pulse: {
-      25: "#FFF8EE",
-      50: "#FEEBCC",
-      100: "#FDD49A",
-      200: "#FBBA68",
-      300: "#F49E3B",
-      400: "#ED8A28",
-      500: "#E07A1F", // ★ HKI Pulse (warm amber — Pharos)
-      600: "#B8611A",
-      700: "#8C4A14",
-      800: "#5E320D",
-      900: "#2F1907",
-      950: "#170C03",
+      25: "#ECFDFC",
+      50: "#D5F8F5",
+      100: "#A8F0EB",
+      200: "#6EE0DA",
+      300: "#3DCBC6",
+      400: "#1FA9A5",
+      500: "#0E7C7B", // legacy alias -> HKI Iris
+      600: "#0B6261",
+      700: "#094948",
+      800: "#063030",
+      900: "#031818",
+      950: "#010C0C",
     },
   },
 
@@ -299,61 +299,61 @@ export const colors = {
    * Each scale optimized for accessibility and clarity.
    */
   status: {
-    /** SUCCESS — Positive outcomes, completions, approvals */
+    /** SUCCESS — Duotone status signal; labels and icons carry meaning */
     success: {
-      25: "#f0fdf4",
-      50: "#dcfce7",
-      100: "#bbf7d0",
-      200: "#86efac",
-      300: "#4ade80",
-      400: "#22c55e",
-      500: "#16a34a", // ★ Primary success
-      600: "#15803d",
-      700: "#166534",
-      800: "#14532d",
-      900: "#052e16",
+      25: "#ecfdfc",
+      50: "#d5f8f5",
+      100: "#a8f0eb",
+      200: "#6ee0da",
+      300: "#3dcbc6",
+      400: "#1fa9a5",
+      500: "#0e7c7b",
+      600: "#0b6261",
+      700: "#094948",
+      800: "#063030",
+      900: "#031818",
     },
-    /** WARNING — Cautions, pending states, attention needed */
+    /** WARNING — Duotone status signal; labels and icons carry meaning */
     warning: {
-      25: "#fffbeb",
-      50: "#fef3c7",
-      100: "#fde68a",
-      200: "#fcd34d",
-      300: "#fbbf24",
-      400: "#f59e0b",
-      500: "#d97706", // ★ Primary warning
-      600: "#b45309",
-      700: "#92400e",
-      800: "#78350f",
-      900: "#451a03",
+      25: "#ecfdfc",
+      50: "#d5f8f5",
+      100: "#a8f0eb",
+      200: "#6ee0da",
+      300: "#3dcbc6",
+      400: "#1fa9a5",
+      500: "#0e7c7b",
+      600: "#0b6261",
+      700: "#094948",
+      800: "#063030",
+      900: "#031818",
     },
-    /** ERROR — Failures, destructive actions, critical states */
+    /** ERROR — Duotone status signal; labels and icons carry meaning */
     error: {
-      25: "#fff7f7",
-      50: "#fef2f2",
-      100: "#fee2e2",
-      200: "#fecaca",
-      300: "#fca5a5",
-      400: "#f87171",
-      500: "#dc2626", // ★ Primary error
-      600: "#b91c1c",
-      700: "#991b1b",
-      800: "#7f1d1d",
-      900: "#631414",
+      25: "#ecfdfc",
+      50: "#d5f8f5",
+      100: "#a8f0eb",
+      200: "#6ee0da",
+      300: "#3dcbc6",
+      400: "#1fa9a5",
+      500: "#0e7c7b",
+      600: "#0b6261",
+      700: "#094948",
+      800: "#063030",
+      900: "#031818",
     },
-    /** INFO — Informational, neutral highlights */
+    /** INFO — Duotone status signal; labels and icons carry meaning */
     info: {
-      25: "#f0f9ff",
-      50: "#e0f2fe",
-      100: "#bae6fd",
-      200: "#7dd3fc",
-      300: "#38bdf8",
-      400: "#0ea5e9",
-      500: "#0284c7", // ★ Primary info
-      600: "#0369a1",
-      700: "#075985",
-      800: "#0c4a6e",
-      900: "#082f49",
+      25: "#ecfdfc",
+      50: "#d5f8f5",
+      100: "#a8f0eb",
+      200: "#6ee0da",
+      300: "#3dcbc6",
+      400: "#1fa9a5",
+      500: "#0e7c7b",
+      600: "#0b6261",
+      700: "#094948",
+      800: "#063030",
+      900: "#031818",
     },
   },
 
@@ -365,15 +365,15 @@ export const colors = {
    */
   chart: {
     iris: "#0E7C7B",
-    pulse: "#E07A1F",
-    emerald: "#10b981",
-    amber: "#f59e0b",
-    violet: "#8b5cf6",
-    cyan: "#06b6d4",
-    rose: "#f43f5e",
-    indigo: "#6366f1",
-    orange: "#f97316",
-    teal: "#14b8a6",
+    pulse: "#0E7C7B",
+    emerald: "#0B6261",
+    amber: "#4a4a4a",
+    violet: "#094948",
+    cyan: "#1FA9A5",
+    rose: "#363636",
+    indigo: "#063030",
+    orange: "#636363",
+    teal: "#0E7C7B",
   },
 
   /**
@@ -383,13 +383,13 @@ export const colors = {
    */
   data: {
     1: "#0E7C7B", // HKI Iris (deep teal)
-    2: "#E07A1F", // HKI Pulse (warm amber)
-    3: "#10b981", // Emerald
-    4: "#f59e0b", // Amber
-    5: "#8b5cf6", // Violet
-    6: "#06b6d4", // Cyan
-    7: "#ec4899", // Pink
-    8: "#84cc16", // Lime
+    2: "#363636", // Neutral
+    3: "#094948", // HKI Iris dark
+    4: "#636363", // Neutral
+    5: "#3DCBC6", // HKI Iris light
+    6: "#262626", // Neutral dark
+    7: "#0B6261", // HKI Iris emphasis
+    8: "#8c8c8c", // Neutral light
   },
 } as const;
 
@@ -472,12 +472,12 @@ export const accent = {
   },
   /** Pulse accent scale (secondary/highlight) */
   pulse: {
-    subtle: colors.brand.pulse[25],
-    muted: colors.brand.pulse[50],
-    light: colors.brand.pulse[100],
-    default: colors.brand.pulse[500],
-    emphasis: colors.brand.pulse[600],
-    strong: colors.brand.pulse[700],
+    subtle: colors.brand.iris[25],
+    muted: colors.brand.iris[50],
+    light: colors.brand.iris[100],
+    default: colors.brand.iris[500],
+    emphasis: colors.brand.iris[600],
+    strong: colors.brand.iris[700],
     contrast: colors.neutral[0],
   },
   /** Primary interactive tokens */
@@ -489,10 +489,10 @@ export const accent = {
   },
   /** Secondary interactive tokens */
   secondary: {
-    default: colors.brand.pulse[500],
-    hover: colors.brand.pulse[600],
-    active: colors.brand.pulse[700],
-    light: colors.brand.pulse[50],
+    default: colors.brand.iris[500],
+    hover: colors.brand.iris[600],
+    active: colors.brand.iris[700],
+    light: colors.brand.iris[50],
   },
   /** Link colors */
   link: {
@@ -588,18 +588,18 @@ export const shadows = {
  */
 export const glows = {
   iris: {
-    sm: "0 0 0 1px rgba(14, 124, 123, 0.18)",
-    md: "0 0 0 1px rgba(14, 124, 123, 0.22), 0 2px 8px -2px rgba(14, 124, 123, 0.18)",
+    sm: "0 0 0 1px rgba(14,124,123, 0.18)",
+    md: "0 0 0 1px rgba(14,124,123, 0.22), 0 2px 8px -2px rgba(14,124,123, 0.18)",
   },
   pulse: {
-    sm: "0 0 0 1px rgba(224, 122, 31, 0.18)",
-    md: "0 0 0 1px rgba(224, 122, 31, 0.22), 0 2px 8px -2px rgba(224, 122, 31, 0.18)",
+    sm: "0 0 0 1px rgba(14,124,123, 0.18)",
+    md: "0 0 0 1px rgba(14,124,123, 0.22), 0 2px 8px -2px rgba(14,124,123, 0.18)",
   },
 } as const;
 
 export const focusRings = {
-  iris: "0 0 0 2px rgba(14, 124, 123, 0.4)",
-  pulse: "0 0 0 2px rgba(224, 122, 31, 0.4)",
+  iris: "0 0 0 2px rgba(14,124,123, 0.4)",
+  pulse: "0 0 0 2px rgba(14,124,123, 0.4)",
   offset: (bgColor: string = colors.neutral[25]) => `0 0 0 2px ${bgColor}`,
 } as const;
 
@@ -869,20 +869,19 @@ export const layout = {
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GRADIENT PRESETS
+// FLAT COLOR PRESETS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const gradients = {
-  brand: "linear-gradient(135deg, #0E7C7B 0%, #E07A1F 100%)",
-  brandReverse: "linear-gradient(135deg, #E07A1F 0%, #0E7C7B 100%)",
-  brandVertical: "linear-gradient(180deg, #0E7C7B 0%, #E07A1F 100%)",
-  brandHorizontal: "linear-gradient(90deg, #0E7C7B 0%, #E07A1F 100%)",
-  brandSubtle:
-    "linear-gradient(135deg, rgba(14, 124, 123, 0.06) 0%, rgba(224, 122, 31, 0.06) 100%)",
-  iris: "linear-gradient(135deg, #1FA9A5 0%, #094948 100%)",
-  pulse: "linear-gradient(135deg, #F49E3B 0%, #8C4A14 100%)",
-  subtle: "linear-gradient(180deg, #f5f5f5 0%, #e8e8e8 100%)",
-  elevated: "linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%)",
+  brand: "#0E7C7B",
+  brandReverse: "#0E7C7B",
+  brandVertical: "#0E7C7B",
+  brandHorizontal: "#0E7C7B",
+  brandSubtle: "#D5F8F5",
+  iris: "#0E7C7B",
+  pulse: "#0E7C7B",
+  subtle: "#f5f5f5",
+  elevated: "#ffffff",
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════

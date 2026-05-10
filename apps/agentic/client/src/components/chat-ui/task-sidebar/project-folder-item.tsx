@@ -79,19 +79,19 @@ export function ProjectFolderItem({
                 onDragOver={onDragOver}
                 onDrop={onDrop}
                 className={cn(
-                    'agentic-project-folder w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-300 relative overflow-hidden outline-none',
+                    'agentic-project-folder w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all duration-200 relative overflow-hidden outline-none',
                     isDragOver
-                        ? 'bg-primary/20 text-foreground ring-1 ring-primary/40 shadow-inner'
+                        ? 'bg-primary/15 text-foreground ring-1 ring-primary/35 shadow-inner'
                         : isActive
-                            ? 'bg-primary/10 text-primary font-bold shadow-sm'
-                            : 'text-sidebar-muted-foreground hover:text-foreground hover:bg-white/5 border-l-transparent'
+                            ? 'bg-primary/10 text-primary font-semibold shadow-sm'
+                            : 'text-sidebar-muted-foreground hover:text-foreground hover:bg-primary/5 border-l-transparent'
                 )}
             >
                 {/* Active surface accent accentuation */}
                 {isActive && !isDragOver && (
                     <motion.div 
                         layoutId="active-folder-marker"
-                        className="absolute left-0 top-[20%] bottom-[20%] w-[3px] bg-primary rounded-r-md"
+                        className="absolute left-1 top-[24%] bottom-[24%] w-[2px] bg-primary rounded-full"
                     />
                 )}
 
@@ -99,15 +99,15 @@ export function ProjectFolderItem({
                 <motion.div
                     animate={{ rotate: isExpanded ? 90 : 0 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="shrink-0 text-sidebar-muted-foreground/60 group-hover/folder:text-foreground/70 transition-colors"
+                    className="shrink-0 text-sidebar-muted-foreground/56 group-hover/folder:text-foreground/70 transition-colors"
                 >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-3.5 h-3.5" />
                 </motion.div>
 
                 {/* Folder icon */}
                 {isExpanded
-                    ? <FolderOpen className="w-4 h-4 shrink-0 transition-all drop-shadow-sm" style={{ color: project.color || 'var(--sidebar-foreground)' }} />
-                    : <FolderClosed className="w-4 h-4 shrink-0 transition-all opacity-80 group-hover/folder:opacity-100" style={{ color: project.color || 'var(--sidebar-muted-foreground)' }} />
+                    ? <FolderOpen className="w-3.5 h-3.5 shrink-0 transition-all" style={{ color: project.color || 'var(--sidebar-foreground)' }} />
+                    : <FolderClosed className="w-3.5 h-3.5 shrink-0 transition-all opacity-80 group-hover/folder:opacity-100" style={{ color: project.color || 'var(--sidebar-muted-foreground)' }} />
                 }
 
                 {/* Project name — inline rename or static */}
@@ -130,7 +130,7 @@ export function ProjectFolderItem({
                         />
                     </div>
                 ) : (
-                    <span className="truncate flex-1 text-[13px] tracking-wide relative z-10">{project.name}</span>
+                    <span className="truncate flex-1 text-[12px] font-medium relative z-10">{project.name}</span>
                 )}
 
                 {/* Task count + hover add button */}
@@ -143,8 +143,8 @@ export function ProjectFolderItem({
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.8 }}
                                     className={cn(
-                                        "inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-md font-bold text-[10px] tracking-widest uppercase transition-opacity",
-                                        isActive ? "bg-primary/20 text-primary border border-primary/30" : "bg-muted/30 text-muted-foreground border border-border/20 group-hover/folder:opacity-0"
+                                        "inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-md font-semibold text-[10px] tabular-nums transition-opacity",
+                                        isActive ? "bg-primary/16 text-primary border border-primary/25" : "bg-muted/25 text-muted-foreground border border-border/20 group-hover/folder:opacity-0"
                                     )}
                                 >
                                     {taskCount}
@@ -155,9 +155,9 @@ export function ProjectFolderItem({
                         <button
                             type="button"
                             className={cn(
-                                "absolute right-0 items-center justify-center w-6 h-6 rounded-md transition-all",
+                                "absolute right-0 items-center justify-center w-5 h-5 rounded-md transition-all",
                                 "opacity-0 scale-90 pointer-events-none group-hover/folder:opacity-100 group-hover/folder:scale-100 group-hover/folder:pointer-events-auto",
-                                "hover:bg-primary/20 hover:text-primary text-sidebar-muted-foreground border border-transparent hover:border-primary/30"
+                                "hover:bg-primary/16 hover:text-primary text-sidebar-muted-foreground border border-transparent hover:border-primary/25"
                             )}
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -165,7 +165,7 @@ export function ProjectFolderItem({
                             }}
                             title="New task in this project"
                         >
-                            <Plus className="w-3.5 h-3.5 mx-auto" strokeWidth={2.5} />
+                            <Plus className="w-3 h-3 mx-auto" strokeWidth={2.5} />
                         </button>
                     </div>
                 )}
@@ -181,15 +181,15 @@ export function ProjectFolderItem({
                         transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                         className="overflow-hidden relative"
                     >
-                        <div className="absolute left-[20px] top-0 bottom-2 w-px bg-gradient-to-b from-border/50 to-transparent pointer-events-none" />
+                        <div className="absolute left-[18px] top-0 bottom-2 w-px bg-gradient-to-b from-border/45 to-transparent pointer-events-none" />
                         
-                        <div className="pl-8 my-1 space-y-1 relative pr-2">
+                        <div className="pl-7 my-1 space-y-1 relative pr-1.5">
                             {tasks.length === 0 ? (
                                 <motion.p 
                                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                    className="text-[11px] font-medium tracking-wide text-sidebar-muted-foreground/50 py-3 px-3 uppercase text-center border border-dashed border-border/20 rounded-lg bg-sidebar-accent/10"
+                                    className="text-[11px] font-medium text-sidebar-muted-foreground/55 py-2.5 px-3 text-center border border-dashed border-border/25 rounded-lg bg-sidebar-accent/10"
                                 >
-                                    No parameters defined
+                                    No tasks yet
                                 </motion.p>
                             ) : (
                                 tasks.map(task => (
@@ -203,7 +203,7 @@ export function ProjectFolderItem({
                                         className="relative group/task"
                                     >
                                         {/* Connector pip to tree */}
-                                        <div className="absolute -left-[18px] top-4 w-[14px] h-px bg-border/40 group-hover/task:bg-primary/40 transition-colors" />
+                                        <div className="absolute -left-[15px] top-4 w-[11px] h-px bg-border/40 group-hover/task:bg-primary/38 transition-colors" />
                                         
                                         <div
                                             draggable

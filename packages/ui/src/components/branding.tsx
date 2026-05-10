@@ -20,9 +20,9 @@ import { cn } from "../utils";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const IRIS = "var(--hki-iris-500)";
-const PULSE = "var(--hki-pulse-500)";
+const PULSE = IRIS;
 const IRIS_LIGHT = "var(--hki-iris-300)";
-const PULSE_LIGHT = "var(--hki-pulse-300)";
+const PULSE_LIGHT = IRIS_LIGHT;
 const TEXT_ON_DARK = "var(--neutral-0)";
 const TEXT_STRONG = "var(--neutral-900)";
 const TEXT_BODY = "var(--neutral-700)";
@@ -33,12 +33,12 @@ const SUBTLE_ON_DARK = "color-mix(in srgb, var(--neutral-0) 55%, transparent)";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type BrandVariant =
-  | "color" // Aurora gradient  (default)
-  | "color-dark" // Aurora gradient brightened for dark backgrounds
+  | "color" // HKI Iris color (default)
+  | "color-dark" // HKI Iris brightened for dark backgrounds
   | "white" // Solid white — for colored/photo backgrounds
   | "dark" // Near-black — for light backgrounds
   | "iris" // Solid HKI Iris
-  | "pulse"; // Solid HKI Pulse
+  | "pulse"; // Legacy alias for solid HKI Iris
 
 export type MarkSize = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 

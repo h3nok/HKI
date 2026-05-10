@@ -1,18 +1,17 @@
 /**
  * ThinkingAnimation — HKI Brand Thinking Spinner
  *
- * Refined red/blue motion system:
- * - HKI Blue orbital ring
- * - HKI Red satellite + core mark
- * - Subtle duotone halo for warmth and presence
+ * Refined HKI Iris motion system:
+ * - HKI Iris orbital ring
+ * - Same-hue satellite + core mark
+ * - Subtle duotone halo for presence
  * - Clean enough for inline chat, distinct enough for agent work states
  */
 
 import { motion } from "framer-motion";
 
-const BLUE = "#0066B2";
-const RED = "#E31837";
-const SPINNER_C_GRADIENT = `linear-gradient(135deg, ${BLUE} 0%, ${BLUE} 42%, ${RED} 70%, ${RED} 100%)`;
+const BLUE = "#0E7C7B";
+const RED = BLUE;
 
 // ============================================================================
 // TYPES
@@ -160,7 +159,7 @@ function Orbit({
             top: center - r - satelliteSize / 2,
             background: satelliteColor,
             boxShadow: animated
-              ? `0 0 0 2px var(--card), 0 0 8px rgba(227, 24, 55, 0.16)`
+              ? `0 0 0 2px var(--card), 0 0 8px rgba(14,124,123, 0.16)`
               : `0 0 0 2px var(--card)`,
           }}
         />
@@ -195,8 +194,7 @@ export function ThinkingAnimation({
           style={{
             width: c.coreSize + 10,
             height: c.coreSize + 10,
-            background:
-              "radial-gradient(circle at 28% 30%, rgba(0,102,178,0.12) 0%, rgba(0,102,178,0.06) 34%, rgba(227,24,55,0.05) 62%, transparent 78%)",
+            background: "rgba(14,124,123,0.1)",
             filter: "blur(1px)",
           }}
           animate={
@@ -230,15 +228,15 @@ export function ThinkingAnimation({
             fontFamily: "var(--font-sans, 'Inter', system-ui, sans-serif)",
             lineHeight: 1,
             letterSpacing: "-0.02em",
-            backgroundImage: SPINNER_C_GRADIENT,
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            backgroundImage: "none",
+            backgroundClip: "initial",
+            WebkitBackgroundClip: "initial",
+            WebkitTextFillColor: "currentcolor",
             color: RED,
             filter:
               !animated || variant === "minimal"
                 ? "none"
-                : "drop-shadow(0 6px 12px rgba(0, 102, 178, 0.08)) drop-shadow(0 6px 12px rgba(227, 24, 55, 0.08))",
+                : "drop-shadow(0 6px 12px rgba(14,124,123, 0.1))",
           }}
           animate={
             animated
@@ -320,11 +318,10 @@ export function ThinkingInline({
     <motion.div
       className={`thinking-indicator inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${className}`}
       style={{
-        background:
-          "linear-gradient(135deg, rgba(0,102,178,0.08) 0%, rgba(227,24,55,0.04) 100%), var(--card)",
-        border: "1px solid color-mix(in srgb, #0066B2 14%, var(--border))",
+        background: "var(--card)",
+        border: "1px solid color-mix(in srgb, #0E7C7B 14%, var(--border))",
         boxShadow:
-          "0 1px 4px rgba(0,0,0,0.04), 0 10px 18px -20px rgba(0,102,178,0.28)",
+          "0 1px 4px rgba(0,0,0,0.04), 0 10px 18px -20px rgba(14,124,123,0.28)",
       }}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -389,11 +386,10 @@ export function ThinkingCard({
     <motion.div
       className={`thinking-indicator flex items-center gap-4 p-4 rounded-xl ${className}`}
       style={{
-        background:
-          "linear-gradient(180deg, rgba(0,102,178,0.04) 0%, rgba(227,24,55,0.03) 100%), var(--card)",
-        border: "1px solid color-mix(in srgb, #0066B2 16%, var(--border))",
+        background: "var(--card)",
+        border: "1px solid color-mix(in srgb, #0E7C7B 16%, var(--border))",
         boxShadow:
-          "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px -4px rgba(0,0,0,0.06), 0 18px 32px -28px rgba(0,102,178,0.32)",
+          "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px -4px rgba(0,0,0,0.06), 0 18px 32px -28px rgba(14,124,123,0.32)",
       }}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}

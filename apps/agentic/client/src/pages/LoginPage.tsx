@@ -21,52 +21,9 @@ import { HkiMark } from "@hki/ui";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const IRIS = "var(--hki-iris-500)";
-const PULSE = "var(--hki-pulse-500)";
 
 function colorMix(color: string, amount: number, base = "transparent") {
   return `color-mix(in srgb, ${color} ${amount}%, ${base})`;
-}
-
-// ── Floating orb ───────────────────────────────────────────────────────────
-function Orb({
-  color,
-  size,
-  x,
-  y,
-  delay,
-  duration,
-}: {
-  color: string;
-  size: number;
-  x: string;
-  y: string;
-  delay: number;
-  duration: number;
-}) {
-  return (
-    <motion.div
-      className="absolute rounded-full pointer-events-none"
-      style={{
-        width: size,
-        height: size,
-        left: x,
-        top: y,
-        background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
-        filter: `blur(${size * 0.4}px)`,
-      }}
-      animate={{
-        y: [0, -30, 0, 20, 0],
-        x: [0, 15, -10, 5, 0],
-        scale: [1, 1.1, 0.95, 1.05, 1],
-      }}
-      transition={{
-        duration,
-        delay,
-        repeat: Infinity,
-        ease: "easeInOut",
-      }}
-    />
-  );
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────
@@ -136,41 +93,15 @@ export function AgenticLoginPage() {
       <div
         className="absolute inset-0"
         style={{
-          background: isDark
-            ? `radial-gradient(ellipse 80% 60% at 50% 40%, ${colorMix(IRIS, 14)} 0%, transparent 60%), ` +
-              `radial-gradient(ellipse 60% 50% at 75% 70%, ${colorMix(PULSE, 7)} 0%, transparent 50%), ` +
-              `radial-gradient(ellipse 50% 40% at 20% 80%, ${colorMix(IRIS, 6)} 0%, transparent 50%)`
-            : `radial-gradient(ellipse 80% 60% at 50% 40%, ${colorMix(IRIS, 6)} 0%, transparent 60%), ` +
-              `radial-gradient(ellipse 60% 50% at 75% 70%, ${colorMix(PULSE, 4)} 0%, transparent 50%), ` +
-              `radial-gradient(ellipse 50% 40% at 20% 80%, ${colorMix(IRIS, 3)} 0%, transparent 50%)`,
+          background: "var(--background)",
         }}
-      />
-
-      {/* Floating orbs — reduced to 2 for subtlety */}
-      <Orb
-        color={isDark ? colorMix(IRIS, 18) : colorMix(IRIS, 6)}
-        size={450}
-        x="12%"
-        y="20%"
-        delay={0}
-        duration={14}
-      />
-      <Orb
-        color={isDark ? colorMix(PULSE, 12) : colorMix(PULSE, 4)}
-        size={380}
-        x="65%"
-        y="55%"
-        delay={3}
-        duration={16}
       />
 
       {/* Grid lines */}
       <div
         className="absolute inset-0 opacity-[0.03] dark:opacity-[0.03]"
         style={{
-          backgroundImage: isDark
-            ? `linear-gradient(${colorMix("var(--neutral-0)", 15)} 1px, transparent 1px), linear-gradient(90deg, ${colorMix("var(--neutral-0)", 15)} 1px, transparent 1px)`
-            : `linear-gradient(${colorMix("var(--neutral-950)", 6)} 1px, transparent 1px), linear-gradient(90deg, ${colorMix("var(--neutral-950)", 6)} 1px, transparent 1px)`,
+          backgroundImage: "none",
           backgroundSize: "80px 80px",
         }}
       />
@@ -222,9 +153,7 @@ export function AgenticLoginPage() {
               className="absolute inset-0 rounded-full blur-2xl"
               style={{
                 opacity: isDark ? 0.35 : 0.15,
-                background: isFromKnowledge
-                  ? `radial-gradient(circle, ${colorMix(IRIS, 50)} 0%, ${colorMix(IRIS, 10)} 70%, transparent 85%)`
-                  : `radial-gradient(circle, ${colorMix(IRIS, 50)} 0%, ${colorMix(PULSE, 15)} 60%, transparent 80%)`,
+                background: colorMix(IRIS, isDark ? 28 : 14),
                 transform: "scale(2)",
               }}
               animate={{
@@ -314,8 +243,7 @@ export function AgenticLoginPage() {
                          transition-all duration-300 hover:-translate-y-0.5
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               style={{
-                background:
-                  "linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 80%, var(--neutral-0)) 50%, var(--primary) 100%)",
+                background: "var(--primary)",
                 boxShadow: "var(--shadow-md)",
               }}
             >
@@ -323,7 +251,7 @@ export function AgenticLoginPage() {
               <div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 style={{
-                  background: `linear-gradient(105deg, transparent 40%, ${colorMix("var(--neutral-0)", 15)} 50%, transparent 60%)`,
+                  background: "transparent",
                   backgroundSize: "200% 100%",
                   animation: "shimmer 2s infinite linear",
                 }}
@@ -366,7 +294,7 @@ export function AgenticLoginPage() {
 
             {/* Security note */}
             <div className="flex items-center justify-center gap-1.5 mt-6 pt-4 border-t border-border/40">
-              <Shield className="w-3 h-3 text-success" />
+              <Shield className="w-3 h-3 text-primary" />
               <span className="text-[11px] text-muted-foreground/70">
                 End-to-end encrypted · SOC 2 compliant
               </span>

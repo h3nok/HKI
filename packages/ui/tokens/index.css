@@ -31,7 +31,7 @@
    Agentic:   @import "@hki/ui/tokens";
               @import "@hki/ui/tokens/themes/agentic";
 
-   Brand Foundation: HKI Iris (#0E7C7B deep teal) + HKI Pulse (#E07A1F warm amber)
+   Brand Foundation: HKI Iris (#0E7C7B deep teal) + neutral surfaces
    Maintained by: HKI Innovation Platform Team
    ═══════════════════════════════════════════════════════════════════════════════ */
 
@@ -42,10 +42,10 @@
 @import "./semantic.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   BRAND COLOR ALIASES — Aurora palette (Iris + Pulse)
-   --hki-iris-* / --hki-pulse-* are the canonical names.
+   BRAND COLOR ALIASES — Strict duotone palette (Iris + neutral)
+   --hki-iris-* is canonical. Pulse/red names are compatibility aliases.
    --hki-blue-* / --hki-red-* are kept for backward compatibility.
-   New code should use --color-brand-iris-* / --color-brand-pulse-* directly.
+   New code should use --color-brand-iris-* and neutral semantic tokens.
    ═══════════════════════════════════════════════════════════════════════════ */
 :root {
   /* Canonical iris aliases */
@@ -61,18 +61,18 @@
   --hki-iris-800: var(--color-brand-iris-800);
   --hki-iris-900: var(--color-brand-iris-900);
 
-  /* Canonical pulse aliases */
-  --hki-pulse-25: var(--color-brand-pulse-25);
-  --hki-pulse-50: var(--color-brand-pulse-50);
-  --hki-pulse-100: var(--color-brand-pulse-100);
-  --hki-pulse-200: var(--color-brand-pulse-200);
-  --hki-pulse-300: var(--color-brand-pulse-300);
-  --hki-pulse-400: var(--color-brand-pulse-400);
-  --hki-pulse-500: var(--color-brand-pulse-500);
-  --hki-pulse-600: var(--color-brand-pulse-600);
-  --hki-pulse-700: var(--color-brand-pulse-700);
-  --hki-pulse-800: var(--color-brand-pulse-800);
-  --hki-pulse-900: var(--color-brand-pulse-900);
+  /* Pulse aliases are retained for compatibility, but resolve to Iris. */
+  --hki-pulse-25: var(--hki-iris-25);
+  --hki-pulse-50: var(--hki-iris-50);
+  --hki-pulse-100: var(--hki-iris-100);
+  --hki-pulse-200: var(--hki-iris-200);
+  --hki-pulse-300: var(--hki-iris-300);
+  --hki-pulse-400: var(--hki-iris-400);
+  --hki-pulse-500: var(--hki-iris-500);
+  --hki-pulse-600: var(--hki-iris-600);
+  --hki-pulse-700: var(--hki-iris-700);
+  --hki-pulse-800: var(--hki-iris-800);
+  --hki-pulse-900: var(--hki-iris-900);
 
   /* Backward-compat aliases — point at iris/pulse */
   --hki-blue-25: var(--hki-iris-25);
@@ -128,44 +128,42 @@
      Each scale optimized for accessibility and clarity
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* SUCCESS — Positive outcomes, completions, approvals */
-  --success-25: #f0fdf4;
-  --success-50: #dcfce7;
-  --success-100: #bbf7d0;
-  --success-200: #86efac;
-  --success-300: #4ade80;
-  --success-400: #22c55e;
-  --success-500: #16a34a; /* Primary success */
-  --success-600: #15803d;
-  --success-700: #166534;
-  --success-800: #14532d;
-  --success-900: #052e16;
+  /* Duotone status scales. Meaning is expressed through labels and icons. */
+  --success-25: var(--hki-blue-25);
+  --success-50: var(--hki-blue-50);
+  --success-100: var(--hki-blue-100);
+  --success-200: var(--hki-blue-200);
+  --success-300: var(--hki-blue-300);
+  --success-400: var(--hki-blue-400);
+  --success-500: var(--hki-blue-500);
+  --success-600: var(--hki-blue-600);
+  --success-700: var(--hki-blue-700);
+  --success-800: var(--hki-blue-800);
+  --success-900: var(--hki-blue-900);
 
-  /* WARNING — Cautions, pending states, attention needed */
-  --warning-25: #fffbeb;
-  --warning-50: #fef3c7;
-  --warning-100: #fde68a;
-  --warning-200: #fcd34d;
-  --warning-300: #fbbf24;
-  --warning-400: #f59e0b;
-  --warning-500: #d97706; /* Primary warning */
-  --warning-600: #b45309;
-  --warning-700: #92400e;
-  --warning-800: #78350f;
-  --warning-900: #451a03;
+  --warning-25: var(--hki-blue-25);
+  --warning-50: var(--hki-blue-50);
+  --warning-100: var(--hki-blue-100);
+  --warning-200: var(--hki-blue-200);
+  --warning-300: var(--hki-blue-300);
+  --warning-400: var(--hki-blue-400);
+  --warning-500: var(--hki-blue-500);
+  --warning-600: var(--hki-blue-600);
+  --warning-700: var(--hki-blue-700);
+  --warning-800: var(--hki-blue-800);
+  --warning-900: var(--hki-blue-900);
 
-  /* INFO — Informational, neutral highlights */
-  --info-25: #f0f9ff;
-  --info-50: #e0f2fe;
-  --info-100: #bae6fd;
-  --info-200: #7dd3fc;
-  --info-300: #38bdf8;
-  --info-400: #0ea5e9;
-  --info-500: #0284c7; /* Primary info */
-  --info-600: #0369a1;
-  --info-700: #075985;
-  --info-800: #0c4a6e;
-  --info-900: #082f49;
+  --info-25: var(--hki-blue-25);
+  --info-50: var(--hki-blue-50);
+  --info-100: var(--hki-blue-100);
+  --info-200: var(--hki-blue-200);
+  --info-300: var(--hki-blue-300);
+  --info-400: var(--hki-blue-400);
+  --info-500: var(--hki-blue-500);
+  --info-600: var(--hki-blue-600);
+  --info-700: var(--hki-blue-700);
+  --info-800: var(--hki-blue-800);
+  --info-900: var(--hki-blue-900);
 
   /* ═══════════════════════════════════════════════════════════════════════
      SECTION 4: DATA VISUALIZATION PALETTE
@@ -173,25 +171,25 @@
      Optimized for colorblind accessibility (Deuteranopia, Protanopia)
      ═══════════════════════════════════════════════════════════════════════ */
   --chart-iris: var(--hki-blue-500);
-  --chart-pulse: var(--hki-red-500);
-  --chart-emerald: #10b981;
-  --chart-amber: #f59e0b;
-  --chart-violet: #8b5cf6;
-  --chart-cyan: #06b6d4;
-  --chart-rose: #f43f5e;
-  --chart-indigo: #6366f1;
-  --chart-orange: #f97316;
-  --chart-teal: #14b8a6;
+  --chart-pulse: var(--hki-iris-500);
+  --chart-emerald: var(--hki-iris-600);
+  --chart-amber: var(--neutral-600);
+  --chart-violet: var(--hki-iris-700);
+  --chart-cyan: var(--hki-iris-400);
+  --chart-rose: var(--neutral-700);
+  --chart-indigo: var(--hki-iris-800);
+  --chart-orange: var(--neutral-500);
+  --chart-teal: var(--hki-iris-500);
 
   /* Categorical palette for multi-series data */
   --data-1: var(--hki-blue-500);
-  --data-2: var(--hki-red-400);
-  --data-3: #10b981;
-  --data-4: #f59e0b;
-  --data-5: #8b5cf6;
-  --data-6: #06b6d4;
-  --data-7: #ec4899;
-  --data-8: #84cc16;
+  --data-2: var(--neutral-700);
+  --data-3: var(--hki-blue-700);
+  --data-4: var(--neutral-500);
+  --data-5: var(--hki-blue-300);
+  --data-6: var(--neutral-800);
+  --data-7: var(--hki-blue-600);
+  --data-8: var(--neutral-400);
 
   /* ═══════════════════════════════════════════════════════════════════════
      SECTION 5: SEMANTIC SURFACE TOKENS — HIGH-CONTRAST SYSTEM
@@ -271,10 +269,10 @@
   --accent-primary-active: var(--hki-blue-700);
   --accent-primary-light: var(--hki-blue-50);
 
-  --accent-secondary: var(--hki-red-500);
-  --accent-secondary-hover: var(--hki-red-600);
-  --accent-secondary-active: var(--hki-red-700);
-  --accent-secondary-light: var(--hki-red-50);
+  --accent-secondary: var(--hki-blue-500);
+  --accent-secondary-hover: var(--hki-blue-600);
+  --accent-secondary-active: var(--hki-blue-700);
+  --accent-secondary-light: var(--hki-blue-50);
 
   /* Link colors */
   --link: var(--hki-blue-500);
@@ -417,13 +415,13 @@
   --glow-iris-sm: 0 0 0 1px rgba(14, 124, 123, 0.18);
   --glow-iris-md:
     0 0 0 1px rgba(14, 124, 123, 0.22), 0 2px 8px -2px rgba(14, 124, 123, 0.18);
-  --glow-pulse-sm: 0 0 0 1px rgba(224, 122, 31, 0.18);
+  --glow-pulse-sm: var(--glow-iris-sm);
   --glow-pulse-md:
-    0 0 0 1px rgba(224, 122, 31, 0.22), 0 2px 8px -2px rgba(224, 122, 31, 0.18);
+    var(--glow-iris-md);
 
   /* Focus rings */
   --ring-iris: 0 0 0 2px rgba(14, 124, 123, 0.4);
-  --ring-pulse: 0 0 0 2px rgba(224, 122, 31, 0.4);
+  --ring-pulse: var(--ring-iris);
   --ring-offset: 0 0 0 2px var(--background);
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -530,81 +528,20 @@
      Signature gradient combinations
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Primary brand gradient (Blue → Red diagonal) */
-  --gradient-brand: linear-gradient(
-    135deg,
-    var(--hki-blue-500) 0%,
-    var(--hki-red-500) 100%
-  );
-  --gradient-brand-reverse: linear-gradient(
-    135deg,
-    var(--hki-red-500) 0%,
-    var(--hki-blue-500) 100%
-  );
-  --gradient-brand-vertical: linear-gradient(
-    180deg,
-    var(--hki-blue-500) 0%,
-    var(--hki-red-500) 100%
-  );
-  --gradient-brand-horizontal: linear-gradient(
-    90deg,
-    var(--hki-blue-500) 0%,
-    var(--hki-red-500) 100%
-  );
-
-  /* Subtle brand gradients (for backgrounds) */
-  --gradient-brand-subtle: linear-gradient(
-    135deg,
-    rgba(14, 124, 123, 0.06) 0%,
-    rgba(224, 122, 31, 0.06) 100%
-  );
-  --gradient-brand-light: linear-gradient(
-    135deg,
-    var(--hki-blue-50) 0%,
-    var(--hki-red-50) 100%
-  );
-
-  /* Monochromatic gradients */
-  --gradient-blue: linear-gradient(
-    135deg,
-    var(--hki-blue-400) 0%,
-    var(--hki-blue-600) 100%
-  );
-  --gradient-blue-light: linear-gradient(
-    135deg,
-    var(--hki-blue-50) 0%,
-    var(--hki-blue-100) 100%
-  );
-  --gradient-red: linear-gradient(
-    135deg,
-    var(--hki-red-400) 0%,
-    var(--hki-red-600) 100%
-  );
-  --gradient-red-light: linear-gradient(
-    135deg,
-    var(--hki-red-50) 0%,
-    var(--hki-red-100) 100%
-  );
-
-  /* Neutral gradients */
-  --gradient-subtle: linear-gradient(
-    180deg,
-    var(--neutral-50) 0%,
-    var(--neutral-100) 100%
-  );
-  --gradient-elevated: linear-gradient(
-    180deg,
-    var(--neutral-0) 0%,
-    var(--neutral-50) 100%
-  );
-
-  /* Shimmer/loading gradient */
-  --gradient-shimmer: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 100%
-  );
+  /* Legacy gradient aliases resolve to flat duotone colors. */
+  --gradient-brand: var(--hki-blue-500);
+  --gradient-brand-reverse: var(--hki-blue-500);
+  --gradient-brand-vertical: var(--hki-blue-500);
+  --gradient-brand-horizontal: var(--hki-blue-500);
+  --gradient-brand-subtle: var(--hki-blue-50);
+  --gradient-brand-light: var(--hki-blue-50);
+  --gradient-blue: var(--hki-blue-500);
+  --gradient-blue-light: var(--hki-blue-50);
+  --gradient-red: var(--hki-blue-500);
+  --gradient-red-light: var(--hki-blue-50);
+  --gradient-subtle: var(--neutral-50);
+  --gradient-elevated: var(--neutral-0);
+  --gradient-shimmer: transparent;
 
   /* ═══════════════════════════════════════════════════════════════════════
      LEGACY ALIASES
@@ -679,8 +616,8 @@
   --accent-iris-emphasis: var(--hki-iris-300);
   --accent-iris-strong: var(--hki-iris-200);
 
-  --accent-pulse-subtle: rgba(224, 122, 31, 0.1);
-  --accent-pulse-muted: rgba(224, 122, 31, 0.18);
+  --accent-pulse-subtle: rgba(14, 124, 123, 0.12);
+  --accent-pulse-muted: rgba(14, 124, 123, 0.2);
   --accent-pulse-light: var(--hki-pulse-900);
   --accent-pulse-default: var(--hki-pulse-400);
   --accent-pulse-emphasis: var(--hki-pulse-300);
@@ -691,19 +628,19 @@
   --accent-primary-active: var(--hki-iris-200);
   --accent-primary-light: rgba(14, 124, 123, 0.18);
 
-  --accent-secondary: var(--hki-pulse-400);
-  --accent-secondary-hover: var(--hki-pulse-300);
-  --accent-secondary-active: var(--hki-pulse-200);
-  --accent-secondary-light: rgba(224, 122, 31, 0.14);
+  --accent-secondary: var(--hki-iris-400);
+  --accent-secondary-hover: var(--hki-iris-300);
+  --accent-secondary-active: var(--hki-iris-200);
+  --accent-secondary-light: rgba(14, 124, 123, 0.18);
 
   --link: var(--hki-iris-400);
   --link-hover: var(--hki-iris-300);
   --link-visited: var(--hki-iris-500);
 
   /* Dark mode status colors */
-  --success-500: #22c55e;
-  --warning-500: #f59e0b;
-  --info-500: #0ea5e9;
+  --success-500: var(--hki-iris-400);
+  --warning-500: var(--hki-iris-400);
+  --info-500: var(--hki-iris-400);
 
   /* Enhanced dark mode shadows */
   --elevation-1:
@@ -716,35 +653,22 @@
     0 10px 10px -5px rgba(0, 0, 0, 0.2), 0 20px 25px -5px rgba(0, 0, 0, 0.55);
   --elevation-5: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
 
-  /* Dark mode glow effects (functional only) — teal (300) + amber (300) */
+  /* Dark mode glow effects (functional only) — Iris only */
   --glow-iris-sm: 0 0 0 1px rgba(61, 203, 198, 0.22);
   --glow-iris-md:
     0 0 0 1px rgba(61, 203, 198, 0.28), 0 2px 8px -2px rgba(61, 203, 198, 0.22);
-  --glow-pulse-sm: 0 0 0 1px rgba(244, 158, 59, 0.18);
+  --glow-pulse-sm: var(--glow-iris-sm);
   --glow-pulse-md:
-    0 0 0 1px rgba(244, 158, 59, 0.24), 0 2px 8px -2px rgba(244, 158, 59, 0.18);
+    var(--glow-iris-md);
 
   /* Dark mode focus rings */
   --ring-iris: 0 0 0 2px rgba(61, 203, 198, 0.5);
-  --ring-pulse: 0 0 0 2px rgba(244, 158, 59, 0.45);
+  --ring-pulse: var(--ring-iris);
 
-  /* Dark mode gradients */
-  --gradient-subtle: linear-gradient(
-    180deg,
-    var(--neutral-900) 0%,
-    var(--neutral-925) 100%
-  );
-  --gradient-elevated: linear-gradient(
-    180deg,
-    var(--neutral-850) 0%,
-    var(--neutral-900) 100%
-  );
-  --gradient-shimmer: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    transparent 100%
-  );
+  /* Dark mode gradient aliases stay flat in strict duotone. */
+  --gradient-subtle: var(--neutral-900);
+  --gradient-elevated: var(--neutral-850);
+  --gradient-shimmer: transparent;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

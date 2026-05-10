@@ -6,8 +6,8 @@
  * Platform-wide Tailwind class tokens for every page and component.
  * Implements the HKI Duotone design language:
  *
- *   Blue (#0066B2) — trust, technology, primary actions
- *   Red  (#E31837) — energy, urgency, emphasis
+ *   Iris  (#0E7C7B) — depth, focus, primary actions
+ *   Neutral surfaces — secondary emphasis without another brand hue
  *
  * Surface Hierarchy (5 levels, No-Washout):
  *
@@ -30,30 +30,30 @@
 // BRAND ACCENT — HKI Duotone
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/** Primary accent (HKI Blue) — actions, links, focus */
+/** Primary accent (legacy `Blue` alias) — HKI Iris actions, links, focus */
 export const accentBlue = {
   /** Subtle tint background */
-  bg: "bg-[#E6F2FA] dark:bg-[#0066B2]/10",
+  bg: "bg-[#D5F8F5] dark:bg-[#0E7C7B]/14",
   /** Default text / icon color */
-  text: "text-[#0066B2] dark:text-[#66B1E1]",
+  text: "text-[#0E7C7B] dark:text-[#3DCBC6]",
   /** Solid fill (buttons, badges) */
-  solid: "bg-[#0066B2] dark:bg-[#3397D7]",
+  solid: "bg-[#0E7C7B] dark:bg-[#1FA9A5]",
   /** Solid fill text */
   solidText: "text-white",
   /** Border */
-  border: "border-[#99CBEB] dark:border-[#00528E]",
+  border: "border-[#6EE0DA] dark:border-[#0B6261]",
   /** Hover */
-  hover: "hover:bg-[#00528E] dark:hover:bg-[#0066B2]",
+  hover: "hover:bg-[#0B6261] dark:hover:bg-[#0E7C7B]",
 } as const;
 
-/** Secondary accent (HKI Red) — emphasis, destructive, urgency */
+/** Secondary accent (legacy `Red` alias) — maps to HKI Iris for strict duotone */
 export const accentRed = {
-  bg: "bg-[#FCE8EC] dark:bg-[#E31837]/10",
-  text: "text-[#E31837] dark:text-[#F3A3B3]",
-  solid: "bg-[#E31837] dark:bg-[#E74767]",
+  bg: "bg-[#D5F8F5] dark:bg-[#0E7C7B]/14",
+  text: "text-[#0E7C7B] dark:text-[#3DCBC6]",
+  solid: "bg-[#0E7C7B] dark:bg-[#1FA9A5]",
   solidText: "text-white",
-  border: "border-[#F9D1D9] dark:border-[#880E21]",
-  hover: "hover:bg-[#B6132C] dark:hover:bg-[#E31837]",
+  border: "border-[#6EE0DA] dark:border-[#0B6261]",
+  hover: "hover:bg-[#0B6261] dark:hover:bg-[#0E7C7B]",
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -126,9 +126,9 @@ export const border = {
   subtle: "border-[#eae9e6] dark:border-[#2e2e2e]",
   strong: "border-[#d1d0cd] dark:border-[#4a4a4a]",
   hover: "hover:border-[#d1d0cd] dark:hover:border-[#4a4a4a]",
-  focus: "focus:border-[#0066B2] dark:focus:border-[#3397D7]",
-  /** Brand blue border for active/selected states */
-  active: "border-[#0066B2] dark:border-[#3397D7]",
+  focus: "focus:border-[#0E7C7B] dark:focus:border-[#3DCBC6]",
+  /** Brand Iris border for active/selected states */
+  active: "border-[#0E7C7B] dark:border-[#3DCBC6]",
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -157,8 +157,8 @@ export const textColor = {
   muted: "text-[#8a8986] dark:text-[#6f6e6b]",
   inverse: "text-white dark:text-[#111111]",
   /** Brand link color — meets 4.5:1 on both surfaces */
-  link: "text-[#0066B2] dark:text-[#66B1E1]",
-  linkHover: "hover:text-[#00528E] dark:hover:text-[#99CBEB]",
+  link: "text-[#0E7C7B] dark:text-[#3DCBC6]",
+  linkHover: "hover:text-[#0B6261] dark:hover:text-[#6EE0DA]",
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -182,11 +182,11 @@ export const shadow = {
 
 /** WCAG 2.4.7 — 3:1 ratio against adjacent, 2px offset from page bg */
 export const focusRing =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2] dark:focus-visible:ring-[#3397D7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#faf9f7] dark:focus-visible:ring-offset-[#111111]";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B] dark:focus-visible:ring-[#3DCBC6] focus-visible:ring-offset-2 focus-visible:ring-offset-[#faf9f7] dark:focus-visible:ring-offset-[#111111]";
 
 /** Focus ring for elements on card surfaces (white offset) */
 export const focusRingOnCard =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2] dark:focus-visible:ring-[#3397D7] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#1e1e1e]";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B] dark:focus-visible:ring-[#3DCBC6] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#1e1e1e]";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // STATUS PALETTES — WCAG AA text-on-bg
@@ -270,10 +270,10 @@ export const sectionHeader = "surface-section rounded-t-lg";
 /** Recessed panel — sits below canvas level (sidebar wells, code blocks) */
 export const panelRecessed = "surface-recessed rounded-lg";
 
-/** Blue-tinted surface — for informational/primary context panels */
+/** Iris-tinted surface — for informational/primary context panels */
 export const surfaceTintedBlue = "surface-tinted-blue rounded-xl";
 
-/** Red-tinted surface — for alert/emphasis panels */
+/** Pulse-tinted surface — for alert/emphasis panels */
 export const surfaceTintedRed = "surface-tinted-red rounded-xl";
 
 // ═══════════════════════════════════════════════════════════════════════════════

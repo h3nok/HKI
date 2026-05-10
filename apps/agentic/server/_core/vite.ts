@@ -6,6 +6,8 @@ import type { ViteDevServer } from "vite";
 import { createLogger } from "./logger";
 
 const log = createLogger("static");
+const appRoot = path.resolve(import.meta.dirname, "../..");
+const forceOptimizeDeps = process.env.HKI_VITE_FORCE_DEPS === "true";
 
 export async function setupVite(app: Express, server: Server) {
   // Dynamic import to avoid bundling vite in production
@@ -23,28 +25,22 @@ export async function setupVite(app: Express, server: Server) {
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
-        "@": path.resolve(import.meta.dirname, "../..", "client", "src"),
-        "@shared": path.resolve(import.meta.dirname, "../..", "shared"),
-        "@assets": path.resolve(
-          import.meta.dirname,
-          "../..",
-          "attached_assets"
-        ),
-        react: path.resolve(import.meta.dirname, "../..", "node_modules/react"),
-        "react-dom": path.resolve(
-          import.meta.dirname,
-          "../..",
-          "node_modules/react-dom"
-        ),
+        "@": path.resolve(appRoot, "client", "src"),
+        "@shared": path.resolve(appRoot, "shared"),
+        "@assets": path.resolve(appRoot, "attached_assets"),
+        react: path.resolve(appRoot, "node_modules/react"),
+        "react-dom": path.resolve(appRoot, "node_modules/react-dom"),
       },
       dedupe: ["react", "react-dom"],
     },
     optimizeDeps: {
       include: ["react", "react-dom", "react-grid-layout", "react-resizable"],
+      force: forceOptimizeDeps,
     },
-    envDir: path.resolve(import.meta.dirname, "../.."),
-    root: path.resolve(import.meta.dirname, "../..", "client"),
-    publicDir: path.resolve(import.meta.dirname, "../..", "client", "public"),
+    envDir: appRoot,
+    cacheDir: path.resolve(appRoot, "node_modules", ".vite"),
+    root: path.resolve(appRoot, "client"),
+    publicDir: path.resolve(appRoot, "client", "public"),
     configFile: false,
     server: serverOptions,
     appType: "custom",
@@ -55,12 +51,7 @@ export async function setupVite(app: Express, server: Server) {
     const url = req.originalUrl;
 
     try {
-      const clientTemplate = path.resolve(
-        import.meta.dirname,
-        "../..",
-        "client",
-        "index.html"
-      );
+      const clientTemplate = path.resolve(appRoot, "client", "index.html");
 
       // always reload the index.html file from disk in case it changes
       const template = await fs.promises.readFile(clientTemplate, "utf-8");
@@ -77,7 +68,7 @@ export async function setupVite(app: Express, server: Server) {
 export function serveStatic(app: Express) {
   const distPath =
     process.env.NODE_ENV === "development"
-      ? path.resolve(import.meta.dirname, "../..", "dist", "public")
+      ? path.resolve(appRoot, "dist", "public")
       : path.resolve(import.meta.dirname, "public");
 
   const indexPath = path.resolve(distPath, "index.html");

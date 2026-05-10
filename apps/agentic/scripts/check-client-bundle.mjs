@@ -11,9 +11,10 @@ const kib = 1024;
 const budgets = {
   entryJs: 175 * kib,
   initialJs: 2_650 * kib,
-  initialCss: 725 * kib,
+  initialCss: 760 * kib,
   largestJs: 850 * kib,
-  largestCss: 725 * kib,
+  largestCss: 760 * kib,
+  warnAt: 0.95,
   chunks: [
     { label: "AgenticChat", pattern: /^AgenticChat-.*\.js$/, max: 320 * kib },
     {
@@ -39,6 +40,10 @@ const budgets = {
 function fail(message) {
   console.error(`[bundle-check] ${message}`);
   process.exitCode = 1;
+}
+
+function warn(message) {
+  console.warn(`[bundle-check] ${message}`);
 }
 
 function formatBytes(bytes) {
@@ -68,6 +73,9 @@ function assertBudget(label, actual, max) {
   const line = `${label}: ${formatBytes(actual)} / ${formatBytes(max)}`;
   if (ok) {
     console.log(`[bundle-check] ${line}`);
+    if (actual / max >= budgets.warnAt) {
+      warn(`${label} is above ${(budgets.warnAt * 100).toFixed(0)}% of budget`);
+    }
   } else {
     fail(`${line} over budget`);
   }

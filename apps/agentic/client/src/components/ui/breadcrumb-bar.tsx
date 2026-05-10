@@ -95,9 +95,7 @@ export function BreadcrumbBar({
                 )}
               >
                 {Icon && (
-                  <Icon
-                    className={cn("w-4 h-4 shrink-0", seg.iconClassName)}
-                  />
+                  <Icon className={cn("w-4 h-4 shrink-0", seg.iconClassName)} />
                 )}
                 <span className={cn(seg.hideOnMobile && "hidden sm:inline")}>
                   {seg.label}

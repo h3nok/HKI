@@ -33,7 +33,7 @@ Architecture doc describes 4 core services. **Analytics Service is a 5th service
 | UI library | Radix UI + Tailwind CSS | Headless components + utility styling |
 | Auth | Google OAuth 2.0 + `jose` JWT | Session stored in MySQL; short-lived request JWTs for service calls |
 | Real-time | WebSocket + Redis adapter | Redis pub/sub for multi-pod WebSocket fan-out in GKE |
-| Package manager | pnpm 10 | Workspace-aware, fast |
+| Package manager | pnpm 11 | Workspace-aware, fast |
 
 ### 2.2 Orchestrator Service (Python)
 

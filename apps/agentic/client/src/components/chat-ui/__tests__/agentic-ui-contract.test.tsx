@@ -58,7 +58,11 @@ describe("Agentic UI contract", () => {
 
   it("renders agent messages with runtime-frame data hooks", () => {
     const html = renderToStaticMarkup(
-      <MessageBubble message={textMessage("agent")} isUser={false}>
+      <MessageBubble
+        message={textMessage("agent")}
+        isUser={false}
+        onInspectActivity={vi.fn()}
+      >
         <p>Grounded answer</p>
       </MessageBubble>
     );
@@ -66,6 +70,7 @@ describe("Agentic UI contract", () => {
     expect(html).toContain('data-author="agent"');
     expect(html).toContain("agentic-message-bubble-agent");
     expect(html).toContain('data-variant="default"');
+    expect(html).toContain("Inspect activity");
     expect(html).toContain("Grounded answer");
   });
 
@@ -95,8 +100,11 @@ describe("Agentic UI contract", () => {
     );
 
     expect(html).toContain("agentic-sidebar-header");
-    expect(html).toContain("agentic-sidebar-brand-signal");
+    expect(html).toContain("agentic-sidebar-command-shell");
     expect(html).toContain("agentic-sidebar-primary-action");
+    expect(html).toContain("agentic-sidebar-command-group");
+    expect(html).toContain("HKI");
+    expect(html).toContain("Agent");
     expect(html).toContain("Pharmacy");
   });
 

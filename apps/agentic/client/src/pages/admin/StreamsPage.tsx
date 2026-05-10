@@ -76,8 +76,11 @@ import type {
   RuntimeModelTier,
 } from "@shared/value-streams";
 import { a } from "./theme";
-import { AdminPageHeader } from "./components/AdminPageHeader";
-import { SettingsButton } from "./components";
+import {
+  GovernanceFrame,
+  GovernanceRegistry,
+  SettingsButton,
+} from "./components";
 import {
   DEFAULT_GUARDRAILS,
   DEFAULT_MEMORY,
@@ -1517,19 +1520,19 @@ function StreamForm({
                               key: "sensitiveTools" as const,
                               title: "Sensitive",
                               desc: "Shown as sensitive and approval-aware.",
-                              tone: "border-sky-500/30 bg-sky-500/5 text-sky-700 dark:text-sky-300",
+                              tone: a.pillPrimary,
                             },
                             {
                               key: "requireApprovalTools" as const,
                               title: "Require Approval",
                               desc: "Always pause before execution.",
-                              tone: "border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-300",
+                              tone: a.pillPrimary,
                             },
                             {
                               key: "denyTools" as const,
                               title: "Blocked",
                               desc: "Removed from execution for this domain.",
-                              tone: "border-rose-500/30 bg-rose-500/5 text-rose-700 dark:text-rose-300",
+                              tone: a.pillNeutral,
                             },
                           ].map(group => (
                             <div
@@ -2219,40 +2222,38 @@ export default function StreamsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <AdminPageHeader
-        title="Domains"
-        description="Define active HKI domains, signed scope boundaries, system prompts, tool permissions, and knowledge policy for each agent surface in the control plane."
-        icon={Layers}
-        action={
-          <SettingsButton
-            onClick={() => setShowForm(true)}
-            size="sm"
-            variant="brand"
-            className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold"
-          >
-            <Plus className="h-3.5 w-3.5" /> New Domain
-          </SettingsButton>
-        }
-        stats={[
-          {
-            label: "Configured domains",
-            value: String(streamRows.length),
-            tone: "primary",
-          },
-          {
-            label: "Live now",
-            value: String(liveStreamCount),
-            tone: liveStreamCount > 0 ? "positive" : "neutral",
-          },
-          {
-            label: "Global domain",
-            value: "1",
-            tone: "neutral",
-          },
-        ]}
-      />
-
+    <GovernanceFrame
+      title="Domains"
+      description="Define active HKI domains, signed scope boundaries, system prompts, tool permissions, and knowledge policy for each agent surface in the control plane."
+      icon={Layers}
+      action={
+        <SettingsButton
+          onClick={() => setShowForm(true)}
+          size="sm"
+          variant="brand"
+          className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold"
+        >
+          <Plus className="h-3.5 w-3.5" /> New Domain
+        </SettingsButton>
+      }
+      metrics={[
+        {
+          label: "Configured domains",
+          value: String(streamRows.length),
+          tone: "primary",
+        },
+        {
+          label: "Live now",
+          value: String(liveStreamCount),
+          tone: liveStreamCount > 0 ? "positive" : "neutral",
+        },
+        {
+          label: "Global domain",
+          value: "1",
+          tone: "neutral",
+        },
+      ]}
+    >
       {/* Create form */}
       {showForm && (
         <StreamForm
@@ -2298,7 +2299,7 @@ export default function StreamsPage() {
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+              className="flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-300"
             >
               <Plus className="w-4 h-4" /> New Domain
             </button>
@@ -2307,234 +2308,256 @@ export default function StreamsPage() {
 
       {/* Domain table */}
       {(streamsQ.isLoading || (streamsQ.data ?? []).length > 0) && (
-        <HkiTable loading={streamsQ.isLoading} loadingRows={5} loadingCols={7}>
-          <HkiThead sticky>
-            <HkiTr noHover>
-              <HkiTh>Domain</HkiTh>
-              <HkiTh>Description</HkiTh>
-              <HkiTh>Agent Config</HkiTh>
-              <HkiTh align="center">Users</HkiTh>
-              <HkiTh align="center">Status</HkiTh>
-              <HkiTh align="right">Actions</HkiTh>
-            </HkiTr>
-          </HkiThead>
-          <HkiTbody>
-            {(streamsQ.data ?? []).map((s: any) => {
-              const tools: string[] = (() => {
-                try {
-                  return s.enabledTools ? JSON.parse(s.enabledTools) : [];
-                } catch {
-                  return [];
-                }
-              })();
-              const guardrails: Record<string, boolean> = (() => {
-                try {
-                  return s.guardrailConfig ? JSON.parse(s.guardrailConfig) : {};
-                } catch {
-                  return {};
-                }
-              })();
-              const activeGuardrails =
-                Object.values(guardrails).filter(Boolean).length;
-              const strategy = s.retrievalStrategy || "hybrid";
-              const knowledgeConfig = normalizeKnowledgeConfig(
-                parseSafe(s.knowledgeConfig, { ...DEFAULT_KNOWLEDGE_CONFIG })
-              );
-              const runtimePolicy = normalizeRuntimePolicy(
-                knowledgeConfig.executionPolicy
-              );
+        <GovernanceRegistry
+          title="Domain Registry"
+          description="Operational scope, runtime policy, and knowledge entrypoints."
+          countLabel={`${streamRows.length} configured`}
+        >
+          <HkiTable
+            wrapperClassName="admin-governance-table admin-governance-table--registry"
+            loading={streamsQ.isLoading}
+            loadingRows={5}
+            loadingCols={7}
+          >
+            <HkiThead sticky>
+              <HkiTr noHover>
+                <HkiTh>Domain</HkiTh>
+                <HkiTh>Description</HkiTh>
+                <HkiTh>Agent Config</HkiTh>
+                <HkiTh align="center">Users</HkiTh>
+                <HkiTh align="center">Status</HkiTh>
+                <HkiTh align="right">Actions</HkiTh>
+              </HkiTr>
+            </HkiThead>
+            <HkiTbody>
+              {(streamsQ.data ?? []).map((s: any) => {
+                const tools: string[] = (() => {
+                  try {
+                    return s.enabledTools ? JSON.parse(s.enabledTools) : [];
+                  } catch {
+                    return [];
+                  }
+                })();
+                const guardrails: Record<string, boolean> = (() => {
+                  try {
+                    return s.guardrailConfig
+                      ? JSON.parse(s.guardrailConfig)
+                      : {};
+                  } catch {
+                    return {};
+                  }
+                })();
+                const activeGuardrails =
+                  Object.values(guardrails).filter(Boolean).length;
+                const strategy = s.retrievalStrategy || "hybrid";
+                const knowledgeConfig = normalizeKnowledgeConfig(
+                  parseSafe(s.knowledgeConfig, { ...DEFAULT_KNOWLEDGE_CONFIG })
+                );
+                const runtimePolicy = normalizeRuntimePolicy(
+                  knowledgeConfig.executionPolicy
+                );
 
-              return (
-                <HkiTr key={s.id}>
-                  <HKITd>
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-foreground/70">
-                        <StreamIcon id={s.icon} size={22} />
-                      </span>
-                      <div>
-                        <span className="font-semibold text-foreground block">
-                          {s.name}
+                return (
+                  <HkiTr key={s.id}>
+                    <HKITd>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-foreground/70">
+                          <StreamIcon id={s.icon} size={22} />
                         </span>
-                        <code
-                          className="text-[10px] text-muted-foreground/60"
-                          style={{ fontFamily: FONT_FAMILY.mono }}
-                        >
-                          {s.id}
-                        </code>
+                        <div>
+                          <span className="font-semibold text-foreground block">
+                            {s.name}
+                          </span>
+                          <code
+                            className="text-[10px] text-muted-foreground/60"
+                            style={{ fontFamily: FONT_FAMILY.mono }}
+                          >
+                            {s.id}
+                          </code>
+                        </div>
                       </div>
-                    </div>
-                  </HKITd>
-                  <HKITd className="text-muted-foreground text-xs max-w-50">
-                    <span className="line-clamp-2">{s.description || "—"}</span>
-                  </HKITd>
-                  <HKITd>
-                    <div className="flex flex-wrap gap-1.5">
-                      <span
-                        className={cn(
-                          "px-1.5 py-0.5 text-[9px] font-semibold rounded-full uppercase tracking-wide",
-                          strategy === "hybrid"
-                            ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                            : strategy === "semantic"
-                              ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                              : "bg-slate-500/10 text-slate-600 dark:text-slate-400"
-                        )}
-                      >
-                        {strategy}
+                    </HKITd>
+                    <HKITd className="text-muted-foreground text-xs max-w-50">
+                      <span className="line-clamp-2">
+                        {s.description || "—"}
                       </span>
-                      {tools.length > 0 && (
-                        <span className="px-1.5 py-0.5 text-[9px] font-semibold rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center gap-0.5">
-                          <Wrench className="w-2.5 h-2.5" /> {tools.length}
-                        </span>
-                      )}
-                      <span
-                        className={cn(
-                          a.pillNeutral,
-                          "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border"
-                        )}
-                      >
-                        {runtimePolicy.modelTier || "auto"}
-                      </span>
-                      {activeGuardrails > 0 && (
+                    </HKITd>
+                    <HKITd>
+                      <div className="flex flex-wrap gap-1.5">
                         <span
                           className={cn(
-                            a.pillPrimary,
-                            "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border flex items-center gap-0.5"
+                            strategy === "hybrid" || strategy === "semantic"
+                              ? a.pillPrimary
+                              : a.pillNeutral,
+                            "px-1.5 py-0.5 text-[9px] font-semibold rounded-full uppercase tracking-wide border"
                           )}
                         >
-                          <Shield className="w-2.5 h-2.5" /> {activeGuardrails}
+                          {strategy}
                         </span>
-                      )}
-                      <span
-                        className={cn(
-                          a.pillWarning,
-                          "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border"
+                        {tools.length > 0 && (
+                          <span
+                            className={cn(
+                              a.pillPrimary,
+                              "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border flex items-center gap-0.5"
+                            )}
+                          >
+                            <Wrench className="w-2.5 h-2.5" /> {tools.length}
+                          </span>
                         )}
-                      >
-                        {String(
-                          runtimePolicy.toolPermissions?.approvalMode ||
-                            "sensitive_only"
-                        ).replace(/_/g, "-")}
-                      </span>
-                      <span
-                        className={cn(
-                          a.pillNeutral,
-                          "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border flex items-center gap-0.5"
-                        )}
-                      >
-                        <Layers className="w-2.5 h-2.5" /> layered
-                      </span>
-                      <span
-                        className={cn(
-                          a.pillPrimary,
-                          "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border flex items-center gap-0.5"
-                        )}
-                      >
-                        <Bot className="w-2.5 h-2.5" />{" "}
-                        {s.systemPrompt ? "custom-persona" : "default-persona"}
-                      </span>
-                      {(s as any).llmApiKey ? (
                         <span
                           className={cn(
-                            a.pillPrimary,
+                            a.pillNeutral,
                             "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border"
                           )}
                         >
-                          stream-key
+                          {runtimePolicy.modelTier || "auto"}
                         </span>
-                      ) : (
+                        {activeGuardrails > 0 && (
+                          <span
+                            className={cn(
+                              a.pillPrimary,
+                              "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border flex items-center gap-0.5"
+                            )}
+                          >
+                            <Shield className="w-2.5 h-2.5" />{" "}
+                            {activeGuardrails}
+                          </span>
+                        )}
                         <span
                           className={cn(
                             a.pillWarning,
                             "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border"
                           )}
                         >
-                          platform-key
+                          {String(
+                            runtimePolicy.toolPermissions?.approvalMode ||
+                              "sensitive_only"
+                          ).replace(/_/g, "-")}
                         </span>
-                      )}
-                    </div>
-                  </HKITd>
-                  <HKITd className="text-center">
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="w-3 h-3" /> {s.userCount}
-                    </span>
-                  </HKITd>
-                  <HKITd className="text-center">
-                    <span
-                      className={cn(
-                        "px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase tracking-wider border",
-                        s.isActive ? a.pillPositive : a.pillNeutral
-                      )}
-                    >
-                      {s.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </HKITd>
-                  <HKITd className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <IconAction
-                        icon={<MessageSquare />}
-                        label="Launch Chat"
-                        variant="primary"
-                        href={`/chat?scope=${s.id}`}
-                      />
-                      <IconAction
-                        icon={<BookOpen />}
-                        label="Open Domain"
-                        variant="success"
-                        href={`/knowledge?stream=${s.id}`}
-                      />
-                      <IconAction
-                        icon={<Pencil />}
-                        label="Edit"
-                        variant="default"
-                        onClick={() => {
-                          setEditing({
-                            id: s.id,
-                            name: s.name,
-                            description: s.description || "",
-                            icon: s.icon,
-                            sampleQuestions: parseSafe(s.sampleQuestions, []),
-                            systemPrompt: s.systemPrompt || "",
-                            retrievalStrategy: s.retrievalStrategy || "hybrid",
-                            enabledTools: parseSafe(s.enabledTools, [
-                              "search_knowledge",
-                            ]),
-                            guardrailConfig: parseSafe(s.guardrailConfig, {
-                              ...DEFAULT_GUARDRAILS,
-                            }),
-                            memoryConfig: parseSafe(s.memoryConfig, {
-                              ...DEFAULT_MEMORY,
-                            }),
-                            knowledgeConfig: normalizeKnowledgeConfig(
-                              parseSafe(s.knowledgeConfig, {
-                                ...DEFAULT_KNOWLEDGE_CONFIG,
-                              })
-                            ),
-                            llmApiKey: (s as any).llmApiKey || "",
-                          });
-                        }}
-                      />
-                      {s.id !== "global" && (
+                        <span
+                          className={cn(
+                            a.pillNeutral,
+                            "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border flex items-center gap-0.5"
+                          )}
+                        >
+                          <Layers className="w-2.5 h-2.5" /> layered
+                        </span>
+                        <span
+                          className={cn(
+                            a.pillPrimary,
+                            "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border flex items-center gap-0.5"
+                          )}
+                        >
+                          <Bot className="w-2.5 h-2.5" />{" "}
+                          {s.systemPrompt
+                            ? "custom-persona"
+                            : "default-persona"}
+                        </span>
+                        {(s as any).llmApiKey ? (
+                          <span
+                            className={cn(
+                              a.pillPrimary,
+                              "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border"
+                            )}
+                          >
+                            stream-key
+                          </span>
+                        ) : (
+                          <span
+                            className={cn(
+                              a.pillWarning,
+                              "px-1.5 py-0.5 text-[9px] font-semibold rounded-full border"
+                            )}
+                          >
+                            platform-key
+                          </span>
+                        )}
+                      </div>
+                    </HKITd>
+                    <HKITd className="text-center">
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <Users className="w-3 h-3" /> {s.userCount}
+                      </span>
+                    </HKITd>
+                    <HKITd className="text-center">
+                      <span
+                        className={cn(
+                          "px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase tracking-wider border",
+                          s.isActive ? a.pillPositive : a.pillNeutral
+                        )}
+                      >
+                        {s.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </HKITd>
+                    <HKITd className="text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <IconAction
-                          icon={<Trash2 />}
-                          label="Delete"
-                          variant="destructive"
-                          onClick={() =>
-                            setConfirmDialog({
-                              title: `Delete "${s.name}"?`,
-                              description:
-                                "All users will be unassigned from this domain. This action cannot be undone.",
-                              onConfirm: () => deleteMut.mutate({ id: s.id }),
-                            })
-                          }
+                          icon={<MessageSquare />}
+                          label="Launch Chat"
+                          variant="primary"
+                          href={`/chat?scope=${s.id}`}
                         />
-                      )}
-                    </div>
-                  </HKITd>
-                </HkiTr>
-              );
-            })}
-          </HkiTbody>
-        </HkiTable>
+                        <IconAction
+                          icon={<BookOpen />}
+                          label="Open Domain"
+                          variant="success"
+                          href={`/knowledge?stream=${s.id}`}
+                        />
+                        <IconAction
+                          icon={<Pencil />}
+                          label="Edit"
+                          variant="default"
+                          onClick={() => {
+                            setEditing({
+                              id: s.id,
+                              name: s.name,
+                              description: s.description || "",
+                              icon: s.icon,
+                              sampleQuestions: parseSafe(s.sampleQuestions, []),
+                              systemPrompt: s.systemPrompt || "",
+                              retrievalStrategy:
+                                s.retrievalStrategy || "hybrid",
+                              enabledTools: parseSafe(s.enabledTools, [
+                                "search_knowledge",
+                              ]),
+                              guardrailConfig: parseSafe(s.guardrailConfig, {
+                                ...DEFAULT_GUARDRAILS,
+                              }),
+                              memoryConfig: parseSafe(s.memoryConfig, {
+                                ...DEFAULT_MEMORY,
+                              }),
+                              knowledgeConfig: normalizeKnowledgeConfig(
+                                parseSafe(s.knowledgeConfig, {
+                                  ...DEFAULT_KNOWLEDGE_CONFIG,
+                                })
+                              ),
+                              llmApiKey: (s as any).llmApiKey || "",
+                            });
+                          }}
+                        />
+                        {s.id !== "global" && (
+                          <IconAction
+                            icon={<Trash2 />}
+                            label="Delete"
+                            variant="destructive"
+                            onClick={() =>
+                              setConfirmDialog({
+                                title: `Delete "${s.name}"?`,
+                                description:
+                                  "All users will be unassigned from this domain. This action cannot be undone.",
+                                onConfirm: () => deleteMut.mutate({ id: s.id }),
+                              })
+                            }
+                          />
+                        )}
+                      </div>
+                    </HKITd>
+                  </HkiTr>
+                );
+              })}
+            </HkiTbody>
+          </HkiTable>
+        </GovernanceRegistry>
       )}
 
       {/* Styled confirmation dialog — replaces native confirm() */}
@@ -2567,6 +2590,6 @@ export default function StreamsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </GovernanceFrame>
   );
 }

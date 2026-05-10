@@ -123,7 +123,7 @@ function TrendBarStrip({ scores }: { scores: number[] }) {
                 "absolute inset-x-0 bottom-0 rounded-full",
                 barTone,
                 isCurrent &&
-                  "shadow-[0_0_0_1px_rgba(255,255,255,0.8),0_10px_16px_-12px_rgba(0,93,170,0.46)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_10px_18px_-14px_rgba(0,93,170,0.58)]"
+                  "shadow-[0_0_0_1px_rgba(255,255,255,0.8),0_10px_16px_-12px_rgba(14,124,123,0.46)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_10px_18px_-14px_rgba(14,124,123,0.58)]"
               )}
               initial={{ height: 0, opacity: 0.72 }}
               animate={{ height: `${heightPct}%`, opacity: 1 }}

@@ -66,6 +66,7 @@ export const JOB_STATUS_META: Record<
 > = {
   completed: { Icon: CheckCircle, color: "text-primary" },
   failed: { Icon: XCircle, color: "text-red-500" },
+  cancelled: { Icon: XCircle, color: "text-muted-foreground" },
   queued: { Icon: Clock, color: "text-muted-foreground" },
   extracting: { Icon: Loader2, color: "text-blue-500" },
   cleaning: { Icon: Loader2, color: "text-blue-500" },

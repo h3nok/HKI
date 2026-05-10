@@ -109,7 +109,7 @@ const InitiativeCard = React.forwardRef<HTMLDivElement, InitiativeCardProps>(
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold text-foreground mb-1 line-clamp-2 group-hover:text-[#0066B2] transition-colors">
+          <h3 className="font-semibold text-foreground mb-1 line-clamp-2 group-hover:text-[#0E7C7B] transition-colors">
             {title}
           </h3>
 

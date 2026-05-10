@@ -161,7 +161,7 @@ async def chat_stream(
             org_id=body.org_id or "default",
             message=body.message,
             scope=identity.scope,
-            scopes=body.scopes,
+            scopes=identity.scopes,
             stream_config=body.stream_config,
         ):
             if isinstance(chunk, dict):
@@ -262,7 +262,7 @@ async def chat(
         org_id=body.org_id or "default",
         message=body.message,
         scope=identity.scope,
-        scopes=body.scopes,
+        scopes=identity.scopes,
         stream_config=body.stream_config,
     ):
         if isinstance(chunk, dict):

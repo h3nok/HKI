@@ -26,7 +26,6 @@ import {
   PanInfo,
 } from "framer-motion";
 import {
-  Zap,
   Pencil,
   Trash2,
   Pin,
@@ -41,6 +40,7 @@ import {
   FolderMinus,
   FolderPlus,
   MoreHorizontal,
+  type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -90,7 +90,7 @@ export interface ConversationItemProps {
 // ============================================================================
 
 interface StatusVisual {
-  icon: typeof Zap;
+  icon: LucideIcon;
   color: string;
   bgColor: string;
   label: string;
@@ -98,9 +98,9 @@ interface StatusVisual {
 
 const STATUS_CONFIG: Record<TaskStatus, StatusVisual> = {
   idle: {
-    icon: Zap,
+    icon: MessageSquare,
     color: "var(--sidebar-muted-foreground)",
-    bgColor: "transparent",
+    bgColor: "color-mix(in srgb, var(--sidebar-accent) 44%, transparent)",
     label: "Ready",
   },
   running: {
@@ -550,10 +550,18 @@ export const ConversationItem = memo(function ConversationItem({
     y: number;
   } | null>(null);
   const config = STATUS_CONFIG[status];
+  const StatusIcon = config.icon;
+  const previewText = lastMessage?.trim();
 
   // Resolve the project this task belongs to (for visual badge)
   const assignedProject =
     projectId && projects ? projects.find(p => p.id === projectId) : null;
+  const primaryMeta =
+    assignedProject?.name ??
+    scope ??
+    (messageCount
+      ? `${messageCount} message${messageCount === 1 ? "" : "s"}`
+      : "");
 
   // Swipe-to-delete gesture
   const swipeX = useMotionValue(0);
@@ -693,18 +701,18 @@ export const ConversationItem = memo(function ConversationItem({
           onDragEnd={handleSwipeEnd}
           animate={swipeControls}
           whileTap={isRenaming ? undefined : { scale: 0.99 }}
-          className={`agentic-conversation-item relative w-full text-left px-3 py-3
+          className={`agentic-conversation-item relative w-full text-left px-2.5 py-2.5
                            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40
                            group rounded-lg cursor-pointer transition-all duration-150
                            ${
                              isActive
-                               ? "bg-primary/10 border-l-[3px] border-l-primary text-primary shadow-[inset_0_0_0_1px_rgba(0,102,178,0.1)]"
-                               : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary border-l-[3px] border-l-transparent hover:border-l-primary/30"
+                               ? "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(14,124,123,0.1)]"
+                               : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary"
                            }`}
           aria-current={isActive ? "true" : undefined}
           aria-label={`Task: ${title}`}
         >
-          <div className="flex items-center gap-2 pr-7 min-w-0">
+          <div className="flex items-start gap-2.5 pr-7 min-w-0">
             {isRenaming ? (
               <InlineRenameEditor
                 value={renameValue}
@@ -714,44 +722,64 @@ export const ConversationItem = memo(function ConversationItem({
               />
             ) : (
               <>
-                {/* Running pulse dot */}
-                {status === "running" && (
-                  <span className="relative flex h-1.5 w-1.5 shrink-0">
-                    <span
-                      className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                      style={{ background: "var(--primary)" }}
-                    />
-                    <span
-                      className="relative inline-flex rounded-full h-1.5 w-1.5"
-                      style={{ background: "var(--primary)" }}
-                    />
-                  </span>
-                )}
-                {/* Pinned indicator */}
-                {isPinned && status !== "running" && (
-                  <Pin
-                    className="w-3 h-3 shrink-0 text-primary/50"
+                <span
+                  className="agentic-conversation-status-glyph"
+                  data-status={status}
+                  aria-label={config.label}
+                  style={{ color: config.color, background: config.bgColor }}
+                >
+                  <StatusIcon
+                    className={`w-3.5 h-3.5 ${
+                      status === "running" ? "animate-spin" : ""
+                    }`}
                     strokeWidth={2}
                   />
-                )}
-                {/* Title */}
-                <span
-                  className="flex-1 truncate text-[13px]"
-                  style={{ fontWeight: isActive ? 500 : 400 }}
-                  title={`${title}${onRename ? " (double-click to rename)" : ""}`}
-                  onDoubleClick={handleDoubleClick}
-                >
-                  <HighlightedTitle
-                    text={title || "New Task"}
-                    query={searchQuery}
-                  />
                 </span>
-                {/* Timestamp — right-aligned, muted */}
-                {timestamp && (
-                  <span className="shrink-0 text-[10px] tabular-nums text-sidebar-muted-foreground/70">
-                    {formatRelativeTime(timestamp)}
-                  </span>
-                )}
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    {isPinned && (
+                      <Pin
+                        className="w-3 h-3 shrink-0 text-primary/55"
+                        strokeWidth={2}
+                      />
+                    )}
+                    <span
+                      className="flex-1 truncate text-[13px]"
+                      style={{ fontWeight: isActive ? 550 : 450 }}
+                      title={`${title}${onRename ? " (double-click to rename)" : ""}`}
+                      onDoubleClick={handleDoubleClick}
+                    >
+                      <HighlightedTitle
+                        text={title || "New Task"}
+                        query={searchQuery}
+                      />
+                    </span>
+                    {timestamp && (
+                      <span className="shrink-0 text-[10px] tabular-nums text-sidebar-muted-foreground/62">
+                        {formatRelativeTime(timestamp)}
+                      </span>
+                    )}
+                  </div>
+
+                  {(previewText || primaryMeta) && (
+                    <div className="agentic-conversation-subline">
+                      <span className="agentic-conversation-preview">
+                        {previewText || config.label}
+                      </span>
+                      {primaryMeta && (
+                        <span className="agentic-conversation-meta-pill">
+                          {assignedProject?.emoji && (
+                            <span className="leading-none">
+                              {assignedProject.emoji}
+                            </span>
+                          )}
+                          <span className="truncate">{primaryMeta}</span>
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>

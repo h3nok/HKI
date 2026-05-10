@@ -20,9 +20,12 @@ mkdir -p "${PID_DIR}" "${LOG_DIR}" "${RUN_DIR}"
 
 PYTHON_SERVICES=(knowledge-api ingestion-pipeline orchestrator analytics)
 AUTH_KB_SERVICES=(knowledge-api-auth ingestion-pipeline-auth)
+AUTH_SERVICE_SERVICES=(knowledge-api-auth ingestion-pipeline-auth orchestrator-auth analytics-auth)
+AUTH_STATUS_SERVICES=(knowledge-api-auth ingestion-pipeline-auth orchestrator-auth analytics-auth)
 MANAGED_STATUS_SERVICES=(knowledge-api ingestion-pipeline orchestrator analytics agentic)
 MANAGED_STOP_SERVICES=(analytics orchestrator ingestion-pipeline knowledge-api agentic)
-AUTH_STOP_SERVICES=(ingestion-pipeline-auth knowledge-api-auth)
+AUTH_KB_STOP_SERVICES=(ingestion-pipeline-auth knowledge-api-auth)
+AUTH_SERVICE_STOP_SERVICES=(analytics-auth orchestrator-auth ingestion-pipeline-auth knowledge-api-auth)
 INFRA_READY_SERVICES=(mysql redis postgres)
 INFRA_STATUS_SERVICES=(mysql redis postgres litellm)
 
@@ -55,7 +58,9 @@ service_port() {
     knowledge-api-auth) echo 9609 ;;
     ingestion-pipeline-auth) echo 9608 ;;
     orchestrator) echo 9501 ;;
+    orchestrator-auth) echo 9601 ;;
     analytics) echo 9510 ;;
+    analytics-auth) echo 9610 ;;
     agentic) echo 9001 ;;
     mysql) echo 9306 ;;
     redis) echo 9379 ;;
@@ -72,7 +77,9 @@ service_label() {
     knowledge-api-auth) echo "knowledge-api-auth" ;;
     ingestion-pipeline-auth) echo "ingestion-pipeline-auth" ;;
     orchestrator) echo "orchestrator-service" ;;
+    orchestrator-auth) echo "orchestrator-auth" ;;
     analytics) echo "analytics-service" ;;
+    analytics-auth) echo "analytics-auth" ;;
     agentic) echo "agentic-bff" ;;
     *) echo "$1" ;;
   esac
@@ -82,8 +89,8 @@ service_dir() {
   case "$1" in
     knowledge-api|knowledge-api-auth) echo "${ROOT_DIR}/services/knowledge-api" ;;
     ingestion-pipeline|ingestion-pipeline-auth) echo "${ROOT_DIR}/services/ingestion-pipeline-service" ;;
-    orchestrator) echo "${ROOT_DIR}/services/orchestrator-service" ;;
-    analytics) echo "${ROOT_DIR}/services/analytics-service" ;;
+    orchestrator|orchestrator-auth) echo "${ROOT_DIR}/services/orchestrator-service" ;;
+    analytics|analytics-auth) echo "${ROOT_DIR}/services/analytics-service" ;;
     *) error "No service directory mapping for: $1"; exit 1 ;;
   esac
 }
@@ -113,7 +120,9 @@ service_health_url() {
     knowledge-api-auth) echo "http://localhost:9609/health" ;;
     ingestion-pipeline-auth) echo "http://localhost:9608/health" ;;
     orchestrator) echo "http://localhost:9501/health" ;;
+    orchestrator-auth) echo "http://localhost:9601/health" ;;
     analytics) echo "http://localhost:9510/health" ;;
+    analytics-auth) echo "http://localhost:9610/health" ;;
     agentic) echo "http://localhost:9001/health" ;;
     *) echo "" ;;
   esac
@@ -172,6 +181,38 @@ check_managed_process_alive() {
 port_listener_pids() {
   local port="$1"
   lsof -tiTCP:"${port}" -sTCP:LISTEN 2>/dev/null || true
+}
+
+process_parent_pid() {
+  local pid="$1"
+  ps -o ppid= -p "${pid}" 2>/dev/null | tr -d '[:space:]' || true
+}
+
+process_command() {
+  local pid="$1"
+  ps -o command= -p "${pid}" 2>/dev/null || true
+}
+
+termination_targets_for_listener() {
+  local name="$1"
+  local pid="$2"
+  local parent_pid parent_command
+
+  echo "${pid}"
+
+  # tsx watch owns and respawns the actual BFF listener. If only the child
+  # listener is killed, the parent watch process can immediately reclaim :9001.
+  if [[ "${name}" != "agentic" ]]; then
+    return 0
+  fi
+
+  parent_pid="$(process_parent_pid "${pid}")"
+  [[ -z "${parent_pid}" ]] && return 0
+
+  parent_command="$(process_command "${parent_pid}")"
+  if [[ "${parent_command}" == *"tsx"* && "${parent_command}" == *"watch"* && "${parent_command}" == *"server/_core/index.ts"* ]]; then
+    echo "${parent_pid}"
+  fi
 }
 
 tail_service_log() {
@@ -254,7 +295,10 @@ ensure_port_released() {
   warn "Port ${port} is already in use; reclaiming it for ${name}"
   while IFS= read -r pid; do
     [[ -z "${pid}" ]] && continue
-    terminate_pid "${pid}"
+    termination_targets_for_listener "${name}" "${pid}" | awk '!seen[$0]++' | while IFS= read -r target_pid; do
+      [[ -z "${target_pid}" ]] && continue
+      terminate_pid "${target_pid}"
+    done
   done <<< "${listeners}"
 
   listeners="$(port_listener_pids "${port}")"
@@ -443,6 +487,36 @@ EOF
   launch_runner orchestrator "${runner}"
 }
 
+start_orchestrator_auth() {
+  local runner
+  local auth_secret
+  runner="$(service_runner_file orchestrator-auth)"
+  auth_secret="${HKI_AUTH_SECRET:-${KB_AUTH_SECRET:-kb-auth-local-dev-secret-1234567890}}"
+  cat >"${runner}" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+cd "${ROOT_DIR}/services/orchestrator-service"
+set -a
+[[ -f .env ]] && . ./.env
+set +a
+unset __PYVENV_LAUNCHER__
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
+export ANALYTICS_SERVICE_URL="http://127.0.0.1:9610"
+export AUTH_ENABLED="true"
+export ENVIRONMENT="development"
+export JWT_SECRET="${auth_secret}"
+export KB_HERMETIC_ISOLATION="true"
+export KNOWLEDGE_API_URL="http://127.0.0.1:9609"
+export KNOWLEDGE_PIPELINE_URL="http://127.0.0.1:9608"
+export REDIS_URL=""
+export SERVICE_AUTH_SECRET="${auth_secret}"
+export VECTOR_STORE_URL="http://127.0.0.1:9609"
+exec ./.venv/bin/uvicorn src.api.app:app --host 127.0.0.1 --reload --port 9601 --reload-dir src
+EOF
+  chmod +x "${runner}"
+  launch_runner orchestrator-auth "${runner}"
+}
+
 start_analytics() {
   local runner
   runner="$(service_runner_file analytics)"
@@ -462,6 +536,33 @@ EOF
   launch_runner analytics "${runner}"
 }
 
+start_analytics_auth() {
+  local runner
+  local auth_secret
+  runner="$(service_runner_file analytics-auth)"
+  auth_secret="${HKI_AUTH_SECRET:-${KB_AUTH_SECRET:-kb-auth-local-dev-secret-1234567890}}"
+  cat >"${runner}" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+cd "${ROOT_DIR}/services/analytics-service"
+set -a
+[[ -f .env ]] && . ./.env
+set +a
+unset __PYVENV_LAUNCHER__
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
+export AUTH_ENABLED="true"
+export DATABASE_URL=""
+export ENVIRONMENT="development"
+export JWT_SECRET="${auth_secret}"
+export KB_HERMETIC_ISOLATION="true"
+export ORCHESTRATOR_URL="http://127.0.0.1:9601"
+export SERVICE_AUTH_SECRET="${auth_secret}"
+exec ./.venv/bin/uvicorn src.api.app:app --host 127.0.0.1 --reload --port 9610 --reload-dir src
+EOF
+  chmod +x "${runner}"
+  launch_runner analytics-auth "${runner}"
+}
+
 start_service() {
   local name="$1"
   ensure_port_released "${name}"
@@ -472,7 +573,9 @@ start_service() {
     knowledge-api-auth) start_knowledge_api_auth ;;
     ingestion-pipeline-auth) start_ingestion_pipeline_auth ;;
     orchestrator) start_orchestrator ;;
+    orchestrator-auth) start_orchestrator_auth ;;
     analytics) start_analytics ;;
+    analytics-auth) start_analytics_auth ;;
     *) error "Unsupported start target: ${name}"; exit 1 ;;
   esac
 
@@ -575,7 +678,7 @@ show_status() {
   echo ""
   echo "Auth validation services"
   echo ""
-  for name in "${AUTH_KB_SERVICES[@]}"; do
+  for name in "${AUTH_STATUS_SERVICES[@]}"; do
     status_row "${name}"
   done
   echo ""
@@ -616,6 +719,15 @@ start_auth_kb_stack() {
   done
 }
 
+start_auth_service_stack() {
+  preflight_services "${AUTH_SERVICE_SERVICES[@]}"
+  start_infra
+  for name in "${AUTH_SERVICE_SERVICES[@]}"; do
+    stop_service "${name}"
+    start_service "${name}"
+  done
+}
+
 stop_managed_stack() {
   for name in "${MANAGED_STOP_SERVICES[@]}"; do
     stop_service "${name}"
@@ -623,7 +735,13 @@ stop_managed_stack() {
 }
 
 stop_auth_kb_stack() {
-  for name in "${AUTH_STOP_SERVICES[@]}"; do
+  for name in "${AUTH_KB_STOP_SERVICES[@]}"; do
+    stop_service "${name}"
+  done
+}
+
+stop_auth_service_stack() {
+  for name in "${AUTH_SERVICE_STOP_SERVICES[@]}"; do
     stop_service "${name}"
   done
 }
@@ -637,8 +755,12 @@ Commands:
   start-services   Start infra and Python services in background
   start-full       Start infra + Python services only and free agentic port for foreground UI
   start-kb-auth    Start isolated auth-enabled KB validation services on :9608/:9609
+  start-service-auth
+                   Start all auth-enabled service validation services on :9601/:9608/:9609/:9610
   stop             Stop managed local services and free reserved ports
   stop-kb-auth     Stop isolated auth-enabled KB validation services
+  stop-service-auth
+                   Stop all auth-enabled service validation services
   stop-all         Stop managed local services and Docker infra
   restart          Restart managed local services
   reset            Restart Docker infra, then restart managed local services
@@ -664,15 +786,22 @@ main() {
       start_auth_kb_stack
       show_status
       ;;
+    start-service-auth)
+      start_auth_service_stack
+      show_status
+      ;;
     stop)
       stop_managed_stack
       ;;
     stop-kb-auth)
       stop_auth_kb_stack
       ;;
+    stop-service-auth)
+      stop_auth_service_stack
+      ;;
     stop-all)
       stop_managed_stack
-      stop_auth_kb_stack
+      stop_auth_service_stack
       stop_infra
       ;;
     restart)

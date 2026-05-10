@@ -29,11 +29,15 @@ def _make_mock_agent(
 ):
     """Build a mock AdkAgent whose ``chat_stream`` yields *chunks*."""
     agent = MagicMock()
+    agent.chat_stream_calls = []
 
     if chunks is None:
         chunks = [{"type": "final_response_chunk", "content": "Hello!"}]
 
-    async def _fake_stream(*, session_id: str, message: str, **kwargs):  # noqa: ARG001
+    async def _fake_stream(*, session_id: str, message: str, **kwargs):
+        agent.chat_stream_calls.append(
+            {"session_id": session_id, "message": message, **kwargs}
+        )
         for c in chunks:
             yield c
 
@@ -251,6 +255,29 @@ class TestChatEndpoint:
         assert isinstance(body["guardrails"], dict)
         assert isinstance(body["citations"], list)
 
+    def test_body_scopes_do_not_override_verified_identity(self):
+        """Request body scope hints must not widen the signed caller identity."""
+        agent = _make_mock_agent(
+            chunks=[{"type": "final_response_chunk", "content": "ok"}],
+        )
+        client = _inject_agent(agent)
+        payload = {
+            **_chat_payload(),
+            "scope": "surgery",
+            "scopes": ["surgery", "global"],
+        }
+
+        with patch.dict(
+            "os.environ",
+            {"AUTH_ENABLED": "false", "HKI_DEV_RUNTIME_SCOPE": "pharmacy"},
+            clear=False,
+        ):
+            resp = client.post("/v1/chat", json=payload)
+
+        assert resp.status_code == 200
+        assert agent.chat_stream_calls[-1]["scope"] == "pharmacy"
+        assert agent.chat_stream_calls[-1]["scopes"] == ["pharmacy"]
+
 
 # ═════════════════════════════════════════════════════════════════════════════
 # POST /v1/chat  — validation
@@ -418,6 +445,29 @@ class TestChatStreamEndpoint:
 
         resp = client.post("/v1/chat/stream", json=_chat_payload())
         assert resp.headers.get("cache-control") == "no-cache"
+
+    def test_stream_body_scopes_do_not_override_verified_identity(self):
+        """SSE route uses the verified identity scopes, not request body hints."""
+        agent = _make_mock_agent(
+            chunks=[{"type": "final_response_chunk", "content": "ok"}],
+        )
+        client = _inject_agent(agent)
+        payload = {
+            **_chat_payload(),
+            "scope": "surgery",
+            "scopes": ["surgery", "global"],
+        }
+
+        with patch.dict(
+            "os.environ",
+            {"AUTH_ENABLED": "false", "HKI_DEV_RUNTIME_SCOPE": "pharmacy"},
+            clear=False,
+        ):
+            resp = client.post("/v1/chat/stream", json=payload)
+
+        assert resp.status_code == 200
+        assert agent.chat_stream_calls[-1]["scope"] == "pharmacy"
+        assert agent.chat_stream_calls[-1]["scopes"] == ["pharmacy"]
 
 
 # ═════════════════════════════════════════════════════════════════════════════

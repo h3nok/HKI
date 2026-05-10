@@ -150,6 +150,7 @@ export interface ThoughtTraceEvent {
     | "handoff"
     | "memory_recall"
     | "memory_store"
+    | "hki_envelope"
     | "knowledge_retrieval"
     | "cache_hit"
     | "final_response_chunk"
@@ -413,33 +414,8 @@ type InterventionResponsePayload = {
   userNote?: string;
 };
 
-// Pending intervention resolvers keyed by planId
-const interventionResolvers = new Map<
-  string,
-  (response: InterventionResponsePayload) => void
->();
-
-/** Register a resolver that will be called when the user responds to an intervention */
-export function waitForIntervention(
-  planId: string,
-  timeout = 300_000 // 5 min default
-): Promise<InterventionResponsePayload> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      interventionResolvers.delete(planId);
-      reject(new Error(`Intervention timeout for plan ${planId}`));
-    }, timeout);
-
-    interventionResolvers.set(planId, response => {
-      clearTimeout(timer);
-      interventionResolvers.delete(planId);
-      resolve(response);
-    });
-  });
-}
-
 function handleClientMessage(
-  conversationId: string,
+  _conversationId: string,
   ws: AuthenticatedWebSocket,
   data: Record<string, unknown>
 ) {
@@ -447,27 +423,15 @@ function handleClientMessage(
 
   if (type === "intervention_response") {
     const payload = data as unknown as InterventionResponsePayload;
-    const resolver = interventionResolvers.get(payload.planId);
-    if (resolver) {
-      resolver(payload);
-      // Broadcast acknowledgment to all clients in the conversation
-      publish(
-        conversationId,
-        JSON.stringify({
-          type: "intervention_acknowledged",
-          planId: payload.planId,
-          action: payload.action,
-          timestamp: new Date().toISOString(),
-        })
-      );
-    } else {
-      ws.send(
-        JSON.stringify({
-          type: "error",
-          message: `No pending intervention for plan ${payload.planId}`,
-        })
-      );
-    }
+    ws.send(
+      JSON.stringify({
+        type: "error",
+        planId: payload.planId,
+        action: payload.action,
+        message:
+          "Intervention responses must use chat.respondToIntervention so approval grants are scoped, persisted, and audited.",
+      })
+    );
     return;
   }
 

@@ -256,18 +256,18 @@ export const GRID = {
 } as const;
 
 export const GRADIENTS = {
-  primary: `linear-gradient(135deg, ${BRAND.blue[500]} 0%, ${BRAND.blue[600]} 100%)`,
-  primarySubtle: `linear-gradient(135deg, ${BRAND.blue[50]} 0%, ${BRAND.blue[100]} 100%)`,
-  accent: `linear-gradient(135deg, ${BRAND.red[500]} 0%, ${BRAND.red[600]} 100%)`,
-  accentSubtle: `linear-gradient(135deg, ${BRAND.red[50]} 0%, ${BRAND.red[100]} 100%)`,
-  surface: `linear-gradient(180deg, ${SURFACE.base} 0%, ${SURFACE.background} 100%)`,
-  surfaceSubtle: `linear-gradient(180deg, ${NEUTRAL[0]} 0%, ${NEUTRAL[25]} 100%)`,
-  ambient: `linear-gradient(135deg, ${BRAND.blue[50]} 0%, ${NEUTRAL[50]} 100%)`,
-  premiumBlue: `linear-gradient(135deg, ${BRAND.blue[400]} 0%, ${BRAND.blue[600]} 100%)`,
-  premiumRed: `linear-gradient(135deg, ${BRAND.red[400]} 0%, ${BRAND.red[600]} 100%)`,
-  premiumDark: `linear-gradient(180deg, ${NEUTRAL[900]} 0%, ${NEUTRAL[950]} 100%)`,
-  aurora: `linear-gradient(135deg, ${BRAND.blue[400]} 0%, ${BRAND.blue[500]} 50%, ${BRAND.red[500]} 100%)`,
-  meshDark: `radial-gradient(ellipse at 20% 0%, rgba(0, 102, 178, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(227, 24, 55, 0.15) 0%, transparent 50%)`,
+  primary: BRAND.blue[500],
+  primarySubtle: BRAND.blue[50],
+  accent: BRAND.blue[500],
+  accentSubtle: BRAND.blue[50],
+  surface: SURFACE.base,
+  surfaceSubtle: NEUTRAL[0],
+  ambient: NEUTRAL[50],
+  premiumBlue: BRAND.blue[500],
+  premiumRed: BRAND.blue[500],
+  premiumDark: NEUTRAL[900],
+  aurora: BRAND.blue[500],
+  meshDark: NEUTRAL[900],
 } as const;
 
 export const GLASS = {
@@ -288,8 +288,7 @@ export const GLASS = {
   },
   hud: {
     background: "rgba(20, 24, 33, 0.85)",
-    border:
-      "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%)",
+    border: "rgba(255,255,255,0.08)",
     borderFallback: "rgba(255, 255, 255, 0.08)",
     backdrop: "blur(16px) saturate(150%)",
     innerGlow: "inset 0 1px 0 rgba(255,255,255,0.05)",
@@ -298,26 +297,26 @@ export const GLASS = {
     background: "rgba(15, 20, 30, 0.9)",
     border: "rgba(255, 255, 255, 0.1)",
     backdrop: "blur(20px) saturate(180%)",
-    focusGlow: `0 0 0 1px rgba(0, 102, 178, 0.5), 0 0 24px -4px rgba(0, 102, 178, 0.3), 0 8px 32px rgba(0,0,0,0.4)`,
+    focusGlow: `0 0 0 1px color-mix(in srgb, ${BRAND.blue[500]} 50%, transparent), 0 0 24px -4px color-mix(in srgb, ${BRAND.blue[500]} 30%, transparent), 0 8px 32px rgba(0,0,0,0.4)`,
     idleGlow: "0 8px 32px rgba(0,0,0,0.4)",
   },
 } as const;
 
 export const GLOW = {
   blue: {
-    sm: `0 0 20px -5px rgba(0, 102, 178, 0.4)`,
-    md: `0 0 30px -5px rgba(0, 102, 178, 0.5)`,
-    lg: `0 4px 40px -8px rgba(0, 102, 178, 0.6)`,
+    sm: `0 0 20px -5px color-mix(in srgb, ${BRAND.blue[500]} 40%, transparent)`,
+    md: `0 0 30px -5px color-mix(in srgb, ${BRAND.blue[500]} 50%, transparent)`,
+    lg: `0 4px 40px -8px color-mix(in srgb, ${BRAND.blue[500]} 60%, transparent)`,
   },
   red: {
-    sm: `0 0 20px -5px rgba(227, 24, 55, 0.4)`,
-    md: `0 0 30px -5px rgba(227, 24, 55, 0.5)`,
-    lg: `0 4px 40px -8px rgba(227, 24, 55, 0.6)`,
+    sm: `0 0 20px -5px color-mix(in srgb, ${BRAND.red[500]} 40%, transparent)`,
+    md: `0 0 30px -5px color-mix(in srgb, ${BRAND.red[500]} 50%, transparent)`,
+    lg: `0 4px 40px -8px color-mix(in srgb, ${BRAND.red[500]} 60%, transparent)`,
   },
   mixed: {
-    sm: `0 0 20px -5px rgba(0, 102, 178, 0.3), 0 0 20px -5px rgba(227, 24, 55, 0.3)`,
-    md: `0 0 30px -5px rgba(0, 102, 178, 0.4), 0 0 30px -5px rgba(227, 24, 55, 0.4)`,
-    lg: `0 4px 40px -8px rgba(0, 102, 178, 0.5), 0 4px 40px -8px rgba(227, 24, 55, 0.5)`,
+    sm: `0 0 20px -5px color-mix(in srgb, ${BRAND.blue[500]} 40%, transparent)`,
+    md: `0 0 30px -5px color-mix(in srgb, ${BRAND.blue[500]} 50%, transparent)`,
+    lg: `0 4px 40px -8px color-mix(in srgb, ${BRAND.blue[500]} 60%, transparent)`,
   },
 } as const;
 
@@ -327,7 +326,7 @@ export const QUICK_ACTIONS = [
     icon: "🔍",
     title: "Search Products",
     description: "Find items in catalog",
-    gradient: `linear-gradient(135deg, ${BRAND.blue[50]} 0%, ${BRAND.blue[100]} 100%)`,
+    gradient: BRAND.blue[50],
     iconColor: BRAND.blue[500],
   },
   {
@@ -335,24 +334,24 @@ export const QUICK_ACTIONS = [
     icon: "📦",
     title: "Check Inventory",
     description: "Real-time stock levels",
-    gradient: `linear-gradient(135deg, ${SEMANTIC.success.light} 0%, #BBF7D0 100%)`,
-    iconColor: SEMANTIC.success.base,
+    gradient: BRAND.blue[50],
+    iconColor: BRAND.blue[500],
   },
   {
     id: "analytics",
     icon: "📊",
     title: "Analytics",
     description: "Sales & performance",
-    gradient: `linear-gradient(135deg, ${SEMANTIC.warning.light} 0%, #FDE68A 100%)`,
-    iconColor: SEMANTIC.warning.base,
+    gradient: BRAND.blue[50],
+    iconColor: BRAND.blue[500],
   },
   {
     id: "price-check",
     icon: "💰",
     title: "Price Check",
     description: "Compare pricing",
-    gradient: `linear-gradient(135deg, ${BRAND.red[50]} 0%, ${BRAND.red[100]} 100%)`,
-    iconColor: BRAND.red[500],
+    gradient: BRAND.blue[50],
+    iconColor: BRAND.blue[500],
   },
 ] as const;
 

@@ -71,7 +71,7 @@ export function FilterBar({
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={searchPlaceholder}
-          className="w-full h-10 pl-10 pr-4 rounded-lg border border-[#e0dfdc] dark:border-[#333333] bg-white dark:bg-[#1a1a1a] text-[#3f3e3d] dark:text-[#d1d0cd] placeholder-[#8a8986] dark:placeholder-[#6f6e6b] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2] dark:focus-visible:ring-[#3397D7] focus:border-[#0066B2] dark:focus:border-[#3397D7] transition-all text-sm"
+          className="w-full h-10 pl-10 pr-4 rounded-lg border border-[#e0dfdc] dark:border-[#333333] bg-white dark:bg-[#1a1a1a] text-[#3f3e3d] dark:text-[#d1d0cd] placeholder-[#8a8986] dark:placeholder-[#6f6e6b] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B] dark:focus-visible:ring-[#1FA9A5] focus:border-[#0E7C7B] dark:focus:border-[#1FA9A5] transition-all text-sm"
           aria-label="Search"
         />
       </div>
@@ -83,7 +83,7 @@ export function FilterBar({
             type="button"
             onClick={() => onFilterChange(opt.value)}
             className={cn(
-              "px-4 py-2 rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066B2] dark:focus-visible:ring-[#3397D7] focus-visible:ring-offset-1",
+              "px-4 py-2 rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E7C7B] dark:focus-visible:ring-[#1FA9A5] focus-visible:ring-offset-1",
               activeFilter === opt.value
                 ? "bg-white dark:bg-[#242424] text-[#1a1a19] dark:text-[#f5f4f1] shadow-sm"
                 : "text-[#6f6e6b] dark:text-[#a3a29f] hover:text-[#3f3e3d] dark:hover:text-[#d1d0cd]"
