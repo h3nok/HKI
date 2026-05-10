@@ -1,0 +1,21 @@
+{
+  "name": "hki-example-mcp-server",
+  "version": "0.1.0",
+  "description": "HKI + MCP domain-scoped tool registry example.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx server.ts",
+    "build": "tsc --outDir dist",
+    "demo": "pnpm build && node dist/server.js"
+  },
+  "dependencies": {
+    "@hki/runtime": "workspace:*",
+    "@hki/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@hki/typescript-config": "workspace:*",
+    "tsx": "^4.19.4",
+    "typescript": "^5.9.3"
+  }
+}
