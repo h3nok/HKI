@@ -1,0 +1,99 @@
+name: Probe Deploy & L4 Evidence
+
+# Builds the hki-probe-target Cloud Run service, deploys it, runs all 10
+# HTTP conformance probes against the live URL, and uploads the signed
+# evidence bundle as a CI artifact.
+#
+# Skips Cloud Run deployment when PROBE_TARGET_URL secret is set — useful
+# for pointing the probe at an already-running staging service.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "services/hki-probe-target/**"
+      - "packages/hki-runtime-py/**"
+      - "packages/hki-conformance/src/probe.ts"
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "Skip deploy and probe this URL directly"
+        required: false
+        default: ""
+
+jobs:
+  deploy-and-probe:
+    name: Deploy probe-target → run L4 evidence probes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── build probe CLI ────────────────────────────────────────────────────
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build hki-runtime + hki-conformance
+        run: pnpm build:hki-runtime && pnpm build:hki-conformance
+
+      # ── GCP auth (only needed when deploying) ──────────────────────────────
+      - name: Authenticate to GCP
+        if: ${{ !inputs.target_url }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        if: ${{ !inputs.target_url }}
+        uses: google-github-actions/setup-gcloud@v2
+
+      # ── deploy probe-target to Cloud Run ──────────────────────────────────
+      - name: Deploy probe-target
+        if: ${{ !inputs.target_url }}
+        id: deploy
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+          gcloud builds submit . \
+            --config=services/hki-probe-target/cloudbuild.yaml \
+            --project="${{ secrets.GKE_PROJECT_ID }}" \
+            --substitutions="SHORT_SHA=${SHORT_SHA}"
+
+          URL=$(gcloud run services describe hki-probe-target \
+            --region=us-central1 \
+            --project="${{ secrets.GKE_PROJECT_ID }}" \
+            --format="value(status.url)")
+          echo "url=${URL}" >> "$GITHUB_OUTPUT"
+
+      # ── run L4 HTTP probes ─────────────────────────────────────────────────
+      - name: Run L4 HTTP probes
+        run: |
+          TARGET="${{ inputs.target_url || steps.deploy.outputs.url }}"
+          echo "Probing: ${TARGET}"
+          node packages/hki-conformance/dist/probe.js "${TARGET}" \
+            --route /v1/chat \
+            --org org_hki \
+            --domain payments \
+            --other-domain hr \
+            --out evidence.json
+          cat evidence.json
+
+      - name: Upload L4 evidence bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hki-l4-http-evidence
+          path: evidence.json
+          if-no-files-found: warn

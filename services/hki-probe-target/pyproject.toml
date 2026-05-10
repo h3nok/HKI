@@ -1,0 +1,22 @@
+[project]
+name = "hki-probe-target"
+version = "0.1.0"
+description = "Minimal FastAPI service with HkiMiddleware — deployable to Cloud Run for L4 HTTP conformance evidence."
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "HKI Contributors" }]
+dependencies = [
+    "hki-runtime[fastapi]>=0.1.0",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+]
+
+[tool.uv.sources]
+hki-runtime = { path = "../../packages/hki-runtime-py" }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

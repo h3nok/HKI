@@ -15,11 +15,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.0.0
+          version: 11.0.9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -38,17 +38,18 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.0.0
+          version: 11.0.9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm typecheck:hki-runtime
       - run: pnpm typecheck:hki-conformance
+      - run: pnpm typecheck:hki-mcp
       - run: pnpm --dir packages/ui typecheck
       - run: pnpm --dir apps/agentic check
 
@@ -60,17 +61,18 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.0.0
+          version: 11.0.9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm test:hki-runtime
       - run: pnpm test:hki-conformance
+      - run: pnpm test:hki-mcp
 
   conformance:
     name: HKI Conformance
@@ -80,11 +82,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.0.0
+          version: 11.0.9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -93,6 +95,7 @@ jobs:
       - run: pnpm audit:hki
       - run: pnpm audit:hki-ast-ts
       - run: pnpm verify:hki-conformance
+      - run: pnpm probe:smoke
 
   hki-python:
     name: HKI Python Gates
@@ -102,11 +105,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.0.0
+          version: 11.0.9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - uses: actions/setup-python@v5
@@ -147,10 +150,82 @@ jobs:
           path: conformance.json
           if-no-files-found: error
 
+  probe-smoke:
+    name: L4 Probe Smoke (mock gateway)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build runtime + conformance
+        run: pnpm build:hki-runtime && pnpm build:hki-conformance
+
+      - name: Run hki-probe against mock gateway (P01–P10)
+        run: pnpm --dir packages/hki-conformance probe:smoke
+
+      - name: Upload evidence bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hki-probe-evidence
+          path: /tmp/hki-evidence.json
+          if-no-files-found: warn
+
+  service-evidence:
+    name: Service HKI Evidence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install local service tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lsof
+          pip install --upgrade uv
+
+      - name: Bootstrap Python services
+        run: make bootstrap
+
+      - name: Run strict-auth service evidence
+        run: make hki-service-evidence-auth
+
+      - name: Upload service evidence bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hki-service-evidence
+          path: artifacts/hki/service-evidence.auth.json
+          if-no-files-found: warn
+
   hki-gate:
     name: HKI Gate (required)
     runs-on: ubuntu-latest
-    needs: [quality, typecheck, test, conformance, hki-python]
+    needs:
+      - quality
+      - typecheck
+      - test
+      - conformance
+      - hki-python
+      - probe-smoke
+      - service-evidence
     if: always()
     steps:
       - name: Verify all HKI gates passed
@@ -159,7 +234,9 @@ jobs:
             || [ "${{ needs.typecheck.result }}" != "success" ] \
             || [ "${{ needs.test.result }}" != "success" ] \
             || [ "${{ needs.conformance.result }}" != "success" ] \
-            || [ "${{ needs.hki-python.result }}" != "success" ]; then
+            || [ "${{ needs.hki-python.result }}" != "success" ] \
+            || [ "${{ needs.probe-smoke.result }}" != "success" ] \
+            || [ "${{ needs.service-evidence.result }}" != "success" ]; then
             echo "::error::One or more HKI gates failed"
             exit 1
           fi

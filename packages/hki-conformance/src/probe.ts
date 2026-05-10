@@ -28,6 +28,7 @@
  *     --out evidence.json
  */
 
+import { createHash } from "node:crypto";
 import { writeFileSync } from "node:fs";
 
 import { HKI_VERSION, type HkiEnvelope } from "@hki/runtime";
@@ -48,7 +49,7 @@ interface ProbeOptions {
   bodyTemplate: Record<string, unknown>;
 }
 
-interface ProbeResult {
+export interface ProbeResult {
   id: string;
   title: string;
   passed: boolean;
@@ -56,7 +57,7 @@ interface ProbeResult {
   actual: { status?: number; bodyExcerpt?: string; note?: string };
 }
 
-interface EvidenceBundle {
+export interface EvidenceBundle {
   hki_version: string;
   generated_at: string;
   target: { base_url: string; route: string };
@@ -64,6 +65,28 @@ interface EvidenceBundle {
   failed: number;
   level_claim: 0 | 1 | 2 | 3 | 4;
   results: ProbeResult[];
+  /**
+   * SHA-256 of the canonical evidence payload (hki_version + generated_at +
+   * target + results), hex-encoded. Allows downstream tooling to verify that
+   * the bundle was not tampered with after generation.
+   */
+  bundle_hash: string;
+}
+
+/** Compute a tamper-evident SHA-256 hash over the evidence payload. */
+function signBundle(
+  hki_version: string,
+  generated_at: string,
+  target: EvidenceBundle["target"],
+  results: ProbeResult[]
+): string {
+  const payload = JSON.stringify({
+    hki_version,
+    generated_at,
+    target,
+    results,
+  });
+  return createHash("sha256").update(payload, "utf8").digest("hex");
 }
 
 // ---------------------------------------------------------------------------
@@ -370,14 +393,18 @@ export async function runProbe(opts: ProbeOptions): Promise<EvidenceBundle> {
   }
   const passed = results.filter(r => r.passed).length;
   const failed = results.length - passed;
+  const hki_version = HKI_VERSION;
+  const generated_at = new Date().toISOString();
+  const target = { base_url: opts.baseUrl, route: opts.route };
   const bundle: EvidenceBundle = {
-    hki_version: HKI_VERSION,
-    generated_at: new Date().toISOString(),
-    target: { base_url: opts.baseUrl, route: opts.route },
+    hki_version,
+    generated_at,
+    target,
     passed,
     failed,
     level_claim: levelClaim(passed, results.length),
     results,
+    bundle_hash: signBundle(hki_version, generated_at, target, results),
   };
   return bundle;
 }

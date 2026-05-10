@@ -12,6 +12,8 @@ on:
       - "services/ingestion-pipeline-service/**"
       - "services/knowledge-api/**"
       - "services/orchestrator-service/**"
+      - "services/hki-probe-target/**"
+      - "packages/hki-runtime-py/**"
       - "apps/agentic/**"
       - "deploy/k8s/**"
       - "scripts/deploy-k8s.sh"
