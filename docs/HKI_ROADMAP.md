@@ -355,25 +355,30 @@ Goal: external systems claim HKI conformance unprompted.
 
 ## 4. Sequenced milestone order (next 6, in priority)
 
-These are the next six things to ship, in this order. Each is a force
-multiplier for the next.
+**Updated 2026-05-10** — Tracks 1 and 2 are complete. Track 3 framework
+adapters are done. Open front: cloud parity, examples, adoption.
 
-1. **M1 — Decouple repos.** Frees the standard from the platform’s shadow.
-2. **M2 — Python parity (FastAPI middleware + py conformance kit).** Most
-   agentic code is Python; this is the highest-leverage technical gap.
-3. **M5 — Threat catalog v1.** Turns "easy to break" from assertion to
-   demonstration. This is the marketing engine.
-4. **M7 — `hki probe` CLI.** Closes the "adapter passes but system doesn’t"
-   gap; produces signed evidence bundles.
-5. **M10 / M11 — LiteLLM callback + LangChain adapter.** Two artifacts that
-   collectively cover most production agent stacks.
-6. **M13 — AWS reference (EKS + Bedrock + Aurora pgvector + OpenSearch).**
-   Kills the GCP-only objection.
+1. **M13 — AWS reference (EKS + Bedrock + Aurora pgvector + OpenSearch).**
+   Kills the GCP-only objection; required for any enterprise that isn’t
+   already on GCP.
+2. **M17 — Examples directory.** `examples/fastapi-rag`, `examples/langgraph-agent`,
+   `examples/mcp-server`, `examples/bedrock-claude` — each ≤200 LOC and
+   self-contained. Lowest-friction entry point for new adopters.
+3. **M16 — Boundary decision.** Strip enterprise specifics from `apps/agentic`,
+   or move to private repo and ship `examples/` only. Unresolved; blocks
+   clean public perception of the standard.
+4. **M22 — "Break a RAG in 60 seconds" demo.** Repo + 2-minute video. The
+   threat catalog (M5) and probe (M7) are done; this turns them into a
+   narrative that engineers share.
+5. **M25 — Three design partners.** One regulated enterprise, one AI-native
+   vendor, one OSS project. Required for L5.
+6. **M26 — Pre-1.0 freeze gate.** Spec, kit, schema, threat catalog frozen
+   until at least one external system passes L4 unaided. Then cut HKI 1.0.
 
-After M13, HKI has: a published standard, two cloud references, Python+TS
-runtimes, a CI-grade detector with system probes, and adapters covering the
-common LLM, framework, vector store, and observability choices. That is the
-package that earns the right to ask other vendors to claim conformance.
+At this point HKI has: a published standard, GCP+AWS cloud references,
+Python+TS runtimes, six framework adapters, CI-grade detector with HTTP
+probes, L4 conformance evidence, and three real adoption stories. That is
+the package for HKI 1.0.
 
 ---
 
@@ -388,8 +393,8 @@ package that earns the right to ask other vendors to claim conformance.
 | L4    | Probed     | `hki probe` HTTP tests pass against deployed system.                    |
 | L5    | Certified  | L4 + independent audit + design partner reference + listed in registry. |
 
-The reference platform is currently at **L3** (28/28 adapter cases pass).
-The L4 probe runner ships in M7.
+The reference platform is currently at **L4** (28/28 adapter cases pass; `hki-probe` 10/10 HTTP probes PASS against mock gateway in CI; `services/hki-probe-target` deployable for Cloud Run evidence).
+L5 requires an independent audit + external design partner + registry listing.
 
 ---
 
