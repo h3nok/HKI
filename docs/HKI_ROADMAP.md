@@ -74,9 +74,9 @@ If a system cannot be tested against that paragraph, it is not HKI.
 
 | Gap                                                           | Severity           | Tracked in   |
 | ------------------------------------------------------------- | ------------------ | ------------ |
-| FastAPI middleware for `hki-runtime` (Python)                 | High               | Track 1 / M2 |
-| Python conformance kit (only TS today)                        | High               | Track 1 / M2 |
-| Threat catalog with runnable attacks                          | High               | Track 2 / M3 |
+| ~~FastAPI middleware for `hki-runtime` (Python)~~             | ~~High~~           | ~~Track 1 / M2~~ — ✅ Done |
+| ~~Python conformance kit (only TS today)~~                    | ~~High~~           | ~~Track 1 / M2~~ — ✅ Done |
+| ~~Threat catalog with runnable attacks~~                      | ~~High~~           | ~~Track 2 / M5~~ — ✅ Done |
 | ~~Black-box HTTP-level conformance probe (`hki probe`)~~      | ~~High~~           | ~~Track 2 / M7~~ — ✅ Done |
 | Adapter ecosystem (LiteLLM, LangChain, vector stores)         | High               | Track 3 / M5 |
 | Non-GCP cloud reference (AWS, Azure)                          | Medium             | Track 3 / M6 |
@@ -254,11 +254,11 @@ without reading our code.
 
 | ID  | Title               | DoD                                                                                                                                                                                                                              |
 | --- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M5  | Threat catalog v1   | 🟡 In progress (3/15) — `docs/HKI_THREATS.md` with HKI-T01..HKI-T15 listed; HKI-T01/T02/T03 fully runnable under `examples/threats/`.                                                                                            |
-| M6  | AST scanner upgrade | `pnpm audit:hki` switches from regex to AST (ts-morph for TS, libCST for Py); rules: nullable domain, missing cache-key binding, body-scope override, admin import from runtime, `or "global"` fallback, MCP tool without scope. |
+| M5  | Threat catalog v1   | ✅ Done — 15/15 threat cases (HKI-T01..HKI-T15) in `docs/HKI_THREATS.md`; all fully runnable under `examples/threats/`; 35 pytest cases pass; wired to `pnpm test:hki-threats` in CI. |
+| M6  | AST scanner upgrade | ✅ Done — TS AST audit (`scripts/hki-ast-audit-ts.mjs`) + Python libcst audit (`scripts/hki_ast_audit.py`); surface-aware (public/internal/MCP); 0 blocking findings; both wired to CI and included in `conformance.json`. |
 | M7  | `hki probe` CLI     | ✅ Done — `hki-probe` (10 HTTP probes P01–P10) ships in `@hki/conformance`. `mock-gateway.mjs` enables `pnpm probe:smoke` (10/10 PASS locally and in CI). `services/hki-probe-target/` is a deployable FastAPI + HkiMiddleware service for Cloud Run. `probe-smoke` is a required CI gate (`hki-gate`). `probe-deploy.yml` builds + deploys to Cloud Run and uploads a signed evidence bundle. |
-| M8  | GitHub Action       | `hki-conformance-action@v1` runs scanner + adapter conformance + system probe; posts PR comment with conformance level and debt delta.                                                                                           |
-| M9  | Evidence registry   | Public `conformance.json` lists implementations, last-tested level, commit SHA, evidence URL.                                                                                                                                    |
+| M8  | GitHub Action       | ✅ Done — `packages/hki-conformance-action` composite action with `min-level` enforcement, optional probe-url, evidence-artifact upload; `hki-action-selftest` workflow validates it against this repo. |
+| M9  | Evidence registry   | ✅ Done — `scripts/build-conformance-registry.mjs` + `pnpm registry:build` emit `conformance.json` (schema v1: implementation, packages, conformance results, audit baseline, threat catalog, computed level L0..L4); CI uploads as artifact. |
 
 ### Track 3 — Provider, framework, store, and cloud integrations
 
