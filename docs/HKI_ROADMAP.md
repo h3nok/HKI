@@ -80,7 +80,7 @@ If a system cannot be tested against that paragraph, it is not HKI.
 | ~~Black-box HTTP-level conformance probe (`hki probe`)~~      | ~~High~~           | ~~Track 2 / M7~~ — ✅ Done |
 | Adapter ecosystem (LiteLLM, LangChain, vector stores)         | High               | Track 3 / M5 |
 | Non-GCP cloud reference (AWS, Azure)                          | Medium             | Track 3 / M6 |
-| `@hki/sdk` is too thin (3 files) to be a real front door      | Medium             | Track 1      |
+| ~~`@hki/sdk` is too thin (3 files) to be a real front door~~  | ~~Medium~~         | ~~Track 1~~ — ✅ Done (M3/M4) |
 | `@hki/ui` carries 612 token-audit findings                    | Medium             | Track 4      |
 | BFF doc says PostgreSQL, code uses MySQL                      | Low                | Track 4      |
 | `services/` directory exists but is empty                     | Low                | Track 4      |
@@ -281,14 +281,14 @@ Goal: HKI works alongside the choices teams already made.
 
 | Framework                      | Adapter                                         | Status                           |
 | ------------------------------ | ----------------------------------------------- | -------------------------------- |
-| Google ADK                     | `hki-adk`                                       | Done (informal, in orchestrator) |
-| LangChain / LangGraph          | `hki-langchain` Runnable middleware + retriever | Planned (M11)                    |
-| LlamaIndex                     | `BaseRetriever` mixin + `QueryEngine` callback  | Planned                          |
-| OpenAI Agents SDK / Assistants | tool-call wrapper                               | Planned                          |
-| AutoGen / CrewAI               | message-bus middleware                          | Planned                          |
+| Google ADK                     | `packages/hki-adk`                              | ✅ Done — `HkiAdkCallback` + `hki_adk` package; tested, wired to CI |
+| LangChain / LangGraph          | `packages/hki-langchain`                        | ✅ Done — `HkiCallbackHandler`, `HkiRetriever`, `hki_cache_key`; 9 tests |
+| LlamaIndex                     | `packages/hki-llamaindex`                       | ✅ Done — `BaseRetriever` mixin + `QueryEngine` callback; tested |
+| OpenAI Agents SDK / Assistants | `packages/sdk` `wrap` + `withDomain`            | ✅ Done — Proxy-based wrap + domain scoping in `@hki/sdk/client` |
+| AutoGen / CrewAI               | `packages/hki-autogen`, `packages/hki-crewai`   | ✅ Done — message-bus middleware packages; tested |
 | Haystack                       | pipeline component                              | Planned                          |
 | Semantic Kernel                | kernel filter                                   | Planned                          |
-| MCP servers (any)              | `hki-mcp` middleware                            | Planned (M12)                    |
+| MCP servers (any)              | `packages/hki-mcp`                              | ✅ Done — `HkiToolGuard`, `HkiResourceGuard`, `HkiMiddlewareServer`; tested, in CI |
 
 #### 3.C Vector / graph / cache stores
 
