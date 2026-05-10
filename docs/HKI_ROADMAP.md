@@ -333,7 +333,7 @@ Goal: the platform is a credible _reference_, not a confusing _product_.
 | ID  | Title                   | DoD                                                                                                                                      |
 | --- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | M16 | Boundary decision       | Choose: (a) strip enterprise specifics from `apps/agentic`, or (b) move to private repo and ship `examples/` only. Decided and executed. |
-| M17 | Examples directory      | `examples/fastapi-rag`, `examples/langgraph-agent`, `examples/mcp-server`, `examples/bedrock-claude` — each ≤200 LOC and self-contained. |
+| M17 | Examples directory      | ✅ Done — `examples/fastapi-rag` (FastAPI + HkiMiddleware RAG, 140 LOC), `examples/mcp-server` (TS gateway guard, 165 LOC), `examples/langgraph-agent` (StateGraph + envelope propagation + handoff, 175 LOC), `examples/bedrock-claude` (boto3 + BEDROCK_STUB mode, 160 LOC). All verified locally. |
 | M18 | Doc/code reconciliation | Either update arch diagram to MySQL, or migrate BFF to Postgres. One decision, executed. `services/` empty folder removed.               |
 | M19 | UI debt burn-down       | `@hki/ui` token-audit findings → 0, or rename to `@hki/agentic-ui` and remove from “standard” surface.                                   |
 | M20 | Required CI gates       | `audit:hki:strict`, `verify:hki-conformance`, and `test:hki-runtime-py` are required PR checks.                                          |
@@ -361,9 +361,7 @@ adapters are done. Open front: cloud parity, examples, adoption.
 1. **M13 — AWS reference (EKS + Bedrock + Aurora pgvector + OpenSearch).**
    Kills the GCP-only objection; required for any enterprise that isn’t
    already on GCP.
-2. **M17 — Examples directory.** `examples/fastapi-rag`, `examples/langgraph-agent`,
-   `examples/mcp-server`, `examples/bedrock-claude` — each ≤200 LOC and
-   self-contained. Lowest-friction entry point for new adopters.
+2. ~~**M17 — Examples directory.**~~ ✅ Done — four self-contained examples committed.
 3. **M16 — Boundary decision.** Strip enterprise specifics from `apps/agentic`,
    or move to private repo and ship `examples/` only. Unresolved; blocks
    clean public perception of the standard.
