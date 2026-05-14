@@ -3,490 +3,514 @@ import { useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   ArrowRight,
+  BookOpen,
+  Bot,
+  CheckCircle2,
   ClipboardCheck,
   Cpu,
+  Database,
   ExternalLink,
-  Moon,
+  FileText,
+  GitBranch,
+  LockKeyhole,
+  MessageSquare,
   Network,
-  Shield,
-  Sun,
+  Package,
+  Radar,
+  Search,
+  ShieldCheck,
+  Wrench,
 } from "lucide-react";
 import { HkiMark, cn } from "@hki/ui";
-import { useTheme } from "@/contexts/ThemeContext";
 import {
-  ENGINEERING_HUB_ROUTE,
+  HKI_ARCHITECTURE_ROUTE,
+  HKI_CUSTODY_PROBLEM_ROUTE,
   HKI_STANDARD_ROUTE,
 } from "@/pages/engineering/constants";
 
-import requestFlowUrl from "../../../../../docs/HKI-package/images/hki/02-request-flow.svg";
+import { EngineeringHeader } from "@/pages/engineering/components/EngineeringHeader";
+import conformanceRegistry from "../../../../../conformance.json";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+type Tone = "primary" | "success" | "neutral";
 
-type WorkStatus = "published" | "reference" | "beta" | "draft";
+type ConformanceRegistry = {
+  generatedAt?: string;
+  implementation?: { branch?: string; commit?: string };
+  packages?: Record<string, string>;
+  conformance?: { passed?: number; total?: number; overallPassed?: boolean };
+};
 
-type WorkItem = {
-  id: string;
-  title: string;
+type StoryFrame = {
   label: string;
-  summary: string;
+  title: string;
+  detail: string;
   icon: ComponentType<{ className?: string }>;
-  status: WorkStatus;
-  href: string;
+  tone: Tone;
+};
+
+type HubCard = {
+  eyebrow: string;
+  title: string;
+  detail: string;
   action: string;
-  tags: readonly string[];
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+  meta?: string;
+  primary?: boolean;
 };
 
-type PostingStep = { id: string; label: string; description: string };
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const STATUS_COPY: Record<WorkStatus, string> = {
-  published: "Published",
-  reference: "Reference",
-  beta: "Beta",
-  draft: "Draft",
+const REGISTRY = conformanceRegistry as ConformanceRegistry;
+const EVIDENCE = {
+  passed: REGISTRY.conformance?.passed ?? 0,
+  total: REGISTRY.conformance?.total ?? 0,
+  packages: Object.keys(REGISTRY.packages ?? {}).length,
+  branch: REGISTRY.implementation?.branch ?? "unknown",
+  commit: (REGISTRY.implementation?.commit ?? "").slice(0, 7),
+  generatedAt: REGISTRY.generatedAt
+    ? new Date(REGISTRY.generatedAt).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "Local",
 };
 
-const STATUS_COLOR: Record<WorkStatus, string> = {
-  published: "text-success",
-  reference: "text-primary",
-  beta: "text-amber-500",
-  draft: "text-muted-foreground",
-};
-
-const STATUS_DOT: Record<WorkStatus, string> = {
-  published: "bg-success",
-  reference: "bg-primary",
-  beta: "bg-amber-500",
-  draft: "bg-muted-foreground/40",
-};
-
-const FEATURED_ITEM: WorkItem = {
-  id: "hki-standard",
-  title: "Hermetic Knowledge Isolation",
-  label: "Runtime isolation · v1.0",
-  summary:
-    "The architecture standard for enterprise agentic systems. One active domain, signed scope envelopes, exact-domain reads, and publication-only sharing — enforced across retrieval, cache, graph, tools, and async jobs.",
-  icon: Shield,
-  status: "published",
-  href: HKI_STANDARD_ROUTE,
-  action: "Read Standard",
-  tags: ["RAG", "MCP", "Memory", "Cache", "Graph", "Publication"],
-};
-
-const WORK_ITEMS: readonly WorkItem[] = [
+const STORY_FRAMES: readonly StoryFrame[] = [
   {
-    id: "reference-runtime",
-    title: "Reference Runtime",
-    label: "Implementation path",
-    summary:
-      "Production-shaped app surface across gateway, orchestrator, retrieval, ingestion, analytics, and UI system controls.",
-    icon: Cpu,
-    status: "reference",
-    href: "/chat?scope=hki-reference",
-    action: "Run Flow",
-    tags: ["Gateway", "FastAPI", "tRPC", "pgvector", "GKE"],
+    label: "1 · Familiar promise",
+    title: "No training on your data",
+    detail: "Necessary, but it only covers one security layer.",
+    icon: BookOpen,
+    tone: "neutral",
   },
   {
-    id: "conformance",
-    title: "Conformance Harness",
-    label: "Release evidence",
-    summary:
-      "Audit ratchets and negative tests for missing scope, global fallback, cache bleed, graph traversal, and tool overreach.",
-    icon: ClipboardCheck,
-    status: "beta",
-    href: "/admin",
-    action: "View Gates",
-    tags: ["CI", "Leak Tests", "Trace Proofs", "Readiness"],
+    label: "2 · Agentic shift",
+    title: "Runtime assembles context",
+    detail: "Retrieval, memory, tools, and policy shape the answer.",
+    icon: Bot,
+    tone: "primary",
   },
   {
-    id: "mcp-tools",
-    title: "MCP & Tool Isolation",
-    label: "Adapter pattern",
-    summary:
-      "Tool catalogs, arguments, calls, caches, and audit events inherit the same active domain as retrieval.",
-    icon: Network,
-    status: "published",
-    href: `${HKI_STANDARD_ROUTE}#why-hki-matters-for-agentic-and-mcp-based-systems`,
-    action: "Review Pattern",
-    tags: ["MCP", "Tools", "Adapters", "Policy", "Audit"],
+    label: "3 · HKI boundary",
+    title: "One signed domain scope",
+    detail: "Every runtime operation carries the same custody envelope.",
+    icon: ShieldCheck,
+    tone: "success",
   },
-];
+] as const;
 
-const POSTING_MODEL: readonly PostingStep[] = [
-  { id: "writeup", label: "Writeup", description: "Publish the architecture or research narrative." },
-  { id: "runtime", label: "Runtime", description: "Link the runnable reference path or demo." },
-  { id: "evidence", label: "Evidence", description: "Attach conformance, audit, or readiness proof." },
-];
+const RUNTIME_PARTS = [
+  { label: "Prompt", icon: MessageSquare },
+  { label: "Retrieval", icon: Search },
+  { label: "Memory", icon: Database },
+  { label: "Tools", icon: Wrench },
+  { label: "Policy", icon: LockKeyhole },
+] as const;
 
-const READING_QUEUE = [
+const HUB_CARDS: readonly HubCard[] = [
   {
+    eyebrow: "Read first",
+    title: "The Custody Problem",
+    detail:
+      "A plain-language story for why agentic systems need runtime context custody.",
+    action: "Start here",
+    href: HKI_CUSTODY_PROBLEM_ROUTE,
+    icon: FileText,
+    meta: "Primer",
+    primary: true,
+  },
+  {
+    eyebrow: "Contract",
+    title: "HKI Standard",
+    detail:
+      "The rules: one active domain, signed envelopes, exact visibility, explicit publication.",
+    action: "Read standard",
+    href: HKI_STANDARD_ROUTE,
+    icon: ShieldCheck,
+    meta: "v1.0",
+  },
+  {
+    eyebrow: "Inspect",
     title: "Reference Architecture",
-    description: "Gateway selection, runtime preservation, admin separation.",
-    href: `${HKI_STANDARD_ROUTE}#reference-architecture`,
+    detail:
+      "A workspace for runtime, publication, admin, and MCP enforcement paths.",
+    action: "Open diagram",
+    href: HKI_ARCHITECTURE_ROUTE,
+    icon: Network,
+    meta: "Interactive",
   },
   {
-    title: "Implementation Surface",
-    description: "Responsibilities by gateway, orchestrator, store, cache, and release.",
-    href: `${HKI_STANDARD_ROUTE}#implementation-surface`,
-  },
-  {
-    title: "Conformance Tests",
-    description: "Release gates for scope, cache, graph, jobs, and publication.",
-    href: `${HKI_STANDARD_ROUTE}#conformance-and-regression-tests`,
+    eyebrow: "Prove",
+    title: "Conformance Evidence",
+    detail:
+      "Adapter cases, probes, and release evidence for falsifiable boundary checks.",
+    action: "Inspect gates",
+    href: "/admin",
+    icon: ClipboardCheck,
+    meta: `${EVIDENCE.passed}/${EVIDENCE.total}`,
   },
 ] as const;
 
-const HERO_STATS = [
-  { count: "2", label: "Published",           color: "text-success"          },
-  { count: "1", label: "Beta",                color: "text-amber-500"        },
-  { count: "1", label: "Reference",           color: "text-primary"          },
-  { count: "9", label: "Conformance gates",   color: "text-foreground"       },
+const QUICK_STATS = [
+  {
+    label: "Cases",
+    value: `${EVIDENCE.passed}/${EVIDENCE.total}`,
+    icon: CheckCircle2,
+  },
+  { label: "Packages", value: String(EVIDENCE.packages), icon: Package },
+  { label: "Branch", value: EVIDENCE.branch, icon: GitBranch },
+  { label: "Evidence", value: EVIDENCE.generatedAt, icon: Radar },
 ] as const;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function isExternal(href: string) {
-  return href.startsWith("http");
+function toneClass(tone: Tone) {
+  return {
+    primary: "border-primary/30 bg-primary/10 text-primary",
+    success: "border-success/30 bg-success/10 text-success",
+    neutral: "border-border/70 bg-background/60 text-muted-foreground",
+  }[tone];
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function toneBarClass(tone: Tone) {
+  return {
+    primary: "bg-gradient-to-r from-primary/70 via-primary/40 to-transparent",
+    success: "bg-gradient-to-r from-success/70 via-success/40 to-transparent",
+    neutral: "bg-gradient-to-r from-border/80 to-transparent",
+  }[tone];
+}
+
+function isClientRoute(href: string) {
+  return href.startsWith("/") && !href.startsWith("http");
+}
+
+function StoryFrameCard({ frame }: { frame: StoryFrame }) {
+  const Icon = frame.icon;
   return (
-    <div className="flex items-center gap-3 pb-5">
-      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
-      <p className="shrink-0 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-        {children}
+    <article className="relative overflow-hidden rounded-xl border border-border/60 bg-card/40 p-5">
+      <div
+        className={cn(
+          "absolute inset-x-0 top-0 h-0.5",
+          toneBarClass(frame.tone)
+        )}
+      />
+      <div className="flex items-center justify-between gap-3 pt-1">
+        <span
+          className={cn(
+            "inline-flex h-9 w-9 items-center justify-center rounded-lg border",
+            toneClass(frame.tone)
+          )}
+        >
+          <Icon className="h-4 w-4" />
+        </span>
+        <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-muted-foreground/70">
+          {frame.label}
+        </span>
+      </div>
+      <h3 className="mt-5 text-base font-bold tracking-tight text-foreground">
+        {frame.title}
+      </h3>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+        {frame.detail}
       </p>
-      <div className="h-px flex-1 bg-border/50" />
-    </div>
+    </article>
   );
 }
 
-function StatusDot({ status }: { status: WorkStatus }) {
+function RuntimeMap() {
   return (
-    <span className={cn("inline-flex items-center gap-1.5 text-[11px] font-semibold", STATUS_COLOR[status])}>
-      <span className={cn("h-1.5 w-1.5 rounded-full", STATUS_DOT[status])} />
-      {STATUS_COPY[status]}
-    </span>
+    <section className="overflow-hidden rounded-xl border border-border/60 bg-card/35">
+      <div className="flex items-center justify-between gap-4 border-b border-border/50 px-5 py-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+            Context custody
+          </p>
+          <h2 className="mt-1 text-base font-bold tracking-tight text-foreground">
+            The model is not the boundary. The runtime is.
+          </h2>
+        </div>
+        <span className="shrink-0 rounded-full border border-primary/20 bg-background/60 px-3 py-1 font-mono text-[10px] font-semibold text-primary">
+          HkiEnvelope
+        </span>
+      </div>
+
+      <div className="p-5">
+        <div className="flex items-stretch gap-3">
+          <div className="flex shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-background/50 px-4 py-4">
+            <MessageSquare className="h-5 w-5 text-muted-foreground" />
+            <p className="text-[11px] font-semibold text-foreground">Request</p>
+          </div>
+
+          <div className="flex flex-1 items-center justify-center">
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary/40" />
+          </div>
+
+          <div className="flex flex-1 flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
+                Agent runtime
+              </span>
+              <span className="font-mono text-[9px] text-muted-foreground/60">
+                active_domain locked
+              </span>
+            </div>
+            <div className="grid grid-cols-5 gap-1.5">
+              {RUNTIME_PARTS.map(part => {
+                const Icon = part.icon;
+                return (
+                  <div
+                    key={part.label}
+                    className="flex flex-col items-center gap-1.5 rounded-lg border border-border/50 bg-background/70 py-2.5"
+                  >
+                    <Icon className="h-3.5 w-3.5 text-primary/70" />
+                    <p className="text-[10px] font-medium text-foreground">
+                      {part.label}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-1 items-center justify-center">
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary/40" />
+          </div>
+
+          <div className="flex shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-success/25 bg-success/8 px-4 py-4">
+            <ShieldCheck className="h-5 w-5 text-success" />
+            <p className="text-[11px] font-semibold text-foreground">Scoped</p>
+            <p className="text-[10px] text-muted-foreground">answer</p>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
-// ─── Page ────────────────────────────────────────────────────────────────────
+function HubCardLink({
+  card,
+  onNavigate,
+}: {
+  card: HubCard;
+  onNavigate: (path: string) => void;
+}) {
+  const Icon = card.icon;
+  const clientRoute = isClientRoute(card.href);
+  const handleClick = clientRoute
+    ? (event: React.MouseEvent) => {
+        event.preventDefault();
+        onNavigate(card.href);
+      }
+    : undefined;
+
+  if (card.primary) {
+    return (
+      <a
+        href={card.href}
+        onClick={handleClick}
+        className="group flex items-center gap-6 rounded-xl border border-primary/25 bg-linear-to-br from-primary/10 to-primary/5 p-6 shadow-sm shadow-primary/5 outline-none transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
+        <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-background/70 text-primary shadow-sm">
+          <Icon className="h-6 w-6" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+            {card.eyebrow}
+          </p>
+          <h3 className="mt-1 text-xl font-bold tracking-tight text-foreground">
+            {card.title}
+          </h3>
+          <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
+            {card.detail}
+          </p>
+        </div>
+        <span className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-primary">
+          {card.action}
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+        </span>
+      </a>
+    );
+  }
+
+  return (
+    <a
+      href={card.href}
+      onClick={handleClick}
+      className="group flex flex-col rounded-xl border border-border/60 bg-card/35 p-5 outline-none transition-all hover:-translate-y-0.5 hover:border-border/80 hover:bg-card/55 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-background/60 text-primary">
+          <Icon className="h-4 w-4" />
+        </span>
+        {card.meta && (
+          <span className="rounded-full border border-border/60 bg-background/50 px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground">
+            {card.meta}
+          </span>
+        )}
+      </div>
+      <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
+        {card.eyebrow}
+      </p>
+      <h3 className="mt-1.5 text-lg font-bold tracking-tight text-foreground">
+        {card.title}
+      </h3>
+      <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">
+        {card.detail}
+      </p>
+      <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+        {card.action}
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+      </span>
+    </a>
+  );
+}
 
 export default function EngineeringHub() {
-  usePageMeta("HKI Engineering");
+  usePageMeta("HKI Engineering Hub");
   const [, setLocation] = useLocation();
-  const { theme, toggleTheme } = useTheme();
 
   const navigate = useCallback(
     (path: string) => {
       setLocation(path);
-      const hash = path.split("#")[1];
-      if (!hash) return;
-      window.setTimeout(() => {
-        document.getElementById(decodeURIComponent(hash))?.scrollIntoView({ block: "start" });
-      }, 0);
     },
     [setLocation]
   );
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <EngineeringHeader />
 
-      {/* ── Navigation ───────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-          <a
-            href={ENGINEERING_HUB_ROUTE}
-            onClick={e => { e.preventDefault(); navigate(ENGINEERING_HUB_ROUTE); }}
-            className="flex items-center gap-2.5 transition-opacity hover:opacity-75"
-          >
-            <HkiMark size={22} variant="color" />
-            <div className="flex items-baseline gap-2">
-              <span className="text-sm font-bold tracking-tight text-foreground">HKI Engineering</span>
-              <span className="hidden text-[11px] text-muted-foreground sm:block">AI Work Index</span>
-            </div>
-          </a>
-
-          <nav className="flex items-center gap-1">
-            <a
-              href={HKI_STANDARD_ROUTE}
-              onClick={e => { e.preventDefault(); navigate(HKI_STANDARD_ROUTE); }}
-              className="hidden rounded-md px-3 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground sm:block"
-            >
-              Standard
-            </a>
-            <a
-              href="/"
-              onClick={e => { e.preventDefault(); navigate("/"); }}
-              className="hidden rounded-md px-3 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground sm:block"
-            >
-              Landing
-            </a>
-            <div className="mx-2 h-4 w-px bg-border/60" />
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-            >
-              {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            </button>
-            <a
-              href={HKI_STANDARD_ROUTE}
-              onClick={e => { e.preventDefault(); navigate(HKI_STANDARD_ROUTE); }}
-              className="ml-1 rounded-md bg-primary px-3.5 py-1.5 text-[13px] font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/30 active:translate-y-0"
-            >
-              Read Standard
-            </a>
-          </nav>
-        </div>
-      </header>
-
-      <main className="flex-1">
-
-        {/* ── Hero ─────────────────────────────────────────────────────────── */}
-        <section className="border-b border-border/50">
-          <div className="mx-auto max-w-5xl px-6 py-20">
-            <div className="mx-auto max-w-150 text-center">
-              <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
-                Engineering Work Index · HKI Platform
-              </p>
-              <h1 className="text-[3.25rem] font-extrabold leading-[1.07] tracking-tight text-foreground">
-                Architecture and runtime for hermetic agentic systems.
+      <main className="flex-1 py-8 sm:py-10">
+        <div className="mx-auto w-full max-w-340 px-5 sm:px-8">
+          <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+            <div className="min-w-0">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                <Cpu className="h-3 w-3" />
+                Engineering work index
+              </div>
+              <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-[46px]">
+                Understand the runtime before you trust the agent.
               </h1>
-              <p className="mt-5 text-base leading-7 text-muted-foreground">
-                The HKI standard, reference implementation, and release evidence
-                for building domain-isolated AI at enterprise scale.
+              <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
+                HKI is a boundary system for agentic AI: it keeps retrieval,
+                memory, tools, cache, jobs, and responses inside one signed
+                domain scope.
               </p>
-              <div className="mt-8 flex items-center justify-center gap-5">
+              <div className="mt-6 flex flex-wrap gap-3">
                 <a
-                  href={HKI_STANDARD_ROUTE}
-                  onClick={e => { e.preventDefault(); navigate(HKI_STANDARD_ROUTE); }}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-[13px] font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/30 active:translate-y-0"
+                  href={HKI_CUSTODY_PROBLEM_ROUTE}
+                  onClick={event => {
+                    event.preventDefault();
+                    navigate(HKI_CUSTODY_PROBLEM_ROUTE);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 outline-none transition-all hover:-translate-y-px hover:shadow-md hover:shadow-primary/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
-                  Read HKI Standard
+                  Start with the problem
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
-                  href="/"
-                  onClick={e => { e.preventDefault(); navigate("/"); }}
-                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  href={HKI_ARCHITECTURE_ROUTE}
+                  onClick={event => {
+                    event.preventDefault();
+                    navigate(HKI_ARCHITECTURE_ROUTE);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-lg border border-border/70 bg-card/50 px-5 py-2.5 text-sm font-semibold text-foreground outline-none transition-all hover:-translate-y-px hover:bg-card/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
-                  View Architecture
+                  View architecture
+                  <Network className="h-4 w-4" />
                 </a>
               </div>
             </div>
 
-            {/* Stats strip */}
-            <div className="mx-auto mt-14 grid max-w-150 grid-cols-4 divide-x divide-border/60 overflow-hidden rounded-xl border border-border/60 bg-muted/20">
-              {HERO_STATS.map(s => (
-                <div key={s.label} className="py-5 text-center">
-                  <p className={cn("text-[1.75rem] font-extrabold leading-none tabular-nums", s.color)}>
-                    {s.count}
-                  </p>
-                  <p className="mt-1.5 text-[10px] font-semibold text-muted-foreground">
-                    {s.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Featured publication ──────────────────────────────────────────── */}
-        <section className="py-14">
-          <div className="mx-auto max-w-5xl px-6">
-            <SectionLabel>Featured publication</SectionLabel>
-
-            <a
-              href={FEATURED_ITEM.href}
-              onClick={e => { e.preventDefault(); navigate(FEATURED_ITEM.href); }}
-              className="group relative grid overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 transition-all hover:border-primary/35 hover:shadow-xl lg:grid-cols-[minmax(0,1fr)_460px]"
-            >
-              {/* Top accent stripe */}
-              <div className="absolute inset-x-0 top-0 z-10 h-0.5 bg-linear-to-r from-primary/70 via-primary/40 to-transparent" />
-
-              {/* Content */}
-              <div className="flex flex-col justify-between gap-8 p-8 lg:p-10">
-                <div>
-                  <div className="mb-5 flex items-center gap-3">
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-primary">
-                      <Shield className="h-4 w-4" />
-                    </span>
-                    <div className="flex items-center gap-2.5">
-                      <StatusDot status={FEATURED_ITEM.status} />
-                      <span className="text-[11px] text-muted-foreground">·</span>
-                      <span className="text-[11px] font-medium text-muted-foreground">{FEATURED_ITEM.label}</span>
-                    </div>
-                  </div>
-                  <h2 className="text-[1.6rem] font-bold leading-tight tracking-tight text-foreground">
-                    {FEATURED_ITEM.title}
-                  </h2>
-                  <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                    {FEATURED_ITEM.summary}
-                  </p>
-                  <div className="mt-5 flex flex-wrap gap-1.5">
-                    {FEATURED_ITEM.tags.map(tag => (
-                      <span
-                        key={tag}
-                        className="rounded border border-primary/20 bg-primary/8 px-2 py-0.5 text-[11px] font-medium text-primary/80"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
-                  {FEATURED_ITEM.action}
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </div>
-
-              {/* Diagram */}
-              <div className="hidden items-center justify-center border-l border-primary/15 bg-primary/8 lg:flex">
-                <img
-                  src={requestFlowUrl}
-                  alt="HKI request flow: one active domain propagated through the runtime plane"
-                  className="w-full object-contain"
-                />
-              </div>
-            </a>
-          </div>
-        </section>
-
-        {/* ── Work cards ───────────────────────────────────────────────────── */}
-        <section className="border-t border-border/50 py-14">
-          <div className="mx-auto max-w-5xl px-6">
-            <SectionLabel>Work index</SectionLabel>
-
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {WORK_ITEMS.map(item => {
-                const Icon = item.icon;
-                const external = isExternal(item.href);
-                return (
-                  <div
-                    key={item.id}
-                    className="group flex flex-col rounded-xl border border-border/60 p-6 transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-md"
-                  >
-                    <div className="mb-4 flex items-start justify-between">
-                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border/50 bg-muted/30 text-muted-foreground transition-colors group-hover:border-primary/25 group-hover:bg-primary/5 group-hover:text-primary">
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <StatusDot status={item.status} />
-                    </div>
-
-                    <h3 className="text-[15px] font-bold tracking-tight text-foreground">
-                      {item.title}
-                    </h3>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">{item.label}</p>
-                    <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">
-                      {item.summary}
-                    </p>
-
-                    <div className="mt-4 flex flex-wrap gap-1.5">
-                      {item.tags.map(tag => (
-                        <span
-                          key={tag}
-                          className="rounded border border-border/50 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground/80"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="mt-5 border-t border-border/40 pt-4">
-                      <a
-                        href={item.href}
-                        onClick={external ? undefined : e => { e.preventDefault(); navigate(item.href); }}
-                        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
-                      >
-                        {item.action}
-                        {external
-                          ? <ExternalLink className="h-3.5 w-3.5" />
-                          : <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />}
-                      </a>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Posting model + Reading queue ────────────────────────────────── */}
-        <section className="border-t border-border/50 py-14">
-          <div className="mx-auto max-w-5xl px-6">
-            <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_280px]">
-
-              {/* Posting model */}
-              <div>
-                <SectionLabel>Posting model</SectionLabel>
-                <p className="mb-6 text-sm leading-6 text-muted-foreground">
-                  How new AI work ships into this index — writeup, runtime, and evidence in one package.
+            <aside className="rounded-xl border border-border/60 bg-card/35 p-5">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-success shadow-sm shadow-success/50" />
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                  Release signal
                 </p>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  {POSTING_MODEL.map((step, i) => (
-                    <div
-                      key={step.id}
-                      className="flex flex-col gap-3 rounded-xl border border-border/50 p-5 transition-colors hover:border-border hover:bg-muted/30"
-                    >
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/8 text-[12px] font-bold tabular-nums text-primary">
-                        {i + 1}
-                      </div>
-                      <p className="text-sm font-semibold text-foreground">{step.label}</p>
-                      <p className="text-xs leading-5 text-muted-foreground">{step.description}</p>
-                    </div>
-                  ))}
-                </div>
               </div>
-
-              {/* Reading queue */}
-              <div>
-                <SectionLabel>Reading queue</SectionLabel>
-                <div className="divide-y divide-border/40">
-                  {READING_QUEUE.map(item => (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      onClick={e => { e.preventDefault(); navigate(item.href); }}
-                      className="group flex items-start justify-between gap-2 py-3.5 transition-colors"
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {QUICK_STATS.map(stat => {
+                  const Icon = stat.icon;
+                  return (
+                    <div
+                      key={stat.label}
+                      className="rounded-lg border border-border/50 bg-background/50 p-3"
                     >
-                      <span>
-                        <span className="block text-[13px] font-medium text-foreground transition-colors group-hover:text-primary">
-                          {item.title}
-                        </span>
-                        <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
-                          {item.description}
-                        </span>
-                      </span>
-                      <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/60 transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
-                    </a>
-                  ))}
-                </div>
+                      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                      <p className="mt-2 text-lg font-bold tabular-nums text-foreground">
+                        {stat.value}
+                      </p>
+                      <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+                        {stat.label}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+              {EVIDENCE.commit && (
+                <p className="mt-4 border-t border-border/50 pt-3 font-mono text-[11px] text-muted-foreground/70">
+                  build @{EVIDENCE.commit}
+                </p>
+              )}
+            </aside>
+          </section>
+
+          <div className="mt-10">
+            <RuntimeMap />
+          </div>
+
+          <section className="mt-8 grid gap-3 lg:grid-cols-3">
+            {STORY_FRAMES.map(frame => (
+              <StoryFrameCard key={frame.label} frame={frame} />
+            ))}
+          </section>
+
+          <section className="mt-10 border-t border-border/60 pt-8">
+            <div className="mb-5 flex flex-col gap-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                Choose your next step
+              </p>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                Four doors. One learning path.
+              </h2>
+            </div>
+            <div className="space-y-3">
+              {HUB_CARDS.filter(c => c.primary).map(card => (
+                <HubCardLink
+                  key={card.title}
+                  card={card}
+                  onNavigate={navigate}
+                />
+              ))}
+              <div className="grid gap-3 md:grid-cols-3">
+                {HUB_CARDS.filter(c => !c.primary).map(card => (
+                  <HubCardLink
+                    key={card.title}
+                    card={card}
+                    onNavigate={navigate}
+                  />
+                ))}
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </main>
 
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="border-t border-border/50">
-        <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-6 text-xs text-muted-foreground">
+      <footer className="border-t border-border/60">
+        <div className="mx-auto flex min-h-12 w-full max-w-340 flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs text-muted-foreground sm:px-8">
           <div className="flex items-center gap-2">
             <HkiMark size={14} variant="color" />
-            <span>HKI — Hermetic Knowledge Isolation</span>
+            <span>HKI Engineering Hub · Hermetic Knowledge Isolation</span>
           </div>
           <a
             href={
               typeof import.meta !== "undefined"
-                ? (import.meta.env?.VITE_IPMS_URL ?? "http://localhost:9002")
+                ? (import.meta.env?.VITE_INNOVATION_HUB_URL ??
+                  "http://localhost:9002")
                 : "http://localhost:9002"
             }
             target="innovation-hub"
             rel="noopener"
-            className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-1.5 font-medium outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Strategy &amp; Sensing
             <ExternalLink className="h-3 w-3" />

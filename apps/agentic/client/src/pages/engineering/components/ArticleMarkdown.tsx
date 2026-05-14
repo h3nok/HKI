@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Check, Copy, Link2 } from "lucide-react";
 import { cn } from "@hki/ui";
 import { FigureImage } from "../components/Figure";
 
@@ -24,15 +25,58 @@ function slugify(value: ReactNode) {
     .replace(/^-+|-+$/g, "");
 }
 
+function HeadingAnchor({ id }: { id: string }) {
+  return (
+    <a
+      href={`#${id}`}
+      aria-label="Link to this section"
+      className="ml-2 inline-flex h-6 w-6 -translate-y-0.5 items-center justify-center rounded text-muted-foreground/60 opacity-0 transition-opacity hover:bg-muted/40 hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+      onClick={() => {
+        if (typeof window !== "undefined") {
+          window.history.replaceState(null, "", `#${id}`);
+          void navigator.clipboard?.writeText(window.location.href);
+        }
+      }}
+    >
+      <Link2 className="h-3.5 w-3.5" />
+    </a>
+  );
+}
+
+function CopyCodeButton({ getText }: { getText: () => string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      aria-label={copied ? "Copied" : "Copy code"}
+      onClick={() => {
+        const text = getText();
+        if (!text) return;
+        void navigator.clipboard?.writeText(text);
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1400);
+      }}
+      className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-md border border-border/40 bg-zinc-900/80 text-zinc-300 opacity-0 transition-all hover:bg-zinc-800 hover:text-zinc-100 group-hover:opacity-100 focus-visible:opacity-100"
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5" />
+      ) : (
+        <Copy className="h-3.5 w-3.5" />
+      )}
+    </button>
+  );
+}
+
 const components = (imageUrls: Record<string, string>) => ({
   h2({ children }: { children?: ReactNode }) {
     const id = slugify(children);
     return (
       <h2
         id={id}
-        className="mt-20 scroll-mt-24 border-t border-border/40 pt-12 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground sm:text-3xl"
+        className="group mt-20 scroll-mt-24 border-t border-border/40 pt-12 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground sm:text-3xl"
       >
         {children}
+        <HeadingAnchor id={id} />
       </h2>
     );
   },
@@ -41,9 +85,10 @@ const components = (imageUrls: Record<string, string>) => ({
     return (
       <h3
         id={id}
-        className="mt-10 scroll-mt-24 text-lg font-bold tracking-tight text-foreground"
+        className="group mt-10 scroll-mt-24 text-lg font-bold tracking-tight text-foreground"
       >
         {children}
+        <HeadingAnchor id={id} />
       </h3>
     );
   },
@@ -56,7 +101,7 @@ const components = (imageUrls: Record<string, string>) => ({
   },
   p({ children }: { children?: ReactNode }) {
     return (
-      <p className="my-4 text-base leading-[1.8] text-foreground/85">
+      <p className="my-5 text-[17px] leading-[1.75] text-foreground/85">
         {children}
       </p>
     );
@@ -110,7 +155,7 @@ const components = (imageUrls: Record<string, string>) => ({
   },
   li({ children }: { children?: ReactNode }) {
     return (
-      <li className="text-base leading-[1.8] text-foreground/85">
+      <li className="text-[17px] leading-[1.75] text-foreground/85">
         {children}
       </li>
     );
@@ -144,10 +189,14 @@ const components = (imageUrls: Record<string, string>) => ({
     );
   },
   pre({ children }: { children?: ReactNode }) {
+    const getText = () => textFromNode(children);
     return (
-      <pre className="my-6 overflow-x-auto rounded-lg border border-border/60 bg-zinc-950 p-4 text-[13px] leading-6 text-zinc-100">
-        {children}
-      </pre>
+      <div className="group relative my-6">
+        <pre className="overflow-x-auto rounded-lg border border-border/60 bg-zinc-950 p-4 pr-12 text-[13px] leading-6 text-zinc-100">
+          {children}
+        </pre>
+        <CopyCodeButton getText={getText} />
+      </div>
     );
   },
   hr() {

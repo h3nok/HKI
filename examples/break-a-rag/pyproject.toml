@@ -1,0 +1,11 @@
+[project]
+name = "hki-example-break-a-rag"
+version = "0.1.0"
+description = "Break a RAG in 60 seconds — 3 HKI failures, then fixed."
+requires-python = ">=3.11"
+dependencies = [
+    "hki-runtime>=0.1.0",
+]
+
+[tool.uv.sources]
+hki-runtime = { path = "../../packages/hki-runtime-py" }

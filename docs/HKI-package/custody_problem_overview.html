@@ -1,0 +1,2296 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Custody Problem in Enterprise Agentic AI - Overview</title>
+    <meta
+      name="description"
+      content="A visual overview of the custody problem in enterprise agentic AI: why third-party agentic runtimes become privileged vulnerabilities, how context bleed happens, and how HKI turns isolation into a runtime contract."
+    />
+    <style>
+      :root {
+        --ink: #142126;
+        --muted: #58666d;
+        --quiet: #7a878d;
+        --paper: #f7faf7;
+        --panel: #ffffff;
+        --line: #d6dfdb;
+        --line-strong: #b7c7c1;
+        --teal: #0f766e;
+        --teal-soft: #e3f4ee;
+        --teal-dark: #073f3b;
+        --copper: #b65b3b;
+        --copper-soft: #f7e8df;
+        --blue: #244b73;
+        --blue-soft: #e8eff7;
+        --gold: #ba7a1b;
+        --gold-soft: #f6eedc;
+        --shadow: 0 18px 46px rgba(22, 34, 39, 0.1);
+        --sans: "Avenir Next", "Helvetica Neue", Helvetica, sans-serif;
+        --serif:
+          Charter, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+        --mono: "SFMono-Regular", "JetBrains Mono", Consolas, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: var(--paper);
+        color: var(--ink);
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(
+            circle at 14% 8%,
+            rgba(15, 118, 110, 0.13),
+            transparent 26rem
+          ),
+          radial-gradient(
+            circle at 86% 4%,
+            rgba(182, 91, 59, 0.1),
+            transparent 24rem
+          ),
+          linear-gradient(180deg, #fbfdfb 0%, var(--paper) 38%, #eef5f1 100%);
+        color: var(--ink);
+        font-family: var(--serif);
+        font-size: 18px;
+        line-height: 1.58;
+        font-synthesis-weight: none;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      a {
+        color: var(--teal);
+      }
+
+      .document {
+        width: min(100% - 44px, 1120px);
+        margin: 0 auto;
+        padding: 34px 0 72px;
+      }
+
+      .masthead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 10px 0 26px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--quiet);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 11px;
+      }
+
+      .mark {
+        width: 30px;
+        height: 30px;
+        flex: 0 0 auto;
+      }
+
+      .cover {
+        min-height: 760px;
+        display: grid;
+        grid-template-columns: 1.02fr 0.98fr;
+        gap: 44px;
+        align-items: stretch;
+        padding: 40px 0 58px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .cover-copy {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+      }
+
+      .eyebrow,
+      .kicker,
+      .section-number,
+      .figure-label {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow {
+        color: var(--teal);
+        margin-bottom: 20px;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        color: var(--ink);
+        letter-spacing: -0.018em;
+        line-height: 1.04;
+      }
+
+      h1 {
+        max-width: 660px;
+        font-size: clamp(44px, 5.25vw, 72px);
+        font-family: var(--serif);
+        font-weight: 400;
+      }
+
+      h2 {
+        font-family: var(--serif);
+        font-weight: 400;
+      }
+
+      h3 {
+        font-family: var(--sans);
+        font-weight: 400;
+      }
+
+      h1 em,
+      h2 em {
+        color: var(--teal);
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+      }
+
+      .subtitle {
+        max-width: 690px;
+        margin: 26px 0 0;
+        color: var(--muted);
+        font-family: var(--sans);
+        font-size: 22px;
+        line-height: 1.43;
+      }
+
+      .thesis {
+        max-width: 720px;
+        margin: 34px 0 0;
+        padding: 22px 24px;
+        border: 1px solid rgba(15, 118, 110, 0.34);
+        border-radius: 18px;
+        background: linear-gradient(
+          135deg,
+          rgba(15, 118, 110, 0.1),
+          rgba(255, 255, 255, 0.72)
+        );
+        font-family: var(--sans);
+        font-size: 16px;
+        line-height: 1.62;
+      }
+
+      .byline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px 28px;
+        margin-top: 34px;
+        color: var(--quiet);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .byline strong {
+        display: block;
+        margin-top: 3px;
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 13px;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      .cover-visual {
+        position: relative;
+        overflow: hidden;
+        min-height: 620px;
+        border: 1px solid var(--line-strong);
+        border-radius: 30px;
+        background:
+          linear-gradient(
+            160deg,
+            rgba(255, 255, 255, 0.96),
+            rgba(227, 244, 238, 0.76)
+          ),
+          repeating-linear-gradient(
+            90deg,
+            rgba(20, 33, 38, 0.04) 0 1px,
+            transparent 1px 58px
+          ),
+          repeating-linear-gradient(
+            0deg,
+            rgba(20, 33, 38, 0.04) 0 1px,
+            transparent 1px 58px
+          );
+        box-shadow: var(--shadow);
+        padding: 30px;
+      }
+
+      .domain-ring {
+        position: absolute;
+        inset: 50px;
+        border: 1px dashed rgba(15, 118, 110, 0.5);
+        border-radius: 999px;
+      }
+
+      .agent-core {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 170px;
+        height: 170px;
+        transform: translate(-50%, -50%);
+        border-radius: 48px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        background: var(--teal-dark);
+        color: white;
+        box-shadow: 0 18px 38px rgba(7, 63, 59, 0.28);
+        font-family: var(--sans);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.25;
+      }
+
+      .domain-node {
+        position: absolute;
+        width: 142px;
+        min-height: 76px;
+        padding: 14px 16px;
+        border: 1px solid var(--line-strong);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 10px 24px rgba(20, 33, 38, 0.08);
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.25;
+      }
+
+      .domain-node span {
+        display: block;
+        margin-top: 5px;
+        color: var(--quiet);
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+      }
+
+      .node-legal {
+        left: 28px;
+        top: 86px;
+      }
+
+      .node-finance {
+        right: 30px;
+        top: 78px;
+      }
+
+      .node-hr {
+        left: 34px;
+        bottom: 92px;
+      }
+
+      .node-strategy {
+        right: 42px;
+        bottom: 78px;
+      }
+
+      .node-customer {
+        left: 50%;
+        bottom: 24px;
+        transform: translateX(-50%);
+      }
+
+      .bleed-path {
+        position: absolute;
+        left: 96px;
+        right: 96px;
+        top: 50%;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--copper),
+          transparent
+        );
+        transform: rotate(-27deg);
+        transform-origin: center;
+      }
+
+      .bleed-path.second {
+        transform: rotate(31deg);
+      }
+
+      .guard-banner {
+        position: absolute;
+        left: 30px;
+        right: 30px;
+        bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 16px 18px;
+        border: 1px solid rgba(15, 118, 110, 0.28);
+        border-radius: 18px;
+        background: rgba(227, 244, 238, 0.92);
+        font-family: var(--sans);
+        font-size: 13px;
+        line-height: 1.36;
+      }
+
+      .guard-banner strong {
+        color: var(--teal-dark);
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.75);
+        color: var(--muted);
+        font-family: var(--sans);
+        font-size: 13px;
+        line-height: 1;
+      }
+
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--teal);
+      }
+
+      section {
+        padding: 66px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .section-heading {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 34px;
+        align-items: start;
+        margin-bottom: 34px;
+      }
+
+      .section-number {
+        color: var(--teal);
+      }
+
+      h2 {
+        max-width: 860px;
+        font-size: clamp(34px, 4.3vw, 54px);
+      }
+
+      .lede {
+        max-width: 800px;
+        margin: 20px 0 0;
+        color: var(--muted);
+        font-family: var(--sans);
+        font-size: 20px;
+        line-height: 1.46;
+      }
+
+      .two-column {
+        display: grid;
+        grid-template-columns: 0.92fr 1.08fr;
+        gap: 34px;
+        align-items: start;
+      }
+
+      .copy p {
+        max-width: 740px;
+        margin: 0 0 20px;
+      }
+
+      .copy p:last-child {
+        margin-bottom: 0;
+      }
+
+      .callout {
+        padding: 26px;
+        border: 1px solid rgba(15, 118, 110, 0.3);
+        border-radius: 22px;
+        background: linear-gradient(
+          135deg,
+          rgba(227, 244, 238, 0.92),
+          rgba(255, 255, 255, 0.92)
+        );
+        font-family: var(--sans);
+        box-shadow: 0 12px 28px rgba(20, 33, 38, 0.07);
+      }
+
+      .callout strong {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--teal-dark);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .callout p {
+        margin: 0;
+        color: var(--ink);
+      }
+
+      .visual-panel,
+      .story-card,
+      .figure-frame,
+      .roadmap,
+      .risk-panel {
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.86);
+        box-shadow: var(--shadow);
+      }
+
+      .visual-panel {
+        padding: 26px;
+      }
+
+      .figure-label {
+        color: var(--quiet);
+        margin-bottom: 16px;
+      }
+
+      .boundary-visual {
+        display: grid;
+        gap: 14px;
+      }
+
+      .custody-stage {
+        display: grid;
+        grid-template-columns: 112px 1fr;
+        gap: 16px;
+        align-items: stretch;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: #fff;
+        font-family: var(--sans);
+      }
+
+      .custody-stage.promise {
+        border: 1px solid rgba(36, 75, 115, 0.24);
+        background: var(--blue-soft);
+      }
+
+      .custody-stage.gap {
+        border: 1px solid rgba(186, 122, 27, 0.32);
+        background: var(--gold-soft);
+      }
+
+      .custody-stage.contract {
+        border: 1px solid rgba(15, 118, 110, 0.28);
+        background: var(--teal-soft);
+      }
+
+      .custody-stage-label {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 7px;
+        color: var(--quiet);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        line-height: 1.22;
+        text-transform: uppercase;
+      }
+
+      .custody-stage-label strong {
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 16px;
+        letter-spacing: 0;
+        line-height: 1.08;
+        text-transform: none;
+        font-weight: 400;
+      }
+
+      .custody-stage.promise .custody-stage-label strong {
+        color: var(--blue);
+      }
+
+      .custody-stage.gap .custody-stage-label strong {
+        color: var(--gold);
+      }
+
+      .custody-stage.contract .custody-stage-label strong {
+        color: var(--teal-dark);
+      }
+
+      .custody-stage-body h3 {
+        margin-bottom: 8px;
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 1.14;
+      }
+
+      .custody-stage-body p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.42;
+      }
+
+      .custody-tags {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .custody-tag {
+        display: flex;
+        align-items: center;
+        min-height: 42px;
+        padding: 10px 11px;
+        border: 1px solid rgba(20, 33, 38, 0.1);
+        border-radius: 13px;
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--teal);
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.22;
+      }
+
+      .custody-stage.promise .custody-tag {
+        color: var(--blue);
+      }
+
+      .custody-stage.gap .custody-tag {
+        color: var(--gold);
+      }
+
+      .custody-stage.contract .custody-tag {
+        color: var(--teal-dark);
+      }
+
+      .custody-arrow {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 10px;
+        align-items: center;
+        color: var(--quiet);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .custody-arrow::before,
+      .custody-arrow::after {
+        content: "";
+        height: 1px;
+        background: var(--line-strong);
+      }
+
+      .check-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .check-list li {
+        position: relative;
+        margin: 10px 0;
+        padding-left: 22px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.42;
+      }
+
+      .check-list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--teal);
+      }
+
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .story-card {
+        padding: 22px;
+        min-height: 236px;
+        font-family: var(--sans);
+      }
+
+      .story-card .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        margin-bottom: 16px;
+        border-radius: 11px;
+        background: var(--teal-dark);
+        color: white;
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+
+      .story-card h3 {
+        margin-bottom: 10px;
+        font-size: 20px;
+        line-height: 1.14;
+      }
+
+      .story-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .surface-map {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 14px;
+        margin-top: 16px;
+      }
+
+      .surface-item {
+        min-height: 112px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 17px;
+        background: #fff;
+        font-family: var(--sans);
+      }
+
+      .surface-item strong {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 15px;
+      }
+
+      .surface-item span {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.38;
+      }
+
+      .figure-frame {
+        padding: 22px;
+      }
+
+      .figure-frame img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 16px;
+        background: #fff;
+      }
+
+      .caption {
+        margin: 14px 0 0;
+        color: var(--muted);
+        font-family: var(--sans);
+        font-size: 14px;
+        line-height: 1.46;
+      }
+
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+      }
+
+      .year {
+        position: relative;
+        padding: 24px 20px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: #fff;
+        font-family: var(--sans);
+      }
+
+      .year::before {
+        content: "";
+        position: absolute;
+        left: 20px;
+        right: 20px;
+        top: 58px;
+        height: 4px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--teal), var(--copper));
+        opacity: 0.32;
+      }
+
+      .year strong {
+        display: block;
+        margin-bottom: 34px;
+        color: var(--teal-dark);
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .year h3 {
+        margin-bottom: 10px;
+        font-size: 22px;
+      }
+
+      .year p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      .year.danger {
+        border-color: rgba(182, 91, 59, 0.42);
+        background: var(--copper-soft);
+      }
+
+      .risk-grid {
+        display: grid;
+        grid-template-columns: 0.86fr 1.14fr;
+        gap: 24px;
+      }
+
+      .risk-panel {
+        padding: 26px;
+        font-family: var(--sans);
+      }
+
+      .risk-panel h3 {
+        margin-bottom: 18px;
+        font-size: 24px;
+      }
+
+      .risk-axis {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .risk-cell {
+        min-height: 136px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: #fff;
+      }
+
+      .risk-cell strong {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 15px;
+      }
+
+      .risk-cell span {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.38;
+      }
+
+      .contract-flow {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+        margin-top: 20px;
+      }
+
+      .flow-step {
+        position: relative;
+        min-height: 178px;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: #fff;
+        font-family: var(--sans);
+      }
+
+      .flow-step::after {
+        content: "";
+        position: absolute;
+        right: -17px;
+        top: 50%;
+        width: 18px;
+        height: 2px;
+        background: var(--line-strong);
+      }
+
+      .flow-step:last-child::after {
+        display: none;
+      }
+
+      .flow-step strong {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--teal-dark);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .flow-step h3 {
+        margin-bottom: 10px;
+        font-size: 22px;
+      }
+
+      .flow-step p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      .contract-statement {
+        margin-top: 24px;
+        padding: 26px;
+        border: 1px solid rgba(15, 118, 110, 0.32);
+        border-radius: 24px;
+        background: var(--teal-soft);
+        font-family: var(--sans);
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 1.25;
+      }
+
+      .roadmap {
+        padding: 26px;
+      }
+
+      .moves {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .move {
+        min-height: 156px;
+        padding: 17px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: #fff;
+        font-family: var(--sans);
+      }
+
+      .move strong {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--teal-dark);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .move span {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.42;
+      }
+
+      .closing {
+        display: grid;
+        grid-template-columns: 1fr 0.72fr;
+        gap: 36px;
+        align-items: center;
+        padding-bottom: 34px;
+        border-bottom: none;
+      }
+
+      .closing-claim {
+        padding: 34px;
+        border-radius: 28px;
+        background: var(--teal-dark);
+        color: white;
+        font-family: var(--sans);
+        box-shadow: 0 22px 50px rgba(7, 63, 59, 0.22);
+      }
+
+      .closing-claim strong {
+        display: block;
+        margin-bottom: 16px;
+        color: #9de4da;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .closing-claim p {
+        margin: 0;
+        font-size: 29px;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+      }
+
+      footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        padding-top: 28px;
+        color: var(--quiet);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      @media (max-width: 900px) {
+        .document {
+          width: min(100% - 30px, 760px);
+        }
+
+        .cover,
+        .two-column,
+        .closing,
+        .risk-grid,
+        .section-heading {
+          grid-template-columns: 1fr;
+        }
+
+        .cover-visual {
+          min-height: 560px;
+        }
+
+        .cards-grid,
+        .timeline,
+        .contract-flow,
+        .moves,
+        .surface-map {
+          grid-template-columns: 1fr;
+        }
+
+        .custody-stage {
+          grid-template-columns: 1fr;
+        }
+
+        .custody-tags {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-step::after {
+          display: none;
+        }
+      }
+
+      @media print {
+        @page {
+          size: A4;
+          margin: 10mm 10mm 11mm;
+        }
+
+        html,
+        body {
+          background: #f7faf7 !important;
+        }
+
+        body {
+          font-size: 13pt;
+          line-height: 1.46;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .document {
+          width: 100%;
+          padding: 0;
+        }
+
+        .masthead {
+          display: none;
+        }
+
+        footer {
+          display: none;
+        }
+
+        .cover {
+          height: 276mm;
+          min-height: 0;
+          display: grid;
+          grid-template-columns: 1fr 0.86fr;
+          gap: 8mm;
+          align-items: center;
+          padding: 0;
+          border-top: 0;
+          border-bottom: 0;
+          break-after: page;
+        }
+
+        .cover-visual {
+          min-height: 132mm;
+          padding: 18px;
+          box-shadow: none;
+        }
+
+        h1 {
+          font-size: 35pt;
+        }
+
+        .subtitle {
+          font-size: 12.6pt;
+        }
+
+        .thesis {
+          margin-top: 6mm;
+          font-size: 10pt;
+          padding: 14px 16px;
+        }
+
+        .pill-row {
+          margin-top: 4mm;
+        }
+
+        .pill {
+          padding: 6px 8px;
+          font-size: 8.8pt;
+        }
+
+        .byline {
+          margin-top: 5mm;
+        }
+
+        .domain-ring {
+          inset: 24px;
+        }
+
+        .agent-core {
+          width: 118px;
+          height: 118px;
+          border-radius: 30px;
+          font-size: 10pt;
+        }
+
+        .domain-node {
+          width: 96px;
+          min-height: 54px;
+          padding: 9px 10px;
+          border-radius: 13px;
+          font-size: 9pt;
+        }
+
+        .domain-node span {
+          margin-top: 3px;
+          font-size: 6.2pt;
+        }
+
+        .node-legal {
+          left: 14px;
+          top: 28px;
+        }
+
+        .node-finance {
+          right: 14px;
+          top: 28px;
+        }
+
+        .node-hr {
+          left: 14px;
+          bottom: 56px;
+        }
+
+        .node-strategy {
+          right: 14px;
+          bottom: 56px;
+        }
+
+        .node-customer {
+          top: 18px;
+          bottom: auto;
+        }
+
+        .guard-banner {
+          left: 14px;
+          right: 14px;
+          bottom: 12px;
+          padding: 10px 12px;
+          font-size: 8.5pt;
+        }
+
+        section:not(.cover) {
+          min-height: 0;
+          height: 276mm;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          padding: 10mm 0;
+          border-bottom: 0;
+          break-after: page;
+          break-inside: avoid;
+        }
+
+        section:not(.cover):last-of-type {
+          break-after: auto;
+        }
+
+        section[aria-labelledby="boundary-shift"] {
+          padding: 6mm 0;
+        }
+
+        section[aria-labelledby="boundary-shift"] .section-heading {
+          margin-bottom: 6mm;
+        }
+
+        section[aria-labelledby="boundary-shift"] h2 {
+          font-size: 24pt;
+        }
+
+        section[aria-labelledby="boundary-shift"] .lede {
+          font-size: 12.4pt;
+        }
+
+        section[aria-labelledby="boundary-shift"] .two-column {
+          gap: 6mm;
+        }
+
+        section[aria-labelledby="boundary-shift"] .copy p {
+          margin-bottom: 3.6mm;
+          font-size: 11.4pt;
+          line-height: 1.36;
+        }
+
+        .section-heading {
+          grid-template-columns: 34mm 1fr;
+          gap: 8mm;
+          margin-bottom: 9mm;
+          flex: 0 0 auto;
+        }
+
+        h2 {
+          font-size: 27pt;
+        }
+
+        .lede {
+          font-size: 14pt;
+          line-height: 1.48;
+        }
+
+        .two-column {
+          grid-template-columns: 0.92fr 1.08fr;
+          gap: 8mm;
+        }
+
+        section:not(.cover) > .two-column,
+        section:not(.cover) > .cards-grid,
+        section:not(.cover) > .figure-frame,
+        section:not(.cover) > .timeline,
+        section:not(.cover) > .risk-grid,
+        section:not(.cover) > .visual-panel,
+        section:not(.cover) > .roadmap,
+        section:not(.cover) > .closing-claim {
+          flex: 1 1 auto;
+          min-height: 0;
+        }
+
+        section:not(.cover) > .two-column,
+        section:not(.cover) > .cards-grid,
+        section:not(.cover) > .timeline,
+        section:not(.cover) > .risk-grid {
+          align-items: stretch;
+        }
+
+        section:not(.cover) > .figure-frame,
+        section:not(.cover) > .visual-panel,
+        section:not(.cover) > .roadmap {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .copy p {
+          font-size: 13.2pt;
+          line-height: 1.44;
+          margin-bottom: 5mm;
+        }
+
+        .cards-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 6mm;
+        }
+
+        .story-card {
+          min-height: 74mm;
+          padding: 26px;
+          box-shadow: none;
+        }
+
+        .story-card .num {
+          width: 10mm;
+          height: 10mm;
+          margin-bottom: 7mm;
+          font-size: 9pt;
+        }
+
+        .story-card h3 {
+          font-size: 19pt;
+        }
+
+        .story-card p {
+          font-size: 13pt;
+          line-height: 1.48;
+        }
+
+        .surface-map {
+          grid-template-columns: repeat(5, 1fr);
+          gap: 4mm;
+        }
+
+        .surface-item {
+          min-height: 48mm;
+          padding: 14px;
+        }
+
+        .surface-item strong {
+          font-size: 12pt;
+        }
+
+        .surface-item span {
+          font-size: 10pt;
+          line-height: 1.38;
+        }
+
+        .visual-panel,
+        .figure-frame,
+        .roadmap,
+        .risk-panel,
+        .story-card {
+          box-shadow: none;
+        }
+
+        .visual-panel {
+          padding: 18px;
+        }
+
+        .figure-frame {
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 24px;
+        }
+
+        section[aria-labelledby="runtime-surface"] .figure-frame {
+          justify-content: flex-start;
+          gap: 7mm;
+        }
+
+        section[aria-labelledby="runtime-surface"] .surface-map {
+          flex: 0 0 auto;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 5mm;
+          margin-top: 0;
+        }
+
+        section[aria-labelledby="runtime-surface"] .surface-item {
+          grid-column: span 2;
+          min-height: 40mm;
+          padding: 20px;
+        }
+
+        section[aria-labelledby="runtime-surface"]
+          .surface-item:nth-child(n + 4) {
+          grid-column: span 3;
+        }
+
+        section[aria-labelledby="runtime-surface"] .surface-item strong {
+          font-size: 16pt;
+        }
+
+        section[aria-labelledby="runtime-surface"] .surface-item span {
+          font-size: 12pt;
+          line-height: 1.36;
+        }
+
+        section[aria-labelledby="runtime-surface"] .caption {
+          margin-top: auto;
+          padding: 18px 20px;
+          border: 1px solid rgba(15, 118, 110, 0.3);
+          border-radius: 17px;
+          background: var(--teal-soft);
+          color: var(--teal-dark);
+          font-size: 13pt;
+          line-height: 1.4;
+        }
+
+        .figure-label {
+          margin-bottom: 8px;
+          font-size: 8.4pt;
+        }
+
+        .boundary-visual {
+          gap: 3mm;
+        }
+
+        .custody-stage {
+          grid-template-columns: 30mm 1fr;
+          gap: 4mm;
+          padding: 12px;
+          border-radius: 14px;
+        }
+
+        .custody-stage-label {
+          gap: 4px;
+          font-size: 7.2pt;
+        }
+
+        .custody-stage-label strong {
+          font-size: 10.6pt;
+        }
+
+        .custody-stage-body h3 {
+          margin-bottom: 4px;
+          font-size: 12.2pt;
+        }
+
+        .custody-stage-body p {
+          display: none;
+        }
+
+        .custody-tags {
+          gap: 2mm;
+        }
+
+        .custody-tag {
+          min-height: 0;
+          padding: 6px 8px;
+          border-radius: 9px;
+          font-size: 8.5pt;
+          line-height: 1.18;
+        }
+
+        .custody-arrow {
+          gap: 6px;
+          font-size: 7pt;
+        }
+
+        section[aria-labelledby="boundary-shift"] .visual-panel {
+          display: flex;
+          flex-direction: column;
+          padding: 14px;
+        }
+
+        section[aria-labelledby="boundary-shift"] .figure-label {
+          margin-bottom: 5px;
+          font-size: 7.2pt;
+        }
+
+        section[aria-labelledby="boundary-shift"] .boundary-visual {
+          flex: 1 1 auto;
+          align-content: space-between;
+          gap: 2.4mm;
+        }
+
+        section[aria-labelledby="boundary-shift"] .custody-stage {
+          grid-template-columns: 28mm 1fr;
+          gap: 3mm;
+          padding: 10px;
+          border-radius: 12px;
+        }
+
+        section[aria-labelledby="boundary-shift"] .custody-stage-label {
+          gap: 3px;
+          font-size: 7.2pt;
+        }
+
+        section[aria-labelledby="boundary-shift"] .custody-stage-label strong {
+          font-size: 10.4pt;
+        }
+
+        section[aria-labelledby="boundary-shift"] .custody-stage-body h3 {
+          margin-bottom: 3px;
+          font-size: 11.8pt;
+        }
+
+        section[aria-labelledby="boundary-shift"] .custody-tags {
+          gap: 1.5mm;
+        }
+
+        section[aria-labelledby="boundary-shift"] .custody-tag {
+          padding: 5.5px 8px;
+          font-size: 8.4pt;
+          line-height: 1.16;
+        }
+
+        section[aria-labelledby="boundary-shift"] .custody-arrow {
+          font-size: 6.8pt;
+        }
+
+        .timeline {
+          grid-template-columns: repeat(2, 1fr);
+          grid-template-rows: repeat(2, 1fr);
+          gap: 6mm;
+        }
+
+        .year {
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 24px;
+        }
+
+        .year strong {
+          margin-bottom: 20px;
+          font-size: 9.5pt;
+        }
+
+        .year h3 {
+          font-size: 21pt;
+        }
+
+        .year p {
+          font-size: 12.4pt;
+          line-height: 1.42;
+        }
+
+        .risk-grid,
+        .closing {
+          grid-template-columns: 1fr 1fr;
+          gap: 8mm;
+        }
+
+        section[aria-labelledby="concentration-risk"] .callout,
+        section[aria-labelledby="concentration-risk"] .risk-panel {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        section[aria-labelledby="concentration-risk"] .callout p {
+          font-size: 14pt;
+          line-height: 1.48;
+        }
+
+        .risk-axis {
+          gap: 3mm;
+        }
+
+        .risk-cell {
+          min-height: 34mm;
+          padding: 15px;
+        }
+
+        .risk-cell strong {
+          font-size: 12.2pt;
+        }
+
+        .risk-cell span {
+          font-size: 10.6pt;
+          line-height: 1.45;
+        }
+
+        section[aria-labelledby="runtime-contract"] .visual-panel {
+          justify-content: center;
+          gap: 8mm;
+        }
+
+        .contract-flow {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 5mm;
+        }
+
+        .flow-step {
+          min-height: 64mm;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 18px;
+        }
+
+        .flow-step::after {
+          display: none;
+        }
+
+        .contract-statement {
+          padding: 22px;
+          font-size: 18pt;
+        }
+
+        section[aria-labelledby="hki-picture"] .figure-frame {
+          justify-content: center;
+          gap: 9mm;
+        }
+
+        section[aria-labelledby="hki-picture"] .caption {
+          padding: 18px 20px;
+          border: 1px solid rgba(15, 118, 110, 0.25);
+          border-radius: 17px;
+          background: var(--teal-soft);
+          color: var(--teal-dark);
+          font-size: 12.6pt;
+          line-height: 1.42;
+        }
+
+        section[aria-labelledby="blocked-paths"] .two-column {
+          grid-template-columns: 1fr;
+          gap: 6mm;
+        }
+
+        section[aria-labelledby="blocked-paths"] .figure-frame {
+          flex: 0 0 auto;
+          padding: 18px;
+        }
+
+        section[aria-labelledby="blocked-paths"] .figure-frame img {
+          max-height: 78mm;
+          object-fit: contain;
+        }
+
+        section[aria-labelledby="blocked-paths"] .copy {
+          display: grid;
+          grid-template-columns: 1.05fr 0.95fr;
+          gap: 7mm;
+          align-items: start;
+        }
+
+        section[aria-labelledby="blocked-paths"] .copy p {
+          margin: 0;
+          font-size: 13.2pt;
+          line-height: 1.42;
+        }
+
+        section[aria-labelledby="blocked-paths"] .check-list li {
+          font-size: 11.6pt;
+          line-height: 1.42;
+        }
+
+        .moves {
+          grid-template-columns: repeat(6, 1fr);
+          grid-template-rows: repeat(2, 1fr);
+          flex: 1 1 auto;
+          align-items: stretch;
+          gap: 5mm;
+        }
+
+        .move {
+          grid-column: span 2;
+          min-height: 44mm;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 18px;
+        }
+
+        .move:nth-child(n + 4) {
+          grid-column: span 3;
+        }
+
+        .move strong {
+          font-size: 9.3pt;
+        }
+
+        .move span {
+          font-size: 11.8pt;
+          line-height: 1.42;
+        }
+
+        section[aria-labelledby="rollout"] .roadmap {
+          justify-content: center;
+          gap: 7mm;
+        }
+
+        .closing-claim {
+          flex: 0 0 auto;
+          min-height: 132mm;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 26px;
+          box-shadow: none;
+        }
+
+        .closing-claim p {
+          font-size: 21pt;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="document">
+      <div class="masthead">
+        <div class="brand">
+          <svg
+            class="mark"
+            viewBox="0 0 32 32"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M16 3 L27 9.5 L27 22.5 L16 29 L5 22.5 L5 9.5 Z"
+              fill="none"
+              stroke="#0f766e"
+              stroke-width="1.7"
+            />
+            <path
+              d="M11.5 11 L11.5 21 M20.5 11 L20.5 21 M9.5 16 L22.5 16"
+              stroke="#0f766e"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              fill="none"
+            />
+          </svg>
+          <span>Hermetic Knowledge Isolation</span>
+        </div>
+        <span>Custody overview - May 2026</span>
+      </div>
+
+      <section class="cover" aria-labelledby="title">
+        <div class="cover-copy">
+          <div class="eyebrow">Enterprise agentic AI security</div>
+          <h1 id="title">
+            The <em>Custody Problem</em> in Enterprise Agentic AI
+          </h1>
+          <p class="subtitle">
+            Provider privacy promises are necessary. They are not enough. The
+            deeper question is whether the third-party agentic runtime itself
+            becomes a privileged vulnerability: who controls what the agent can
+            know, remember, retrieve, and do?
+          </p>
+          <div class="thesis">
+            <strong>The core claim:</strong> an enterprise is only as secure as
+            the agentic runtime that holds custody of its operational reasoning.
+            When that runtime is third-party and off-the-shelf, the agent itself
+            becomes a privileged vulnerability. Silent context bleed is one
+            failure mode; the deeper risk is surrendering control over context
+            assembly, memory, tool execution, policy defaults, and domain
+            boundaries.
+          </div>
+          <div class="pill-row" aria-label="Overview themes">
+            <span class="pill"
+              ><span class="dot"></span>Runtime sovereignty</span
+            >
+            <span class="pill"
+              ><span class="dot"></span>Third-party agent risk</span
+            >
+            <span class="pill"
+              ><span class="dot"></span>Domain-scoped reasoning</span
+            >
+            <span class="pill"
+              ><span class="dot"></span>Explicit publication</span
+            >
+          </div>
+          <div class="byline">
+            <div>Author<strong>Henok Ghebrechristos, PhD</strong></div>
+            <div>Format<strong>Visual overview PDF</strong></div>
+            <div>
+              Audience<strong>AI platform, security, architecture</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="cover-visual" aria-label="Agentic runtime custody map">
+          <div class="domain-ring"></div>
+          <div class="bleed-path"></div>
+          <div class="bleed-path second"></div>
+          <div class="domain-node node-legal">
+            Legal<span>contracts / policy</span>
+          </div>
+          <div class="domain-node node-finance">
+            Finance<span>budgets / forecasts</span>
+          </div>
+          <div class="domain-node node-hr">
+            HR<span>people / performance</span>
+          </div>
+          <div class="domain-node node-strategy">
+            Strategy<span>plans / markets</span>
+          </div>
+          <div class="domain-node node-customer">
+            Customer<span>tickets / CRM</span>
+          </div>
+          <div class="agent-core">Third-party<br />agentic runtime</div>
+          <div class="guard-banner">
+            <strong>Custody question:</strong>
+            <span
+              >Who owns the layer deciding what the agent can know and do?</span
+            >
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="boundary-shift">
+        <div class="section-heading">
+          <div class="section-number">01 - Boundary Shift</div>
+          <div>
+            <h2 id="boundary-shift">
+              The security boundary has moved from training data to the agentic
+              runtime itself.
+            </h2>
+            <p class="lede">
+              No-training guarantees answer an important question. Off-the-shelf
+              enterprise agents add a second one: who controls the runtime that
+              assembles knowledge, invokes tools, stores memory, and decides
+              what the agent can do?
+            </p>
+          </div>
+        </div>
+        <div class="two-column">
+          <div class="copy">
+            <p>
+              A provider can truthfully say, "We do not train on your enterprise
+              data," while its managed agent still retrieves enterprise
+              documents, injects internal context, calls tools, stores memory,
+              routes requests, logs telemetry, and learns operational
+              preferences during inference.
+            </p>
+            <p>
+              That is the risk enterprises accept when they adopt managed
+              agentic platforms such as Gemini Enterprise, ChatGPT Enterprise,
+              or similar bundled agents out of the box. The platform is no
+              longer just a model endpoint. It becomes a privileged execution
+              layer inside the enterprise's work.
+            </p>
+            <p>
+              Context bleed remains dangerous, but it is downstream of custody:
+              the runtime may decide what it can see before the enterprise sets
+              an operation-level boundary. HKI does not block legitimate
+              cross-domain work; executive legal/logistics answers or pharmacy
+              order lookups are composed from separately scoped operations, then
+              joined through publication, handoff, or audited provenance.
+            </p>
+          </div>
+          <div class="visual-panel">
+            <div class="figure-label">
+              Provider promise versus agent custody
+            </div>
+            <div class="boundary-visual">
+              <div class="custody-stage promise">
+                <div class="custody-stage-label">
+                  Provider layer
+                  <strong>Privacy promise</strong>
+                </div>
+                <div class="custody-stage-body">
+                  <h3>What it answers</h3>
+                  <p>
+                    Important protections, but mostly around storage, training,
+                    tenancy, and platform operations.
+                  </p>
+                  <div class="custody-tags">
+                    <span class="custody-tag">Tenant isolation</span>
+                    <span class="custody-tag"
+                      >No training on enterprise data</span
+                    >
+                    <span class="custody-tag"
+                      >Encryption, logging, access controls</span
+                    >
+                    <span class="custody-tag">Managed agent defaults</span>
+                  </div>
+                </div>
+              </div>
+              <div class="custody-arrow" aria-hidden="true">
+                still unresolved
+              </div>
+              <div class="custody-stage gap">
+                <div class="custody-stage-label">
+                  Runtime layer
+                  <strong>Custody concern</strong>
+                </div>
+                <div class="custody-stage-body">
+                  <h3>What remains exposed</h3>
+                  <p>
+                    The agent can assemble context, call tools, keep memory, and
+                    follow connector defaults before operation-level boundaries
+                    are enforced.
+                  </p>
+                  <div class="custody-tags">
+                    <span class="custody-tag">Who decides scope?</span>
+                    <span class="custody-tag">What can enter reasoning?</span>
+                    <span class="custody-tag">What can memory retain?</span>
+                    <span class="custody-tag"
+                      >Which connector defaults apply?</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="custody-arrow" aria-hidden="true">
+                HKI makes it enforceable
+              </div>
+              <div class="custody-stage contract">
+                <div class="custody-stage-label">
+                  HKI layer
+                  <strong>Runtime custody</strong>
+                </div>
+                <div class="custody-stage-body">
+                  <h3>What must be enforced</h3>
+                  <p>
+                    The enterprise owns the active scope and every runtime
+                    surface must prove it preserved that boundary.
+                  </p>
+                  <div class="custody-tags">
+                    <span class="custody-tag"
+                      >One active domain per operation</span
+                    >
+                    <span class="custody-tag"
+                      >Cross-domain by publication or handoff</span
+                    >
+                    <span class="custody-tag"
+                      >Exact visibility before retrieval/tools</span
+                    >
+                    <span class="custody-tag"
+                      >Labels persist across memory/cache/jobs</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="failure-modes">
+        <div class="section-heading">
+          <div class="section-number">02 - Failure Modes</div>
+          <div>
+            <h2 id="failure-modes">
+              The custody problem appears when the agent runtime becomes a
+              privileged black box.
+            </h2>
+            <p class="lede">
+              The UI can look scoped while the execution path underneath quietly
+              broadens through managed connectors, caches, graph traversal,
+              accumulated memory, and tool routing.
+            </p>
+          </div>
+        </div>
+        <div class="cards-grid">
+          <article class="story-card">
+            <span class="num">01</span>
+            <h3>Third-party agent as vulnerability</h3>
+            <p>
+              The managed agent is granted context, memory, connectors, and tool
+              authority. If custody is external, the agent becomes part of the
+              attack surface.
+            </p>
+          </article>
+          <article class="story-card">
+            <span class="num">02</span>
+            <h3>Context bleed</h3>
+            <p>
+              Retrieval, caches, graph edges, files, and conversations can
+              inject adjacent-domain knowledge unless visibility is exact.
+            </p>
+          </article>
+          <article class="story-card">
+            <span class="num">03</span>
+            <h3>Memory and tool drift</h3>
+            <p>
+              Agent memory, tool routing, logs, and workflow preferences become
+              hidden operational knowledge without durable labels.
+            </p>
+          </article>
+          <article class="story-card">
+            <span class="num">04</span>
+            <h3>Proof gap</h3>
+            <p>
+              Security claims remain promises unless every boundary is testable
+              through conformance cases, probes, and release evidence.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="runtime-surface">
+        <div class="section-heading">
+          <div class="section-number">03 - Runtime Surface</div>
+          <div>
+            <h2 id="runtime-surface">
+              The agent platform, not just the model, is the dependency.
+            </h2>
+            <p class="lede">
+              Enterprise buyers often think they are purchasing model access. In
+              practice, they are depending on a managed agentic substrate:
+              memory, tool routing, retrieval, permissions, evaluation, logs,
+              and workflow execution.
+            </p>
+          </div>
+        </div>
+        <div class="figure-frame">
+          <div class="figure-label">The agentic reasoning surface</div>
+          <div
+            class="surface-map"
+            aria-label="Runtime surfaces that accumulate operational knowledge"
+          >
+            <div class="surface-item">
+              <strong>Retrieval</strong
+              ><span>Documents, chunks, indexes, vector filters.</span>
+            </div>
+            <div class="surface-item">
+              <strong>Memory</strong
+              ><span>Preferences, vocabulary, escalation paths.</span>
+            </div>
+            <div class="surface-item">
+              <strong>Tools</strong
+              ><span>Actions, routing, privileges, workflow habits.</span>
+            </div>
+            <div class="surface-item">
+              <strong>Cache</strong
+              ><span>Prior answers, semantic hits, query traces.</span>
+            </div>
+            <div class="surface-item">
+              <strong>Telemetry</strong
+              ><span>Failures, retries, latency tradeoffs, operations.</span>
+            </div>
+          </div>
+          <p class="caption">
+            None of these layers has to become model-training data to become
+            strategic signal. Whoever controls the agentic runtime controls what
+            the agent sees, remembers, and does.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="hki-picture">
+        <div class="section-heading">
+          <div class="section-number">04 - The Picture</div>
+          <div>
+            <h2 id="hki-picture">
+              Conventional scope drifts. HKI treats scope as a sealed execution
+              label.
+            </h2>
+            <p class="lede">
+              The contrast is simple: advisory scope starts as an intention and
+              can erode. Runtime custody keeps the active domain attached to
+              every operation.
+            </p>
+          </div>
+        </div>
+        <div class="figure-frame">
+          <img
+            src="images/hki/06-hki-story.svg"
+            alt="One-picture summary of HKI, contrasting typical domain-aware RAG with HKI's sealed active-domain envelope and exact visibility checks."
+          />
+          <p class="caption">
+            HKI selects one active domain for each runtime operation, propagates
+            a signed scope envelope, enforces exact-domain equality, and limits
+            visibility to domain-local artifacts plus explicitly published
+            copies.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="dependency-curve">
+        <div class="section-heading">
+          <div class="section-number">05 - Dependency Curve</div>
+          <div>
+            <h2 id="dependency-curve">
+              Switching costs grow quietly. By the time they are obvious, exit
+              may be theoretical.
+            </h2>
+            <p class="lede">
+              In cloud, dependency was compute and managed services. In agentic
+              AI, dependency is reasoning, memory, and workflow execution.
+            </p>
+          </div>
+        </div>
+        <div
+          class="timeline"
+          aria-label="Dependency formation from year zero to year four"
+        >
+          <article class="year">
+            <strong>Year 0</strong>
+            <h3>Off-the-shelf agent</h3>
+            <p>Easy to adopt. The provider looks like a productivity vendor.</p>
+          </article>
+          <article class="year">
+            <strong>Year 1</strong>
+            <h3>Workflows accrue</h3>
+            <p>
+              Prompts, retrieval indexes, memories, and fine-tunes accumulate.
+            </p>
+          </article>
+          <article class="year">
+            <strong>Year 2</strong>
+            <h3>Agents embed</h3>
+            <p>
+              Agents are inside daily operations. Exit now means re-engineering
+              work.
+            </p>
+          </article>
+          <article class="year danger">
+            <strong>Year 4</strong>
+            <h3>Runtime owns memory</h3>
+            <p>Switching is technically possible, but operationally painful.</p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="concentration-risk">
+        <div class="section-heading">
+          <div class="section-number">06 - Concentration</div>
+          <div>
+            <h2 id="concentration-risk">
+              The danger does not require villains. It requires a privileged
+              runtime you do not control.
+            </h2>
+            <p class="lede">
+              Wrong hands is less a movie scene than an ordinary platform
+              reality: a managed agent with connector reach, memory, tool
+              authority, pricing power, product withdrawals, policy shifts, and
+              silent defaults.
+            </p>
+          </div>
+        </div>
+        <div class="risk-grid">
+          <div class="callout">
+            <strong>The technofeudal endgame</strong>
+            <p>
+              If an enterprise's reasoning, memory, and institutional habits are
+              mediated by a provider-controlled agentic runtime, the provider
+              becomes the de facto operator of operational intelligence. The
+              enterprise keeps its legal shell, but the economic substance of
+              decision-making migrates into an agent layer it does not control.
+            </p>
+          </div>
+          <div class="risk-panel">
+            <h3>Concentration risk map</h3>
+            <div class="risk-axis">
+              <div class="risk-cell">
+                <strong>Pricing power</strong
+                ><span
+                  >Leaving is expensive because memory and workflows live in the
+                  runtime.</span
+                >
+              </div>
+              <div class="risk-cell">
+                <strong>Strategic withdrawal</strong
+                ><span
+                  >Use cases, regions, or industries can lose support.</span
+                >
+              </div>
+              <div class="risk-cell">
+                <strong>Ownership changes</strong
+                ><span
+                  >Partnerships and incentives can change faster than enterprise
+                  systems migrate.</span
+                >
+              </div>
+              <div class="risk-cell">
+                <strong>Silent defaults</strong
+                ><span
+                  >Retention, logging, routing, and memory settings drift over
+                  time.</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="runtime-contract">
+        <div class="section-heading">
+          <div class="section-number">07 - Runtime Contract</div>
+          <div>
+            <h2 id="runtime-contract">
+              Move from provider trust to an enforceable runtime contract.
+            </h2>
+            <p class="lede">
+              The answer is not to reject frontier providers or managed agents.
+              The answer is to keep architectural authority over scope, memory,
+              tools, and publication inside the enterprise before any
+              third-party agent is allowed to act.
+            </p>
+          </div>
+        </div>
+        <div class="visual-panel">
+          <div class="figure-label">Hermetic Knowledge Isolation - v1</div>
+          <div class="contract-flow" aria-label="HKI runtime contract flow">
+            <article class="flow-step">
+              <strong>Gateway</strong>
+              <h3>Choose one active domain</h3>
+              <p>
+                The edge decides the active domain for each runtime operation
+                before retrieval, memory, tools, or model calls begin.
+              </p>
+            </article>
+            <article class="flow-step">
+              <strong>Runtime</strong>
+              <h3>Preserve labels everywhere</h3>
+              <p>
+                Artifacts, cache entries, memories, embeddings, tool calls, and
+                outputs keep provenance and scope.
+              </p>
+            </article>
+            <article class="flow-step">
+              <strong>Publication</strong>
+              <h3>Make sharing explicit</h3>
+              <p>
+                Cross-domain knowledge moves through reviewed, auditable
+                publication, not silent fallback or hidden retrieval.
+              </p>
+            </article>
+          </div>
+          <div class="contract-statement">
+            Every artifact belongs to one domain. Every runtime operation runs
+            in one active domain. Cross-domain answers are composed through
+            explicit publication, handoff, or audited joins - never silent
+            global fallback.
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="blocked-paths">
+        <div class="section-heading">
+          <div class="section-number">08 - Proof</div>
+          <div>
+            <h2 id="blocked-paths">
+              Security becomes credible when the boundary is falsifiable.
+            </h2>
+            <p class="lede">
+              HKI is not a slogan. It is a set of runtime checks that can be
+              attacked, probed, and released with evidence.
+            </p>
+          </div>
+        </div>
+        <div class="two-column">
+          <div class="figure-frame">
+            <img
+              src="images/hki/04-leak-paths-blocked.svg"
+              alt="Three common leak paths under agentic RAG: query rewrite broadening, derived graph traversal, and cache contamination, each rejected by HKI runtime checks."
+            />
+          </div>
+          <div class="copy">
+            <p>
+              The recurring failures are query-rewrite broadening, derived graph
+              bleed, and cache contamination. HKI blocks all three for the same
+              reason: the system must preserve the active domain through every
+              transformation, not only at the final read.
+            </p>
+            <ul class="check-list">
+              <li>Missing scope is rejected.</li>
+              <li>Unauthorized active domains are rejected.</li>
+              <li>Cross-domain graph edges are not traversed.</li>
+              <li>Cache keys cannot omit the active domain.</li>
+              <li>Publication creates new domain-labeled copies.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="rollout">
+        <div class="section-heading">
+          <div class="section-number">09 - Adoption</div>
+          <div>
+            <h2 id="rollout">
+              Build the boundary while it still belongs to you.
+            </h2>
+            <p class="lede">
+              No enterprise adopts runtime custody in one cutover. The practical
+              path is a staged migration from inventory to enforcement to
+              ongoing evidence.
+            </p>
+          </div>
+        </div>
+        <div class="roadmap">
+          <div class="figure-label">Near-term rollout sequence</div>
+          <div
+            class="moves"
+            aria-label="Five moves for adopting runtime custody"
+          >
+            <div class="move">
+              <strong>01 Audit</strong
+              ><span
+                >Find null-scoped artifacts, weak cache keys, and endpoints that
+                answer without explicit domain.</span
+              >
+            </div>
+            <div class="move">
+              <strong>02 Label</strong
+              ><span
+                >Ensure every artifact type carries exactly one domain
+                identity.</span
+              >
+            </div>
+            <div class="move">
+              <strong>03 Propagate</strong
+              ><span
+                >Select and sign active domain at the edge; reject contradictory
+                scope downstream.</span
+              >
+            </div>
+            <div class="move">
+              <strong>04 Enforce</strong
+              ><span
+                >Turn null-scope and non-preserving paths into readiness
+                failures.</span
+              >
+            </div>
+            <div class="move">
+              <strong>05 Evidence</strong
+              ><span
+                >Add observability, adversarial tests, and release proofs that
+                the boundary held.</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing" aria-labelledby="bottom-line">
+        <div>
+          <div class="section-number">Bottom Line</div>
+          <h2 id="bottom-line">
+            Isolation cannot remain a provider promise. It has to become
+            architecture.
+          </h2>
+          <p class="lede">
+            The enterprises that remain sovereign in the agentic era will define
+            what belongs where, what can be retrieved, what can be remembered,
+            what can be shared, and what must be explicitly published before it
+            crosses a domain boundary.
+          </p>
+        </div>
+        <div class="closing-claim">
+          <strong>The final test</strong>
+          <p>
+            If a runtime operation can answer without an active domain, the
+            boundary is a claim. If it cannot, the boundary is architecture.
+          </p>
+        </div>
+      </section>
+
+      <footer>
+        <span>The Custody Problem in Enterprise Agentic AI</span>
+        <span>Henok Ghebrechristos, PhD</span>
+      </footer>
+    </main>
+  </body>
+</html>

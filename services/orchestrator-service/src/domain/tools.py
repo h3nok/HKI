@@ -303,7 +303,11 @@ def _score_product(product: dict[str, typing.Any], query: str) -> float:
 
 def search_products(query: str, category: str = "") -> dict[str, typing.Any]:
     """Search products in the retail catalog by keyword and optional category."""
-    # TODO: Replace with real product search API or ADK Connector
+    if not src.core.config.settings.STUB_TOOLS:
+        raise NotImplementedError(
+            "search_products: STUB_TOOLS=false but no real product search API is wired. "
+            "Set PRODUCT_SEARCH_URL in the environment and implement the HTTP call."
+        )
     results: list[dict[str, typing.Any]] = _PRODUCT_CATALOG
     if category:
         cat_lower: str = category.lower()
@@ -343,7 +347,11 @@ def search_products(query: str, category: str = "") -> dict[str, typing.Any]:
 
 def check_inventory(sku: str, warehouse_id: str = "") -> dict[str, typing.Any]:
     """Check realtime inventory for a specific SKU."""
-    # TODO: Replace with real WMS API call
+    if not src.core.config.settings.STUB_TOOLS:
+        raise NotImplementedError(
+            "check_inventory: STUB_TOOLS=false but no real WMS API is wired. "
+            "Set WMS_API_URL in the environment and implement the HTTP call."
+        )
     product: dict[str, typing.Any] | None = _SKU_INDEX.get(sku.upper()) or _SKU_INDEX.get(sku)
     if not product:
         return {
@@ -365,7 +373,11 @@ def check_inventory(sku: str, warehouse_id: str = "") -> dict[str, typing.Any]:
 
 def get_product_pricing(sku: str) -> dict[str, typing.Any]:
     """Get current pricing and promotion details for a SKU."""
-    # TODO: Replace with real POS/Pricing API call
+    if not src.core.config.settings.STUB_TOOLS:
+        raise NotImplementedError(
+            "get_product_pricing: STUB_TOOLS=false but no real POS/pricing API is wired. "
+            "Set PRICING_API_URL in the environment and implement the HTTP call."
+        )
     product: dict[str, typing.Any] | None = _SKU_INDEX.get(sku.upper()) or _SKU_INDEX.get(sku)
     if not product:
         return {"sku": sku, "error": f"SKU {sku} not found in catalog."}

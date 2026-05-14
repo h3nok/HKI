@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import base64
 import dataclasses
+import hashlib
+import hmac as _hmac_mod
 import json
 import math
 import time
@@ -191,6 +194,7 @@ def validate_envelope(
     now: float | None = None,
     max_future_skew_seconds: float = 60,
     require_signature: bool = False,
+    signing_secret: str | None = None,
 ) -> HkiValidationResult:
     current_time = now if now is not None else math.floor(time.time())
     record = _record(envelope)
@@ -225,19 +229,27 @@ def validate_envelope(
             )
         )
 
-    # Signature presence check. NOTE: this library validates structural correctness
-    # and claim consistency of the envelope. Cryptographic signature verification
-    # (Ed25519/JWS) is the responsibility of the gateway that mints the envelope —
-    # it must be performed before calling validate_envelope in downstream services.
-    sig = record.get("signature")
-    if require_signature and not (isinstance(sig, str) and sig.strip()):
-        issues.append(
-            HkiValidationIssue(
-                code="missing-field",
-                field="signature",
-                message="signature is required.",
+    # Signature verification. When signing_secret is provided, verify HMAC-SHA256.
+    # When only require_signature is set, check presence only (dev/legacy mode).
+    if signing_secret:
+        if not verify_envelope_signature(record, signing_secret):
+            issues.append(
+                HkiValidationIssue(
+                    code="missing-field",
+                    field="signature",
+                    message="envelope signature is invalid or missing.",
+                )
             )
-        )
+    elif require_signature:
+        sig = record.get("signature")
+        if not (isinstance(sig, str) and sig.strip()):
+            issues.append(
+                HkiValidationIssue(
+                    code="missing-field",
+                    field="signature",
+                    message="signature is required.",
+                )
+            )
 
     active_domain = normalize_domain(record.get("active_domain"))
     if not active_domain or is_forbidden_runtime_domain(active_domain):
@@ -602,6 +614,62 @@ def _encode_part(value: str) -> str:
     return urllib.parse.quote(value.strip().lower(), safe="-_.!~*'()")
 
 
+# ---------------------------------------------------------------------------
+# Envelope signing — HMAC-SHA256
+# ---------------------------------------------------------------------------
+
+_SIGNING_PREFIX = "hmac-sha256:"
+
+
+def _canonical_payload(envelope: HkiEnvelope | Record) -> bytes:
+    """Deterministic JSON of all security-relevant envelope fields."""
+    rec = _record(envelope)
+    payload = {
+        "active_domain": rec.get("active_domain", ""),
+        "authorized_domains": sorted(
+            normalize_domain_list(rec.get("authorized_domains"))
+        ),
+        "envelope_id": rec.get("envelope_id", ""),
+        "expires_at": rec.get("expires_at", 0),
+        "issued_at": rec.get("issued_at", 0),
+        "issuer": rec.get("issuer", ""),
+        "org_id": rec.get("org_id", ""),
+        "policy_pack_id": rec.get("policy_pack_id", ""),
+        "purpose": rec.get("purpose", ""),
+        "risk_tier": rec.get("risk_tier", ""),
+        "subject_id": rec.get("subject_id", ""),
+    }
+    return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+
+
+def sign_envelope(envelope: HkiEnvelope | Record, secret: str) -> str:
+    """Return ``"hmac-sha256:<base64url>"`` for the given envelope and secret.
+
+    Call this at the gateway edge before forwarding the envelope downstream::
+
+        signed_dict = {**envelope_dict, "signature": sign_envelope(envelope_dict, secret)}
+
+    The secret should come from the environment (``HKI_SIGNING_SECRET``).
+    """
+    raw = _hmac_mod.new(secret.encode(), _canonical_payload(envelope), hashlib.sha256).digest()
+    sig = base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
+    return f"{_SIGNING_PREFIX}{sig}"
+
+
+def verify_envelope_signature(envelope: HkiEnvelope | Record, secret: str) -> bool:
+    """Verify an envelope's HMAC-SHA256 signature in constant time.
+
+    Returns ``False`` if the signature is missing, has the wrong prefix,
+    or does not match the expected HMAC for the given secret.
+    """
+    rec = _record(envelope)
+    actual: str = rec.get("signature") or ""
+    if not actual.startswith(_SIGNING_PREFIX):
+        return False
+    expected = sign_envelope(envelope, secret)
+    return _hmac_mod.compare_digest(expected, actual)
+
+
 __all__ = [
     "GLOBAL_DOMAIN",
     "HKI_VERSION",
@@ -630,6 +698,8 @@ __all__ = [
     "normalize_domain_list",
     "reject_conflicting_scope_argument",
     "same_domain",
+    "sign_envelope",
     "stable_stringify",
     "validate_envelope",
+    "verify_envelope_signature",
 ]

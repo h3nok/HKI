@@ -10,7 +10,7 @@ import { Dialog, DialogContent } from "./dialog";
    COMMAND COMPONENT
 
    Command palette / search component (⌘K pattern).
-   Migrated from ipms-frontend-bundle with HKI brand styling.
+   Migrated from legacy bundle with HKI brand styling.
 
    NOTE: Type annotations use plain HTML element types to avoid TS2742
    errors caused by cmdk depending on @types/react@18 while this package
@@ -28,17 +28,19 @@ type CommandProps = React.ComponentPropsWithoutRef<"div"> & {
   vimBindings?: boolean;
 };
 
-const Command = React.forwardRef<HTMLDivElement, CommandProps>(({ className, ...props }, ref) => (
-  <CommandPrimitive
-    ref={ref as any}
-    className={cn(
-      "flex h-full w-full flex-col overflow-hidden rounded-xl",
-      "bg-background text-foreground",
-      className
-    )}
-    {...(props as any)}
-  />
-));
+const Command = React.forwardRef<HTMLDivElement, CommandProps>(
+  ({ className, ...props }, ref) => (
+    <CommandPrimitive
+      ref={ref as any}
+      className={cn(
+        "flex h-full w-full flex-col overflow-hidden rounded-xl",
+        "bg-background text-foreground",
+        className
+      )}
+      {...(props as any)}
+    />
+  )
+);
 Command.displayName = CommandPrimitive.displayName;
 
 interface CommandDialogProps {
@@ -89,7 +91,10 @@ const CommandList = React.forwardRef<HTMLDivElement, CommandListProps>(
   ({ className, ...props }, ref) => (
     <CommandPrimitive.List
       ref={ref as any}
-      className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
+      className={cn(
+        "max-h-[300px] overflow-y-auto overflow-x-hidden",
+        className
+      )}
       {...(props as any)}
     />
   )
@@ -98,13 +103,15 @@ CommandList.displayName = CommandPrimitive.List.displayName;
 
 type CommandEmptyProps = React.ComponentPropsWithoutRef<"div">;
 
-const CommandEmpty = React.forwardRef<HTMLDivElement, CommandEmptyProps>((props, ref) => (
-  <CommandPrimitive.Empty
-    ref={ref as any}
-    className="py-6 text-center text-sm text-neutral-500"
-    {...(props as any)}
-  />
-));
+const CommandEmpty = React.forwardRef<HTMLDivElement, CommandEmptyProps>(
+  (props, ref) => (
+    <CommandPrimitive.Empty
+      ref={ref as any}
+      className="py-6 text-center text-sm text-neutral-500"
+      {...(props as any)}
+    />
+  )
+);
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
 
 type CommandGroupProps = React.ComponentPropsWithoutRef<"div"> & {
@@ -132,15 +139,16 @@ type CommandSeparatorProps = React.ComponentPropsWithoutRef<"div"> & {
   alwaysRender?: boolean;
 };
 
-const CommandSeparator = React.forwardRef<HTMLDivElement, CommandSeparatorProps>(
-  ({ className, ...props }, ref) => (
-    <CommandPrimitive.Separator
-      ref={ref as any}
-      className={cn("-mx-1 h-px bg-neutral-200 dark:bg-neutral-800", className)}
-      {...(props as any)}
-    />
-  )
-);
+const CommandSeparator = React.forwardRef<
+  HTMLDivElement,
+  CommandSeparatorProps
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Separator
+    ref={ref as any}
+    className={cn("-mx-1 h-px bg-neutral-200 dark:bg-neutral-800", className)}
+    {...(props as any)}
+  />
+));
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
 type CommandItemProps = React.ComponentPropsWithoutRef<"div"> & {
@@ -167,10 +175,16 @@ const CommandItem = React.forwardRef<HTMLDivElement, CommandItemProps>(
 );
 CommandItem.displayName = CommandPrimitive.Item.displayName;
 
-const CommandShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
+const CommandShortcut = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) => {
   return (
     <span
-      className={cn("ml-auto text-xs tracking-widest text-neutral-400", className)}
+      className={cn(
+        "ml-auto text-xs tracking-widest text-neutral-400",
+        className
+      )}
       {...props}
     />
   );

@@ -66,6 +66,12 @@ class Settings(shared.config.ServiceSettings):
     KNOWLEDGE_PIPELINE_URL: str = "http://localhost:9508"
     ANALYTICS_SERVICE_URL: str = "http://localhost:9510"
 
+    # ── Tool stub mode ────────────────────────────────────────────────────
+    # When True, search_products / check_inventory / get_product_pricing
+    # return in-memory catalog data instead of calling real APIs.
+    # Must be False in production and staging.
+    STUB_TOOLS: bool = True
+
     # ── Agent Loop ─────────────────────────────────────────────────────
     AGENT_MAX_TURNS: int = 8
     AGENT_TOKEN_BUDGET: int = 50000  # Max tokens per conversation turn
@@ -89,6 +95,12 @@ class Settings(shared.config.ServiceSettings):
 
         if self.GCP_PROJECT_ID in _DEV_PLACEHOLDER_PROJECTS:
             errors.append("GCP_PROJECT_ID is a dev placeholder — set the real project ID")
+
+        if self.STUB_TOOLS:
+            errors.append(
+                "STUB_TOOLS=true — product search, inventory, and pricing tools return "
+                "mock data. Set STUB_TOOLS=false and connect real API endpoints."
+            )
 
         if errors:
             msg: str = f"{self.SERVICE_NAME} config validation failed:\n  • " + "\n  • ".join(

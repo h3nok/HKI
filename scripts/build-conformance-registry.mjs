@@ -104,6 +104,29 @@ function runAstAudit() {
   }
 }
 
+function loadProbeEvidence() {
+  // Probe:smoke writes to /tmp/hki-evidence.json; also support --probe-evidence=<path> arg.
+  const overrideArg = args.find(a => a.startsWith("--probe-evidence="));
+  const evidencePath = overrideArg
+    ? overrideArg.slice("--probe-evidence=".length)
+    : "/tmp/hki-evidence.json";
+  if (!fs.existsSync(evidencePath)) return null;
+  try {
+    const raw = JSON.parse(fs.readFileSync(evidencePath, "utf8"));
+    return {
+      passed: raw.passed ?? null,
+      failed: raw.failed ?? null,
+      total: (raw.passed ?? 0) + (raw.failed ?? 0),
+      level_claim: raw.level_claim ?? null,
+      bundle_hash: raw.bundle_hash ?? null,
+      target: raw.target ?? null,
+      generated_at: raw.generated_at ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function runAstAuditTs() {
   try {
     const out = exec("node scripts/hki-ast-audit-ts.mjs --json");
@@ -119,6 +142,7 @@ const baseline = readBaseline();
 const threats = listThreats();
 const ast = runAstAudit();
 const astTs = runAstAuditTs();
+const httpProbe = loadProbeEvidence();
 
 const passedCases =
   conformance && Array.isArray(conformance.results)
@@ -188,7 +212,8 @@ const registry = {
     total: threats.length,
     ids: threats,
   },
-  level: deriveLevel({ conformance, baseline, threats }),
+  httpProbe: httpProbe,
+  level: deriveLevel({ conformance, baseline, threats, httpProbe }),
 };
 
 const schemaErrors = validateAgainstSchema(registry);
@@ -204,12 +229,16 @@ fs.writeFileSync(
 );
 console.log(`Wrote ${outPath} (level=${registry.level})`);
 
-function deriveLevel({ conformance, baseline, threats }) {
+function deriveLevel({ conformance, baseline, threats, httpProbe }) {
   const allCasesPassed = conformance?.passed === true;
   const noNewDebt = !!baseline; // baseline ratchet exists
   const hasThreats = threats.length >= 15;
+  const probeAllPassed =
+    httpProbe && httpProbe.failed === 0 && httpProbe.passed > 0;
 
   if (!allCasesPassed) return "L0-non-conformant";
+  if (allCasesPassed && noNewDebt && hasThreats && probeAllPassed)
+    return "L4-deployed";
   if (allCasesPassed && noNewDebt && hasThreats) return "L3-evidenced";
   if (allCasesPassed && noNewDebt) return "L2-baseline";
   return "L1-passing";

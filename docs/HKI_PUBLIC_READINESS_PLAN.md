@@ -66,6 +66,10 @@ visibility, and explicit publication as the only cross-domain bridge.
 - `pnpm audit:hki`, `pnpm verify:hki-conformance`,
   `pnpm --dir packages/ui typecheck`, and `pnpm --dir apps/agentic check` pass
   locally and in CI.
+- `@hki/runtime`, `@hki/conformance`, and `hki-runtime` are published publicly,
+  tagged as `v0.1.0`, and smoke-tested from a clean project.
+- Public release notes include `conformance.json`, `/tmp/hki-evidence.json` or a
+  live Cloud Run probe bundle, package versions, and the commit SHA.
 - `pnpm audit:ui-tokens` is a ratchet today, not a zero-debt gate. Public
   readiness requires driving the current UI-token findings to zero or carving
   legacy demo surfaces out of the public package.
@@ -75,20 +79,22 @@ visibility, and explicit publication as the only cross-domain bridge.
 
 ## Current Package State
 
-| Package | Status | Next |
-| --- | --- | --- |
-| `@hki/runtime` | Builds and passes tests. Provides envelope validation, artifact visibility, cache keys, gateway decisions, trace attributes, and JSON Schemas. | Add signing and key-rotation adapters. |
-| `hki-runtime` | Python package builds conceptually and passes pytest/ruff. Mirrors the TypeScript runtime contract for FastAPI services and Python gateways. | Wire shared Python auth and service adapters to consume it directly. |
-| `@hki/conformance` | Builds and passes a 22-case Level 4 evidence suite against `@hki/runtime`. | Add service-boundary adapters for BFF, Knowledge API, orchestrator, MCP, cache, memory, graph, and ingestion. |
-| `@hki/ui` | Typechecks and exposes HKI tokens/components. | Burn down hardcoded color and legacy-domain audit debt before treating it as a public design-system package. |
+| Package            | Status                                                                                                                                         | Next                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `@hki/runtime`     | Builds and passes tests. Provides envelope validation, artifact visibility, cache keys, gateway decisions, trace attributes, and JSON Schemas. | Add signing and key-rotation adapters.                                                                       |
+| `hki-runtime`      | Python package builds conceptually and passes pytest/ruff. Mirrors the TypeScript runtime contract for FastAPI services and Python gateways.   | Wire shared Python auth and service adapters to consume it directly.                                         |
+| `@hki/conformance` | Builds and passes a 28-case conformance suite against `@hki/runtime`; ships `hki-probe` with 10 HTTP probes and registry output.               | Publish v0.1.0 publicly, attach smoke/live evidence bundles, and keep service-boundary evidence in CI.       |
+| `@hki/ui`          | Typechecks and exposes HKI tokens/components.                                                                                                  | Burn down hardcoded color and legacy-domain audit debt before treating it as a public design-system package. |
 
 ## Immediate Next Work
 
-1. Publish an evidence bundle from CI: conformance JSON, HKI audit output,
-   service test commands, package versions, and commit SHA.
-2. Wire the new Python runtime helpers into shared auth, Knowledge API,
-   orchestrator, ingestion, and MCP service boundaries.
-3. Replace legacy UI hardcoded tokens in public pages first, then move inward to
+1. Publish v0.1.0 packages to npm and PyPI, tag the release, and run clean
+   install smoke tests.
+2. Publish an evidence bundle from CI: conformance JSON, HKI audit output,
+   service test commands, package versions, probe evidence, and commit SHA.
+3. Ship the public site or GitHub Pages surface with spec, install,
+   conformance, threat catalog, and registry links.
+4. Replace legacy UI hardcoded tokens in public pages first, then move inward to
    admin and demo surfaces.
-4. Add black-box service conformance adapters, starting with Knowledge API
+5. Add black-box service conformance adapters, starting with Knowledge API
    retrieval and MCP tools because they are the highest-risk runtime boundary.

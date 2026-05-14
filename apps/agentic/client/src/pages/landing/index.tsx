@@ -460,12 +460,12 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
           className="max-w-xl mb-8 text-base sm:text-lg font-medium leading-[1.38] text-foreground/72"
           style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
         >
-          The agentic era is uncharted, and enterprises are{" "}
+          Every agentic execution needs an isolated domain. Without that
+          boundary, enterprises are{" "}
           <span className="font-semibold" style={{ color: "var(--secondary)" }}>
-            already at risk.
+            already at risk:
           </span>{" "}
-          HKI is the control framework for scoped RAG, MCP tools, memory,
-          caches, and traces before autonomous systems cause damage.
+          context leaks, tools overreach, and memory persists beyond intent.
         </motion.p>
 
         {/* CTAs */}
@@ -578,9 +578,9 @@ function RiskSection() {
             </span>
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground/70 lg:mx-0">
-            HKI standardizes the control points that keep operating after the
-            first prompt is gone: context, memory, tools, caches, traces, and
-            publication paths.
+            HKI makes isolation a runtime invariant for every agent execution:
+            context, memory, tools, caches, traces, and publication paths stay
+            inside the domain that authorized them.
           </p>
           <div className="mt-6 hidden h-px w-24 bg-primary/45 lg:block" />
         </motion.div>

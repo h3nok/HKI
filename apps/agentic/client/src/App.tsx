@@ -25,6 +25,8 @@ import { usePermissions } from "./_core/hooks/usePermissions";
 import { LifeBuoy } from "lucide-react";
 import {
   ENGINEERING_HUB_ROUTE,
+  HKI_ARCHITECTURE_ROUTE,
+  HKI_CUSTODY_PROBLEM_ROUTE,
   HKI_STANDARD_ROUTE,
 } from "./pages/engineering/constants";
 
@@ -36,6 +38,12 @@ const AgenticLoginPage = lazy(() => import("./pages/LoginPage"));
 const AgenticPlatformLanding = lazy(() => import("./pages/landing"));
 const ComponentDemo = lazy(() => import("./pages/ComponentDemo"));
 const EngineeringHub = lazy(() => import("./pages/EngineeringHub"));
+const EngineeringArchitecturePage = lazy(
+  () => import("./pages/EngineeringArchitecturePage")
+);
+const EngineeringCustodyProblemPage = lazy(
+  () => import("./pages/EngineeringCustodyProblemPage")
+);
 const EngineeringStandardPage = lazy(
   () => import("./pages/EngineeringStandardPage")
 );
@@ -158,8 +166,14 @@ function Router() {
       <Switch>
         {/* Public routes */}
         <Route path="/">{() => <AgenticPlatformLanding />}</Route>
+        <Route path={HKI_CUSTODY_PROBLEM_ROUTE}>
+          {() => <EngineeringCustodyProblemPage />}
+        </Route>
         <Route path={HKI_STANDARD_ROUTE}>
           {() => <EngineeringStandardPage />}
+        </Route>
+        <Route path={HKI_ARCHITECTURE_ROUTE}>
+          {() => <EngineeringArchitecturePage />}
         </Route>
         <Route path={ENGINEERING_HUB_ROUTE}>{() => <EngineeringHub />}</Route>
         <Route path="/login">{() => <AgenticLoginPage />}</Route>
@@ -208,15 +222,19 @@ function RouteAnnouncerBridge() {
   const title =
     location === "/"
       ? "HKI — Hermetic Knowledge Isolation"
-      : location === HKI_STANDARD_ROUTE
-        ? "HKI Standard Architecture"
-        : location === ENGINEERING_HUB_ROUTE
-          ? "HKI Engineering Standard"
-          : location
-              .replace(/^\//, "")
-              .replace(/\//g, " › ")
-              .replace(/-/g, " ")
-              .replace(/\b\w/g, c => c.toUpperCase());
+      : location === HKI_CUSTODY_PROBLEM_ROUTE
+        ? "HKI Custody Problem"
+        : location === HKI_ARCHITECTURE_ROUTE
+          ? "HKI Reference Architecture"
+          : location === HKI_STANDARD_ROUTE
+            ? "HKI Standard Architecture"
+            : location === ENGINEERING_HUB_ROUTE
+              ? "HKI Engineering Hub"
+              : location
+                  .replace(/^\//, "")
+                  .replace(/\//g, " › ")
+                  .replace(/-/g, " ")
+                  .replace(/\b\w/g, c => c.toUpperCase());
   return <RouteAnnouncer title={`Navigated to ${title}`} />;
 }
 

@@ -34,3 +34,4 @@ export {
 } from "./gateway";
 export { applyHkiTraceAttributes, hkiTraceAttributes } from "./telemetry";
 export { stableStringify } from "./stable-stringify";
+export { signEnvelope, verifyEnvelopeSignature } from "./signing";

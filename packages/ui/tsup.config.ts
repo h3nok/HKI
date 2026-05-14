@@ -34,7 +34,6 @@ export default defineConfig(options => ({
     "components/spinner": "src/components/spinner.tsx",
     "components/form": "src/components/form.tsx",
     "components/collapsible": "src/components/collapsible.tsx",
-    // IPMS innovation patterns
     "components/stage-badge": "src/components/stage-badge.tsx",
     "components/priority-badge": "src/components/priority-badge.tsx",
     "components/kpi-card": "src/components/kpi-card.tsx",
@@ -55,9 +54,11 @@ export default defineConfig(options => ({
     // Motion system
     "components/motion": "src/components/motion.tsx",
     // Agentic components
-    "components/agentic/thought-trace": "src/components/agentic/thought-trace/index.ts",
+    "components/agentic/thought-trace":
+      "src/components/agentic/thought-trace/index.ts",
     "components/agentic/core": "src/components/agentic/core/index.ts",
-    "components/agentic/guardrails": "src/components/agentic/guardrails/index.ts",
+    "components/agentic/guardrails":
+      "src/components/agentic/guardrails/index.ts",
     "components/agentic/tool-use": "src/components/agentic/tool-use/index.ts",
     "components/agentic/hitl": "src/components/agentic/hitl/index.ts",
     "components/agentic/execution": "src/components/agentic/execution/index.ts",

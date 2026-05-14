@@ -103,16 +103,24 @@ class HkiMiddleware:
 
         from fastapi import FastAPI
         from hki_runtime.fastapi import HkiMiddleware
+        import os
 
         app = FastAPI()
-        app.add_middleware(HkiMiddleware, require_signature=True)
+        # Production: verify HMAC-SHA256 signatures minted by the gateway.
+        app.add_middleware(HkiMiddleware, signing_secret=os.environ["HKI_SIGNING_SECRET"])
+        # Development only: accept any non-empty signature string.
+        app.add_middleware(HkiMiddleware, require_signature=False)
 
     Args:
         app: The downstream ASGI app.
         header_name: Header to read the envelope from. Defaults to
             ``X-HKI-Envelope`` (case-insensitive).
-        require_signature: When True, envelopes without a ``signature`` are
-            rejected. Defaults to True. Disable only for local development.
+        signing_secret: When provided, envelopes must carry a valid HMAC-SHA256
+            signature (``sign_envelope(envelope, secret)``). Takes precedence
+            over ``require_signature``. Use ``HKI_SIGNING_SECRET`` env var.
+        require_signature: When True and ``signing_secret`` is not set, envelopes
+            without *any* signature field are rejected (presence-only check).
+            Prefer ``signing_secret`` for production.
         max_future_skew_seconds: Tolerance for clock skew. Defaults to 60s.
         exempt_paths: Iterable of path prefixes that bypass the middleware
             (e.g. ``("/healthz", "/metrics")``). HKI does not apply to these.
@@ -125,6 +133,7 @@ class HkiMiddleware:
         app: "ASGIApp",
         *,
         header_name: str = DEFAULT_HEADER,
+        signing_secret: str | None = None,
         require_signature: bool = True,
         max_future_skew_seconds: float = 60,
         exempt_paths: typing.Iterable[str] = ("/healthz", "/livez", "/readyz", "/metrics"),
@@ -135,6 +144,7 @@ class HkiMiddleware:
     ) -> None:
         self.app = app
         self.header_name: bytes = header_name.lower().encode("latin-1")
+        self.signing_secret: str | None = signing_secret
         self.require_signature: bool = require_signature
         self.max_future_skew_seconds: float = max_future_skew_seconds
         self.exempt_paths: tuple[str, ...] = tuple(exempt_paths)
@@ -168,6 +178,7 @@ class HkiMiddleware:
         result: HkiValidationResult = validate_envelope(
             payload,
             require_signature=self.require_signature,
+            signing_secret=self.signing_secret,
             max_future_skew_seconds=self.max_future_skew_seconds,
         )
         if not result.ok or result.envelope is None:

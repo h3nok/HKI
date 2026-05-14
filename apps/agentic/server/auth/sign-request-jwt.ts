@@ -134,7 +134,7 @@ function buildRequestJwtPayload(
 }
 
 function buildHkiRequestEnvelope(
-  payload: RequestJwtPayload,
+  claims: RequestJwtPayload,
   issuedAtSeconds: number
 ): HkiRequestEnvelope {
   return {
@@ -142,20 +142,20 @@ function buildHkiRequestEnvelope(
     token_type: "HS256 JWT",
     issuer: ISSUER,
     audience: AUDIENCE,
-    subject: payload.sub,
+    subject: claims.sub,
     principal: {
-      id: payload.sub,
-      name: payload.name,
-      role: payload.role,
-      groups: payload.groups,
+      id: claims.sub,
+      name: claims.name,
+      role: claims.role,
+      groups: claims.groups,
     },
     organization: {
-      id: payload.org_id,
+      id: claims.org_id,
     },
     boundary: {
-      scope: payload.scope,
-      scopes: payload.scopes,
-      ...(payload.stream_id ? { stream_id: payload.stream_id } : {}),
+      scope: claims.scope,
+      scopes: claims.scopes,
+      ...(claims.stream_id ? { stream_id: claims.stream_id } : {}),
       hermetic: isKbHermeticIsolationEnabled(),
     },
     issued_at: new Date(issuedAtSeconds * 1000).toISOString(),
@@ -174,8 +174,8 @@ export async function signRequestJwtWithEnvelope(
   scopes?: string[]
 ): Promise<SignedRequestJwt> {
   const now = Math.floor(Date.now() / 1000);
-  const payload = buildRequestJwtPayload(user, scope, scopes);
-  const token = await new SignJWT({ ...payload })
+  const claims = buildRequestJwtPayload(user, scope, scopes);
+  const token = await new SignJWT({ ...claims })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setIssuer(ISSUER)
     .setAudience(AUDIENCE)
@@ -185,7 +185,7 @@ export async function signRequestJwtWithEnvelope(
 
   return {
     token,
-    envelope: buildHkiRequestEnvelope(payload, now),
+    envelope: buildHkiRequestEnvelope(claims, now),
   };
 }
 

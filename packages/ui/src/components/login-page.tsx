@@ -19,7 +19,13 @@ import { cn } from "../utils";
 // Types
 // ============================================================================
 
-export type AuthProviderType = "sso" | "google" | "azure" | "okta" | "saml" | "dev";
+export type AuthProviderType =
+  | "sso"
+  | "google"
+  | "azure"
+  | "okta"
+  | "saml"
+  | "dev";
 
 export interface AuthProvider {
   id: string;
@@ -33,7 +39,7 @@ export interface AuthProvider {
 }
 
 export interface PlatformBranding {
-  /** Platform name (e.g., "Agentic", "IPMS", "Hub") */
+  /** Platform name (e.g., "Agentic", "Hub") */
   name: string;
   /** Platform tagline */
   tagline?: string;
@@ -106,7 +112,10 @@ function LoadingState({ branding }: { branding: PlatformBranding }) {
       <div className="flex flex-col items-center gap-8">
         <div className="relative">
           {branding.icon || (
-            <div className="w-16 h-16 rounded-2xl" style={{ backgroundColor: primaryColor }} />
+            <div
+              className="w-16 h-16 rounded-2xl"
+              style={{ backgroundColor: primaryColor }}
+            />
           )}
           <div className="absolute inset-0 -m-4">
             <div
@@ -197,7 +206,10 @@ function HeroPanel({
         <div className="flex items-center gap-4">
           <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-2xl shadow-black/10">
             {branding.logo || (
-              <div className="text-xl font-bold" style={{ color: primaryColor }}>
+              <div
+                className="text-xl font-bold"
+                style={{ color: primaryColor }}
+              >
                 {branding.name}
               </div>
             )}
@@ -210,7 +222,9 @@ function HeroPanel({
             {heroTitle || branding.name}
           </h1>
           <p className="text-white/60 text-lg xl:text-xl max-w-md leading-relaxed mb-10">
-            {heroDescription || branding.tagline || `Welcome to ${branding.name}`}
+            {heroDescription ||
+              branding.tagline ||
+              `Welcome to ${branding.name}`}
           </p>
 
           {features && features.length > 0 && (
@@ -233,7 +247,12 @@ function HeroPanel({
             {copyright || `© ${new Date().getFullYear()} HKI`}
           </span>
           <div className="flex items-center gap-2 text-white/30">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -285,7 +304,12 @@ function AuthButton({
       >
         {provider.icon}
         <span>{provider.name}</span>
-        <svg className="w-5 h-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg
+          className="w-5 h-5 ml-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -350,7 +374,9 @@ function LoginForm({
           {branding.icon}
           <div>
             <h2 className="font-semibold text-gray-900">{branding.name}</h2>
-            {branding.tagline && <p className="text-xs text-gray-500">{branding.tagline}</p>}
+            {branding.tagline && (
+              <p className="text-xs text-gray-500">{branding.tagline}</p>
+            )}
           </div>
         </div>
       </header>
@@ -375,7 +401,10 @@ function LoginForm({
           <div className="hidden lg:flex justify-center mb-12">
             <div className="relative">
               {branding.logo || (
-                <div className="text-2xl font-bold" style={{ color: primaryColor }}>
+                <div
+                  className="text-2xl font-bold"
+                  style={{ color: primaryColor }}
+                >
                   {branding.name}
                 </div>
               )}
@@ -403,7 +432,9 @@ function LoginForm({
                     onAuthStart={onAuthStart}
                   />
                   {provider.description && (
-                    <p className="text-center text-xs text-gray-400 mt-2">{provider.description}</p>
+                    <p className="text-center text-xs text-gray-400 mt-2">
+                      {provider.description}
+                    </p>
                   )}
                   {index < providers.length - 1 && providers.length > 1 && (
                     <div className="relative my-4">
@@ -411,7 +442,9 @@ function LoginForm({
                         <div className="w-full border-t border-gray-200" />
                       </div>
                       <div className="relative flex justify-center">
-                        <span className="bg-white px-3 text-xs text-gray-400">or</span>
+                        <span className="bg-white px-3 text-xs text-gray-400">
+                          or
+                        </span>
                       </div>
                     </div>
                   )}
@@ -532,12 +565,6 @@ export const PLATFORM_PRESETS = {
     primaryColor: "#0E7C7B",
     accentColor: "#0E7C7B",
   },
-  ipms: {
-    name: "Innovation Hub",
-    tagline: "Portfolio Management System",
-    primaryColor: "#0E7C7B",
-    accentColor: "#0E7C7B",
-  },
   hub: {
     name: "HKIs",
     tagline: "Technology Innovation Hub",
@@ -555,7 +582,12 @@ export const AUTH_PROVIDER_PRESETS = {
     primary: true,
     description: "Corporate single sign-on",
     icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -599,7 +631,12 @@ export const AUTH_PROVIDER_PRESETS = {
     href,
     description: "Skip auth for development",
     icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg
+        className="w-4 h-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"

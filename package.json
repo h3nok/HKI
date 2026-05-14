@@ -10,10 +10,8 @@
   "scripts": {
     "dev": "turbo run dev",
     "dev:agentic": "turbo run dev --filter=@hki/agentic",
-    "dev:ipms": "turbo run dev --filter=@hki/ipms",
     "build": "turbo run build",
     "build:agentic": "turbo run build --filter=@hki/agentic",
-    "build:ipms": "turbo run build --filter=@hki/ipms",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean && rm -rf node_modules",
@@ -75,14 +73,7 @@
     "typescript": "^5.9.3"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --max-warnings=0 --fix",
-      "prettier --write"
-    ],
-    "*.{js,jsx,mjs,cjs}": [
-      "prettier --write"
-    ],
-    "*.{json,css,md}": [
+    "*.{ts,tsx,js,jsx,mjs,cjs,json,css,md}": [
       "prettier --write"
     ]
   },

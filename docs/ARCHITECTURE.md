@@ -240,7 +240,7 @@ async function uploadDocument(
     collection_id: string;
     department: string;
     tags: string[];
-  },
+  }
 ) {
   const formData = new FormData();
   formData.append("file", file);
@@ -337,7 +337,7 @@ async def generate_response(messages: list, tools: list):
          ↓
     1. User authenticates (OAuth/SAML)
     2. BFF issues session JWT (user_id, org_id, roles)
-    3. BFF stores session in PostgreSQL
+    3. BFF stores session in MySQL
          ↓
     [User makes chat request]
          ↓
@@ -380,7 +380,7 @@ async def generate_response(messages: list, tools: list):
 2. **Agentic BFF** → receives tRPC request
    - Validates JWT
    - Checks RBAC (user role)
-   - Persists message to PostgreSQL
+   - Persists message to MySQL
 3. **BFF** → HTTP POST to Orchestrator `/v1/chat`
    - Includes conversation history
    - Includes user scopes (departments)
@@ -405,7 +405,7 @@ async def generate_response(messages: list, tools: list):
     - Thought trace (5 steps)
     - Citations (3 documents)
     - Guardrails: passed
-11. **BFF** → persists response to PostgreSQL
+11. **BFF** → persists response to MySQL
     - Stores thought trace steps
     - Stores tool executions
     - Broadcasts via WebSocket to UI
@@ -610,7 +610,7 @@ Services MUST be deployed in dependency order:
    - Depends on: Knowledge API (stores chunks)
 
 4. **Agentic BFF** (user-facing)
-   - Requires: PostgreSQL, all other services
+   - Requires: MySQL, all other services
    - Depends on: Orchestrator, Ingestion Pipeline, Knowledge API
 
 See [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) for detailed steps.
@@ -660,7 +660,7 @@ JWT_SECRET=your-secret-key
 # agentic/.env
 ORCHESTRATOR_URL=http://localhost:9501
 KNOWLEDGE_PIPELINE_URL=http://localhost:9508
-DATABASE_URL=postgresql://localhost:5432/agentic
+DATABASE_URL=mysql://root:root@127.0.0.1:9306/retail_agentic
 JWT_SECRET=your-secret-key
 ```
 

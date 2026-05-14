@@ -2,7 +2,7 @@
  * ProductSwitcher — Cross-product navigation for the HKI Innovation Platform.
  *
  * Renders a dropdown in the sidebar that lets users switch between
- * Agentic AI, IPMS, and Mobile Web. Each product lives at its own
+ * Agentic AI and Mobile Web. Each product lives at its own
  * origin/subdomain but shares the same SSO session.
  *
  * Usage:
@@ -10,7 +10,7 @@
  *     currentProduct="agentic"
  *     products={[
  *       { id: "agentic", label: "Agentic AI", href: "https://agentic.hki-innovation.dev", icon: <BotIcon /> },
- *       { id: "ipms", label: "IPMS Hub", href: "https://ipms.hki-innovation.dev", icon: <LayoutDashboardIcon /> },
+ *       { id: "mobile", label: "Mobile", href: "https://mobile.hki-innovation.dev", icon: <MobileIcon /> },
  *     ]}
  *   />
  */
@@ -52,12 +52,6 @@ export const PLATFORM_PRODUCTS: Product[] = [
     badge: "AI",
   },
   {
-    id: "ipms",
-    label: "IPMS Hub",
-    description: "Innovation portfolio management & governance",
-    href: "/",
-  },
-  {
     id: "mobile",
     label: "Mobile",
     description: "Field operations & on-the-go access",
@@ -92,25 +86,6 @@ function AgenticIcon({ className }: { className?: string }) {
   );
 }
 
-function IpmsIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
-    </svg>
-  );
-}
-
 function MobileIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -130,7 +105,6 @@ function MobileIcon({ className }: { className?: string }) {
 
 const DEFAULT_ICONS: Record<string, React.ReactNode> = {
   agentic: <AgenticIcon className="w-4 h-4" />,
-  ipms: <IpmsIcon className="w-4 h-4" />,
   mobile: <MobileIcon className="w-4 h-4" />,
 };
 
@@ -249,7 +223,8 @@ export function ProductSwitcher({
           </div>
           {products.map(product => {
             const isActive = product.id === currentProduct;
-            const productIcon = product.icon ?? DEFAULT_ICONS[product.id] ?? null;
+            const productIcon =
+              product.icon ?? DEFAULT_ICONS[product.id] ?? null;
             return (
               <button
                 key={product.id}
@@ -281,7 +256,9 @@ export function ProductSwitcher({
                       <span
                         className={cn(
                           "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold leading-none",
-                          isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                          isActive
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground"
                         )}
                       >
                         {product.badge}

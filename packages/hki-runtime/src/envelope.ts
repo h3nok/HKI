@@ -11,6 +11,7 @@ import {
   normalizeDomainList,
   sameDomain,
 } from "./domain";
+import { verifyEnvelopeSignature } from "./signing";
 
 // Hard limits to prevent DoS via oversized inputs.
 const MAX_FIELD_LENGTH = 512;
@@ -28,6 +29,12 @@ export interface ValidateEnvelopeOptions {
   now?: number | undefined;
   maxFutureSkewSeconds?: number | undefined;
   requireSignature?: boolean | undefined;
+  /**
+   * When provided, the envelope's HMAC-SHA256 signature is verified against
+   * this secret. Envelopes with a missing or invalid signature are rejected
+   * with an `invalid-signature` issue. Takes precedence over `requireSignature`.
+   */
+  signingSecret?: string | undefined;
 }
 
 const REQUIRED_STRING_FIELDS = [
@@ -83,11 +90,35 @@ export function validateEnvelope(
     });
   }
 
-  // Signature presence check. NOTE: this library validates structural correctness
-  // and claim consistency of the envelope. Cryptographic signature verification
-  // (Ed25519/JWS) is the responsibility of the gateway that mints the envelope —
-  // it must be performed before calling validateEnvelope in downstream services.
-  if (options.requireSignature && !isNonEmptyString(record.signature)) {
+  // Signature verification. When signingSecret is provided, verify HMAC-SHA256.
+  // When only requireSignature is set, check presence only (dev/legacy mode).
+  if (options.signingSecret) {
+    // Build a temporary envelope to run the HMAC check against current fields.
+    const tempEnvelope: HkiEnvelope = {
+      hki_version: String(record.hki_version ?? HKI_VERSION),
+      envelope_id: String(record.envelope_id ?? ""),
+      org_id: String(record.org_id ?? ""),
+      subject_id: String(record.subject_id ?? ""),
+      active_domain: String(record.active_domain ?? ""),
+      authorized_domains: normalizeDomainList(record.authorized_domains),
+      purpose: String(record.purpose ?? ""),
+      risk_tier: String(record.risk_tier ?? ""),
+      policy_pack_id: String(record.policy_pack_id ?? ""),
+      issued_at: Number(record.issued_at),
+      expires_at: Number(record.expires_at),
+      issuer: String(record.issuer ?? ""),
+      signature: isNonEmptyString(record.signature)
+        ? record.signature
+        : undefined,
+    };
+    if (!verifyEnvelopeSignature(tempEnvelope, options.signingSecret)) {
+      issues.push({
+        code: "missing-field",
+        field: "signature",
+        message: "envelope signature is invalid or missing.",
+      });
+    }
+  } else if (options.requireSignature && !isNonEmptyString(record.signature)) {
     issues.push({
       code: "missing-field",
       field: "signature",

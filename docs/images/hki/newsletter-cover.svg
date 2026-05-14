@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="t d">
+  <title id="t">HKI — Hermetic Knowledge Isolation</title>
+  <desc id="d">Newsletter cover featuring the HKI hermetic mark, wordmark and tagline on a deep navy gradient with teal-to-amber accents.</desc>
+
+  <defs>
+    <!-- Background: deep navy with subtle teal nebula -->
+    <radialGradient id="bg" cx="22%" cy="28%" r="95%">
+      <stop offset="0%"  stop-color="#0f3a3a"/>
+      <stop offset="45%" stop-color="#0a1f2c"/>
+      <stop offset="100%" stop-color="#050a14"/>
+    </radialGradient>
+
+    <!-- Brand accent: teal -> amber -->
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#14b8a6"/>
+      <stop offset="55%" stop-color="#0E7C7B"/>
+      <stop offset="100%" stop-color="#E07A1F"/>
+    </linearGradient>
+
+    <linearGradient id="brandH" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"  stop-color="#2dd4bf"/>
+      <stop offset="100%" stop-color="#E07A1F"/>
+    </linearGradient>
+
+    <!-- Soft glow around the seal -->
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="#14b8a6" stop-opacity="0.55"/>
+      <stop offset="55%" stop-color="#0E7C7B" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#0E7C7B" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Faint dotted-grid pattern -->
+    <pattern id="grid" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#ffffff" fill-opacity="0.05"/>
+    </pattern>
+
+    <!-- HKI monogram seal: H + K inside the hermetic ring -->
+    <symbol id="seal" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="92" fill="none" stroke="url(#brand)" stroke-width="2.5"/>
+      <circle cx="100" cy="100" r="74" fill="none" stroke="url(#brand)" stroke-width="0.8" stroke-dasharray="2 6" opacity="0.55"/>
+      <!-- H -->
+      <line x1="55"  y1="40"  x2="55"  y2="160" stroke="#14b8a6" stroke-width="9" stroke-linecap="round"/>
+      <line x1="105" y1="40"  x2="105" y2="160" stroke="#14b8a6" stroke-width="9" stroke-linecap="round"/>
+      <line x1="55"  y1="100" x2="105" y2="100" stroke="#2dd4bf" stroke-width="5" stroke-linecap="round"/>
+      <!-- K (shares the H's right pillar as its spine) -->
+      <line x1="105" y1="100" x2="150" y2="48"  stroke="#E07A1F" stroke-width="8" stroke-linecap="round"/>
+      <line x1="105" y1="100" x2="150" y2="152" stroke="#E07A1F" stroke-width="8" stroke-linecap="round"/>
+      <!-- terminals -->
+      <circle cx="55"  cy="40"  r="6.5" fill="#14b8a6"/>
+      <circle cx="55"  cy="160" r="6.5" fill="#14b8a6"/>
+      <circle cx="105" cy="40"  r="6.5" fill="#14b8a6"/>
+      <circle cx="105" cy="160" r="6.5" fill="#14b8a6"/>
+      <circle cx="150" cy="48"  r="6"   fill="#E07A1F"/>
+      <circle cx="150" cy="152" r="6"   fill="#E07A1F"/>
+      <!-- I — active-domain sigil at the K vertex -->
+      <circle cx="105" cy="100" r="9" fill="none" stroke="#E07A1F" stroke-width="2.2"/>
+      <circle cx="105" cy="100" r="3" fill="#E07A1F"/>
+    </symbol>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#grid)"/>
+
+  <!-- Decorative orbits -->
+  <g opacity="0.35" stroke="#14b8a6" fill="none">
+    <ellipse cx="1180" cy="450" rx="520" ry="180" stroke-width="1"/>
+    <ellipse cx="1180" cy="450" rx="380" ry="120" stroke-width="0.8" opacity="0.7"/>
+    <ellipse cx="1180" cy="450" rx="240" ry="70"  stroke-width="0.6" opacity="0.5"/>
+  </g>
+
+  <!-- Halo + seal -->
+  <g transform="translate(960 170)">
+    <circle cx="220" cy="280" r="320" fill="url(#halo)"/>
+    <g filter="url(#glow)">
+      <use href="#seal" x="0" y="60" width="440" height="440"/>
+    </g>
+  </g>
+
+  <!-- Top brand bar -->
+  <g transform="translate(96 96)">
+    <rect width="56" height="6" rx="3" fill="url(#brandH)"/>
+    <text x="72" y="8" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700"
+          letter-spacing="4" fill="#7dd3c0">THE HKI BULLETIN</text>
+  </g>
+
+  <!-- Issue meta -->
+  <text x="96" y="160" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="600"
+        letter-spacing="3" fill="#94a3b8">ISSUE 01 · ENTERPRISE AGENTIC ISOLATION</text>
+
+  <!-- Headline -->
+  <g font-family="Inter, Arial, sans-serif" fill="#f8fafc">
+    <text x="96" y="288" font-size="92" font-weight="800" letter-spacing="-2">Hermetic</text>
+    <text x="96" y="384" font-size="92" font-weight="800" letter-spacing="-2">Knowledge</text>
+    <text x="96" y="480" font-size="92" font-weight="800" letter-spacing="-2">
+      <tspan fill="url(#brandH)">Isolation.</tspan>
+    </text>
+  </g>
+
+  <!-- Subhead -->
+  <g font-family="Charter, Georgia, serif" fill="#cbd5e1">
+    <text x="100" y="546" font-size="26">A runtime contract for the agentic era —</text>
+    <text x="100" y="582" font-size="26">one request, one active domain, zero silent leaks.</text>
+  </g>
+
+  <!-- Pillar chips -->
+  <g font-family="Inter, Arial, sans-serif" font-weight="700" font-size="16" letter-spacing="1.5">
+    <g transform="translate(96 648)">
+      <rect width="220" height="44" rx="22" fill="#0b2a2a" stroke="#14b8a6" stroke-opacity="0.55"/>
+      <circle cx="22" cy="22" r="5" fill="#14b8a6"/>
+      <text x="38" y="28" fill="#7dd3c0">ONE REQUEST</text>
+    </g>
+    <g transform="translate(330 648)">
+      <rect width="270" height="44" rx="22" fill="#0b2a2a" stroke="#14b8a6" stroke-opacity="0.55"/>
+      <circle cx="22" cy="22" r="5" fill="#2dd4bf"/>
+      <text x="38" y="28" fill="#7dd3c0">ONE ACTIVE DOMAIN</text>
+    </g>
+    <g transform="translate(614 648)">
+      <rect width="312" height="44" rx="22" fill="#2a160a" stroke="#E07A1F" stroke-opacity="0.65"/>
+      <circle cx="22" cy="22" r="5" fill="#E07A1F"/>
+      <text x="38" y="28" fill="#fbbf77">NO IMPLICIT GLOBAL VISIBILITY</text>
+    </g>
+  </g>
+
+  <!-- Footer rule -->
+  <line x1="96" y1="784" x2="1504" y2="784" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- Footer text -->
+  <g font-family="Inter, Arial, sans-serif" font-size="16" fill="#94a3b8">
+    <text x="96" y="822" font-weight="700" fill="#cbd5e1">hki.dev</text>
+    <text x="96" y="846">spec/HKI-1.0 · adapters · conformance · evidence</text>
+    <text x="1504" y="822" text-anchor="end" font-weight="600" fill="#cbd5e1">Henok Ghebrechristos, PhD</text>
+    <text x="1504" y="846" text-anchor="end">Editor · The HKI Bulletin</text>
+  </g>
+</svg>

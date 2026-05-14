@@ -1,7 +1,7 @@
 /**
  * Agentic Page Header
  * Executive-grade hero section — lifted card, HKI Iris accents.
- * Mirrors the IPMS PageHeader component.
+ * Mirrors the shared PageHeader component.
  */
 
 import { cn, HKI_IRIS } from "@hki/ui";

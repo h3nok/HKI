@@ -97,9 +97,28 @@
       },
       "additionalProperties": true
     },
+    "httpProbe": {
+      "type": ["object", "null"],
+      "properties": {
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 },
+        "level_claim": { "type": "integer", "minimum": 0 },
+        "bundle_hash": { "type": "string" },
+        "target": { "type": "object", "additionalProperties": true },
+        "generated_at": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
     "level": {
       "type": "string",
-      "enum": ["L0-non-conformant", "L1-passing", "L2-baseline", "L3-evidenced"]
+      "enum": [
+        "L0-non-conformant",
+        "L1-passing",
+        "L2-baseline",
+        "L3-evidenced",
+        "L4-deployed"
+      ]
     }
   },
   "additionalProperties": true

@@ -1,7 +1,7 @@
 /**
  * Control Plane — Layout Shell
  *
- * IPMS-style sidebar layout with grouped sections,
+ * Sidebar layout with grouped sections,
  * SidebarProvider + SidebarInset pattern, and PageShell content area.
  *
  * Routes: /admin, /admin/streams, /admin/users, /admin/settings,
@@ -88,7 +88,7 @@ import {
 
 // ── Brand ────────────────────────────────────────────────────────────────────
 
-// ── Navigation structure (IPMS pattern: grouped sections) ────────────────────
+// ── Navigation structure (grouped sections) ───────────────────────────────────
 
 interface NavItem {
   icon: LucideIcon;
@@ -239,7 +239,7 @@ export default function AdminLayout() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIDEBAR (glassmorphic, IPMS style)
+// SIDEBAR (glassmorphic)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function AdminSidebar() {
@@ -320,9 +320,7 @@ function AdminSidebar() {
           <SidebarGroup key={group.label} className="shrink-0 py-1.5">
             {!isCollapsed && (
               <div className="px-3.5 pt-2 pb-1.5 first:pt-1.5">
-                <AppSidebarSectionLabel>
-                  {group.label}
-                </AppSidebarSectionLabel>
+                <AppSidebarSectionLabel>{group.label}</AppSidebarSectionLabel>
               </div>
             )}
             <SidebarGroupContent>

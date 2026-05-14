@@ -17,7 +17,7 @@ export interface PageHeaderProps {
 }
 
 /**
- * Consistent page header used across all IPMS pages.
+ * Consistent page header used across all pages.
  * Renders: icon badge + subtitle + title + blue accent bar + description.
  */
 export function PageHeader({
@@ -49,11 +49,16 @@ export function PageHeader({
             </h1>
           </div>
         </div>
-        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+        {actions && (
+          <div className="flex items-center gap-2 shrink-0">{actions}</div>
+        )}
       </div>
       {description && (
         <div className="mt-3 pl-14">
-          <div className="h-0.5 w-8 rounded-full mb-2.5" style={{ background: "#0E7C7B" }} />
+          <div
+            className="h-0.5 w-8 rounded-full mb-2.5"
+            style={{ background: "#0E7C7B" }}
+          />
           <p className="text-[13px] text-[#6f6e6b] dark:text-[#a3a29f] max-w-lg leading-relaxed">
             {description}
           </p>
