@@ -123,7 +123,10 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
 
   return (
     <div
-      className={cn("rounded-lg border border-border bg-card shadow-surface", className)}
+      className={cn(
+        "rounded-lg border border-border bg-card shadow-surface",
+        className
+      )}
     >
       {/* Stage rail */}
       <div className="border-b border-border p-4 sm:p-5">

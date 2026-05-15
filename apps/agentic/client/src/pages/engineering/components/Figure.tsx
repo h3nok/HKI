@@ -62,12 +62,7 @@ export function FigureImage({
 }) {
   return (
     <Figure number={number} caption={caption} notice={notice}>
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        className="block w-full"
-      />
+      <img src={src} alt={alt} loading="lazy" className="block w-full" />
     </Figure>
   );
 }

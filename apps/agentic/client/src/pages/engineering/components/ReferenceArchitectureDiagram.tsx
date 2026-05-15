@@ -672,9 +672,7 @@ function Legend() {
               border: `1px solid ${PLANES[p].tintBorder}`,
             }}
           />
-          <span className="font-medium text-foreground">
-            {PLANES[p].label}
-          </span>
+          <span className="font-medium text-foreground">{PLANES[p].label}</span>
         </span>
       ))}
       <span className="ml-auto inline-flex items-center gap-1.5">
