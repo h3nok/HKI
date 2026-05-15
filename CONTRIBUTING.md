@@ -14,6 +14,8 @@ runtime contract easier to enforce, test, operate, or adopt.
   cache, tool, or trace behavior.
 - Read `docs/HKI_CONFORMANCE.md` before changing runtime scope or publication
   paths.
+- Read `docs/COMMUNITY_ENABLEMENT.md` before proposing standards RFCs,
+  conformance changes, industry profiles, or design-partner claims.
 - Read `docs/FIRST_SETUP.md` before first-time setup or local environment changes.
 - Read `docs/TESTING.md` before choosing validation scope for a change.
 - Read `docs/DEPENDENCY_POLICY.md` before changing package versions, Node,
@@ -46,6 +48,26 @@ Choose one primary lane per PR:
 
 If a change crosses lanes, call out the boundary in the PR summary and validate
 at least one producer and one consumer path.
+
+## Standards RFCs and Industry Profiles
+
+Use the RFC process in `docs/COMMUNITY_ENABLEMENT.md` when a change affects
+external implementers, conformance claims, evidence artifacts, or normative
+language.
+
+Open an RFC for:
+
+- new or changed MUST/SHOULD requirements
+- changes to HKI levels or evidence profiles
+- envelope, artifact-label, or registry schema changes
+- conformance mark rules
+- new industry profiles
+- compatibility exceptions
+
+Industry profiles should adapt evidence language to a sector without weakening
+the core invariant: one request, one active domain, no implicit global
+visibility. Do not propose profile-specific fallback, wildcard, inherited, or
+`global` runtime scope.
 
 ## Validation
 

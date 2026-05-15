@@ -1,0 +1,61 @@
+name: Framework Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/**"
+      - "spec/**"
+      - ".changeset/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Version and Publish TypeScript Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build framework packages
+        run: pnpm build:framework
+
+      - name: Run public release audit
+        run: pnpm audit:public-release
+
+      - name: Run HKI audit
+        run: pnpm audit:hki
+
+      - name: Run conformance
+        run: pnpm verify:hki-conformance
+
+      - name: Create release PR or publish
+        uses: changesets/action@v1
+        with:
+          publish: pnpm changeset:publish
+          version: pnpm changeset:version
+          commit: "chore: release framework packages"
+          title: "chore: release framework packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -7,7 +7,7 @@ import type {
 
 export async function runHkiConformance(
   adapter: HkiConformanceAdapter,
-  options: HkiConformanceRunOptions = {},
+  options: HkiConformanceRunOptions = {}
 ): Promise<HkiConformanceReport> {
   const cases = options.cases ?? HKI_CONFORMANCE_CASES;
   const results = [];
@@ -53,7 +53,7 @@ export function formatConformanceReport(report: HkiConformanceReport): string {
 
   const rows = report.results.map(item => {
     const status = item.passed ? "PASS" : "FAIL";
-    return `${status} ${item.id} ${item.requirement} (${item.actual})`;
+    return `${status} ${item.id} ${item.title}: ${item.requirement} (${item.actual})`;
   });
 
   return [...heading, "", ...rows].join("\n");

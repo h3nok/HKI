@@ -6,7 +6,7 @@
  * adapter conformance kit (`hki-conformance`) by validating the system as
  * a whole.
  *
- * Probes implemented (Level 4 baseline):
+ * Probes implemented (L4-tested evidence):
  *   P01  missing envelope          -> 401
  *   P02  malformed envelope        -> 401
  *   P03  expired envelope          -> 401
@@ -151,7 +151,7 @@ function printUsageAndExit(): never {
                   [--issuer who] [--policy id] [--signature sig] [--out evidence.json]
                   [--header "k: v"] [--timeout ms] [--json]
 
-Runs Level-4 HKI conformance probes against a deployed gateway.\n`
+Runs L4-tested HKI conformance probes against a gateway.\n`
   );
   process.exit(2);
 }

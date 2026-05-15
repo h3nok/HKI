@@ -15,10 +15,10 @@ inputs:
   min-level:
     description: |
       Minimum acceptable conformance level. One of:
-        L0-non-conformant | L1-passing | L2-baseline | L3-evidenced
+        L0-documented | L1-labeled | L2-routed | L3-enforced | L4-tested | L5-audited
       The action fails if the produced level is below this threshold.
     required: false
-    default: "L2-baseline"
+    default: "L3-enforced"
   python-version:
     description: Python version used for hki-runtime-py / threats / litellm / langchain.
     required: false
@@ -127,7 +127,7 @@ runs:
         LEVEL: ${{ steps.gate.outputs.level }}
         MIN: ${{ inputs.min-level }}
       run: |
-        order="L0-non-conformant L1-passing L2-baseline L3-evidenced"
+        order="L0-documented L1-labeled L2-routed L3-enforced L4-tested L5-audited"
         rank() { echo "$order" | tr ' ' '\n' | nl -ba | awk -v t="$1" '$2==t{print $1}'; }
         actual=$(rank "$LEVEL")
         wanted=$(rank "$MIN")

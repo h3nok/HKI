@@ -23,10 +23,10 @@ jobs:
       - id: hki
         uses: ./packages/hki-conformance-action
         with:
-          min-level: L3-evidenced
+          min-level: L3-enforced
 
       - name: Assert outputs
         run: |
           test "${{ steps.hki.outputs.passed }}" = "true"
-          test "${{ steps.hki.outputs.level }}" = "L3-evidenced"
+          test "${{ steps.hki.outputs.level }}" = "L4-tested"
           test -f conformance.json

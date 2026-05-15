@@ -24,7 +24,7 @@ export function Hero({
   className?: string;
 }) {
   return (
-    <section className={cn("mb-12 border-b border-border/45 pb-10", className)}>
+    <section className={cn("mb-12 border-b border-border pb-10", className)}>
       <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
         {meta?.status && (
           <Badge
@@ -36,7 +36,7 @@ export function Hero({
           </Badge>
         )}
         {meta?.version && (
-          <span className="font-mono text-muted-foreground/70">
+          <span className="font-mono text-muted-foreground">
             {meta.version}
           </span>
         )}
@@ -45,7 +45,7 @@ export function Hero({
             {eyebrow}
           </span>
         )}
-        <span className="ml-auto flex items-center gap-4 text-muted-foreground/70">
+        <span className="ml-auto flex items-center gap-4 text-muted-foreground">
           {meta?.readingTimeMin !== undefined && (
             <span className="inline-flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />~{meta.readingTimeMin} min

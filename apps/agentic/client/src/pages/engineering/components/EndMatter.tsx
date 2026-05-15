@@ -53,7 +53,7 @@ export function EndMatter({
   className?: string;
 }) {
   return (
-    <footer className={cn("mt-32 border-t border-border/50 pt-16", className)}>
+    <footer className={cn("mt-32 border-t border-border pt-16", className)}>
       <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
         End matter
       </p>
@@ -90,7 +90,7 @@ function CitationBlock({ citation }: { citation: string }) {
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
         Cite this work
       </p>
-      <div className="group relative mt-4 overflow-hidden rounded-md border border-border/60 bg-muted/15">
+      <div className="group relative mt-4 overflow-hidden rounded-md border border-border bg-muted/25">
         <pre className="overflow-x-auto px-5 py-4 text-[12.5px] leading-6 text-foreground/85">
           <code className="font-mono">{citation}</code>
         </pre>
@@ -98,7 +98,7 @@ function CitationBlock({ citation }: { citation: string }) {
           type="button"
           onClick={copy}
           aria-label={copied ? "Copied" : "Copy citation"}
-          className="absolute right-2 top-2 inline-flex h-7 items-center gap-1.5 rounded border border-border/60 bg-background/80 px-2 text-[11px] font-semibold text-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
+          className="absolute right-2 top-2 inline-flex h-7 items-center gap-1.5 rounded border border-border bg-card px-2 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           {copied ? (
             <Check className="h-3 w-3" />
@@ -118,7 +118,7 @@ function VersionList({ versions }: { versions: readonly EndMatterVersion[] }) {
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
         Version history
       </p>
-      <ol className="mt-4 divide-y divide-border/50 border-y border-border/50">
+      <ol className="mt-4 divide-y divide-border border-y border-border">
         {versions.map(v => (
           <li
             key={`${v.version}-${v.date}`}
@@ -128,7 +128,7 @@ function VersionList({ versions }: { versions: readonly EndMatterVersion[] }) {
               {v.version}
             </span>
             <span className="text-muted-foreground">{v.note}</span>
-            <span className="font-mono text-[11px] text-muted-foreground/70">
+            <span className="font-mono text-[11px] text-muted-foreground">
               {v.date}
             </span>
           </li>
@@ -146,14 +146,14 @@ function EvidenceRow({
   className?: string;
 }) {
   return (
-    <div className={cn("border-t border-border/40 pt-8", className)}>
+    <div className={cn("border-t border-border pt-8", className)}>
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
         Signed evidence
       </p>
       <dl className="mt-4 grid gap-x-10 gap-y-3 text-[12.5px] sm:grid-cols-2 lg:grid-cols-4">
         {evidence.map(e => (
           <div key={e.label}>
-            <dt className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/80">
+            <dt className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
               {e.label}
             </dt>
             <dd
@@ -200,7 +200,7 @@ function CanonicalLinks({
   return (
     <div
       className={cn(
-        "grid gap-3 border-t border-border/40 pt-8 sm:grid-cols-3",
+        "grid gap-3 border-t border-border pt-8 sm:grid-cols-3",
         className
       )}
     >
@@ -220,7 +220,7 @@ function CanonicalLinks({
                   }
                 : undefined
             }
-            className="group flex items-center justify-between gap-3 border-b border-transparent py-2 text-sm font-semibold text-foreground/85 transition-colors hover:border-foreground/40 hover:text-foreground"
+            className="group flex items-center justify-between gap-3 border-b border-transparent py-2 text-sm font-semibold text-foreground transition-colors hover:border-border hover:text-foreground"
           >
             <span className="inline-flex items-center gap-2.5">
               <Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />

@@ -49,7 +49,7 @@ function FullSection({
   return (
     <section
       id={id}
-      className={`relative z-10 flex min-h-[calc(100svh-57px)] snap-start scroll-mt-16 flex-col items-center justify-center border-t border-border/20 px-6 py-14 md:px-12 md:py-16 ${className}`}
+      className={`relative z-10 flex min-h-[calc(100svh-57px)] snap-start scroll-mt-16 flex-col items-center justify-center border-t border-border/25 px-6 py-14 md:px-12 md:py-16 ${className}`}
     >
       {children}
     </section>
@@ -89,7 +89,7 @@ const STATUS_META = {
   },
   planned: {
     label: "Planned",
-    className: "border border-border/50 bg-muted/45 text-muted-foreground/80",
+    className: "border border-border bg-muted/45 text-muted-foreground",
   },
 } as const;
 
@@ -193,7 +193,7 @@ function PlatformCards({
                 </div>
                 <div>
                   <p
-                    className="mb-1.5 text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground/65"
+                    className="mb-1.5 text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground"
                     style={{ fontFamily: HEADING }}
                   >
                     Surface {String(activeIndex + 1).padStart(2, "0")}
@@ -213,10 +213,10 @@ function PlatformCards({
               <p className="text-base font-semibold leading-relaxed text-foreground/88">
                 {activeLayer.subtitle}
               </p>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground/72">
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                 {activeLayer.description}
               </p>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground/78">
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                 <span className="font-semibold text-foreground/85">
                   Best for:
                 </span>{" "}
@@ -263,7 +263,7 @@ function PlatformCards({
                   {activeLayer.techStack.map(tech => (
                     <span
                       key={tech}
-                      className="rounded-md border border-border/45 bg-background/48 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground/78"
+                      className="rounded-md border border-border/45 bg-background/48 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground"
                     >
                       {tech}
                     </span>
@@ -366,14 +366,14 @@ function PlatformCards({
                         className="px-1.5 py-0.5 text-[8px]"
                       />
                     </div>
-                    <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground/68 lg:line-clamp-1">
+                    <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground lg:line-clamp-1">
                       {layer.subtitle}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5 lg:hidden 2xl:flex">
                       {layer.capabilities.slice(0, 3).map(capability => (
                         <span
                           key={capability}
-                          className="rounded-md border border-border/35 bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground/70"
+                          className="rounded-md border border-border/35 bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
                         >
                           {capability}
                         </span>
@@ -401,14 +401,14 @@ const STATS = [
 
 function HeroProofStrip() {
   return (
-    <div className="grid w-full max-w-xl grid-cols-2 overflow-hidden rounded-lg border border-border/45 bg-border/35 text-left shadow-sm sm:grid-cols-4">
+    <div className="grid w-full max-w-xl grid-cols-2 overflow-hidden rounded-lg border border-border bg-muted/40 text-left shadow-sm sm:grid-cols-4">
       {STATS.map(stat => (
         <div
           key={stat.label}
-          className="bg-background/76 px-3.5 py-2.5 backdrop-blur-sm"
+          className="bg-card/70 px-3.5 py-2.5 backdrop-blur-sm"
         >
           <p
-            className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground/54"
+            className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
             style={{ fontFamily: HEADING }}
           >
             {stat.label}
@@ -577,7 +577,7 @@ function RiskSection() {
               Enterprise controls have to change with it.
             </span>
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground/70 lg:mx-0">
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground lg:mx-0">
             HKI makes isolation a runtime invariant for every agent execution:
             context, memory, tools, caches, traces, and publication paths stay
             inside the domain that authorized them.
@@ -621,7 +621,7 @@ function RiskSection() {
                 >
                   {signal.title}
                 </h3>
-                <p className="mt-2.5 text-[13px] leading-relaxed text-muted-foreground/68">
+                <p className="mt-2.5 text-[13px] leading-relaxed text-muted-foreground">
                   {signal.desc}
                 </p>
               </motion.div>
@@ -665,7 +665,7 @@ function CapabilitiesSection({
             {PLATFORM_LAYER_COUNT} layers in your stack.{" "}
             <span className="text-primary">One isolation rule.</span>
           </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground/66">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
             HKI specifies exactly where domain isolation must hold — from the
             signed scope envelope at the edge to cache keys, graph edges, tool
             calls, and audit traces. Each layer has concrete controls and a
@@ -680,7 +680,7 @@ function CapabilitiesSection({
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               {API_LAYER_COUNT} API-only
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-muted/40 px-3 py-1 text-[11px] font-bold text-muted-foreground/80">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-[11px] font-bold text-muted-foreground">
               {PLATFORM_CAPABILITY_COUNT} total controls across all layers
             </span>
           </div>
@@ -758,7 +758,7 @@ function EngineeringSection() {
             Make isolation observable.{" "}
             <span className="text-primary">Then enforce it.</span>
           </h2>
-          <p className="mx-auto max-w-xl text-sm leading-relaxed text-muted-foreground/66">
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-muted-foreground">
             The migration path from domain-aware RAG to HKI-conformant agentic
             runtime.
           </p>
@@ -813,7 +813,7 @@ function EngineeringSection() {
                   >
                     {step.tagline}
                   </p>
-                  <p className="text-[13px] leading-relaxed text-muted-foreground/65">
+                  <p className="text-[13px] leading-relaxed text-muted-foreground">
                     {step.desc}
                   </p>
                 </div>
@@ -854,7 +854,7 @@ function RolesSection() {
             Builders, stewards, and auditors.{" "}
             <span className="text-primary">Same contract.</span>
           </h2>
-          <p className="mx-auto max-w-xl text-sm leading-relaxed text-muted-foreground/66">
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-muted-foreground">
             HKI is useful when it gives every operator a concrete control
             surface, not just an architecture diagram.
           </p>
@@ -876,7 +876,7 @@ function RolesSection() {
                 whileHover={{ scale: 1.02, y: -4 }}
                 className="group relative flex h-full flex-col rounded-lg border p-5
                            bg-card dark:bg-card/95 backdrop-blur-sm
-                           border-border/60 dark:border-border/40
+                           border-border
                            shadow-sm hover:shadow-xl
                            transition-all duration-300"
                 style={{
@@ -939,7 +939,7 @@ function RolesSection() {
                 </h3>
 
                 {/* Divider */}
-                <div className="mb-4 h-px bg-border/20" />
+                <div className="mb-4 h-px bg-border/40" />
 
                 {/* Actions */}
                 <ul className="mt-auto space-y-2.5">
@@ -962,7 +962,7 @@ function RolesSection() {
                             style={{ color: role.color }}
                           />
                         </div>
-                        <span className="text-sm text-muted-foreground dark:text-muted-foreground/85 leading-relaxed">
+                        <span className="text-sm text-muted-foreground leading-relaxed">
                           {action.text}
                         </span>
                       </li>
@@ -1014,7 +1014,7 @@ function CTASection({ onNavigate }: { onNavigate: (path: string) => void }) {
             <span className="text-primary">auditable by default.</span>
           </h2>
 
-          <p className="mx-auto mb-9 max-w-md text-sm leading-relaxed text-muted-foreground/66">
+          <p className="mx-auto mb-9 max-w-md text-sm leading-relaxed text-muted-foreground">
             HKI turns "domain-aware" from a claim into a release gate: one
             active domain, exact-domain visibility, publication-only sharing.
           </p>

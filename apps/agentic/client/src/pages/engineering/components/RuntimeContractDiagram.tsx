@@ -123,10 +123,10 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
 
   return (
     <div
-      className={cn("rounded-lg border border-border/60 bg-card/40", className)}
+      className={cn("rounded-lg border border-border bg-card shadow-surface", className)}
     >
       {/* Stage rail */}
-      <div className="border-b border-border/60 p-4 sm:p-5">
+      <div className="border-b border-border p-4 sm:p-5">
         <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
           Request lifecycle · click a stage
         </p>
@@ -149,7 +149,7 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
                     "group flex w-full flex-col items-center gap-1.5 rounded-md border p-2 text-center transition-all",
                     active
                       ? "border-primary bg-primary/12 text-foreground shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]"
-                      : "border-border/50 bg-card text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground"
+                      : "border-border bg-card text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground"
                   )}
                 >
                   <span
@@ -157,7 +157,7 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
                       "inline-flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-bold tabular-nums transition-all",
                       active
                         ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border/60 bg-background text-muted-foreground"
+                        : "border-border bg-muted/50 text-muted-foreground"
                     )}
                   >
                     {i + 1}
@@ -165,7 +165,7 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
                   <Icon
                     className={cn(
                       "h-4 w-4",
-                      active ? "text-primary" : "text-muted-foreground/80"
+                      active ? "text-primary" : "text-muted-foreground"
                     )}
                   />
                   <span className="text-[11px] font-semibold leading-tight">
@@ -178,7 +178,7 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
                 {i < STAGES.length - 1 && (
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute -right-1.5 top-1/2 z-10 hidden h-px w-3 -translate-y-1/2 bg-border/60 sm:block"
+                    className="pointer-events-none absolute -right-1.5 top-1/2 z-10 hidden h-px w-3 -translate-y-1/2 bg-border sm:block"
                   />
                 )}
               </li>
@@ -189,7 +189,7 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
 
       {/* Detail panel */}
       <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="rounded-md border border-border/50 bg-muted/20 p-4">
+        <div className="rounded-md border border-border bg-muted/30 p-4">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
             What happens
           </p>
@@ -197,15 +197,15 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
             {selected.happens}
           </p>
         </div>
-        <div className="rounded-md border border-primary/25 bg-primary/5 p-4">
+        <div className="rounded-md border border-primary/25 bg-primary/8 p-4">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
             HKI enforcement
           </p>
           <p className="mt-2 text-sm leading-6 text-foreground/90">
             {selected.enforces}
           </p>
-          <p className="mt-3 rounded bg-background/60 px-2 py-1 font-mono text-[11px] text-muted-foreground">
-            <span className="text-muted-foreground/50">⌥ </span>
+          <p className="mt-3 rounded bg-muted/50 px-2 py-1 font-mono text-[11px] text-muted-foreground">
+            <span className="text-muted-foreground">⌥ </span>
             {selected.surface}
           </p>
         </div>

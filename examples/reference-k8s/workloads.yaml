@@ -1,0 +1,374 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentic-bff
+  labels:
+    app.kubernetes.io/name: agentic-bff
+    app.kubernetes.io/part-of: hki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agentic-bff
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: agentic-bff
+        app.kubernetes.io/part-of: hki
+    spec:
+      serviceAccountName: hki-reference-runtime
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: http
+          image: hki-reference-agentic-bff
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: HKI_SERVICE_NAME
+              value: agentic-bff
+          envFrom:
+            - configMapRef:
+                name: hki-reference-config
+            - secretRef:
+                name: hki-reference-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentic-bff
+  labels:
+    app.kubernetes.io/name: agentic-bff
+    app.kubernetes.io/part-of: hki
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: agentic-bff
+  ports:
+    - name: http
+      port: 9001
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  labels:
+    app.kubernetes.io/name: orchestrator
+    app.kubernetes.io/part-of: hki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orchestrator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: orchestrator
+        app.kubernetes.io/part-of: hki
+    spec:
+      serviceAccountName: hki-reference-runtime
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: http
+          image: hki-reference-orchestrator
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: HKI_SERVICE_NAME
+              value: orchestrator
+          envFrom:
+            - configMapRef:
+                name: hki-reference-config
+            - secretRef:
+                name: hki-reference-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orchestrator
+  labels:
+    app.kubernetes.io/name: orchestrator
+    app.kubernetes.io/part-of: hki
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: orchestrator
+  ports:
+    - name: http
+      port: 9501
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knowledge-api
+  labels:
+    app.kubernetes.io/name: knowledge-api
+    app.kubernetes.io/part-of: hki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: knowledge-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: knowledge-api
+        app.kubernetes.io/part-of: hki
+    spec:
+      serviceAccountName: hki-reference-runtime
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: http
+          image: hki-reference-knowledge-api
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: HKI_SERVICE_NAME
+              value: knowledge-api
+          envFrom:
+            - configMapRef:
+                name: hki-reference-config
+            - secretRef:
+                name: hki-reference-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: knowledge-api
+  labels:
+    app.kubernetes.io/name: knowledge-api
+    app.kubernetes.io/part-of: hki
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: knowledge-api
+  ports:
+    - name: http
+      port: 9509
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestion-pipeline
+  labels:
+    app.kubernetes.io/name: ingestion-pipeline
+    app.kubernetes.io/part-of: hki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingestion-pipeline
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ingestion-pipeline
+        app.kubernetes.io/part-of: hki
+    spec:
+      serviceAccountName: hki-reference-runtime
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: http
+          image: hki-reference-ingestion-pipeline
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: HKI_SERVICE_NAME
+              value: ingestion-pipeline
+          envFrom:
+            - configMapRef:
+                name: hki-reference-config
+            - secretRef:
+                name: hki-reference-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingestion-pipeline
+  labels:
+    app.kubernetes.io/name: ingestion-pipeline
+    app.kubernetes.io/part-of: hki
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: ingestion-pipeline
+  ports:
+    - name: http
+      port: 9508
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics
+  labels:
+    app.kubernetes.io/name: analytics
+    app.kubernetes.io/part-of: hki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: analytics
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: analytics
+        app.kubernetes.io/part-of: hki
+    spec:
+      serviceAccountName: hki-reference-runtime
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: http
+          image: hki-reference-analytics
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: HKI_SERVICE_NAME
+              value: analytics
+          envFrom:
+            - configMapRef:
+                name: hki-reference-config
+            - secretRef:
+                name: hki-reference-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics
+  labels:
+    app.kubernetes.io/name: analytics
+    app.kubernetes.io/part-of: hki
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: analytics
+  ports:
+    - name: http
+      port: 9512
+      targetPort: http
+      protocol: TCP

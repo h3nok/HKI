@@ -133,6 +133,7 @@ function scopeOverrideCase(
 
 const validEnvelopeMeta: CaseMeta = {
   id: "HKI-C01-valid-envelope",
+  title: "Accept valid envelope",
   level: 2,
   surface: "runtime-envelope",
   requirement:
@@ -143,6 +144,7 @@ const validEnvelopeMeta: CaseMeta = {
 
 const globalEnvelopeMeta: CaseMeta = {
   id: "HKI-C02-reject-global-envelope",
+  title: "Reject global active domain",
   level: 2,
   surface: "runtime-envelope",
   requirement: "Reject a runtime envelope whose active domain is global.",
@@ -152,6 +154,7 @@ const globalEnvelopeMeta: CaseMeta = {
 
 const unauthorizedEnvelopeMeta: CaseMeta = {
   id: "HKI-C03-reject-unauthorized-envelope",
+  title: "Reject unauthorized active domain",
   level: 2,
   surface: "runtime-envelope",
   requirement:
@@ -162,6 +165,7 @@ const unauthorizedEnvelopeMeta: CaseMeta = {
 
 const missingActiveDomainMeta: CaseMeta = {
   id: "HKI-C04-reject-missing-active-domain",
+  title: "Reject missing active domain",
   level: 2,
   surface: "runtime-envelope",
   requirement: "Reject runtime envelopes with a missing active domain.",
@@ -171,6 +175,7 @@ const missingActiveDomainMeta: CaseMeta = {
 
 const expiredEnvelopeMeta: CaseMeta = {
   id: "HKI-C05-reject-expired-envelope",
+  title: "Reject expired envelope",
   level: 2,
   surface: "runtime-envelope",
   requirement: "Reject expired runtime envelopes.",
@@ -180,6 +185,7 @@ const expiredEnvelopeMeta: CaseMeta = {
 
 const unsignedEnvelopeMeta: CaseMeta = {
   id: "HKI-C06-reject-unsigned-envelope",
+  title: "Reject unsigned envelope",
   level: 2,
   surface: "runtime-envelope",
   requirement:
@@ -190,6 +196,7 @@ const unsignedEnvelopeMeta: CaseMeta = {
 
 const globalAuthorizedEnvelopeMeta: CaseMeta = {
   id: "HKI-C07-reject-global-authorized-domain",
+  title: "Reject global authorized domain",
   level: 2,
   surface: "runtime-envelope",
   requirement: "Reject authorized domain sets that include global.",
@@ -199,6 +206,7 @@ const globalAuthorizedEnvelopeMeta: CaseMeta = {
 
 const wrongVersionEnvelopeMeta: CaseMeta = {
   id: "HKI-C08-reject-unsupported-hki-version",
+  title: "Reject unsupported HKI version",
   level: 2,
   surface: "runtime-envelope",
   requirement:
@@ -209,6 +217,7 @@ const wrongVersionEnvelopeMeta: CaseMeta = {
 
 const visibleArtifactMeta: CaseMeta = {
   id: "HKI-C09-allow-active-domain-artifact",
+  title: "Allow active-domain artifact",
   level: 3,
   surface: "artifact-read",
   requirement:
@@ -219,6 +228,7 @@ const visibleArtifactMeta: CaseMeta = {
 
 const crossDomainArtifactMeta: CaseMeta = {
   id: "HKI-C10-reject-cross-domain-artifact",
+  title: "Reject cross-domain artifact",
   level: 3,
   surface: "artifact-read",
   requirement: "Reject artifact reads from an authorized but inactive domain.",
@@ -228,6 +238,7 @@ const crossDomainArtifactMeta: CaseMeta = {
 
 const crossOrgArtifactMeta: CaseMeta = {
   id: "HKI-C11-reject-cross-org-artifact",
+  title: "Reject cross-org artifact",
   level: 3,
   surface: "artifact-read",
   requirement: "Reject artifact reads from another organization.",
@@ -237,6 +248,7 @@ const crossOrgArtifactMeta: CaseMeta = {
 
 const globalArtifactMeta: CaseMeta = {
   id: "HKI-C12-reject-global-artifact",
+  title: "Reject global artifact",
   level: 3,
   surface: "artifact-read",
   requirement: "Reject runtime artifacts labeled as global.",
@@ -246,6 +258,7 @@ const globalArtifactMeta: CaseMeta = {
 
 const cacheDomainMeta: CaseMeta = {
   id: "HKI-C13-cache-key-binds-active-domain",
+  title: "Bind cache key to active domain",
   level: 3,
   surface: "cache",
   requirement: "Cache keys change when the active domain changes.",
@@ -255,6 +268,7 @@ const cacheDomainMeta: CaseMeta = {
 
 const cachePolicyMeta: CaseMeta = {
   id: "HKI-C14-cache-key-binds-policy-pack",
+  title: "Bind cache key to policy pack",
   level: 3,
   surface: "cache",
   requirement: "Cache keys change when the policy pack changes.",
@@ -264,6 +278,7 @@ const cachePolicyMeta: CaseMeta = {
 
 const cacheOperationMeta: CaseMeta = {
   id: "HKI-C15-cache-key-binds-operation",
+  title: "Bind cache key to operation",
   level: 3,
   surface: "cache",
   requirement: "Cache keys change when the runtime operation changes.",
@@ -273,6 +288,7 @@ const cacheOperationMeta: CaseMeta = {
 
 const activeGatewayMeta: CaseMeta = {
   id: "HKI-C16-allow-active-domain-tool",
+  title: "Allow active-domain tool",
   level: 3,
   surface: "gateway",
   requirement: "Allow tools published into the active domain.",
@@ -282,6 +298,7 @@ const activeGatewayMeta: CaseMeta = {
 
 const publishedGatewayMeta: CaseMeta = {
   id: "HKI-C17-allow-published-domain-target",
+  title: "Allow published target",
   level: 3,
   surface: "gateway",
   requirement: "Allow targets explicitly published into the active domain.",
@@ -291,6 +308,7 @@ const publishedGatewayMeta: CaseMeta = {
 
 const crossGatewayMeta: CaseMeta = {
   id: "HKI-C18-reject-cross-domain-tool",
+  title: "Reject cross-domain tool",
   level: 3,
   surface: "gateway",
   requirement: "Reject tools published only into a non-active domain.",
@@ -300,6 +318,7 @@ const crossGatewayMeta: CaseMeta = {
 
 const globalGatewayMeta: CaseMeta = {
   id: "HKI-C19-reject-global-gateway-target",
+  title: "Reject global gateway target",
   level: 3,
   surface: "gateway",
   requirement: "Reject gateway targets labeled as global.",
@@ -309,6 +328,7 @@ const globalGatewayMeta: CaseMeta = {
 
 const scopeOverrideMeta: CaseMeta = {
   id: "HKI-C20-reject-scope-override",
+  title: "Reject scope override",
   level: 4,
   surface: "gateway",
   requirement:
@@ -319,6 +339,7 @@ const scopeOverrideMeta: CaseMeta = {
 
 const streamOverrideMeta: CaseMeta = {
   id: "HKI-C21-reject-stream-id-override",
+  title: "Reject stream_id override",
   level: 4,
   surface: "gateway",
   requirement:
@@ -329,6 +350,7 @@ const streamOverrideMeta: CaseMeta = {
 
 const matchingScopeMeta: CaseMeta = {
   id: "HKI-C22-allow-matching-scope-argument",
+  title: "Allow matching scope argument",
   level: 4,
   surface: "gateway",
   requirement:
@@ -339,6 +361,7 @@ const matchingScopeMeta: CaseMeta = {
 
 const wildcardEnvelopeMeta: CaseMeta = {
   id: "HKI-C23-reject-wildcard-envelope",
+  title: "Reject wildcard active domain",
   level: 2,
   surface: "runtime-envelope",
   requirement: "Reject wildcard runtime active domains.",
@@ -348,6 +371,7 @@ const wildcardEnvelopeMeta: CaseMeta = {
 
 const wildcardAuthorizedEnvelopeMeta: CaseMeta = {
   id: "HKI-C24-reject-wildcard-authorized-domain",
+  title: "Reject wildcard authorized domain",
   level: 2,
   surface: "runtime-envelope",
   requirement: "Reject authorized domain sets that include wildcard scope.",
@@ -357,6 +381,7 @@ const wildcardAuthorizedEnvelopeMeta: CaseMeta = {
 
 const wildcardArtifactMeta: CaseMeta = {
   id: "HKI-C25-reject-wildcard-artifact",
+  title: "Reject wildcard artifact",
   level: 3,
   surface: "artifact-read",
   requirement: "Reject runtime artifacts labeled with wildcard scope.",
@@ -366,6 +391,7 @@ const wildcardArtifactMeta: CaseMeta = {
 
 const wildcardGatewayMeta: CaseMeta = {
   id: "HKI-C26-reject-wildcard-gateway-target",
+  title: "Reject wildcard gateway target",
   level: 3,
   surface: "gateway",
   requirement: "Reject gateway targets labeled with wildcard scope.",
@@ -375,6 +401,7 @@ const wildcardGatewayMeta: CaseMeta = {
 
 const wildcardPublishedGatewayMeta: CaseMeta = {
   id: "HKI-C27-reject-wildcard-gateway-publication",
+  title: "Reject wildcard publication target",
   level: 3,
   surface: "gateway",
   requirement: "Reject gateway targets published into wildcard scope.",
@@ -384,6 +411,7 @@ const wildcardPublishedGatewayMeta: CaseMeta = {
 
 const arrayScopeOverrideMeta: CaseMeta = {
   id: "HKI-C28-reject-array-scope-override",
+  title: "Reject array scope override",
   level: 4,
   surface: "gateway",
   requirement:

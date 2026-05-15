@@ -21,7 +21,7 @@ export function DocumentOutline({
           Contents
         </p>
         <nav aria-label="Document outline">
-          <ol className="space-y-0.5 border-l border-border/60 pl-2">
+          <ol className="space-y-0.5 border-l border-border pl-2">
             {tops.map((n, i) => {
               const active = n.id === activeId;
               return (
@@ -33,13 +33,13 @@ export function DocumentOutline({
                       "group -ml-2.75 flex items-baseline gap-2 rounded-md border-l-2 py-1.5 pl-2.5 pr-2 text-[12px] leading-5 outline-none transition-[background-color,border-color,color,box-shadow] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                       active
                         ? "border-primary bg-primary/8 font-semibold text-primary"
-                        : "border-transparent font-medium text-muted-foreground hover:border-border hover:bg-muted/35 hover:text-foreground"
+                        : "border-transparent font-medium text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground"
                     )}
                   >
                     <span
                       className={cn(
                         "relative w-5 shrink-0 font-mono text-[10px] tabular-nums",
-                        active ? "text-primary/80" : "text-muted-foreground/55"
+                        active ? "text-primary/80" : "text-muted-foreground"
                       )}
                     >
                       {active && (
@@ -55,7 +55,7 @@ export function DocumentOutline({
           </ol>
         </nav>
 
-        <div className="mt-6 border-t border-border/50 pt-5">
+        <div className="mt-6 border-t border-border pt-5">
           <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             The Contract
           </p>
@@ -63,7 +63,7 @@ export function DocumentOutline({
             {HKI_CONTRACT.map(p => (
               <li
                 key={p.label}
-                className="flex items-start gap-2 text-[12px] leading-5 text-foreground/80"
+                className="flex items-start gap-2 text-[12px] leading-5 text-foreground"
               >
                 <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
                 <span>

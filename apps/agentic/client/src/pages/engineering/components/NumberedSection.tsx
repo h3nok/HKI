@@ -36,11 +36,11 @@ export function NumberedSection({
       <div className="mb-10 flex items-center gap-5">
         <span
           aria-hidden
-          className="font-mono text-[11px] font-semibold tracking-[0.2em] text-muted-foreground/70"
+          className="font-mono text-[11px] font-semibold tracking-[0.2em] text-muted-foreground"
         >
           {number}
         </span>
-        <span aria-hidden className="h-px flex-1 bg-border/70" />
+        <span aria-hidden className="h-px flex-1 bg-border" />
         {eyebrow && (
           <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
             {eyebrow}

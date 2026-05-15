@@ -96,5 +96,23 @@ The 0.1.0 kit includes twenty-eight cases:
 - reject array-shaped scope override aliases
 - allow explicit scope arguments only when they match signed scope
 
-Passing this kit is Level 4 evidence in the HKI conformance model. Level 5
-requires a signed release evidence bundle and independent review.
+Passing this kit is Level 4 evidence for the tested adapter surface in the HKI
+conformance model. Runtime or service-level claims should pair it with smoke or
+live probe evidence. Level 5 requires a signed release evidence bundle and
+independent review.
+
+The repository-level registry builder writes the evidence manifest used for
+public claims:
+
+```bash
+pnpm probe:smoke
+pnpm registry:build
+```
+
+For release candidates, run from a clean commit with live probe evidence and the
+strict release gate:
+
+```bash
+hki-probe https://your-gateway.example.com --route /v1/chat --out /tmp/hki-evidence.json
+node scripts/build-conformance-registry.mjs --strict-release
+```

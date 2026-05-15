@@ -11,13 +11,13 @@
     <style>
       :root {
         --ink: #142126;
-        --muted: #58666d;
-        --quiet: #7a878d;
+        --muted: #364a51;
+        --quiet: #4d5f65;
         --paper: #f7faf7;
         --panel: #ffffff;
         --line: #d6dfdb;
         --line-strong: #b7c7c1;
-        --teal: #0f766e;
+        --teal: #05453f;
         --teal-soft: #e3f4ee;
         --teal-dark: #073f3b;
         --copper: #b65b3b;
@@ -976,6 +976,177 @@
         text-transform: uppercase;
       }
 
+      /* ── Enhanced visual elements ──────────────────────────── */
+
+      .stat-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 22px 0 0;
+        padding: 18px;
+        background: rgba(15, 118, 110, 0.06);
+        border: 1px solid rgba(15, 118, 110, 0.16);
+        border-radius: 18px;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-num {
+        display: block;
+        color: var(--teal);
+        font-family: var(--sans);
+        font-size: 28px;
+        font-weight: 600;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+
+      .stat-label {
+        display: block;
+        margin-top: 5px;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        line-height: 1.38;
+      }
+
+      .story-card:nth-child(1) {
+        border-top: 3px solid var(--copper);
+      }
+
+      .story-card:nth-child(2) {
+        border-top: 3px solid var(--gold);
+      }
+
+      .story-card:nth-child(3) {
+        border-top: 3px solid var(--teal);
+      }
+
+      .story-card:nth-child(4) {
+        border-top: 3px solid var(--blue);
+      }
+
+      .card-impact {
+        margin: 14px 0 0;
+        padding: 13px 15px;
+        background: rgba(20, 33, 38, 0.04);
+        border-radius: 12px;
+        color: var(--muted);
+        font-family: var(--sans);
+        font-size: 13.5px;
+        line-height: 1.48;
+        font-style: italic;
+      }
+
+      .surface-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        margin-bottom: 11px;
+        border-radius: 10px;
+        background: var(--teal-soft);
+        color: var(--teal-dark);
+        font-size: 17px;
+        line-height: 1;
+      }
+
+      .surface-risk {
+        display: block;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+        color: var(--copper);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.09em;
+        line-height: 1.42;
+        text-transform: uppercase;
+      }
+
+      .year-detail {
+        margin: 12px 0 0;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: rgba(15, 118, 110, 0.07);
+        color: var(--muted);
+        font-family: var(--sans);
+        font-size: 14px;
+        line-height: 1.46;
+      }
+
+      .year.danger .year-detail {
+        background: rgba(182, 91, 59, 0.12);
+        color: var(--copper);
+      }
+
+      .callout-sub {
+        margin: 14px 0 0;
+        padding-top: 14px;
+        border-top: 1px solid rgba(15, 118, 110, 0.22);
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .flow-step-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+      }
+
+      .flow-tag {
+        padding: 4px 9px;
+        border: 1px solid rgba(15, 118, 110, 0.22);
+        border-radius: 8px;
+        background: var(--teal-soft);
+        color: var(--teal-dark);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .closing-checks {
+        margin: 22px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+      }
+
+      .closing-checks li {
+        display: grid;
+        grid-template-columns: 20px 1fr;
+        gap: 11px;
+        align-items: start;
+        color: rgba(255, 255, 255, 0.86);
+        font-family: var(--sans);
+        font-size: 15px;
+        line-height: 1.44;
+      }
+
+      .closing-checks li::before {
+        content: "✓";
+        display: block;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        text-align: center;
+        border-radius: 6px;
+        background: rgba(157, 228, 218, 0.28);
+        color: #9de4da;
+        font-family: var(--sans);
+        font-size: 11px;
+        margin-top: 2px;
+      }
+
       @media (max-width: 900px) {
         .document {
           width: min(100% - 30px, 760px);
@@ -1323,8 +1494,8 @@
 
         section[aria-labelledby="runtime-surface"] .surface-item {
           grid-column: span 2;
-          min-height: 40mm;
-          padding: 20px;
+          min-height: 0;
+          padding: 14px 16px;
         }
 
         section[aria-labelledby="runtime-surface"]
@@ -1343,13 +1514,13 @@
 
         section[aria-labelledby="runtime-surface"] .caption {
           margin-top: auto;
-          padding: 18px 20px;
+          padding: 12px 16px;
           border: 1px solid rgba(15, 118, 110, 0.3);
           border-radius: 17px;
           background: var(--teal-soft);
           color: var(--teal-dark);
-          font-size: 13pt;
-          line-height: 1.4;
+          font-size: 10.5pt;
+          line-height: 1.36;
         }
 
         .figure-label {
@@ -1642,6 +1813,104 @@
         .closing-claim p {
           font-size: 21pt;
         }
+
+        /* ── New elements — print sizing ─────────────── */
+
+        .stat-strip {
+          display: none; /* keep cover clean in print */
+        }
+
+        .card-impact {
+          margin-top: 9px;
+          padding: 9px 11px;
+          font-size: 9.6pt;
+          line-height: 1.38;
+          border-radius: 9px;
+        }
+
+        .story-card p {
+          margin-bottom: 0;
+        }
+
+        section[aria-labelledby="failure-modes"] .story-card {
+          min-height: 0;
+          padding: 20px 22px;
+        }
+
+        section[aria-labelledby="failure-modes"] .card-impact {
+          display: none;
+        }
+
+        section[aria-labelledby="failure-modes"] .cards-grid {
+          gap: 5mm;
+        }
+
+        .surface-icon {
+          display: none;
+        }
+
+        .surface-risk {
+          margin-top: 8px;
+          padding-top: 8px;
+          font-size: 7.6pt;
+        }
+
+        .year-detail {
+          margin-top: 9px;
+          padding: 9px 11px;
+          font-size: 10pt;
+          line-height: 1.38;
+          border-radius: 9px;
+        }
+
+        .year p {
+          margin-bottom: 0;
+        }
+
+        .callout-sub {
+          margin-top: 11px;
+          padding-top: 11px;
+          font-size: 11.4pt;
+          line-height: 1.44;
+        }
+
+        section[aria-labelledby="concentration-risk"] .callout p,
+        .callout-sub {
+          font-size: 12.2pt;
+        }
+
+        .flow-step-tags {
+          margin-top: 9px;
+          gap: 4px;
+        }
+
+        .flow-tag {
+          padding: 3px 7px;
+          font-size: 8.2pt;
+        }
+
+        .closing-checks {
+          margin-top: 18px;
+          gap: 8px;
+        }
+
+        .closing-checks li {
+          font-size: 12.2pt;
+          line-height: 1.38;
+        }
+
+        .closing-checks li::before {
+          width: 18px;
+          height: 18px;
+          line-height: 18px;
+          font-size: 10px;
+          border-radius: 5px;
+        }
+
+        .closing-claim {
+          justify-content: flex-start;
+          padding-top: 30px;
+        }
       }
     </style>
   </head>
@@ -1676,24 +1945,26 @@
 
       <section class="cover" aria-labelledby="title">
         <div class="cover-copy">
-          <div class="eyebrow">Enterprise agentic AI security</div>
+          <div class="eyebrow">A framework proposal · May 2026</div>
           <h1 id="title">
             The <em>Custody Problem</em> in Enterprise Agentic AI
           </h1>
           <p class="subtitle">
-            Provider privacy promises are necessary. They are not enough. The
-            deeper question is whether the third-party agentic runtime itself
-            becomes a privileged vulnerability: who controls what the agent can
-            know, remember, retrieve, and do?
+            Every enterprise adopting third-party agentic platforms is quietly
+            transferring custody of its operational reasoning to a runtime it
+            does not own. Privacy promises don't address this. Architecture has
+            to.
           </p>
           <div class="thesis">
-            <strong>The core claim:</strong> an enterprise is only as secure as
-            the agentic runtime that holds custody of its operational reasoning.
-            When that runtime is third-party and off-the-shelf, the agent itself
-            becomes a privileged vulnerability. Silent context bleed is one
-            failure mode; the deeper risk is surrendering control over context
-            assembly, memory, tool execution, policy defaults, and domain
-            boundaries.
+            <strong>What this document argues:</strong> when an enterprise runs
+            its work through a managed agent, it is no longer just buying model
+            access — it is delegating context assembly, memory, tool execution,
+            and policy defaults to that provider's runtime. This is a structural
+            problem, not a security checkbox. This paper introduces a proposed
+            open framework called
+            <strong>Hermetic Knowledge Isolation (HKI)</strong> to give
+            enterprises an enforceable runtime contract over what their agents
+            can see, remember, and do.
           </div>
           <div class="pill-row" aria-label="Overview themes">
             <span class="pill"
@@ -1709,11 +1980,34 @@
               ><span class="dot"></span>Explicit publication</span
             >
           </div>
+          <div class="stat-strip" aria-label="Key problem dimensions">
+            <div class="stat-item">
+              <span class="stat-num">5</span>
+              <span class="stat-label"
+                >Runtime surfaces that quietly accumulate operational knowledge
+                — without any model training</span
+              >
+            </div>
+            <div class="stat-item">
+              <span class="stat-num">1</span>
+              <span class="stat-label"
+                >Active domain per operation — the proposed enforceable boundary
+                at every runtime surface</span
+              >
+            </div>
+            <div class="stat-item">
+              <span class="stat-num">0</span>
+              <span class="stat-label"
+                >Provider promises that can substitute for a custody boundary
+                the enterprise itself controls</span
+              >
+            </div>
+          </div>
           <div class="byline">
             <div>Author<strong>Henok Ghebrechristos, PhD</strong></div>
-            <div>Format<strong>Visual overview PDF</strong></div>
+            <div>Proposes<strong>HKI — an open framework</strong></div>
             <div>
-              Audience<strong>AI platform, security, architecture</strong>
+              Audience<strong>AI platform, security, architecture leads</strong>
             </div>
           </div>
         </div>
@@ -1898,32 +2192,54 @@
             <p>
               The managed agent is granted context, memory, connectors, and tool
               authority. If custody is external, the agent becomes part of the
-              attack surface.
+              attack surface — not through a breach, but through design.
             </p>
+            <div class="card-impact">
+              A legal-domain query executed by a managed agent may silently pull
+              HR context if the runtime's retrieval scope is not enforced before
+              the call begins.
+            </div>
           </article>
           <article class="story-card">
             <span class="num">02</span>
             <h3>Context bleed</h3>
             <p>
               Retrieval, caches, graph edges, files, and conversations can
-              inject adjacent-domain knowledge unless visibility is exact.
+              inject adjacent-domain knowledge unless visibility is enforced at
+              every transformation — not only at the final read.
             </p>
+            <div class="card-impact">
+              A cached Finance answer may be returned to an HR query if the
+              cache key does not bind to the active domain.
+            </div>
           </article>
           <article class="story-card">
             <span class="num">03</span>
             <h3>Memory and tool drift</h3>
             <p>
               Agent memory, tool routing, logs, and workflow preferences become
-              hidden operational knowledge without durable labels.
+              hidden operational knowledge without durable labels — invisible to
+              the enterprise that created them.
             </p>
+            <div class="card-impact">
+              A sales escalation habit learned in one domain bleeds into
+              customer support routing if tool labels do not survive session
+              boundaries.
+            </div>
           </article>
           <article class="story-card">
             <span class="num">04</span>
             <h3>Proof gap</h3>
             <p>
               Security claims remain promises unless every boundary is testable
-              through conformance cases, probes, and release evidence.
+              through conformance cases, adversarial probes, and verifiable
+              release evidence at each runtime surface.
             </p>
+            <div class="card-impact">
+              A security attestation covering the model layer may not cover
+              retrieval, cache, tools, or memory — where operational data
+              actually flows.
+            </div>
           </article>
         </div>
       </section>
@@ -1950,24 +2266,63 @@
             aria-label="Runtime surfaces that accumulate operational knowledge"
           >
             <div class="surface-item">
-              <strong>Retrieval</strong
-              ><span>Documents, chunks, indexes, vector filters.</span>
+              <div class="surface-icon" aria-hidden="true">▤</div>
+              <strong>Retrieval</strong>
+              <span
+                >Documents, chunks, graph edges, indexes, and vector filters.
+                Shapes every evidence set the model reasons from.</span
+              >
+              <span class="surface-risk"
+                >Risk: scope-unaware recall returns cross-domain chunks</span
+              >
             </div>
             <div class="surface-item">
-              <strong>Memory</strong
-              ><span>Preferences, vocabulary, escalation paths.</span>
+              <div class="surface-icon" aria-hidden="true">◈</div>
+              <strong>Memory</strong>
+              <span
+                >Preferences, vocabulary, escalation paths, and learned
+                operational patterns accumulated across sessions.</span
+              >
+              <span class="surface-risk"
+                >Risk: unlabeled memory carries domain context forward
+                indefinitely</span
+              >
             </div>
             <div class="surface-item">
-              <strong>Tools</strong
-              ><span>Actions, routing, privileges, workflow habits.</span>
+              <div class="surface-icon" aria-hidden="true">⚙</div>
+              <strong>Tools</strong>
+              <span
+                >Actions, connector routing, privileges, and workflow execution
+                habits built up over time.</span
+              >
+              <span class="surface-risk"
+                >Risk: tool authority granted in one domain applies silently to
+                others</span
+              >
             </div>
             <div class="surface-item">
-              <strong>Cache</strong
-              ><span>Prior answers, semantic hits, query traces.</span>
+              <div class="surface-icon" aria-hidden="true">⊡</div>
+              <strong>Cache</strong>
+              <span
+                >Prior answers, semantic similarity hits, and query execution
+                traces stored for performance.</span
+              >
+              <span class="surface-risk"
+                >Risk: domain-unscoped keys allow cross-domain answer
+                collision</span
+              >
             </div>
             <div class="surface-item">
-              <strong>Telemetry</strong
-              ><span>Failures, retries, latency tradeoffs, operations.</span>
+              <div class="surface-icon" aria-hidden="true">◉</div>
+              <strong>Telemetry</strong>
+              <span
+                >Failures, retries, latency tradeoffs, and operational patterns
+                that expose strategy and priorities.</span
+              >
+              <span class="surface-risk"
+                >Risk: operational signal reveals domain behaviour to platform
+                observers</span
+              >
             </div>
           </div>
           <p class="caption">
@@ -2028,27 +2383,54 @@
           <article class="year">
             <strong>Year 0</strong>
             <h3>Off-the-shelf agent</h3>
-            <p>Easy to adopt. The provider looks like a productivity vendor.</p>
+            <p>
+              Easy to adopt. The provider looks like a productivity vendor with
+              familiar chat interfaces and low friction.
+            </p>
+            <div class="year-detail">
+              Connectors, memory, and retrieval defaults are set by the
+              platform. The enterprise has not yet noticed what it has delegated
+              — or to whom.
+            </div>
           </article>
           <article class="year">
             <strong>Year 1</strong>
             <h3>Workflows accrue</h3>
             <p>
-              Prompts, retrieval indexes, memories, and fine-tunes accumulate.
+              Prompts, retrieval indexes, memories, and fine-tunes accumulate
+              inside the managed runtime.
             </p>
+            <div class="year-detail">
+              Custom instructions encode institutional knowledge. Leaving now
+              means rebuilding months of domain-specific tuning in a new
+              environment.
+            </div>
           </article>
           <article class="year">
             <strong>Year 2</strong>
             <h3>Agents embed</h3>
             <p>
               Agents are inside daily operations. Exit now means re-engineering
-              work.
+              workflows and retraining entire teams.
             </p>
+            <div class="year-detail">
+              Tool routing, approval chains, and knowledge bases live in the
+              provider's runtime. Institutional intelligence is now an asset the
+              enterprise does not own.
+            </div>
           </article>
           <article class="year danger">
             <strong>Year 4</strong>
             <h3>Runtime owns memory</h3>
-            <p>Switching is technically possible, but operationally painful.</p>
+            <p>
+              Switching is technically possible, but operationally painful to
+              the point of being effectively locked in.
+            </p>
+            <div class="year-detail">
+              Terms are renegotiated from a position of dependency. The
+              provider's pricing power reflects the cost of the operational
+              intelligence it holds — not the compute it runs.
+            </div>
           </article>
         </div>
       </section>
@@ -2078,6 +2460,13 @@
               becomes the de facto operator of operational intelligence. The
               enterprise keeps its legal shell, but the economic substance of
               decision-making migrates into an agent layer it does not control.
+            </p>
+            <p class="callout-sub">
+              The historical analog is familiar: enterprises that built critical
+              workflows on a single cloud provider discovered switching costs
+              only when that provider changed terms. Agentic AI compresses the
+              same dynamic, because operational intelligence — not just compute
+              — is what is at stake.
             </p>
           </div>
           <div class="risk-panel">
@@ -2137,25 +2526,40 @@
               <strong>Gateway</strong>
               <h3>Choose one active domain</h3>
               <p>
-                The edge decides the active domain for each runtime operation
-                before retrieval, memory, tools, or model calls begin.
+                The edge selects and signs the active domain for each runtime
+                operation — before retrieval, memory, tools, or model calls
+                begin. Ambiguity is closed at the boundary, not delegated.
               </p>
+              <div class="flow-step-tags">
+                <span class="flow-tag">Signed scope envelope</span>
+                <span class="flow-tag">Fail-closed on null domain</span>
+              </div>
             </article>
             <article class="flow-step">
               <strong>Runtime</strong>
               <h3>Preserve labels everywhere</h3>
               <p>
-                Artifacts, cache entries, memories, embeddings, tool calls, and
-                outputs keep provenance and scope.
+                Artifacts, cache entries, memories, embeddings, tool calls,
+                async jobs, and outputs carry their provenance and scope label
+                from creation to consumption. No helper subsystem can erase it.
               </p>
+              <div class="flow-step-tags">
+                <span class="flow-tag">Label-preserving surfaces</span>
+                <span class="flow-tag">Exact-domain equality</span>
+              </div>
             </article>
             <article class="flow-step">
               <strong>Publication</strong>
               <h3>Make sharing explicit</h3>
               <p>
-                Cross-domain knowledge moves through reviewed, auditable
-                publication, not silent fallback or hidden retrieval.
+                Cross-domain knowledge moves only through reviewed, auditable
+                publication that creates a new domain-local copy — never through
+                silent fallback, global scope, or inferred visibility.
               </p>
+              <div class="flow-step-tags">
+                <span class="flow-tag">Deliberate replication</span>
+                <span class="flow-tag">Auditable provenance</span>
+              </div>
             </article>
           </div>
           <div class="contract-statement">
@@ -2226,38 +2630,43 @@
             aria-label="Five moves for adopting runtime custody"
           >
             <div class="move">
-              <strong>01 Audit</strong
-              ><span
+              <strong>01 Audit</strong>
+              <span
                 >Find null-scoped artifacts, weak cache keys, and endpoints that
-                answer without explicit domain.</span
+                answer without an explicit active domain. Map every surface that
+                touches enterprise knowledge.</span
               >
             </div>
             <div class="move">
-              <strong>02 Label</strong
-              ><span
-                >Ensure every artifact type carries exactly one domain
-                identity.</span
+              <strong>02 Label</strong>
+              <span
+                >Ensure every artifact type — documents, embeddings, memory
+                entries, cache slots — carries exactly one domain identity.
+                Eliminate implicit global labels.</span
               >
             </div>
             <div class="move">
-              <strong>03 Propagate</strong
-              ><span
-                >Select and sign active domain at the edge; reject contradictory
-                scope downstream.</span
+              <strong>03 Propagate</strong>
+              <span
+                >Select and sign the active domain at the request edge.
+                Downstream services reject requests that carry a conflicting or
+                absent scope claim.</span
               >
             </div>
             <div class="move">
-              <strong>04 Enforce</strong
-              ><span
-                >Turn null-scope and non-preserving paths into readiness
-                failures.</span
+              <strong>04 Enforce</strong>
+              <span
+                >Turn null-scope reads and label-dropping paths into test
+                failures and release blockers. The boundary must be falsifiable
+                — claims are not enough.</span
               >
             </div>
             <div class="move">
-              <strong>05 Evidence</strong
-              ><span
-                >Add observability, adversarial tests, and release proofs that
-                the boundary held.</span
+              <strong>05 Evidence</strong>
+              <span
+                >Add observability, adversarial probes, and release proofs that
+                the boundary held across all surfaces. Conformance is the
+                measurable output.</span
               >
             </div>
           </div>
@@ -2277,6 +2686,23 @@
             what can be shared, and what must be explicitly published before it
             crosses a domain boundary.
           </p>
+          <p
+            style="
+              margin-top: 14px;
+              color: var(--muted);
+              font-size: 14px;
+              line-height: 1.5;
+            "
+          >
+            This document introduces
+            <strong style="color: var(--ink)"
+              >Hermetic Knowledge Isolation (HKI)</strong
+            >
+            — a proposed open framework for enforcing that boundary at every
+            runtime surface: gateway, retrieval, memory, tools, cache, async
+            jobs, and telemetry. It is not a product. It is a contract any
+            agentic platform can be built or audited against.
+          </p>
         </div>
         <div class="closing-claim">
           <strong>The final test</strong>
@@ -2284,6 +2710,42 @@
             If a runtime operation can answer without an active domain, the
             boundary is a claim. If it cannot, the boundary is architecture.
           </p>
+          <ul class="closing-checks">
+            <li>
+              One active domain signed at the gateway edge before any retrieval,
+              memory, or tool call begins
+            </li>
+            <li>
+              Labels preserved through memory, cache, embeddings, async jobs,
+              and telemetry — no surface can drop them
+            </li>
+            <li>
+              Cross-domain sharing only through deliberate, auditable
+              publication — never silent fallback or inferred global scope
+            </li>
+            <li>
+              Every boundary testable through adversarial probes and verifiable
+              release evidence across all runtime surfaces
+            </li>
+          </ul>
+          <div
+            style="
+              margin-top: 22px;
+              padding-top: 18px;
+              border-top: 1px solid rgba(255, 255, 255, 0.18);
+              color: rgba(255, 255, 255, 0.78);
+              font-family: var(--sans);
+              font-size: 13.5px;
+              line-height: 1.5;
+            "
+          >
+            <strong style="color: #ffffff; display: block; margin-bottom: 4px"
+              >Where to start</strong
+            >
+            Audit one runtime operation end-to-end. Ask: which domain is active,
+            where is that signed, and what would change if it were absent? If
+            nothing breaks, the boundary isn't real yet.
+          </div>
         </div>
       </section>
 

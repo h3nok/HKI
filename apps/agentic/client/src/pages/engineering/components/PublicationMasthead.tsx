@@ -34,7 +34,7 @@ export function PublicationMasthead({
   return (
     <header
       className={cn(
-        "relative isolate border-b border-border/50 pb-12 pt-12 sm:pt-16",
+        "relative isolate border-b border-border pb-12 pt-12 sm:pt-16",
         className
       )}
     >
@@ -66,16 +66,16 @@ export function PublicationMasthead({
         </p>
       </div>
 
-      <div className="mt-10 flex flex-col gap-6 border-t border-border/40 pt-8 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mt-10 flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-end sm:justify-between">
         <dl className="grid grid-cols-2 gap-x-10 gap-y-4 text-[12px] sm:grid-cols-4">
           <div>
-            <dt className="font-bold uppercase tracking-[0.16em] text-muted-foreground/80">
+            <dt className="font-bold uppercase tracking-[0.16em] text-muted-foreground">
               Authors
             </dt>
             <dd className="mt-1.5 font-medium text-foreground">{authors}</dd>
           </div>
           <div>
-            <dt className="font-bold uppercase tracking-[0.16em] text-muted-foreground/80">
+            <dt className="font-bold uppercase tracking-[0.16em] text-muted-foreground">
               Published
             </dt>
             <dd className="mt-1.5 font-medium text-foreground">
@@ -83,7 +83,7 @@ export function PublicationMasthead({
             </dd>
           </div>
           <div>
-            <dt className="font-bold uppercase tracking-[0.16em] text-muted-foreground/80">
+            <dt className="font-bold uppercase tracking-[0.16em] text-muted-foreground">
               Reading
             </dt>
             <dd className="mt-1.5 font-medium text-foreground">
@@ -91,7 +91,7 @@ export function PublicationMasthead({
             </dd>
           </div>
           <div>
-            <dt className="font-bold uppercase tracking-[0.16em] text-muted-foreground/80">
+            <dt className="font-bold uppercase tracking-[0.16em] text-muted-foreground">
               Version
             </dt>
             <dd className="mt-1.5 font-medium text-foreground">{version}</dd>
@@ -104,7 +104,7 @@ export function PublicationMasthead({
             event.preventDefault();
             onBegin(beginHref);
           }}
-          className="group inline-flex items-center gap-3 self-start border-b border-foreground/40 pb-1 text-sm font-semibold tracking-wide text-foreground transition-colors hover:border-foreground hover:text-foreground sm:self-end"
+          className="group inline-flex items-center gap-3 self-start border-b border-border pb-1 text-sm font-semibold tracking-wide text-foreground transition-colors hover:border-foreground hover:text-foreground sm:self-end"
         >
           Begin reading
           <ArrowDown className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />

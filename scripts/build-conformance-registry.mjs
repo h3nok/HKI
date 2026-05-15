@@ -18,6 +18,7 @@
  *   node scripts/build-conformance-registry.mjs [--out=conformance.json]
  */
 import { execSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,6 +29,7 @@ const root = path.resolve(__dirname, "..");
 const args = process.argv.slice(2);
 const outArg = args.find(a => a.startsWith("--out="));
 const outPath = outArg ? outArg.slice("--out=".length) : "conformance.json";
+const strictRelease = args.includes("--strict-release");
 
 function git(cmd, fallback = "") {
   try {
@@ -118,6 +120,7 @@ function loadProbeEvidence() {
       failed: raw.failed ?? null,
       total: (raw.passed ?? 0) + (raw.failed ?? 0),
       level_claim: raw.level_claim ?? null,
+      evidence_profile: deriveProbeEvidenceProfile(raw),
       bundle_hash: raw.bundle_hash ?? null,
       target: raw.target ?? null,
       generated_at: raw.generated_at ?? null,
@@ -143,6 +146,24 @@ const threats = listThreats();
 const ast = runAstAudit();
 const astTs = runAstAuditTs();
 const httpProbe = loadProbeEvidence();
+const implementation = {
+  name: "hki-reference",
+  repository: git("config --get remote.origin.url", "local"),
+  commit: git("rev-parse HEAD", "unknown"),
+  branch: git("rev-parse --abbrev-ref HEAD", "unknown"),
+  dirty: git("status --porcelain", "") !== "",
+};
+const packages = {
+  "@hki/runtime": readPackageVersion("packages/hki-runtime"),
+  "@hki/conformance": readPackageVersion("packages/hki-conformance"),
+  "hki-runtime-py": readPackageVersion("packages/hki-runtime-py"),
+  "hki-litellm": readPackageVersion("packages/hki-litellm"),
+  "hki-langchain": readPackageVersion("packages/hki-langchain"),
+  "hki-llamaindex": readPackageVersion("packages/hki-llamaindex"),
+  "hki-adk": readPackageVersion("packages/hki-adk"),
+  "hki-autogen": readPackageVersion("packages/hki-autogen"),
+  "hki-crewai": readPackageVersion("packages/hki-crewai"),
+};
 
 const passedCases =
   conformance && Array.isArray(conformance.results)
@@ -152,28 +173,14 @@ const totalCases =
   conformance && Array.isArray(conformance.results)
     ? conformance.results.length
     : null;
+const level = deriveLevel({ conformance, baseline, threats, httpProbe });
+const evidenceProfile = deriveEvidenceProfile(httpProbe);
 
 const registry = {
   $schema: "https://hki.dev/schemas/conformance-registry/v1.json",
   generatedAt: new Date().toISOString(),
-  implementation: {
-    name: "hki-reference",
-    repository: git("config --get remote.origin.url", "local"),
-    commit: git("rev-parse HEAD", "unknown"),
-    branch: git("rev-parse --abbrev-ref HEAD", "unknown"),
-    dirty: git("status --porcelain", "") !== "",
-  },
-  packages: {
-    "@hki/runtime": readPackageVersion("packages/hki-runtime"),
-    "@hki/conformance": readPackageVersion("packages/hki-conformance"),
-    "hki-runtime-py": readPackageVersion("packages/hki-runtime-py"),
-    "hki-litellm": readPackageVersion("packages/hki-litellm"),
-    "hki-langchain": readPackageVersion("packages/hki-langchain"),
-    "hki-llamaindex": readPackageVersion("packages/hki-llamaindex"),
-    "hki-adk": readPackageVersion("packages/hki-adk"),
-    "hki-autogen": readPackageVersion("packages/hki-autogen"),
-    "hki-crewai": readPackageVersion("packages/hki-crewai"),
-  },
+  implementation,
+  packages,
   conformance: {
     passed: passedCases,
     total: totalCases,
@@ -182,7 +189,12 @@ const registry = {
       conformance && Array.isArray(conformance.results)
         ? conformance.results.map(r => ({
             id: r.case?.id ?? r.id,
-            title: r.case?.title ?? r.title ?? null,
+            title:
+              r.case?.title ??
+              r.title ??
+              r.case?.requirement ??
+              r.requirement ??
+              null,
             severity: r.case?.severity ?? r.severity ?? null,
             passed: r.passed,
           }))
@@ -213,7 +225,20 @@ const registry = {
     ids: threats,
   },
   httpProbe: httpProbe,
-  level: deriveLevel({ conformance, baseline, threats, httpProbe }),
+  evidenceProfile,
+  releaseEvidence: buildReleaseEvidence({
+    conformance,
+    baseline,
+    threats,
+    ast,
+    astTs,
+    httpProbe,
+    implementation,
+    packages,
+    level,
+    evidenceProfile,
+  }),
+  level,
 };
 
 const schemaErrors = validateAgainstSchema(registry);
@@ -223,11 +248,264 @@ if (schemaErrors.length > 0) {
   process.exit(1);
 }
 
-fs.writeFileSync(
-  path.join(root, outPath),
-  `${JSON.stringify(registry, null, 2)}\n`
+const resolvedOutPath = path.isAbsolute(outPath)
+  ? outPath
+  : path.join(root, outPath);
+fs.mkdirSync(path.dirname(resolvedOutPath), { recursive: true });
+fs.writeFileSync(resolvedOutPath, `${JSON.stringify(registry, null, 2)}\n`);
+console.log(
+  `Wrote ${outPath} (level=${registry.level}, evidenceProfile=${registry.evidenceProfile})`
 );
-console.log(`Wrote ${outPath} (level=${registry.level})`);
+
+if (
+  strictRelease &&
+  registry.releaseEvidence.releaseReadiness.blockers.length > 0
+) {
+  console.error("Release evidence is not strict-release eligible:");
+  for (const blocker of registry.releaseEvidence.releaseReadiness.blockers) {
+    console.error(`  - ${blocker.id}: ${blocker.message}`);
+  }
+  process.exit(1);
+}
+
+function buildReleaseEvidence({
+  conformance,
+  baseline,
+  threats,
+  ast,
+  astTs,
+  httpProbe,
+  implementation,
+  packages,
+  level,
+  evidenceProfile,
+}) {
+  const commandManifest = [
+    {
+      id: "adapter-conformance",
+      command: "pnpm verify:hki-conformance",
+      status: conformance?.passed === true ? "pass" : "fail",
+      summary: {
+        passed: passedCases,
+        total: totalCases,
+        mustFailed: conformance?.totals?.must_failed ?? null,
+        shouldFailed: conformance?.totals?.should_failed ?? null,
+      },
+    },
+    {
+      id: "audit-baseline",
+      command: "pnpm audit:hki",
+      status: baseline ? "baseline-present" : "missing",
+      summary: {
+        total: baseline?.total ?? null,
+        byRule: baseline?.byRule ?? null,
+        generatedAt: baseline?.generatedAt ?? null,
+      },
+    },
+    {
+      id: "python-ast-audit",
+      command: "pnpm audit:hki-ast",
+      status: ast?.error
+        ? "error"
+        : ast?.blocking_count === 0
+          ? "pass"
+          : "fail",
+      summary: ast?.error
+        ? { error: ast.error }
+        : {
+            total: ast?.total ?? null,
+            blocking: ast?.blocking_count ?? null,
+            advisory: ast?.advisory_count ?? null,
+          },
+    },
+    {
+      id: "typescript-ast-audit",
+      command: "pnpm audit:hki-ast-ts",
+      status: astTs?.error
+        ? "error"
+        : astTs?.blocking_count === 0
+          ? "pass"
+          : "fail",
+      summary: astTs?.error
+        ? { error: astTs.error }
+        : {
+            total: astTs?.total ?? null,
+            blocking: astTs?.blocking_count ?? null,
+            advisory: astTs?.advisory_count ?? null,
+          },
+    },
+    {
+      id: "threat-catalog",
+      command: "pnpm test:hki-threats",
+      status: threats.length >= 15 ? "inventory-complete" : "incomplete",
+      summary: {
+        total: threats.length,
+        expectedMinimum: 15,
+        ids: threats,
+      },
+    },
+    {
+      id: "http-probe",
+      command:
+        evidenceProfile === "live"
+          ? "hki-probe <live-url>"
+          : "pnpm probe:smoke",
+      status: httpProbe
+        ? httpProbe.failed === 0 && httpProbe.passed > 0
+          ? "pass"
+          : "fail"
+        : "missing",
+      summary: httpProbe
+        ? {
+            passed: httpProbe.passed,
+            failed: httpProbe.failed,
+            total: httpProbe.total,
+            evidenceProfile,
+            target: httpProbe.target,
+            bundleHash: httpProbe.bundle_hash,
+          }
+        : null,
+    },
+  ];
+
+  const releaseReadiness = deriveReleaseReadiness({
+    implementation,
+    conformance,
+    baseline,
+    threats,
+    ast,
+    astTs,
+    httpProbe,
+    evidenceProfile,
+  });
+
+  const manifest = {
+    schemaVersion: "1.0",
+    level,
+    evidenceProfile,
+    generatedBy: "scripts/build-conformance-registry.mjs",
+    commandManifest,
+    componentHashes: {
+      conformanceResults: sha256Json(conformance?.results ?? null),
+      auditSummary: sha256Json({ baseline, ast, astTs }),
+      threatCatalog: sha256Json(threats),
+      packageVersions: sha256Json(packages),
+      probeBundle: httpProbe?.bundle_hash ?? null,
+    },
+    verification: {
+      schema: "packages/hki-conformance/schemas/conformance-registry-v1.json",
+      reproduce: [
+        "pnpm verify:hki-conformance",
+        "pnpm audit:hki",
+        "pnpm audit:hki-ast",
+        "pnpm audit:hki-ast-ts",
+        evidenceProfile === "live"
+          ? "hki-probe <live-url>"
+          : "pnpm probe:smoke",
+        "pnpm registry:build",
+      ],
+      strictReleaseCommand:
+        "node scripts/build-conformance-registry.mjs --strict-release",
+    },
+    releaseReadiness,
+  };
+
+  return {
+    ...manifest,
+    manifestHash: sha256Json(manifest),
+  };
+}
+
+function deriveReleaseReadiness({
+  implementation,
+  conformance,
+  baseline,
+  threats,
+  ast,
+  astTs,
+  httpProbe,
+  evidenceProfile,
+}) {
+  const blockers = [];
+  const warnings = [];
+
+  if (implementation.dirty) {
+    blockers.push({
+      id: "dirty-worktree",
+      message: "Generate release evidence from a clean commit.",
+    });
+  }
+  if (conformance?.passed !== true) {
+    blockers.push({
+      id: "conformance-failed",
+      message: "All adapter conformance cases must pass.",
+    });
+  }
+  if (!baseline) {
+    blockers.push({
+      id: "missing-audit-baseline",
+      message: "The HKI audit baseline must be present.",
+    });
+  }
+  if ((ast?.blocking_count ?? 0) > 0 || (astTs?.blocking_count ?? 0) > 0) {
+    blockers.push({
+      id: "blocking-audit-findings",
+      message: "Blocking AST audit findings must be resolved before release.",
+    });
+  }
+  if (threats.length < 15) {
+    blockers.push({
+      id: "incomplete-threat-catalog",
+      message: "The threat catalog must include at least HKI-T01..HKI-T15.",
+    });
+  }
+  if (!httpProbe || httpProbe.failed !== 0 || httpProbe.passed <= 0) {
+    blockers.push({
+      id: "missing-probe-evidence",
+      message: "HTTP probe evidence must exist and pass.",
+    });
+  }
+  if (evidenceProfile === "smoke") {
+    blockers.push({
+      id: "smoke-evidence-only",
+      message:
+        "Strict release evidence requires live or release evidence, not local smoke evidence.",
+    });
+  }
+  if ((ast?.advisory_count ?? 0) > 0 || (astTs?.advisory_count ?? 0) > 0) {
+    warnings.push({
+      id: "advisory-audit-findings",
+      message:
+        "Advisory audit findings remain; confirm they are documented or intentionally accepted.",
+    });
+  }
+
+  return {
+    strictReleaseEligible: blockers.length === 0,
+    status: blockers.length === 0 ? "ready" : "blocked",
+    blockers,
+    warnings,
+  };
+}
+
+function sha256Json(value) {
+  return createHash("sha256")
+    .update(JSON.stringify(value ?? null), "utf8")
+    .digest("hex");
+}
+
+function deriveProbeEvidenceProfile(raw) {
+  const baseUrl = String(raw?.target?.base_url ?? "");
+  if (!baseUrl) return "none";
+  return /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::|\/|$)/.test(baseUrl)
+    ? "smoke"
+    : "live";
+}
+
+function deriveEvidenceProfile(httpProbe) {
+  if (!httpProbe) return "none";
+  return httpProbe.evidence_profile ?? deriveProbeEvidenceProfile(httpProbe);
+}
 
 function deriveLevel({ conformance, baseline, threats, httpProbe }) {
   const allCasesPassed = conformance?.passed === true;
@@ -236,12 +514,10 @@ function deriveLevel({ conformance, baseline, threats, httpProbe }) {
   const probeAllPassed =
     httpProbe && httpProbe.failed === 0 && httpProbe.passed > 0;
 
-  if (!allCasesPassed) return "L0-non-conformant";
+  if (!allCasesPassed) return "L0-documented";
   if (allCasesPassed && noNewDebt && hasThreats && probeAllPassed)
-    return "L4-deployed";
-  if (allCasesPassed && noNewDebt && hasThreats) return "L3-evidenced";
-  if (allCasesPassed && noNewDebt) return "L2-baseline";
-  return "L1-passing";
+    return "L4-tested";
+  return "L3-enforced";
 }
 
 /**

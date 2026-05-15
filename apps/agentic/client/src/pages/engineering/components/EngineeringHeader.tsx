@@ -36,11 +36,11 @@ export function EngineeringHeader({ className }: { className?: string }) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-sm",
+        "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
         className
       )}
     >
-      <div className="mx-auto grid h-14 w-full max-w-430 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-5 sm:px-8">
+      <div className="mx-auto grid h-14 w-full max-w-7xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-5 sm:px-8">
         <div className="flex min-w-0 items-center gap-3 justify-self-start">
           <a
             href={ENGINEERING_HUB_ROUTE}
@@ -61,7 +61,7 @@ export function EngineeringHeader({ className }: { className?: string }) {
               </span>
             </span>
           </a>
-          <span aria-hidden className="hidden h-4 w-px bg-border/60 md:block" />
+          <span aria-hidden className="hidden h-4 w-px bg-border md:block" />
           <a
             href="/"
             onClick={event => {
@@ -76,7 +76,7 @@ export function EngineeringHeader({ className }: { className?: string }) {
 
         <nav
           aria-label="Engineering sections"
-          className="justify-self-center rounded-xl border border-border/60 bg-card/80 p-1 shadow-sm backdrop-blur"
+          className="justify-self-center rounded-xl border border-border bg-card/80 p-1 shadow-sm backdrop-blur"
         >
           <div className="flex items-center justify-center gap-0.5">
             {NAV_ITEMS.map(item => {
@@ -94,7 +94,7 @@ export function EngineeringHeader({ className }: { className?: string }) {
                     "relative rounded-lg px-3.5 py-1.5 text-[12px] font-semibold outline-none transition-all duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-[13px]",
                     active
                       ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30"
-                      : "text-muted-foreground hover:bg-background/70 hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   )}
                 >
                   {item.label}

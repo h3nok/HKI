@@ -73,7 +73,7 @@ const components = (imageUrls: Record<string, string>) => ({
     return (
       <h2
         id={id}
-        className="group mt-20 scroll-mt-24 border-t border-border/40 pt-12 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground sm:text-3xl"
+        className="group mt-20 scroll-mt-24 border-t border-border pt-12 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground sm:text-3xl"
       >
         {children}
         <HeadingAnchor id={id} />
@@ -134,21 +134,21 @@ const components = (imageUrls: Record<string, string>) => ({
   },
   blockquote({ children }: { children?: ReactNode }) {
     return (
-      <blockquote className="my-8 rounded-r-md border-l-[3px] border-primary bg-primary/5 py-4 pl-5 pr-4 text-foreground/90 not-italic">
+      <blockquote className="my-8 rounded-r-md border-l-[3px] border-primary bg-primary/8 py-4 pl-5 pr-4 text-foreground/90 not-italic">
         {children}
       </blockquote>
     );
   },
   ul({ children }: { children?: ReactNode }) {
     return (
-      <ul className="my-4 list-disc space-y-1.5 pl-6 marker:text-muted-foreground/60">
+      <ul className="my-4 list-disc space-y-1.5 pl-6 marker:text-muted-foreground">
         {children}
       </ul>
     );
   },
   ol({ children }: { children?: ReactNode }) {
     return (
-      <ol className="my-4 list-decimal space-y-1.5 pl-6 marker:font-semibold marker:text-muted-foreground/60">
+      <ol className="my-4 list-decimal space-y-1.5 pl-6 marker:font-semibold marker:text-muted-foreground">
         {children}
       </ol>
     );
@@ -162,21 +162,21 @@ const components = (imageUrls: Record<string, string>) => ({
   },
   table({ children }: { children?: ReactNode }) {
     return (
-      <div className="my-8 overflow-x-auto rounded-lg border border-border/60">
+      <div className="my-8 overflow-x-auto rounded-lg border border-border">
         <table className="min-w-full text-left text-sm">{children}</table>
       </div>
     );
   },
   th({ children }: { children?: ReactNode }) {
     return (
-      <th className="border-b border-border/60 bg-muted/40 px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+      <th className="border-b border-border bg-muted/40 px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
         {children}
       </th>
     );
   },
   td({ children }: { children?: ReactNode }) {
     return (
-      <td className="border-b border-border/30 px-4 py-3 align-top text-[14px] leading-6 text-foreground/85">
+      <td className="border-b border-border/50 px-4 py-3 align-top text-[14px] leading-6 text-foreground/85">
         {children}
       </td>
     );
@@ -192,7 +192,7 @@ const components = (imageUrls: Record<string, string>) => ({
     const getText = () => textFromNode(children);
     return (
       <div className="group relative my-6">
-        <pre className="overflow-x-auto rounded-lg border border-border/60 bg-zinc-950 p-4 pr-12 text-[13px] leading-6 text-zinc-100">
+        <pre className="overflow-x-auto rounded-lg border border-border bg-zinc-950 p-4 pr-12 text-[13px] leading-6 text-zinc-100">
           {children}
         </pre>
         <CopyCodeButton getText={getText} />
@@ -200,7 +200,7 @@ const components = (imageUrls: Record<string, string>) => ({
     );
   },
   hr() {
-    return <hr className="my-12 border-border/50" />;
+    return <hr className="my-12 border-border" />;
   },
 });
 

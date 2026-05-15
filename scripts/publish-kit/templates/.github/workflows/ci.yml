@@ -14,23 +14,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: 10 }
+        with: { version: 11.0.9 }
       - uses: actions/setup-node@v4
         with: { node-version: 24, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:hki-runtime
+      - run: pnpm build:hki-conformance
+      - run: pnpm build:hki-mcp
+      - run: pnpm build:hki-sdk
       - run: pnpm test:hki-runtime
       - run: pnpm typecheck:hki-runtime
+      - run: pnpm test:hki-mcp
+      - run: pnpm typecheck:hki-mcp
+      - run: pnpm test:hki-sdk
+      - run: pnpm typecheck:hki-sdk
 
   conformance:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: 10 }
+        with: { version: 11.0.9 }
       - uses: actions/setup-node@v4
         with: { node-version: 24, cache: pnpm }
       - run: pnpm install --frozen-lockfile
+      - run: pnpm audit:public-release
       - run: pnpm audit:hki
       - run: pnpm audit:hki-ast-ts
       - run: pnpm verify:hki-conformance
@@ -40,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: 10 }
+        with: { version: 11.0.9 }
       - uses: actions/setup-node@v4
         with: { node-version: 24, cache: pnpm }
       - uses: actions/setup-python@v5
@@ -74,7 +82,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: 10 }
+        with: { version: 11.0.9 }
       - uses: actions/setup-node@v4
         with: { node-version: 24, cache: pnpm }
       - uses: actions/setup-python@v5

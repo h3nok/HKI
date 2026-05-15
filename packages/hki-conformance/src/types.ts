@@ -15,16 +15,16 @@ export interface HkiConformanceAdapter {
   validateEnvelope(envelope: HkiEnvelope): Awaitable<HkiValidationResult>;
   canReadArtifact(
     envelope: HkiEnvelope,
-    artifact: HkiArtifactLabel,
+    artifact: HkiArtifactLabel
   ): Awaitable<boolean>;
   deriveCacheKey(input: HkiCacheKeyInput): Awaitable<string>;
   evaluateGatewayTarget(
     envelope: HkiEnvelope,
-    target: HkiGatewayTarget,
+    target: HkiGatewayTarget
   ): Awaitable<HkiGatewayDecision>;
   rejectScopeOverride(
     envelope: HkiEnvelope,
-    args: Record<string, unknown>,
+    args: Record<string, unknown>
   ): Awaitable<boolean>;
 }
 
@@ -32,6 +32,7 @@ export type HkiConformanceSeverity = "must" | "should";
 
 export interface HkiConformanceCase {
   id: string;
+  title: string;
   level: 1 | 2 | 3 | 4;
   surface: string;
   requirement: string;
@@ -41,6 +42,7 @@ export interface HkiConformanceCase {
 
 export interface HkiConformanceCaseResult {
   id: string;
+  title: string;
   level: 1 | 2 | 3 | 4;
   surface: string;
   requirement: string;

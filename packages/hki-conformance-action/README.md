@@ -21,7 +21,7 @@ jobs:
       - id: hki
         uses: hki-dev/hki-conformance-action@v1
         with:
-          min-level: L2-baseline # default
+          min-level: L3-enforced # default
           probe-url: https://staging.example.com # optional
       - run: echo "Level=${{ steps.hki.outputs.level }}"
 ```
@@ -30,7 +30,7 @@ jobs:
 
 | Input             | Default            | Description                                                                     |
 | ----------------- | ------------------ | ------------------------------------------------------------------------------- |
-| `min-level`       | `L2-baseline`      | Minimum acceptable level. Action fails if produced level is lower.              |
+| `min-level`       | `L3-enforced`      | Minimum acceptable level. Action fails if produced level is lower.              |
 | `python-version`  | `3.12`             | Python version for hki-runtime-py / threats / litellm / langchain.              |
 | `node-version`    | `20`               | Node version for the JS gates.                                                  |
 | `pnpm-version`    | `10.0.0`           | pnpm version.                                                                   |
@@ -42,17 +42,24 @@ jobs:
 
 | Output          | Description                                         |
 | --------------- | --------------------------------------------------- |
-| `level`         | Conformance level produced (`L0..L3`).              |
+| `level`         | Conformance level produced (`L0..L5`).              |
 | `passed`        | `"true"` if all conformance cases passed.           |
 | `artifact-path` | Filesystem path of the produced `conformance.json`. |
 
 ## Levels
 
-- **L0-non-conformant** — at least one HKI-\* conformance case failed.
-- **L1-passing** — all cases pass; no audit baseline tracked.
-- **L2-baseline** — all cases pass and a ratcheted audit baseline exists.
-- **L3-evidenced** — L2 plus a complete threat-catalog implementation
-  (`HKI-T01..HKI-T15`) demonstrated to fail closed.
+- **L0-documented** — domain-sensitive surfaces are inventoried; no runtime
+  conformance claim is made.
+- **L1-labeled** — runtime artifacts persist non-null organization and domain
+  labels.
+- **L2-routed** — runtime requests carry one signed active-domain envelope
+  through each hop.
+- **L3-enforced** — runtime paths reject missing, `global`, wildcard,
+  unauthorized, or cross-domain scope.
+- **L4-tested** — automated negative tests and probes prove isolation
+  invariants for the claimed surface.
+- **L5-audited** — signed release evidence is reproducible and independently
+  reviewable.
 
 See [docs/HKI_ROADMAP.md](../../docs/HKI_ROADMAP.md) for the source-of-truth
 definitions and [packages/hki-conformance/schemas/conformance-registry-v1.json](../hki-conformance/schemas/conformance-registry-v1.json)

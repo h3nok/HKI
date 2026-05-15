@@ -1,12 +1,24 @@
 /**
- * Nav — Sticky top bar using the shared Topbar from @hki/ui.
- * Warm, token-based styling consistent with the rest of the platform.
+ * Nav — Sticky top bar with HKI Engineering sub-nav in the center.
  */
 
-import { HkiMark, Topbar } from "@hki/ui";
+import { useLocation } from "wouter";
+import { HkiMark, Topbar, cn } from "@hki/ui";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
-import { HKI_STANDARD_ROUTE } from "@/pages/engineering/constants";
+import {
+  ENGINEERING_HUB_ROUTE,
+  HKI_CUSTODY_PROBLEM_ROUTE,
+  HKI_STANDARD_ROUTE,
+  HKI_ARCHITECTURE_ROUTE,
+} from "@/pages/engineering/constants";
+
+const ENG_NAV = [
+  { label: "Hub", href: ENGINEERING_HUB_ROUTE },
+  { label: "Problem", href: HKI_CUSTODY_PROBLEM_ROUTE },
+  { label: "Standard", href: HKI_STANDARD_ROUTE },
+  { label: "Architecture", href: HKI_ARCHITECTURE_ROUTE },
+] as const;
 
 interface NavProps {
   onNavigate: (path: string) => void;
@@ -14,6 +26,7 @@ interface NavProps {
 
 export function Nav({ onNavigate }: NavProps) {
   const { theme, toggleTheme } = useTheme();
+  const [location] = useLocation();
 
   return (
     <Topbar
@@ -39,6 +52,37 @@ export function Nav({ onNavigate }: NavProps) {
             </span>
           </div>
         </a>
+      }
+      centerContent={
+        <nav
+          aria-label="Engineering"
+          className="flex items-center justify-center"
+        >
+          <div className="flex items-center gap-0.5 rounded-xl border border-border/40 bg-card/60 p-1 backdrop-blur-sm dark:bg-card/40">
+            {ENG_NAV.map(item => {
+              const active = location === item.href;
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  onClick={e => {
+                    e.preventDefault();
+                    onNavigate(item.href);
+                  }}
+                  className={cn(
+                    "rounded-lg px-3.5 py-1.5 text-[12px] font-semibold outline-none transition-all duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                    active
+                      ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  )}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
+          </div>
+        </nav>
       }
       actions={
         <div className="flex items-center gap-1.5">

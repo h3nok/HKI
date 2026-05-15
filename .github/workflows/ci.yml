@@ -215,6 +215,43 @@ jobs:
           path: artifacts/hki/service-evidence.auth.json
           if-no-files-found: warn
 
+  public-release:
+    name: Public Release Artifact
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Check public release audit syntax
+        run: node --check scripts/audit-public-release.mjs
+
+      - name: Render reference Kubernetes starter
+        run: |
+          if command -v kubectl >/dev/null 2>&1; then
+            kubectl kustomize examples/reference-k8s > /tmp/hki-reference-k8s.yaml
+          else
+            echo "kubectl not available; skipping render check on this runner"
+          fi
+
+      - name: Materialize public repo
+        run: ./scripts/publish-kit/publish-hki-public.sh --out /tmp/hki-public-ci
+
+      - name: Install and audit generated public repo
+        run: |
+          cd /tmp/hki-public-ci
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm audit:public-release
+
   hki-gate:
     name: HKI Gate (required)
     runs-on: ubuntu-latest
@@ -226,6 +263,7 @@ jobs:
       - hki-python
       - probe-smoke
       - service-evidence
+      - public-release
     if: always()
     steps:
       - name: Verify all HKI gates passed
@@ -236,7 +274,8 @@ jobs:
             || [ "${{ needs.conformance.result }}" != "success" ] \
             || [ "${{ needs.hki-python.result }}" != "success" ] \
             || [ "${{ needs.probe-smoke.result }}" != "success" ] \
-            || [ "${{ needs.service-evidence.result }}" != "success" ]; then
+            || [ "${{ needs.service-evidence.result }}" != "success" ] \
+            || [ "${{ needs.public-release.result }}" != "success" ]; then
             echo "::error::One or more HKI gates failed"
             exit 1
           fi

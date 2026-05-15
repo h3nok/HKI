@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: hki-reference
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - configmap.yaml
+  - secrets.example.yaml
+  - workloads.yaml
+  - networkpolicy.yaml
+images:
+  - name: hki-reference-agentic-bff
+    newName: nginxinc/nginx-unprivileged
+    newTag: 1.27-alpine
+  - name: hki-reference-orchestrator
+    newName: nginxinc/nginx-unprivileged
+    newTag: 1.27-alpine
+  - name: hki-reference-knowledge-api
+    newName: nginxinc/nginx-unprivileged
+    newTag: 1.27-alpine
+  - name: hki-reference-ingestion-pipeline
+    newName: nginxinc/nginx-unprivileged
+    newTag: 1.27-alpine
+  - name: hki-reference-analytics
+    newName: nginxinc/nginx-unprivileged
+    newTag: 1.27-alpine

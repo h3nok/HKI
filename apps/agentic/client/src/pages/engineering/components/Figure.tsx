@@ -17,7 +17,7 @@ export function Figure({
   const label = number !== undefined ? `Fig. ${number}` : null;
   return (
     <figure className={cn("my-8 mx-auto w-full max-w-220", className)}>
-      <div className="overflow-hidden rounded-lg border border-border/60">
+      <div className="overflow-hidden rounded-lg border border-border">
         {children}
       </div>
       {(label || caption || notice) && (
@@ -25,7 +25,7 @@ export function Figure({
           {(label || caption) && (
             <span className="block">
               {label && (
-                <span className="mr-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground/70">
+                <span className="mr-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                   {label}
                 </span>
               )}
@@ -37,7 +37,7 @@ export function Figure({
             </span>
           )}
           {notice && (
-            <span className="mt-1 block text-xs italic text-muted-foreground/80">
+            <span className="mt-1 block text-xs italic text-muted-foreground">
               {notice}
             </span>
           )}

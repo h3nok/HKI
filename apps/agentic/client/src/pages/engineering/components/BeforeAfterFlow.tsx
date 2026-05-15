@@ -34,8 +34,8 @@ export function BeforeAfterFlow({
             className={cn(
               "mb-3 flex items-center justify-between gap-2 rounded-md border px-3 py-2",
               rail.tone === "risk"
-                ? "border-destructive/30 bg-destructive/6"
-                : "border-success/30 bg-success/6"
+                ? "border-destructive/30 bg-destructive/8"
+                : "border-success/30 bg-success/8"
             )}
           >
             <p
@@ -89,8 +89,8 @@ export function BeforeAfterFlow({
                     className={cn(
                       "relative overflow-hidden rounded-md border",
                       rail.tone === "risk"
-                        ? "border-destructive/25 bg-destructive/5"
-                        : "border-success/25 bg-success/5"
+                        ? "border-destructive/25 bg-destructive/8"
+                        : "border-success/25 bg-success/8"
                     )}
                   >
                     {/* Left accent bar */}

@@ -42,6 +42,13 @@ jobs:
       - name: Run conformance
         run: pnpm verify:hki-conformance
 
+      - name: Validate public release artifact
+        run: |
+          ./scripts/publish-kit/publish-hki-public.sh --out /tmp/hki-public-framework-release
+          cd /tmp/hki-public-framework-release
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm audit:public-release
+
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:

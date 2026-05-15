@@ -355,7 +355,7 @@ Goal: external systems claim HKI conformance unprompted.
 
 ## 4. Sequenced milestone order (next 6, in priority)
 
-**Updated 2026-05-10** — Tracks 1–3 complete. M17 (examples), M18 (doc reconciliation), M22 (break-a-rag demo), conformance.json upgraded to L4-deployed. Open front: cloud parity, adoption.
+**Updated 2026-05-10** — Tracks 1–3 complete. M17 (examples), M18 (doc reconciliation), M22 (break-a-rag demo), conformance.json upgraded to L4-tested with smoke evidence. Open front: cloud parity, adoption.
 
 1. **M13 — AWS reference (EKS + Bedrock + Aurora pgvector + OpenSearch).**
    Kills the GCP-only objection; required for any enterprise that isn’t
@@ -373,24 +373,27 @@ Goal: external systems claim HKI conformance unprompted.
 
 At this point HKI has: a published standard, GCP+AWS cloud references,
 Python+TS runtimes, six framework adapters, CI-grade detector with HTTP
-probes, L4 conformance evidence, and three real adoption stories. That is
+probes, L4-tested conformance evidence, and three real adoption stories. That is
 the package for HKI 1.0.
 
 ---
 
 ## 5. Conformance levels (recap; canonical in HKI_CONFORMANCE.md)
 
-| Level | Name       | Required evidence                                                       |
-| ----- | ---------- | ----------------------------------------------------------------------- |
-| L0    | Documented | Architecture doc references HKI; contract acknowledged.                 |
-| L1    | Envelope   | Signed envelope at edge; validated on every hop.                        |
-| L2    | Bounded    | Cache, memory, retrieval, gateway all domain-bound.                     |
-| L3    | Tested     | `@hki/conformance` adapter tests pass.                                  |
-| L4    | Probed     | `hki probe` HTTP tests pass against deployed system.                    |
-| L5    | Certified  | L4 + independent audit + design partner reference + listed in registry. |
+| Level | Name       | Required evidence                                                                                                                  |
+| ----- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| L0    | Documented | Domain-sensitive surfaces are inventoried; no runtime conformance claim is made.                                                   |
+| L1    | Labeled    | Runtime artifacts persist non-null organization and domain labels.                                                                 |
+| L2    | Routed     | Runtime requests carry one signed active-domain envelope through each hop.                                                         |
+| L3    | Enforced   | Runtime paths reject missing, `global`, wildcard, unauthorized, or cross-domain scope.                                             |
+| L4    | Tested     | Automated negative tests and probes prove isolation invariants for the claimed surface.                                            |
+| L5    | Audited    | Signed release evidence is reproducible and independently reviewable, with an external implementation or design-partner reference. |
 
-The reference platform is currently at **L4** (28/28 adapter cases pass; `hki-probe` 10/10 HTTP probes PASS against mock gateway in CI; `services/hki-probe-target` deployable for Cloud Run evidence).
-L5 requires an independent audit + external design partner + registry listing.
+The reference platform is currently at **L4-tested (smoke evidence)**: 28/28
+adapter cases pass; `hki-probe` 10/10 HTTP probes PASS against the mock gateway
+in CI; `services/hki-probe-target` is deployable for live Cloud Run evidence.
+L5 requires signed release evidence, independent review, an external design
+partner or implementation reference, and registry listing.
 
 ---
 

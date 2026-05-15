@@ -49,7 +49,7 @@ export function RiskCard({
   return (
     <article
       id={`risk-${scenario.id}`}
-      className="scroll-mt-28 rounded-lg border border-border/60 bg-card/40 p-5 sm:p-6"
+      className="scroll-mt-28 rounded-lg border border-border bg-card shadow-surface p-5 sm:p-6"
     >
       <header className="flex items-start gap-4">
         <span
@@ -57,14 +57,14 @@ export function RiskCard({
             "mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border",
             scenario.severity === "critical"
               ? "border-destructive/35 bg-destructive/8 text-destructive"
-              : "border-destructive/25 bg-destructive/5 text-destructive/80"
+              : "border-destructive/25 bg-destructive/5 text-destructive"
           )}
         >
           <Icon className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="font-mono text-[11px] font-bold tabular-nums text-muted-foreground/60">
+            <span className="font-mono text-[11px] font-bold tabular-nums text-muted-foreground">
               R{String(index + 1).padStart(2, "0")}
             </span>
             <h3 className="text-lg font-bold tracking-tight text-foreground">
@@ -75,7 +75,7 @@ export function RiskCard({
                 "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]",
                 scenario.severity === "critical"
                   ? "border-destructive/35 bg-destructive/10 text-destructive"
-                  : "border-destructive/25 bg-destructive/6 text-destructive/80"
+                  : "border-destructive/25 bg-destructive/6 text-destructive"
               )}
             >
               <span
@@ -100,7 +100,7 @@ export function RiskCard({
       </div>
 
       <div className="mt-5 grid gap-3 md:grid-cols-2">
-        <div className="rounded-md border border-destructive/20 bg-destructive/4 p-4">
+        <div className="rounded-md border border-destructive/20 bg-destructive/8 p-4">
           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-destructive">
             What it costs
           </p>
@@ -108,7 +108,7 @@ export function RiskCard({
             {scenario.enterpriseImpact}
           </p>
         </div>
-        <div className="rounded-md border border-success/25 bg-success/4 p-4">
+        <div className="rounded-md border border-success/25 bg-success/8 p-4">
           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-success">
             What HKI does
           </p>

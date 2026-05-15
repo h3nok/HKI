@@ -144,7 +144,7 @@ services/hki-probe-target/      FastAPI for Cloud Run L4 evidence
 apps/agentic/                   Next.js UI + tRPC BFF (MySQL)
 examples/break-a-rag/           3 HKI RAG failures then fixed
 examples/threats/HKI-T*/        Threat catalog pairs (pre/post HKI)
-conformance.json                Evidence registry (L4-deployed)
+conformance.json                Evidence registry (L4-tested)
 ```
 
 ---

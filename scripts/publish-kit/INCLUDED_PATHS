@@ -9,7 +9,10 @@
 packages/hki-runtime
 packages/hki-runtime-py
 packages/hki-conformance
+packages/hki-conformance-py
 packages/hki-conformance-action
+packages/hki-mcp
+packages/sdk
 
 # Adapter packages
 
@@ -28,9 +31,12 @@ packages/hki-integration-tests
 
 examples/threats
 examples/end_to_end_demo.py
+examples/reference-k8s
 
 # Scripts (the audit/registry/fixer toolchain)
 
+scripts/ensure-package-built.mjs
+scripts/audit-public-release.mjs
 scripts/hki_ast_audit.py
 scripts/hki-ast-audit-ts.mjs
 scripts/build-conformance-registry.mjs
@@ -38,16 +44,30 @@ scripts/audit-hki-conformance.mjs
 scripts/hki-conformance-audit-baseline.json
 scripts/fix-formatter-mangling.py
 
+# Normative standard
+
+spec/HKI-1.0.md
+spec/HKI-Agent-Gateway-Profile.md
+
 # Docs
 
+docs/COMMUNITY_ENABLEMENT.md
 docs/HKI_ROADMAP.md
 docs/HKI_ADAPTERS.md
 docs/HKI_THREATS.md
 docs/HKI_CONFORMANCE.md
 docs/HKI_SECURITY_MAPPING.md
+docs/HKI_PUBLIC_READINESS_PLAN.md
+docs/HKI_SERVICE_EVIDENCE.md
+docs/REFERENCE_ARCHITECTURE_K8S.md
+docs/PUBLIC_RELEASE_PROCESS.md
 docs/ARCHITECTURE.md
 
 # TS workspace shared configs (needed by packages/hki-runtime build)
 
 packages/typescript-config
 packages/eslint-config
+
+# Release tooling
+
+.changeset/config.json

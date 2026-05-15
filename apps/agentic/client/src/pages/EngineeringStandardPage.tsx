@@ -16,7 +16,6 @@ import { RiskCard } from "@/pages/engineering/components/RiskCard";
 import { AutonomyLadder } from "@/pages/engineering/components/AutonomyLadder";
 import { RuntimeContractDiagram } from "@/pages/engineering/components/RuntimeContractDiagram";
 import { DocumentOutline } from "@/pages/engineering/components/DocumentOutline";
-import { OnThisPage } from "@/pages/engineering/components/OnThisPage";
 import { ArticleMarkdown } from "@/pages/engineering/components/ArticleMarkdown";
 import { ReadingProgress } from "@/pages/engineering/components/ReadingProgress";
 import {
@@ -95,7 +94,7 @@ type Navigate = (path: string) => void;
 
 function ArchitectureLaunchPanel({ onNavigate }: { onNavigate: Navigate }) {
   return (
-    <div className="border-y border-border/60 bg-muted/10 py-6">
+    <div className="border-y border-border bg-muted/30 py-6">
       <div className="grid gap-7 px-1 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
         <div className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
@@ -123,7 +122,7 @@ function ArchitectureLaunchPanel({ onNavigate }: { onNavigate: Navigate }) {
           </a>
         </div>
 
-        <ul className="grid gap-3 border-t border-border/60 pt-5 text-sm lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+        <ul className="grid gap-3 border-t border-border pt-5 text-sm lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
           {[
             [
               "Runtime path",
@@ -185,10 +184,10 @@ export default function EngineeringStandardPage() {
       <main
         className={cn(
           hub.pageInner,
-          "relative z-10 mx-auto w-full max-w-430 px-5 pt-7 pb-12 sm:px-8"
+          "relative z-10 mx-auto w-full max-w-7xl px-5 pt-7 pb-12 sm:px-8"
         )}
       >
-        <div className="grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)] 2xl:grid-cols-[260px_minmax(0,1fr)_260px] 2xl:gap-10">
+        <div className="grid gap-10 xl:grid-cols-[220px_minmax(0,1fr)]">
           <DocumentOutline nodes={outline} activeId={activeId} />
 
           <article
@@ -313,7 +312,6 @@ export default function EngineeringStandardPage() {
             </ProseBlock>
           </article>
 
-          <OnThisPage nodes={outline} activeId={activeId} />
         </div>
       </main>
     </div>

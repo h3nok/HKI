@@ -118,14 +118,14 @@ function toneClass(tone: PanelTone = "primary") {
     primary: "border-primary/25 bg-primary/8 text-primary",
     success: "border-success/25 bg-success/8 text-success",
     warning: "border-warning/25 bg-warning/8 text-warning",
-    neutral: "border-border/60 bg-muted/30 text-foreground",
+    neutral: "border-border bg-muted/40 text-foreground",
   }[tone];
 }
 
 function InfoPanel({ card }: { card: InfoCard }) {
   const Icon = card.icon;
   return (
-    <article className="rounded-lg border border-border/60 bg-card/35 p-5">
+    <article className="rounded-lg border border-border bg-card shadow-surface p-5">
       <div className="flex items-start justify-between gap-4">
         <span
           className={cn(
@@ -164,50 +164,35 @@ export default function EngineeringCustodyProblemPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <EngineeringHeader />
 
-      <main className="flex-1 py-8 sm:py-10">
-        <div className="mx-auto w-full max-w-340 px-5 sm:px-8">
-          <section className="border-b border-border/60 pb-8">
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
-              <div className="min-w-0">
-                <div className="inline-flex items-center gap-2 rounded-md border border-primary/20 bg-primary/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-                  <FileText className="h-3.5 w-3.5" />
-                  Read first
-                </div>
-                <h1 className="mt-5 max-w-4xl text-4xl font-extrabold leading-tight tracking-tight text-foreground sm:text-[44px]">
-                  The Custody Problem
-                </h1>
-                <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
-                  Provider privacy promises matter, but agentic systems
-                  introduce a second boundary: who controls the context, memory,
-                  tools, retrieval, and domain rules that shape the agent's
-                  reasoning at runtime.
-                </p>
-              </div>
-
-              <aside className="rounded-lg border border-border/60 bg-card/35 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-                  Why this comes first
-                </p>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  If agentic systems are new to a reader, the standard will feel
-                  abstract. This primer explains the risk before introducing the
-                  HKI contract.
-                </p>
-                <div className="mt-4 rounded-md border border-border/60 bg-background/45 p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                    Boundary shift
-                  </p>
-                  <p className="mt-2 text-sm font-bold leading-5 text-foreground">
-                    From model-training privacy to runtime context custody.
-                  </p>
-                </div>
-              </aside>
+      <main className="flex-1 py-10 sm:py-14">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
+          <section className="border-b border-border pb-12">
+            <div className="inline-flex items-center gap-2 rounded-md border border-primary/20 bg-primary/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+              <FileText className="h-3.5 w-3.5" />
+              Read first
+            </div>
+            <h1 className="mt-5 max-w-[22ch] text-4xl font-extrabold leading-tight tracking-tight text-foreground sm:text-[44px]">
+              The Custody Problem
+            </h1>
+            <p className="mt-4 max-w-[60ch] text-base leading-7 text-muted-foreground">
+              Provider privacy promises matter, but agentic systems introduce a
+              second boundary: who controls the context, memory, tools,
+              retrieval, and domain rules that shape the agent's reasoning at
+              runtime.
+            </p>
+            <div className="mt-7 inline-block rounded-md border border-border bg-muted/40 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                Boundary shift
+              </p>
+              <p className="mt-1 text-sm font-bold text-foreground">
+                From model-training privacy to runtime context custody.
+              </p>
             </div>
           </section>
 
-          <section className="border-b border-border/60 py-8">
-            <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)_260px] lg:items-stretch">
-              <div className="rounded-lg border border-border/60 bg-card/35 p-5">
+          <section className="border-b border-border py-12">
+            <div className="grid gap-4 md:grid-cols-3 md:items-stretch">
+              <div className="rounded-lg border border-border bg-card shadow-surface p-5">
                 <BookOpen className="h-5 w-5 text-primary" />
                 <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
                   Old assurance
@@ -216,7 +201,7 @@ export default function EngineeringCustodyProblemPage() {
                   Will the provider train on our data?
                 </h2>
               </div>
-              <div className="rounded-lg border border-primary/25 bg-primary/5 p-5">
+              <div className="rounded-lg border border-primary/25 bg-primary/8 p-5">
                 <Bot className="h-5 w-5 text-primary" />
                 <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
                   Agentic runtime
@@ -231,7 +216,7 @@ export default function EngineeringCustodyProblemPage() {
                   specific task.
                 </p>
               </div>
-              <div className="rounded-lg border border-border/60 bg-card/35 p-5">
+              <div className="rounded-lg border border-border bg-card shadow-surface p-5">
                 <ShieldCheck className="h-5 w-5 text-success" />
                 <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
                   New assurance
@@ -243,8 +228,8 @@ export default function EngineeringCustodyProblemPage() {
             </div>
           </section>
 
-          <section className="border-b border-border/60 py-8">
-            <div className="mb-5 max-w-3xl">
+          <section className="border-b border-border py-12">
+            <div className="mb-6 max-w-[60ch]">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
                 Agentic systems, simply
               </p>
@@ -257,15 +242,15 @@ export default function EngineeringCustodyProblemPage() {
                 live.
               </p>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               {AGENTIC_PARTS.map(card => (
                 <InfoPanel key={card.title} card={card} />
               ))}
             </div>
           </section>
 
-          <section className="border-b border-border/60 py-8">
-            <div className="mb-5 max-w-3xl">
+          <section className="border-b border-border py-12">
+            <div className="mb-6 max-w-[60ch]">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
                 The problem we solve
               </p>
@@ -286,59 +271,28 @@ export default function EngineeringCustodyProblemPage() {
             </div>
           </section>
 
-          <section className="py-8">
-            <div className="rounded-lg border border-primary/25 bg-primary/5 p-5 sm:p-6">
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                    HKI answer
-                  </p>
-                  <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                    Turn runtime custody into a contract the system can enforce.
-                  </h2>
-                  <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                    HKI makes the runtime carry one active domain through
-                    retrieval, tools, graph, cache, memory, jobs, and response.
-                    Cross-domain sharing becomes explicit publication, not a
-                    side effect of broad access.
-                  </p>
-                </div>
-                <div className="rounded-md border border-border/60 bg-background/45 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                    Read next
-                  </p>
-                  <div className="mt-3 grid gap-2">
-                    <a
-                      href={HKI_STANDARD_ROUTE}
-                      onClick={event => {
-                        event.preventDefault();
-                        navigate(HKI_STANDARD_ROUTE);
-                      }}
-                      className="group flex items-center justify-between gap-3 rounded-md border border-border/60 bg-card/40 px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-muted/40"
-                    >
-                      HKI Standard
-                      <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
-                    </a>
-                    <a
-                      href={HKI_ARCHITECTURE_ROUTE}
-                      onClick={event => {
-                        event.preventDefault();
-                        navigate(HKI_ARCHITECTURE_ROUTE);
-                      }}
-                      className="group flex items-center justify-between gap-3 rounded-md border border-border/60 bg-card/40 px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-muted/40"
-                    >
-                      Reference Architecture
-                      <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
-                    </a>
-                  </div>
-                </div>
+          <section className="py-12">
+            <div className="rounded-lg border border-primary/25 bg-primary/8 p-6 sm:p-8">
+              <div className="max-w-[60ch]">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                  HKI answer
+                </p>
+                <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+                  Turn runtime custody into a contract the system can enforce.
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  HKI makes the runtime carry one active domain through
+                  retrieval, tools, graph, cache, memory, jobs, and response.
+                  Cross-domain sharing becomes explicit publication, not a side
+                  effect of broad access.
+                </p>
               </div>
 
-              <div className="mt-6 grid gap-3 md:grid-cols-4">
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 {CONTRACT_STEPS.map(step => (
                   <div
                     key={step.title}
-                    className="rounded-md border border-border/60 bg-background/45 p-4"
+                    className="rounded-md border border-border bg-muted/40 p-4"
                   >
                     <CheckCircle2 className="h-4 w-4 text-success" />
                     <h3 className="mt-3 text-sm font-extrabold text-foreground">
@@ -350,13 +304,43 @@ export default function EngineeringCustodyProblemPage() {
                   </div>
                 ))}
               </div>
+
+              <div className="mt-8 border-t border-primary/20 pt-6">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
+                  Read next
+                </p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <a
+                    href={HKI_STANDARD_ROUTE}
+                    onClick={event => {
+                      event.preventDefault();
+                      navigate(HKI_STANDARD_ROUTE);
+                    }}
+                    className="group inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-surface transition-all hover:-translate-y-px hover:shadow-surface-md"
+                  >
+                    HKI Standard
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </a>
+                  <a
+                    href={HKI_ARCHITECTURE_ROUTE}
+                    onClick={event => {
+                      event.preventDefault();
+                      navigate(HKI_ARCHITECTURE_ROUTE);
+                    }}
+                    className="group inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-surface transition-all hover:-translate-y-px hover:shadow-surface-md"
+                  >
+                    Reference Architecture
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </a>
+                </div>
+              </div>
             </div>
           </section>
         </div>
       </main>
 
-      <footer className="border-t border-border/60">
-        <div className="mx-auto flex min-h-12 w-full max-w-340 flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs text-muted-foreground sm:px-8">
+      <footer className="border-t border-border">
+        <div className="mx-auto flex min-h-12 w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs text-muted-foreground sm:px-8">
           <div className="flex items-center gap-2">
             <HkiMark size={14} variant="color" />
             <span>HKI Custody Problem · Engineering Hub</span>

@@ -27,7 +27,7 @@ The repo contains:
 - Self-contained examples: `examples/{fastapi-rag,mcp-server,langgraph-agent,bedrock-claude,break-a-rag}/`
 - Threat catalog: `examples/threats/HKI-T01..T15/`
 
-Current conformance level: **L4-deployed** (28/28 adapter cases + 10/10 HTTP probes).
+Current conformance level: **L4-tested (smoke evidence)** (28/28 adapter cases + 10/10 HTTP probes).
 
 ---
 
@@ -53,7 +53,7 @@ Current conformance level: **L4-deployed** (28/28 adapter cases + 10/10 HTTP pro
 pnpm verify:hki-conformance          # 28/28 TS adapter cases
 pnpm test:hki-runtime-py             # Python runtime unit tests
 pnpm probe:smoke                     # 10/10 HTTP probe against mock gateway → /tmp/hki-evidence.json
-pnpm registry:build                  # Rebuild conformance.json (L4-deployed when /tmp/hki-evidence.json present)
+pnpm registry:build                  # Rebuild conformance.json (L4-tested when /tmp/hki-evidence.json present)
 
 # Audits
 pnpm audit:hki                       # AST scan (non-strict, advisory only)
@@ -160,7 +160,7 @@ if issue:
 | `services/hki-probe-target/`                        | Deployable FastAPI for Cloud Run — real L4 evidence                                  |
 | `services/knowledge-api/src/api/internal_routes.py` | JWT-protected S2S routes — `body-scope-trust` audit findings are expected here       |
 | `scripts/build-conformance-registry.mjs`            | Builds `conformance.json`; reads `/tmp/hki-evidence.json` for L4                     |
-| `conformance.json`                                  | Signed evidence artifact — current level L4-deployed                                 |
+| `conformance.json`                                  | Signed evidence artifact — current level L4-tested                                   |
 | `spec/HKI-1.0.md`                                   | Normative standard — source of truth for all conformance decisions                   |
 
 ---

@@ -23,14 +23,14 @@ export function ContractPills({
       {pills.map((p, i) => (
         <li
           key={p.label}
-          className="inline-flex items-center gap-2.5 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-xs"
+          className="inline-flex items-center gap-2.5 rounded-full border border-primary/25 bg-primary/8 px-3.5 py-1.5 text-xs"
         >
           <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold tabular-nums text-primary">
             {i + 1}
           </span>
           <span className="font-semibold text-foreground">{p.label}</span>
           {p.detail && (
-            <span className="text-muted-foreground/70">· {p.detail}</span>
+            <span className="text-muted-foreground">· {p.detail}</span>
           )}
         </li>
       ))}

@@ -11,7 +11,7 @@ export default function EngineeringArchitecturePage() {
     <div className={cn(hub.page, "min-h-screen bg-background")}>
       <EngineeringHeader />
 
-      <main className="mx-auto w-full max-w-430 px-5 py-4 sm:px-8">
+      <main className="mx-auto w-full max-w-7xl px-5 py-4 sm:px-8">
         <ReferenceArchitectureDiagram className="min-h-0" />
       </main>
     </div>

@@ -7,15 +7,22 @@ the reference platform.
 
 | Level               | Meaning                                                                                                                       |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Level 0: Documented | The service states which artifacts and operations are domain-sensitive.                                                       |
+| Level 0: Documented | Domain-sensitive surfaces are inventoried; no runtime conformance claim is made.                                              |
 | Level 1: Labeled    | Runtime artifacts persist a non-null organization and domain label.                                                           |
-| Level 2: Routed     | Runtime requests carry one signed active domain through each hop.                                                             |
+| Level 2: Routed     | Runtime requests carry one signed active-domain envelope through each hop.                                                    |
 | Level 3: Enforced   | Reads, writes, cache hits, graph traversals, memory, tools, jobs, and traces reject missing, `global`, or cross-domain scope. |
-| Level 4: Auditable  | Negative tests and audit scripts prove that no runtime path widens scope.                                                     |
-| Level 5: Certified  | A release artifact ships with repeatable conformance evidence.                                                                |
+| Level 4: Tested     | Automated negative tests and probes prove the isolation invariants for the claimed surface.                                   |
+| Level 5: Audited    | Signed release evidence is reproducible and independently reviewable.                                                         |
 
-The public framework should not claim Level 5 until the certification harness is
-published and automated in CI.
+Evidence profiles qualify the level without changing the level name:
+
+- `smoke` — local, mock-gateway, or CI smoke evidence.
+- `live` — evidence from a deployed endpoint controlled by the implementer.
+- `release` — signed release evidence intended for external review.
+
+Public claims should use both terms: for example, `L4-tested (smoke evidence)`
+or `L4-tested (live evidence)`. HKI should not claim Level 5 until signed
+release evidence and an independent review path exist.
 
 ## Required Runtime Envelope
 
@@ -92,8 +99,10 @@ hki-conformance ./dist/hki-adapter.js --json
 
 The adapter must implement envelope validation, artifact visibility, cache key
 derivation, gateway target decisions, and signed-scope override rejection. A
-passing report is Level 4 evidence; Level 5 still requires signed release
-artifacts, reproducible CI output, and publication of the evidence bundle.
+passing report is Level 4 evidence for the tested adapter surface; a runtime or
+service-level claim should pair it with smoke or live probe evidence. Level 5
+still requires signed release artifacts, reproducible CI output, independent
+review, and publication of the evidence bundle.
 
 The reference application also includes a service-level black-box evidence
 runner:
@@ -127,3 +136,56 @@ A public HKI release should include:
 - publication workflow evidence for shared content
 - admin-plane route inventory
 - UI token audit output for public pages
+
+## Evidence Manifest
+
+`scripts/build-conformance-registry.mjs` emits a machine-readable evidence
+manifest inside `conformance.json` under `releaseEvidence`. The manifest is the
+external verification surface for HKI maturity claims.
+
+Key fields:
+
+| Field                                    | Purpose                                                              |
+| ---------------------------------------- | -------------------------------------------------------------------- |
+| `level`                                  | Canonical HKI level, for example `L4-tested`.                        |
+| `evidenceProfile`                        | Proof location: `smoke`, `live`, or `release`.                       |
+| `commandManifest`                        | Commands or evidence sources that support the claim.                 |
+| `componentHashes`                        | Stable hashes for conformance results, audits, packages, and probes. |
+| `releaseReadiness.strictReleaseEligible` | Whether the artifact satisfies the stricter public-release gate.     |
+| `releaseReadiness.blockers`              | Conditions that prevent a public release claim.                      |
+| `manifestHash`                           | SHA-256 hash of the manifest body before the hash field is attached. |
+
+The reference registry distinguishes development evidence from release evidence:
+
+- `L4-tested (smoke evidence)` — acceptable for development, README, and design
+  partner previews when the mock gateway or local probe proves the invariant.
+- `L4-tested (live evidence)` — acceptable for a public release candidate when a
+  deployed endpoint has matching probe evidence from a clean commit.
+- `L5-audited (release evidence)` — reserved for signed release artifacts with
+  independent review and an external implementation or design-partner reference.
+
+## How to Verify Evidence
+
+For local smoke evidence:
+
+```bash
+pnpm verify:hki-conformance
+pnpm audit:hki
+pnpm audit:hki-ast
+pnpm audit:hki-ast-ts
+pnpm probe:smoke
+pnpm registry:build
+```
+
+For a release candidate, run the registry builder from a clean commit with live
+probe evidence and strict release checks:
+
+```bash
+hki-probe https://your-gateway.example.com --route /v1/chat --out /tmp/hki-evidence.json
+node scripts/build-conformance-registry.mjs --strict-release
+```
+
+`--strict-release` fails when the worktree is dirty, probe evidence is missing,
+adapter conformance fails, blocking audit findings exist, or required evidence
+inputs are incomplete. Smoke evidence can still produce `L4-tested`, but it is
+not strict-release eligible.

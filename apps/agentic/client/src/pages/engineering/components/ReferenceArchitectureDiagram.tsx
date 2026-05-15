@@ -404,7 +404,7 @@ function InspectorField({
   tone?: "default" | "primary" | "danger";
 }) {
   return (
-    <div className="rounded-lg border border-border/50 bg-background/45 p-3">
+    <div className="rounded-lg border border-border bg-muted/30 p-3">
       <p
         className={cn(
           "text-[10px] font-bold uppercase tracking-[0.14em]",
@@ -452,8 +452,8 @@ function InspectorPanel({
   const pathNodes = getPathNodes(view);
 
   return (
-    <aside className="flex min-h-0 flex-col border-b border-border/60 bg-card/70 lg:border-b-0 lg:border-r">
-      <div className="border-b border-border/60 p-4">
+    <aside className="flex min-h-0 flex-col border-b border-border bg-card lg:border-b-0 lg:border-r">
+      <div className="border-b border-border p-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
           Reference architecture
         </p>
@@ -464,7 +464,7 @@ function InspectorPanel({
           {VIEW_META[view].tagline}
         </p>
 
-        <div className="mt-4 grid grid-cols-3 divide-x divide-border/50 overflow-hidden rounded-lg border border-border/50 bg-background/45 text-center">
+        <div className="mt-4 grid grid-cols-3 divide-x divide-border overflow-hidden rounded-lg border border-border bg-muted/40 text-center">
           {[
             { label: "Nodes", value: ARCH_NODES.length },
             { label: "Edges", value: ARCH_EDGES.length },
@@ -500,7 +500,7 @@ function InspectorPanel({
                   "flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] font-bold transition-all",
                   active
                     ? "border-foreground/40 bg-foreground text-background shadow-sm"
-                    : "border-border/50 bg-background/40 text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground"
+                    : "border-border bg-muted/40 text-muted-foreground hover:border-border hover:bg-muted/60 hover:text-foreground"
                 )}
               >
                 <PathIcon className="h-3.5 w-3.5 shrink-0" />
@@ -514,7 +514,7 @@ function InspectorPanel({
           <button
             type="button"
             onClick={onFit}
-            className="inline-flex items-center justify-center gap-1 rounded-md border border-border/60 bg-background/45 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            className="inline-flex items-center justify-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             Fit
@@ -522,7 +522,7 @@ function InspectorPanel({
           <button
             type="button"
             onClick={onCenterSelected}
-            className="inline-flex items-center justify-center gap-1 rounded-md border border-border/60 bg-background/45 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            className="inline-flex items-center justify-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
           >
             <LocateFixed className="h-3.5 w-3.5" />
             Node
@@ -530,7 +530,7 @@ function InspectorPanel({
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="inline-flex items-center justify-center gap-1 rounded-md border border-border/60 bg-background/45 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            className="inline-flex items-center justify-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
           >
             {expanded ? (
               <Minimize2 className="h-3.5 w-3.5" />
@@ -542,7 +542,7 @@ function InspectorPanel({
         </div>
       </div>
 
-      <div className="border-b border-border/60 p-4">
+      <div className="border-b border-border p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
@@ -555,7 +555,7 @@ function InspectorPanel({
           <button
             type="button"
             onClick={() => onCopy("path")}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
             aria-label="Copy path summary"
           >
             {copied === "path" ? (
@@ -578,10 +578,10 @@ function InspectorPanel({
                   "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-colors",
                   active
                     ? "border-foreground/40 bg-background text-foreground shadow-xs"
-                    : "border-border/50 bg-background/35 text-muted-foreground hover:border-border hover:bg-muted/35 hover:text-foreground"
+                    : "border-border bg-muted/30 text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground"
                 )}
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/50 text-[10px] font-bold tabular-nums">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border text-[10px] font-bold tabular-nums">
                   {index + 1}
                 </span>
                 <StepIcon className="h-3.5 w-3.5 shrink-0" />
@@ -627,7 +627,7 @@ function InspectorPanel({
           <button
             type="button"
             onClick={() => onCopy("node")}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
             aria-label="Copy selected node summary"
           >
             {copied === "node" ? (
@@ -649,7 +649,7 @@ function InspectorPanel({
           <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Implementation surface
           </p>
-          <code className="block break-all rounded-md border border-border/60 bg-background/70 px-2 py-1.5 font-mono text-[11px] text-muted-foreground">
+          <code className="block break-all rounded-md border border-border bg-muted/50 px-2 py-1.5 font-mono text-[11px] text-muted-foreground">
             {arch.surface}
           </code>
         </div>
@@ -662,7 +662,7 @@ function InspectorPanel({
 
 function Legend() {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/60 bg-muted/15 px-4 py-2.5 text-[11px] text-muted-foreground sm:px-5">
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border bg-muted/30 px-4 py-2.5 text-[11px] text-muted-foreground sm:px-5">
       {PLANE_ORDER.map(p => (
         <span key={p} className="inline-flex items-center gap-1.5">
           <span
@@ -672,7 +672,7 @@ function Legend() {
               border: `1px solid ${PLANES[p].tintBorder}`,
             }}
           />
-          <span className="font-medium text-foreground/75">
+          <span className="font-medium text-foreground">
             {PLANES[p].label}
           </span>
         </span>
@@ -775,7 +775,7 @@ function DiagramInner() {
       )}
       <div
         className={cn(
-          "overflow-hidden rounded-xl border border-border/70 bg-card/40 shadow-sm",
+          "overflow-hidden rounded-xl border border-border bg-card shadow-surface",
           expanded &&
             "fixed inset-4 z-60 flex flex-col bg-background shadow-2xl"
         )}

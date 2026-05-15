@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>The Custody Problem — LinkedIn Carousel</title>
+    <meta name="viewport" content="width=1080, initial-scale=1" />
+    <style>
+      :root {
+        --ink: #142126;
+        --muted: #364a51;
+        --quiet: #4d5f65;
+        --teal: #0f766e;
+        --teal-soft: #e3f4ee;
+        --teal-dark: #073f3b;
+        --copper: #b65b3b;
+        --blue: #244b73;
+        --gold: #ba7a1b;
+        --paper: #f7faf7;
+        --serif: "Charter", "Georgia", "Times New Roman", serif;
+        --sans:
+          "Avenir Next", "Helvetica Neue", -apple-system, BlinkMacSystemFont,
+          sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #2b3a3f;
+        font-family: var(--sans);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+      }
+      @page {
+        size: 1080px 1350px;
+        margin: 0;
+      }
+      .slide {
+        width: 1080px;
+        height: 1350px;
+        padding: 90px 90px 70px;
+        background: var(--paper);
+        position: relative;
+        page-break-after: always;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .slide:last-child {
+        page-break-after: auto;
+      }
+      /* Header bar present on every slide */
+      .slide-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--sans);
+        font-size: 18px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--quiet);
+      }
+      .slide-head .brand {
+        color: var(--teal);
+        font-weight: 700;
+      }
+      .slide-head .num {
+        font-feature-settings: "tnum" 1;
+      }
+      /* Footer attribution on every slide */
+      .slide-foot {
+        margin-top: auto;
+        padding-top: 30px;
+        border-top: 1px solid rgba(20, 33, 38, 0.12);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--sans);
+        font-size: 16px;
+        color: var(--quiet);
+      }
+      .slide-foot strong {
+        color: var(--ink);
+      }
+      .slide-foot .swipe {
+        color: var(--teal);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+      /* Body region */
+      .body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 30px 0;
+      }
+      .body.top {
+        justify-content: flex-start;
+        padding-top: 60px;
+      }
+      .eyebrow {
+        font-family: var(--sans);
+        font-size: 22px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--teal);
+        font-weight: 700;
+        margin-bottom: 28px;
+      }
+      h1.hook {
+        font-family: var(--serif);
+        font-size: 88px;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        color: var(--ink);
+        margin: 0 0 36px;
+        font-weight: 500;
+      }
+      h1.hook em {
+        font-style: italic;
+        color: var(--copper);
+      }
+      h2.title {
+        font-family: var(--serif);
+        font-size: 64px;
+        line-height: 1.1;
+        letter-spacing: -0.012em;
+        color: var(--ink);
+        margin: 0 0 32px;
+        font-weight: 500;
+      }
+      h2.title em {
+        font-style: italic;
+        color: var(--copper);
+      }
+      h3.kicker {
+        font-family: var(--sans);
+        font-size: 30px;
+        line-height: 1.25;
+        color: var(--ink);
+        margin: 0 0 24px;
+        font-weight: 600;
+      }
+      p.lede {
+        font-family: var(--serif);
+        font-size: 30px;
+        line-height: 1.45;
+        color: var(--muted);
+        margin: 0 0 24px;
+      }
+      p.body-text {
+        font-family: var(--sans);
+        font-size: 24px;
+        line-height: 1.5;
+        color: var(--muted);
+        margin: 0 0 18px;
+      }
+      .pull {
+        font-family: var(--serif);
+        font-size: 38px;
+        line-height: 1.3;
+        color: var(--ink);
+        border-left: 6px solid var(--teal);
+        padding: 8px 0 8px 28px;
+        margin: 24px 0;
+      }
+      .stat {
+        font-family: var(--serif);
+        font-size: 220px;
+        line-height: 1;
+        color: var(--teal);
+        font-weight: 500;
+        letter-spacing: -0.04em;
+        margin: 20px 0 28px;
+      }
+      .stat-label {
+        font-family: var(--sans);
+        font-size: 28px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-width: 760px;
+      }
+      ul.list {
+        list-style: none;
+        padding: 0;
+        margin: 18px 0 0;
+      }
+      ul.list li {
+        font-family: var(--sans);
+        font-size: 26px;
+        line-height: 1.45;
+        color: var(--ink);
+        padding: 18px 0 18px 56px;
+        position: relative;
+        border-bottom: 1px solid rgba(20, 33, 38, 0.08);
+      }
+      ul.list li:last-child {
+        border-bottom: none;
+      }
+      ul.list li::before {
+        content: counter(li, decimal-leading-zero);
+        counter-increment: li;
+        position: absolute;
+        left: 0;
+        top: 18px;
+        font-family: var(--serif);
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--teal);
+        font-feature-settings: "tnum" 1;
+      }
+      ul.list {
+        counter-reset: li;
+      }
+
+      /* Dark slides */
+      .slide.dark {
+        background: var(--teal-dark);
+        color: #f4fbf6;
+      }
+      .slide.dark .slide-head,
+      .slide.dark .slide-foot {
+        color: rgba(244, 251, 246, 0.6);
+      }
+      .slide.dark .slide-head .brand {
+        color: #9bdccc;
+      }
+      .slide.dark .slide-foot {
+        border-top-color: rgba(244, 251, 246, 0.18);
+      }
+      .slide.dark .slide-foot strong {
+        color: #ffffff;
+      }
+      .slide.dark .slide-foot .swipe {
+        color: #9bdccc;
+      }
+      .slide.dark .eyebrow {
+        color: #9bdccc;
+      }
+      .slide.dark h1.hook,
+      .slide.dark h2.title,
+      .slide.dark h3.kicker {
+        color: #ffffff;
+      }
+      .slide.dark h1.hook em,
+      .slide.dark h2.title em {
+        color: #ffb892;
+      }
+      .slide.dark p.lede {
+        color: rgba(244, 251, 246, 0.85);
+      }
+      .slide.dark p.body-text {
+        color: rgba(244, 251, 246, 0.78);
+      }
+      .slide.dark .pull {
+        color: #ffffff;
+        border-left-color: #9bdccc;
+      }
+      .slide.dark .stat {
+        color: #9bdccc;
+      }
+      .slide.dark .stat-label {
+        color: #ffffff;
+      }
+
+      /* Cards grid (for surfaces slide) */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+        margin-top: 14px;
+      }
+      .card {
+        background: #ffffff;
+        border: 1px solid rgba(20, 33, 38, 0.1);
+        border-left: 5px solid var(--teal);
+        padding: 26px 28px;
+        border-radius: 4px;
+      }
+      .card .card-num {
+        font-family: var(--serif);
+        font-size: 18px;
+        color: var(--teal);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .card .card-title {
+        font-family: var(--sans);
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 8px;
+      }
+      .card .card-body {
+        font-family: var(--sans);
+        font-size: 17px;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+      .card.copper {
+        border-left-color: var(--copper);
+      }
+      .card.copper .card-num {
+        color: var(--copper);
+      }
+      .card.blue {
+        border-left-color: var(--blue);
+      }
+      .card.blue .card-num {
+        color: var(--blue);
+      }
+      .card.gold {
+        border-left-color: var(--gold);
+      }
+      .card.gold .card-num {
+        color: var(--gold);
+      }
+      .card.full {
+        grid-column: span 2;
+      }
+
+      /* Cover-specific accents */
+      .accent-bar {
+        width: 80px;
+        height: 6px;
+        background: var(--teal);
+        margin: 0 0 36px;
+      }
+      .slide.cover h1.hook {
+        font-size: 96px;
+      }
+      .slide.cover .lede {
+        font-size: 28px;
+        max-width: 880px;
+      }
+
+      /* CTA slide */
+      .cta-box {
+        background: #ffffff;
+        border: 2px solid var(--teal);
+        border-radius: 6px;
+        padding: 36px 40px;
+        margin-top: 18px;
+      }
+      .cta-box h4 {
+        font-family: var(--sans);
+        font-size: 20px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--teal);
+        margin: 0 0 12px;
+        font-weight: 700;
+      }
+      .cta-box p {
+        font-family: var(--serif);
+        font-size: 28px;
+        line-height: 1.4;
+        color: var(--ink);
+        margin: 0;
+      }
+      .cta-box .repo {
+        font-family: "SFMono-Regular", "Menlo", monospace;
+        font-size: 22px;
+        color: var(--teal);
+        margin-top: 16px;
+        display: block;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 1. COVER / HOOK -->
+    <section class="slide cover">
+      <div class="slide-head">
+        <span class="brand">HKI</span>
+        <span class="num">01 / 10</span>
+      </div>
+      <div class="body">
+        <div class="accent-bar"></div>
+        <div class="eyebrow">A framework proposal · 2026</div>
+        <h1 class="hook">
+          Your AI agents now decide things inside a runtime
+          <em>you don't own.</em>
+        </h1>
+        <p class="lede">
+          Provider privacy promises don't fix this. Architecture has to.
+        </p>
+      </div>
+      <div class="slide-foot">
+        <span><strong>Henok Ghebrechristos, PhD</strong></span>
+        <span class="swipe">Swipe →</span>
+      </div>
+    </section>
+
+    <!-- 2. NAME THE PROBLEM -->
+    <section class="slide">
+      <div class="slide-head">
+        <span class="brand">HKI</span>
+        <span class="num">02 / 10</span>
+      </div>
+      <div class="body">
+        <div class="eyebrow">The problem</div>
+        <h2 class="title">This is the <em>Custody Problem.</em></h2>
+        <p class="lede">
+          When an enterprise runs its work through a managed agent, it isn't
+          just buying model access.
+        </p>
+        <p class="lede">
+          It is delegating
+          <strong
+            >context assembly, memory, tool execution, and policy
+            defaults</strong
+          >
+          to a runtime it did not build and cannot fully inspect.
+        </p>
+      </div>
+      <div class="slide-foot">
+        <span>The Custody Problem · <strong>Henok Ghebrechristos</strong></span>
+        <span class="swipe">Swipe →</span>
+      </div>
+    </section>
+
+    <!-- 3. THE SHIFT -->
+    <section class="slide dark">
+      <div class="slide-head">
+        <span class="brand">HKI</span>
+        <span class="num">03 / 10</span>
+      </div>
+      <div class="body">
+        <div class="eyebrow">The shift</div>
+        <h2 class="title">
+          The risk is no longer <em>training data.</em><br />
+          It is the <em>runtime.</em>
+        </h2>
+        <div class="pull">
+          The agent doesn't need to be retrained to leak your operations. It
+          just needs to keep running.
+        </div>
+        <p class="body-text">
+          Every retrieval, every cached answer, every tool invocation, every
+          async job — each is a surface where operational knowledge accumulates
+          inside someone else's environment.
+        </p>
+      </div>
+      <div class="slide-foot">
+        <span>The Custody Problem · <strong>Henok Ghebrechristos</strong></span>
+        <span class="swipe">Swipe →</span>
+      </div>
+    </section>
+
+    <!-- 4. FIVE SURFACES -->
+    <section class="slide">
+      <div class="slide-head">
+        <span class="brand">HKI</span>
+        <span class="num">04 / 10</span>
+      </div>
+      <div class="body top">
+        <div class="eyebrow">Five runtime surfaces</div>
+        <h3 class="kicker">
+          Where operational knowledge quietly accumulates — without any model
+          training.
+        </h3>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-num">Surface 01</div>
+            <div class="card-title">Retrieval</div>
+            <div class="card-body">
+              Which documents the agent is allowed to see for this request.
+            </div>
+          </div>
+          <div class="card copper">
+            <div class="card-num">Surface 02</div>
+            <div class="card-title">Memory</div>
+            <div class="card-body">
+              What the agent remembers across turns, sessions, and users.
+            </div>
+          </div>
+          <div class="card blue">
+            <div class="card-num">Surface 03</div>
+            <div class="card-title">Tools</div>
+            <div class="card-body">
+              Which APIs and side-effects the agent can invoke on your behalf.
+            </div>
+          </div>
+          <div class="card gold">
+            <div class="card-num">Surface 04</div>
+            <div class="card-title">Cache</div>
+            <div class="card-body">
+              Where answers, embeddings, and intermediate results are reused.
+            </div>
+          </div>
+          <div class="card full">
+            <div class="card-num">Surface 05</div>
+            <div class="card-title">Async jobs &amp; telemetry</div>
+            <div class="card-body">
+              Background tasks and observability pipelines that quietly
+              propagate context outside the original request boundary.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-foot">
+        <span>The Custody Problem · <strong>Henok Ghebrechristos</strong></span>
+        <span class="swipe">Swipe →</span>
+      </div>
+    </section>
+
+    <!-- 5. FAILURE MODE -->
+    <section class="slide">
+      <div class="slide-head">
+        <span class="brand">HKI</span>
+        <span class="num">05 / 10</span>
+      </div>
+      <div class="body">
+        <div class="eyebrow">A failure mode</div>
+        <h2 class="title">Silent context bleed.</h2>
+        <p class="lede">
+          A finance question pulls a fragment of an HR document into its
+          reasoning. The answer looks fine. Nothing alerts. Nothing logs it as a
+          violation.
+        </p>
+        <div class="pull">
+          The boundary was a configuration claim — not an architectural one.
+        </div>
+      </div>
+      <div class="slide-foot">
+        <span>The Custody Problem · <strong>Henok Ghebrechristos</strong></span>
+        <span class="swipe">Swipe →</span>
+      </div>
+    </section>
+
+    <!-- 6. STAT: ZERO -->
+    <section class="slide dark">
+      <div class="slide-head">
+        <span class="brand">HKI</span>
+        <span class="num">06 / 10</span>
+      </div>
+      <div class="body">
+        <div class="eyebrow">The concentration risk</div>
+        <div class="stat">0</div>
+        <div class="stat-label">
+          Training cycles required for a third-party agentic runtime to become a
+          strategic dependency you cannot leave.
+        </div>
+        <p class="body-text" style="margin-top: 32px">
+          The lock doesn't click on day one. It clicks the day you realize you
+          can't migrate without rebuilding the reasoning your business now runs
+          on.
+        </p>
+      </div>
+      <div class="slide-foot">
+        <span>The Custody Problem · <strong>Henok Ghebrechristos</strong></span>
+        <span class="swipe">Swipe →</span>
+      </div>
+    </section>
+
+    <!-- 7. THE FUNDAMENTAL CLAIM -->
+    <section class="slide">
+      <div class="slide-head">
+        <span class="brand">HKI</span>
+        <span class="num">07 / 10</span>
+      </div>
+      <div class="body">
+        <div class="eyebrow">The deeper question</div>
+        <h2 class="title">
+          This isn't a security problem. <br />It's a <em>property-rights</em>
+          problem dressed in security clothing.
+        </h2>
+        <p class="lede">
+          An enterprise's reasoning, memory, and operational habits are now
+          being created inside execution environments it does not own.
+        </p>
+        <p class="body-text">
+          By the time it manifests as an incident, the value has already
+          migrated.
+        </p>
+      </div>
+      <div class="slide-foot">
+        <span>The Custody Problem · <strong>Henok Ghebrechristos</strong></span>
+        <span class="swipe">Swipe →</span>
+      </div>
+    </section>
+
+    <!-- 8. INTRODUCE HKI -->
+    <section class="slide dark">
+      <div class="slide-head">
+        <span class="brand">HKI</span>
+        <span class="num">08 / 10</span>
+      </div>
+      <div class="body">
+        <div class="eyebrow">A proposal</div>
+        <h2 class="title">
+          Introducing <em>Hermetic Knowledge Isolation</em> — HKI.
+        </h2>
+        <p class="lede">
+          An open framework for enforcing custody at every runtime surface:
+          gateway, retrieval, memory, tools, cache, async jobs, telemetry.
+        </p>
+        <div class="pull">
+          Not a product. A contract any agentic platform can be built or audited
+          against.
+        </div>
+      </div>
+      <div class="slide-foot">
+        <span>The Custody Problem · <strong>Henok Ghebrechristos</strong></span>
+        <span class="swipe">Swipe →</span>
+      </div>
+    </section>
+
+    <!-- 9. THE CONTRACT -->
+    <section class="slide">
+      <div class="slide-head">
+        <span class="brand">HKI</span>
+        <span class="num">09 / 10</span>
+      </div>
+      <div class="body top">
+        <div class="eyebrow">The runtime contract</div>
+        <h3 class="kicker">
+          Four properties any custody boundary must satisfy.
+        </h3>
+        <ul class="list">
+          <li>
+            <strong>One active domain</strong> signed at the gateway edge before
+            any retrieval, memory, or tool call begins.
+          </li>
+          <li>
+            <strong>Labels preserved</strong> through memory, cache, embeddings,
+            async jobs, and telemetry — no surface drops them.
+          </li>
+          <li>
+            <strong>Cross-domain sharing</strong> only through deliberate,
+            auditable publication — never silent fallback or inferred global
+            scope.
+          </li>
+          <li>
+            <strong>Every boundary testable</strong> through adversarial probes
+            and verifiable release evidence across all runtime surfaces.
+          </li>
+        </ul>
+      </div>
+      <div class="slide-foot">
+        <span>The Custody Problem · <strong>Henok Ghebrechristos</strong></span>
+        <span class="swipe">Swipe →</span>
+      </div>
+    </section>
+
+    <!-- 10. CTA / WHERE TO START -->
+    <section class="slide dark">
+      <div class="slide-head">
+        <span class="brand">HKI</span>
+        <span class="num">10 / 10</span>
+      </div>
+      <div class="body">
+        <div class="eyebrow">Where to start</div>
+        <h2 class="title">Audit one runtime operation <em>end-to-end.</em></h2>
+        <p class="lede">
+          Ask: which domain is active, where is that signed, and what would
+          change if it were absent? If nothing breaks — the boundary isn't real
+          yet.
+        </p>
+        <div class="cta-box">
+          <h4>Read the full paper · Follow the work</h4>
+          <p>
+            The Custody Problem in Enterprise Agentic AI — visual overview and
+            the HKI v1 framework specification.
+          </p>
+          <span class="repo">github.com/h3nok/HKI</span>
+        </div>
+      </div>
+      <div class="slide-foot">
+        <span><strong>Henok Ghebrechristos, PhD</strong> · 2026</span>
+        <span class="swipe">↻ Save · Share</span>
+      </div>
+    </section>
+  </body>
+</html>

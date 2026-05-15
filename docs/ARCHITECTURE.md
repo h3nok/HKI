@@ -421,7 +421,7 @@ async def generate_response(messages: list, tools: list):
    - Multipart form data (file + metadata)
    - Metadata: `{collection: "products", department: "retail"}`
 4. **Ingestion Pipeline** → receives file
-   - Stores original in GCS: `gs://knowledge-docs/products/catalog-2026.pdf`
+   - Stores original in object storage: `gs://<object-store-bucket>/products/catalog-2026.pdf`
    - Publishes Pub/Sub: `{"event": "document.uploaded", "doc_id": "123"}`
    - Returns: `{job_id: "job-456", status: "processing"}`
 5. **Pipeline** → async processing
@@ -486,13 +486,13 @@ KNOWLEDGE_PIPELINE_URL=http://ingestion-pipeline.platform.svc.cluster.local:9508
 
 # orchestrator environment
 KNOWLEDGE_API_URL=http://knowledge-api.platform.svc.cluster.local:9509
-LITELLM_URL=https://aigateway.cilabs.np.hki.com/v1
-REDIS_URL=rediss://10.0.0.5:6379
+LITELLM_URL=https://model-gateway.example.com/v1
+REDIS_URL=rediss://redis.example.internal:6379
 
 # ingestion pipeline environment
 KNOWLEDGE_API_URL=http://knowledge-api.platform.svc.cluster.local:9509
-GCS_BUCKET=gs://hki-knowledge-docs
-PUBSUB_TOPIC=projects/hki-innovation/topics/knowledge-events
+GCS_BUCKET=gs://<object-store-bucket>
+PUBSUB_TOPIC=projects/<project-id>/topics/knowledge-events
 ```
 
 Internal calls use **ClusterIP service DNS** within the namespace; managed backends still use private IPs or Google-managed APIs.

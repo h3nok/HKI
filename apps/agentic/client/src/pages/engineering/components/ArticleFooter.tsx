@@ -17,7 +17,7 @@ export function ArticleFooter({
   className?: string;
 }) {
   return (
-    <footer className={cn("mt-24 border-t border-border/50 pt-10", className)}>
+    <footer className={cn("mt-24 border-t border-border pt-10", className)}>
       <div className="grid gap-3 sm:grid-cols-3">
         {links.map(l => {
           const Icon =
@@ -42,7 +42,7 @@ export function ArticleFooter({
                     }
                   : undefined
               }
-              className="group flex items-center justify-between gap-3 rounded-md border border-border/60 bg-card/40 px-4 py-3 text-sm transition-colors hover:border-border hover:bg-muted/40"
+              className="group flex items-center justify-between gap-3 rounded-md border border-border bg-card px-4 py-3 text-sm shadow-surface transition-all hover:shadow-surface-md"
             >
               <span className="flex items-center gap-2.5 font-semibold text-foreground">
                 {Icon && (
@@ -50,7 +50,7 @@ export function ArticleFooter({
                 )}
                 {l.label}
               </span>
-              <ArrowUpRight className="h-4 w-4 text-muted-foreground/60 transition-colors group-hover:text-foreground" />
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />
             </a>
           );
         })}

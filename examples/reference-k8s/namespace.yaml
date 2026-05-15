@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hki-reference
+  labels:
+    app.kubernetes.io/name: hki-reference
+    app.kubernetes.io/part-of: hki
+    hki.openhki.dev/reference: "true"

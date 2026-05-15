@@ -94,21 +94,49 @@ echo "    ${copied} entries copied"
 echo "==> applying templates"
 cp -R "${TEMPLATES_DIR}/." "${OUT_DIR}/"
 
-# 3. Sanity checks.
+# 3. Generate a public lockfile for CI's frozen install.
+echo "==> generating public lockfile"
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "pnpm is required to generate the public pnpm-lock.yaml" >&2
+  exit 1
+fi
+(
+  cd "${OUT_DIR}"
+  pnpm install --lockfile-only --ignore-scripts
+)
+
+# 4. Sanity checks.
 echo "==> sanity checks"
 fail=0
 for f in README.md LICENSE package.json pnpm-workspace.yaml \
+         .changeset/config.json \
+         pnpm-lock.yaml \
+         spec/HKI-1.0.md \
+         spec/HKI-Agent-Gateway-Profile.md \
          packages/hki-runtime/package.json \
          packages/hki-runtime-py/pyproject.toml \
+         packages/hki-conformance-py/pyproject.toml \
+         packages/hki-mcp/package.json \
+         packages/sdk/package.json \
          packages/hki-langchain/pyproject.toml \
          packages/hki-llamaindex/pyproject.toml \
          packages/hki-adk/pyproject.toml \
          packages/hki-autogen/pyproject.toml \
          packages/hki-crewai/pyproject.toml \
          packages/hki-integration-tests/pyproject.toml \
+         scripts/ensure-package-built.mjs \
+         scripts/audit-public-release.mjs \
          scripts/build-conformance-registry.mjs \
          examples/end_to_end_demo.py \
+         examples/reference-k8s/kustomization.yaml \
+         docs/COMMUNITY_ENABLEMENT.md \
          docs/HKI_ADAPTERS.md \
+         docs/HKI_PUBLIC_READINESS_PLAN.md \
+         docs/HKI_SERVICE_EVIDENCE.md \
+         docs/REFERENCE_ARCHITECTURE_K8S.md \
+         docs/PUBLIC_RELEASE_PROCESS.md \
+         .github/workflows/framework-release.yml \
+         .github/workflows/python-release.yml \
          .github/workflows/ci.yml; do
   if [[ ! -e "${OUT_DIR}/${f}" ]]; then
     echo "    MISSING: ${f}" >&2
@@ -118,7 +146,7 @@ done
 [[ "${fail}" -ne 0 ]] && { echo "sanity checks failed" >&2; exit 1; }
 echo "    all required files present"
 
-# 4. Strip references to private apps / services (defence in depth).
+# 5. Strip references to private apps / services (defence in depth).
 echo "==> sanitising private references"
 # Note: scripts/audit-hki-conformance.mjs and scripts/hki_ast_audit.py keep
 # their SCAN_ROOTS lists as-is — they already skip-if-missing at runtime,
@@ -128,6 +156,9 @@ echo "==> sanitising private references"
 # We do, however, prepend a one-line clarifier to docs that reference
 # private services so external readers understand the context.
 PRIVATE_DOCS=(
+  "docs/COMMUNITY_ENABLEMENT.md"
+  "docs/HKI_PUBLIC_READINESS_PLAN.md"
+  "docs/HKI_SERVICE_EVIDENCE.md"
   "docs/HKI_ROADMAP.md"
   "docs/ARCHITECTURE.md"
 )
@@ -152,23 +183,10 @@ for doc in "${PRIVATE_DOCS[@]}"; do
   fi
 done
 
-echo "==> scanning for leaks"
-leaked=0
-for needle in "apps/agentic" "knowledge-api" "ingestion-pipeline-service" \
-              "orchestrator-service" "analytics-service" "services/" \
-              "docker-compose"; do
-  hits=$(grep -rIln --exclude-dir=.git "${needle}" "${OUT_DIR}" 2>/dev/null \
-         | grep -vE '/(docs/HKI_ROADMAP\.md|docs/ARCHITECTURE\.md|scripts/hki_ast_audit\.py|scripts/audit-hki-conformance\.mjs|scripts/hki-ast-audit-ts\.mjs)$' \
-         || true)
-  if [[ -n "${hits}" ]]; then
-    echo "    !! references to '${needle}' (unexpected location):"
-    echo "${hits}" | sed 's|^|        |'
-    leaked=1
-  fi
-done
-[[ "${leaked}" -eq 0 ]] && echo "    no unexpected leaks"
+echo "==> auditing public release output"
+node "${REPO_ROOT}/scripts/audit-public-release.mjs" "${OUT_DIR}"
 
-# 5. Initialise git, commit, optionally push.
+# 6. Initialise git, commit, optionally push.
 echo "==> initialising git repo"
 (
   cd "${OUT_DIR}"
@@ -188,7 +206,7 @@ if [[ -z "${PUSH_URL}" ]]; then
   exit 0
 fi
 
-# 6. Push.
+# 7. Push.
 echo "==> pushing to ${PUSH_URL}"
 (
   cd "${OUT_DIR}"

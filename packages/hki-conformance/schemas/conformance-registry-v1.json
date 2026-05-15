@@ -12,6 +12,8 @@
     "conformance",
     "audit",
     "threats",
+    "evidenceProfile",
+    "releaseEvidence",
     "level"
   ],
   "properties": {
@@ -104,20 +106,93 @@
         "failed": { "type": "integer", "minimum": 0 },
         "total": { "type": "integer", "minimum": 0 },
         "level_claim": { "type": "integer", "minimum": 0 },
+        "evidence_profile": {
+          "type": "string",
+          "enum": ["none", "smoke", "live", "release"]
+        },
         "bundle_hash": { "type": "string" },
         "target": { "type": "object", "additionalProperties": true },
         "generated_at": { "type": "string" }
       },
       "additionalProperties": true
     },
+    "evidenceProfile": {
+      "type": "string",
+      "enum": ["none", "smoke", "live", "release"]
+    },
+    "releaseEvidence": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "level",
+        "evidenceProfile",
+        "generatedBy",
+        "commandManifest",
+        "componentHashes",
+        "verification",
+        "releaseReadiness",
+        "manifestHash"
+      ],
+      "properties": {
+        "schemaVersion": { "type": "string", "minLength": 1 },
+        "level": { "type": "string" },
+        "evidenceProfile": {
+          "type": "string",
+          "enum": ["none", "smoke", "live", "release"]
+        },
+        "generatedBy": { "type": "string", "minLength": 1 },
+        "commandManifest": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "command", "status"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "command": { "type": "string", "minLength": 1 },
+              "status": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": true
+          }
+        },
+        "componentHashes": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }]
+          }
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "releaseReadiness": {
+          "type": "object",
+          "required": [
+            "strictReleaseEligible",
+            "status",
+            "blockers",
+            "warnings"
+          ],
+          "properties": {
+            "strictReleaseEligible": { "type": "boolean" },
+            "status": { "type": "string", "enum": ["ready", "blocked"] },
+            "blockers": { "type": "array" },
+            "warnings": { "type": "array" }
+          },
+          "additionalProperties": true
+        },
+        "manifestHash": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
     "level": {
       "type": "string",
       "enum": [
-        "L0-non-conformant",
-        "L1-passing",
-        "L2-baseline",
-        "L3-evidenced",
-        "L4-deployed"
+        "L0-documented",
+        "L1-labeled",
+        "L2-routed",
+        "L3-enforced",
+        "L4-tested",
+        "L5-audited"
       ]
     }
   },

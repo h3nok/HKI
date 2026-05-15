@@ -133,14 +133,27 @@ same_org AND (domain = active_domain OR domain IS NULL OR domain = 'global')
 
 ## Conformance Levels
 
-| Level | Name       | Bar                                                            |
-| ----- | ---------- | -------------------------------------------------------------- |
-| 0     | Documented | Domain-sensitive surfaces are inventoried.                     |
-| 1     | Labeled    | Runtime artifacts have non-null domain labels.                 |
-| 2     | Routed     | Requests carry a signed active-domain envelope.                |
-| 3     | Enforced   | Runtime paths reject missing/global/cross-domain scope.        |
-| 4     | Tested     | Automated negative tests prove isolation invariants.           |
-| 5     | Audited    | Release evidence is reproducible and independently reviewable. |
+| Level | Name       | Bar                                                             |
+| ----- | ---------- | --------------------------------------------------------------- |
+| 0     | Documented | Domain-sensitive surfaces are inventoried.                      |
+| 1     | Labeled    | Runtime artifacts have non-null domain labels.                  |
+| 2     | Routed     | Requests carry a signed active-domain envelope.                 |
+| 3     | Enforced   | Runtime paths reject missing/global/cross-domain scope.         |
+| 4     | Tested     | Automated negative tests and probes prove isolation invariants. |
+| 5     | Audited    | Signed release evidence is independently reviewable.            |
+
+### Evidence Profile Qualifiers
+
+Conformance levels describe isolation maturity. Evidence profiles describe where
+the proof was gathered:
+
+- `smoke` — local, mock-gateway, or CI smoke evidence.
+- `live` — evidence from a deployed endpoint controlled by the implementer.
+- `release` — signed release evidence intended for external review.
+
+Registries and public claims **MUST NOT** encode deployment scope into the level
+name. Use the canonical level plus an evidence profile, for example
+`L4-tested` with `smoke` evidence or `L4-tested` with `live` evidence.
 
 ## Required Negative Tests
 
@@ -165,6 +178,7 @@ An HKI-conformant release **MUST** include tests for:
 A release claiming HKI conformance **SHOULD** publish:
 
 - conformance level
+- evidence profile (`smoke`, `live`, or `release`)
 - passing negative-test report
 - artifact-label inventory
 - cache-key schema
@@ -172,3 +186,5 @@ A release claiming HKI conformance **SHOULD** publish:
 - admin-plane route inventory
 - publication workflow evidence
 - trace samples with HKI attributes
+- machine-readable release evidence manifest with command results, component
+  hashes, release-readiness blockers, and manifest hash

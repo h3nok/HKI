@@ -17,12 +17,12 @@ Nothing here requires funding or collaborators to start.
 **Verdict:** HKI's standard implementation is ahead of Sprint 1; public
 distribution is now the blocker.
 
-| Area                      | Current state                                                                                                                                                         | What it means                                                                                          |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Standard implementation   | `conformance.json` reports 28/28 cases, 15/15 threats, 10/10 HTTP probe smoke, and `L4-deployed`.                                                                     | The core standard is evidence-ready, not still in invention mode.                                      |
-| Framework/runtime surface | TypeScript runtime, Python runtime, conformance kits, SDK, MCP guard, six framework adapters, examples, and threat demos are implemented per the engineering roadmap. | Stop adding core-standard scope until the public launch tasks close.                                   |
-| Public package release    | `npm view @hki/runtime`, `npm view @hki/conformance`, and PyPI lookup for `hki-runtime` currently return 404; no local `v0.1.0` tag is present.                       | Week 1 is not done until packages are live and clean-install smoke tests pass.                         |
-| L4 evidence nuance        | The checked-in registry was built from local/mock-gateway probe evidence; the Cloud Run probe workflow exists for live external evidence.                             | Public copy should say L4 smoke/evidence-ready until the live probe artifact is attached to a release. |
+| Area                      | Current state                                                                                                                                                         | What it means                                                                                               |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Standard implementation   | `conformance.json` reports 28/28 cases, 15/15 threats, 10/10 HTTP probe smoke, and `L4-tested` with a smoke evidence profile.                                         | The core standard is evidence-ready, not still in invention mode.                                           |
+| Framework/runtime surface | TypeScript runtime, Python runtime, conformance kits, SDK, MCP guard, six framework adapters, examples, and threat demos are implemented per the engineering roadmap. | Stop adding core-standard scope until the public launch tasks close.                                        |
+| Public package release    | `npm view @hki/runtime`, `npm view @hki/conformance`, and PyPI lookup for `hki-runtime` currently return 404; no local `v0.1.0` tag is present.                       | Week 1 is not done until packages are live and clean-install smoke tests pass.                              |
+| L4 evidence nuance        | The checked-in registry was built from local/mock-gateway probe evidence; the Cloud Run probe workflow exists for live external evidence.                             | Public copy should say `L4-tested (smoke evidence)` until the live probe artifact is attached to a release. |
 
 ### Sprint 1 operating plan
 
@@ -32,6 +32,51 @@ distribution is now the blocker.
 | Package publication           | Blocking      | Create or verify the npm org and PyPI project, publish v0.1.0 packages, then run clean install smoke tests.                  |
 | Release evidence              | Ready locally | Rebuild `conformance.json` after `pnpm probe:smoke` and attach the registry plus probe evidence to release notes.            |
 | Public positioning            | Next          | Push the public package/repo surface, update README badges to live registry URLs, then ship `hki.dev` or GitHub Pages.       |
+
+### May 15 standard maturity hardening plan
+
+**Purpose:** Move HKI from a strong draft framework to a credible candidate
+standard for cross-industry design-partner adoption. This is not a new feature
+sprint; it is a standardization sprint that tightens terminology, evidence,
+governance, and industry-facing adoption paths.
+
+| Workstream                           | Why it matters                                                                                    | Definition of done                                                                                                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Canonical conformance ladder         | Current docs use overlapping terms such as Tested, Auditable, Certified, smoke-evidenced, and L4. | `spec/HKI-1.0.md`, `docs/HKI_CONFORMANCE.md`, `ROADMAP.md`, and registry output use one Level 0-5 vocabulary with explicit smoke/live evidence qualifiers.          |
+| Clean release evidence bundle        | External readers should not see dirty-state ambiguity, untitled cases, or local-only evidence.    | `conformance.json` is generated from a clean commit, every case has a title, commands are listed, and smoke evidence is clearly separated from live probe evidence. |
+| Standards governance pack            | All-industry adoption requires neutral process, not only a repo owned by one author.              | Contribution docs describe RFC workflow, versioning policy, conformance mark rules, decision process, and how independent implementers can propose profiles.        |
+| Industry profile skeletons           | The core invariant is universal, but buyers adopt through sector language and audit mappings.     | Draft profile outlines exist for financial services, healthcare, government, legal, retail/operations, and manufacturing/IP with mappings to likely controls.       |
+| Independent implementation readiness | A standard becomes real when someone else can implement and prove it without private context.     | Design-partner checklist, adapter author guide, and conformance quickstart let a third party run the kit and produce a shareable evidence bundle.                   |
+
+**Execution order:**
+
+1. Normalize conformance terminology first; every later artifact depends on a
+   single maturity vocabulary.
+2. Clean the evidence registry and conformance case metadata so public claims
+   are reproducible and non-ambiguous.
+3. Add the governance pack before asking design partners to treat HKI as a
+   standard rather than a library.
+4. Add industry profile skeletons last; they should reference the canonical
+   conformance ladder and evidence format, not invent new rules.
+
+**Non-goals for this effort:** new runtime semantics, new adapters, UI polish,
+or additional reference-platform features. The core is already ahead of public
+distribution; the next effort is making the standard adoptable by people who
+did not watch it being built.
+
+**May 15 execution note:** canonical conformance terminology is now normalized
+across the spec, docs, registry schema, builder, and conformance action. The
+registry builder also emits a release evidence manifest with command sources,
+component hashes, strict-release blockers, and a manifest hash. Remaining
+standardization work should focus on governance and independent implementation
+readiness.
+
+**May 15 governance note:** community and contribution docs now define the RFC
+workflow, compatibility policy, conformance mark rules, industry profile process,
+TSC path, and design-partner evidence checklist. Security mapping now includes
+industry profile skeletons for finance, healthcare, government, legal,
+retail/operations, and manufacturing/IP. The next blocker is external proof, not
+internal process.
 
 ---
 

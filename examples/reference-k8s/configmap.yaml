@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hki-reference-config
+  labels:
+    app.kubernetes.io/name: hki-reference-config
+    app.kubernetes.io/part-of: hki
+data:
+  HKI_ENVIRONMENT: "reference"
+  HKI_REQUIRE_SIGNED_ENVELOPE: "true"
+  HKI_ENVELOPE_HEADER: "x-hki-envelope"
+  ORCHESTRATOR_URL: "http://orchestrator:9501"
+  KNOWLEDGE_API_URL: "http://knowledge-api:9509"
+  INGESTION_PIPELINE_URL: "http://ingestion-pipeline:9508"
+  ANALYTICS_URL: "http://analytics:9512"
+  MODEL_GATEWAY_URL: "http://model-gateway:8080"
+  MCP_GATEWAY_URL: "http://mcp-gateway:8080"
+  REDIS_URL: "redis://redis:6379/0"
+  OBJECT_STORE_BUCKET: "hki-reference-documents"

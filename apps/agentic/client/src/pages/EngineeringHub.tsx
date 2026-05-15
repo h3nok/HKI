@@ -164,17 +164,17 @@ const QUICK_STATS = [
 
 function toneClass(tone: Tone) {
   return {
-    primary: "border-primary/30 bg-primary/10 text-primary",
+    primary: "border-primary/25 bg-primary/9 text-primary",
     success: "border-success/30 bg-success/10 text-success",
-    neutral: "border-border/70 bg-background/60 text-muted-foreground",
+    neutral: "border-border bg-muted/50 text-muted-foreground",
   }[tone];
 }
 
 function toneBarClass(tone: Tone) {
   return {
-    primary: "bg-gradient-to-r from-primary/70 via-primary/40 to-transparent",
-    success: "bg-gradient-to-r from-success/70 via-success/40 to-transparent",
-    neutral: "bg-gradient-to-r from-border/80 to-transparent",
+    primary: "bg-linear-to-r from-primary/60 via-primary/30 to-transparent",
+    success: "bg-linear-to-r from-success/60 via-success/30 to-transparent",
+    neutral: "bg-linear-to-r from-border to-transparent",
   }[tone];
 }
 
@@ -185,7 +185,7 @@ function isClientRoute(href: string) {
 function StoryFrameCard({ frame }: { frame: StoryFrame }) {
   const Icon = frame.icon;
   return (
-    <article className="relative overflow-hidden rounded-xl border border-border/60 bg-card/40 p-5">
+    <article className="relative overflow-hidden rounded-xl border border-border bg-card shadow-surface p-5">
       <div
         className={cn(
           "absolute inset-x-0 top-0 h-0.5",
@@ -201,7 +201,7 @@ function StoryFrameCard({ frame }: { frame: StoryFrame }) {
         >
           <Icon className="h-4 w-4" />
         </span>
-        <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-muted-foreground/70">
+        <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-muted-foreground">
           {frame.label}
         </span>
       </div>
@@ -217,8 +217,8 @@ function StoryFrameCard({ frame }: { frame: StoryFrame }) {
 
 function RuntimeMap() {
   return (
-    <section className="overflow-hidden rounded-xl border border-border/60 bg-card/35">
-      <div className="flex items-center justify-between gap-4 border-b border-border/50 px-5 py-4">
+    <section className="overflow-hidden rounded-xl border border-border bg-card shadow-surface">
+      <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
             Context custody
@@ -227,14 +227,14 @@ function RuntimeMap() {
             The model is not the boundary. The runtime is.
           </h2>
         </div>
-        <span className="shrink-0 rounded-full border border-primary/20 bg-background/60 px-3 py-1 font-mono text-[10px] font-semibold text-primary">
+        <span className="shrink-0 rounded-full border border-primary/20 bg-muted/50 px-3 py-1 font-mono text-[10px] font-semibold text-primary">
           HkiEnvelope
         </span>
       </div>
 
       <div className="p-5">
         <div className="flex items-stretch gap-3">
-          <div className="flex shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-background/50 px-4 py-4">
+          <div className="flex shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted/40 px-4 py-4">
             <MessageSquare className="h-5 w-5 text-muted-foreground" />
             <p className="text-[11px] font-semibold text-foreground">Request</p>
           </div>
@@ -243,12 +243,12 @@ function RuntimeMap() {
             <ArrowRight className="h-4 w-4 shrink-0 text-primary/40" />
           </div>
 
-          <div className="flex flex-1 flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+          <div className="flex flex-1 flex-col gap-3 rounded-xl border border-primary/20 bg-primary/7 p-3">
             <div className="flex items-center justify-between gap-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
                 Agent runtime
               </span>
-              <span className="font-mono text-[9px] text-muted-foreground/60">
+              <span className="font-mono text-[9px] text-muted-foreground">
                 active_domain locked
               </span>
             </div>
@@ -258,7 +258,7 @@ function RuntimeMap() {
                 return (
                   <div
                     key={part.label}
-                    className="flex flex-col items-center gap-1.5 rounded-lg border border-border/50 bg-background/70 py-2.5"
+                    className="flex flex-col items-center gap-1.5 rounded-lg border border-border bg-card py-2.5"
                   >
                     <Icon className="h-3.5 w-3.5 text-primary/70" />
                     <p className="text-[10px] font-medium text-foreground">
@@ -274,7 +274,7 @@ function RuntimeMap() {
             <ArrowRight className="h-4 w-4 shrink-0 text-primary/40" />
           </div>
 
-          <div className="flex shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-success/25 bg-success/8 px-4 py-4">
+          <div className="flex shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-success/30 bg-success/9 px-4 py-4">
             <ShieldCheck className="h-5 w-5 text-success" />
             <p className="text-[11px] font-semibold text-foreground">Scoped</p>
             <p className="text-[10px] text-muted-foreground">answer</p>
@@ -306,9 +306,9 @@ function HubCardLink({
       <a
         href={card.href}
         onClick={handleClick}
-        className="group flex items-center gap-6 rounded-xl border border-primary/25 bg-linear-to-br from-primary/10 to-primary/5 p-6 shadow-sm shadow-primary/5 outline-none transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="group flex items-center gap-6 rounded-xl border border-primary/30 bg-linear-to-br from-primary/13 to-primary/7 p-6 shadow-surface outline-none transition-all hover:-translate-y-0.5 hover:shadow-surface-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-background/70 text-primary shadow-sm">
+        <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-card text-primary shadow-sm">
           <Icon className="h-6 w-6" />
         </span>
         <div className="min-w-0 flex-1">
@@ -334,14 +334,14 @@ function HubCardLink({
     <a
       href={card.href}
       onClick={handleClick}
-      className="group flex flex-col rounded-xl border border-border/60 bg-card/35 p-5 outline-none transition-all hover:-translate-y-0.5 hover:border-border/80 hover:bg-card/55 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="group flex flex-col rounded-xl border border-border bg-card shadow-surface p-5 outline-none transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-surface-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <div className="flex items-start justify-between gap-3">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-background/60 text-primary">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-muted/50 text-primary">
           <Icon className="h-4 w-4" />
         </span>
         {card.meta && (
-          <span className="rounded-full border border-border/60 bg-background/50 px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground">
+          <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground">
             {card.meta}
           </span>
         )}
@@ -379,10 +379,10 @@ export default function EngineeringHub() {
       <EngineeringHeader />
 
       <main className="flex-1 py-8 sm:py-10">
-        <div className="mx-auto w-full max-w-340 px-5 sm:px-8">
-          <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
+          <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
             <div className="min-w-0">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/12 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                 <Cpu className="h-3 w-3" />
                 Engineering work index
               </div>
@@ -412,7 +412,7 @@ export default function EngineeringHub() {
                     event.preventDefault();
                     navigate(HKI_ARCHITECTURE_ROUTE);
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg border border-border/70 bg-card/50 px-5 py-2.5 text-sm font-semibold text-foreground outline-none transition-all hover:-translate-y-px hover:bg-card/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground outline-none transition-all hover:-translate-y-px hover:shadow-surface focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   View architecture
                   <Network className="h-4 w-4" />
@@ -420,7 +420,7 @@ export default function EngineeringHub() {
               </div>
             </div>
 
-            <aside className="rounded-xl border border-border/60 bg-card/35 p-5">
+            <aside className="rounded-xl border border-border bg-card shadow-surface p-5">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-success shadow-sm shadow-success/50" />
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
@@ -433,13 +433,13 @@ export default function EngineeringHub() {
                   return (
                     <div
                       key={stat.label}
-                      className="rounded-lg border border-border/50 bg-background/50 p-3"
+                      className="rounded-lg border border-border bg-muted/40 p-3"
                     >
                       <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                       <p className="mt-2 text-lg font-bold tabular-nums text-foreground">
                         {stat.value}
                       </p>
-                      <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+                      <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                         {stat.label}
                       </p>
                     </div>
@@ -447,7 +447,7 @@ export default function EngineeringHub() {
                 })}
               </div>
               {EVIDENCE.commit && (
-                <p className="mt-4 border-t border-border/50 pt-3 font-mono text-[11px] text-muted-foreground/70">
+                <p className="mt-4 border-t border-border pt-3 font-mono text-[11px] text-muted-foreground">
                   build @{EVIDENCE.commit}
                 </p>
               )}
@@ -464,7 +464,7 @@ export default function EngineeringHub() {
             ))}
           </section>
 
-          <section className="mt-10 border-t border-border/60 pt-8">
+          <section className="mt-10 border-t border-border pt-8">
             <div className="mb-5 flex flex-col gap-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
                 Choose your next step
@@ -495,8 +495,8 @@ export default function EngineeringHub() {
         </div>
       </main>
 
-      <footer className="border-t border-border/60">
-        <div className="mx-auto flex min-h-12 w-full max-w-340 flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs text-muted-foreground sm:px-8">
+      <footer className="border-t border-border">
+        <div className="mx-auto flex min-h-12 w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs text-muted-foreground sm:px-8">
           <div className="flex items-center gap-2">
             <HkiMark size={14} variant="color" />
             <span>HKI Engineering Hub · Hermetic Knowledge Isolation</span>

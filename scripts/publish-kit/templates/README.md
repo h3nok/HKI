@@ -4,8 +4,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **HKI** is a runtime + spec for keeping agentic AI systems honest about
-*whose data they're allowed to look at, whose tools they're allowed to call,
-and whose answers they're allowed to return.* It's a portable enforcement
+_whose data they're allowed to look at, whose tools they're allowed to call,
+and whose answers they're allowed to return._ It's a portable enforcement
 layer — not a framework — that plugs into LangChain, LlamaIndex, Google
 ADK, Microsoft AutoGen, CrewAI, and LiteLLM.
 
@@ -14,6 +14,10 @@ ADK, Microsoft AutoGen, CrewAI, and LiteLLM.
 - **`@hki/runtime`** (TypeScript) and **`hki-runtime`** (Python) — the
   core: signed envelope, scope policy, gateway-target evaluator,
   artifact-visibility check, deterministic cache-key derivation.
+- **`@hki/sdk`** — a single TypeScript entry point for runtime,
+  conformance, client helpers, and schemas.
+- **`@hki/mcp`** — MCP tool, resource, prompt, and server middleware
+  for enforcing HKI at the tool boundary.
 - **Six framework adapters** — drop-in callbacks / wrappers / tool
   guards for the major agent stacks. All duck-typed (no hard dep).
 - **`@hki/conformance`** — the spec as 28 executable test cases. Run
@@ -24,6 +28,9 @@ ADK, Microsoft AutoGen, CrewAI, and LiteLLM.
   break a RAG in 60 seconds, then watch HKI block the same attack.
 - **End-to-end demo** — [`examples/end_to_end_demo.py`](./examples/end_to_end_demo.py)
   walks one envelope through every adapter.
+- **Kubernetes reference starter** — [`examples/reference-k8s/`](./examples/reference-k8s/)
+  provides a public-safe service topology developers can smoke locally and then
+  adapt with their own images and infrastructure.
 
 ## The five invariants every adapter enforces
 
@@ -40,6 +47,9 @@ Plus three integrity invariants (session, stream, crew consistency)
 where the framework supports them.
 
 See [`docs/HKI_ADAPTERS.md`](./docs/HKI_ADAPTERS.md) for the full index.
+The normative standard lives in [`spec/HKI-1.0.md`](./spec/HKI-1.0.md),
+with the gateway profile in
+[`spec/HKI-Agent-Gateway-Profile.md`](./spec/HKI-Agent-Gateway-Profile.md).
 
 ## Quick start
 
@@ -107,8 +117,10 @@ pnpm verify:hki-conformance
 
 28 executable cases, each tagged `must` / `should` / `may`. The
 [`scripts/build-conformance-registry.mjs`](./scripts/build-conformance-registry.mjs)
-script produces a `conformance.json` evidence artifact at one of three
-levels: `L1-self-attested`, `L2-tested`, `L3-evidenced`.
+script produces a `conformance.json` evidence artifact using the canonical HKI
+Level 0-5 ladder plus an evidence profile such as `smoke` or `live`.
+The artifact also includes `releaseEvidence`: a command manifest, component
+hashes, strict-release blockers, and a manifest hash for external review.
 
 The `hki-conformance-action` runs all of this on every PR.
 
@@ -119,7 +131,10 @@ packages/
   hki-runtime/              # TypeScript runtime
   hki-runtime-py/           # Python runtime
   hki-conformance/          # Spec as 28 executable cases
+  hki-conformance-py/       # Python conformance checker
   hki-conformance-action/   # GitHub Action
+  hki-mcp/                  # MCP guards and middleware
+  sdk/                      # Unified TypeScript SDK
   hki-litellm/              # LiteLLM gateway adapter
   hki-langchain/            # LangChain / LangGraph adapter
   hki-llamaindex/           # LlamaIndex adapter
@@ -129,14 +144,21 @@ packages/
   hki-integration-tests/    # Cross-adapter end-to-end suite
 examples/
   threats/                  # 15 runnable threat demos
+  reference-k8s/            # Sanitized Kubernetes reference starter
   end_to_end_demo.py        # Single-process showcase
 scripts/                    # AST audit + conformance registry build
+spec/                       # Normative HKI standard and profiles
 docs/
+  COMMUNITY_ENABLEMENT.md
   HKI_ROADMAP.md
   HKI_ADAPTERS.md
   HKI_THREATS.md
   HKI_CONFORMANCE.md
   HKI_SECURITY_MAPPING.md
+  HKI_PUBLIC_READINESS_PLAN.md
+  HKI_SERVICE_EVIDENCE.md
+  REFERENCE_ARCHITECTURE_K8S.md
+  PUBLIC_RELEASE_PROCESS.md
   ARCHITECTURE.md
 ```
 

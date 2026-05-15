@@ -38,11 +38,11 @@ export function OnThisPage({
   return (
     <aside className={cn("hidden 2xl:block", className)}>
       <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
-        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/60">
+        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
           On this page
         </p>
         <nav aria-label="On this page">
-          <ol className="space-y-1 border-l border-border/60 pl-2">
+          <ol className="space-y-1 border-l border-border pl-2">
             {subs.map(s => {
               const active = s.id === activeId;
               return (
@@ -54,7 +54,7 @@ export function OnThisPage({
                       "-ml-2.75 block rounded-md border-l-2 py-1.5 pl-3 pr-2 text-[12px] leading-5 outline-none transition-[background-color,border-color,color,box-shadow] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                       active
                         ? "border-primary bg-primary/8 font-semibold text-primary"
-                        : "border-transparent font-medium text-muted-foreground hover:border-border hover:bg-muted/35 hover:text-foreground"
+                        : "border-transparent font-medium text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground"
                     )}
                   >
                     {s.text}

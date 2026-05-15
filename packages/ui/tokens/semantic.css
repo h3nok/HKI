@@ -83,29 +83,29 @@
      §4 STATUS COLORS — Semantic Feedback
      ═══════════════════════════════════════════════════════════════════════════ */
 
-  /* Destructive/Error — duotone signal; copy/icons carry severity. */
-  --destructive: var(--color-brand-iris-500);
-  --destructive-hover: var(--color-brand-iris-600);
+  /* Destructive/Error */
+  --destructive: var(--color-error-500);
+  --destructive-hover: var(--color-error-600);
   --destructive-foreground: var(--color-neutral-0);
-  --destructive-muted: var(--color-brand-iris-50);
+  --destructive-muted: var(--color-error-50);
 
   /* Success */
-  --success: var(--color-brand-iris-500);
-  --success-hover: var(--color-brand-iris-600);
+  --success: var(--color-success-500);
+  --success-hover: var(--color-success-600);
   --success-foreground: var(--color-neutral-0);
-  --success-muted: var(--color-brand-iris-50);
+  --success-muted: var(--color-success-50);
 
   /* Warning */
-  --warning: var(--color-brand-iris-500);
-  --warning-hover: var(--color-brand-iris-600);
+  --warning: var(--color-warning-500);
+  --warning-hover: var(--color-warning-600);
   --warning-foreground: var(--color-neutral-0);
-  --warning-muted: var(--color-brand-iris-50);
+  --warning-muted: var(--color-warning-50);
 
   /* Info */
-  --info: var(--color-brand-iris-500);
-  --info-hover: var(--color-brand-iris-600);
+  --info: var(--color-info-500);
+  --info-hover: var(--color-info-600);
   --info-foreground: var(--color-neutral-0);
-  --info-muted: var(--color-brand-iris-50);
+  --info-muted: var(--color-info-50);
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §5 BORDERS & DIVIDERS
@@ -272,26 +272,26 @@
   --accent-hover: rgb(14 124 123 / 0.25);
   --accent-foreground: var(--color-brand-iris-300);
 
-  /* §4 Status Colors — Brighter for visibility */
-  --destructive: var(--color-brand-iris-400);
-  --destructive-hover: var(--color-brand-iris-300);
-  --destructive-foreground: var(--color-neutral-900);
-  --destructive-muted: rgb(14 124 123 / 0.15);
+  /* §4 Status Colors — lighter steps for dark backgrounds */
+  --destructive: var(--color-error-400);
+  --destructive-hover: var(--color-error-300);
+  --destructive-foreground: var(--color-error-900);
+  --destructive-muted: rgb(248 113 113 / 0.15);
 
-  --success: var(--color-brand-iris-400);
-  --success-hover: var(--color-brand-iris-300);
-  --success-foreground: var(--color-neutral-900);
-  --success-muted: rgb(14 124 123 / 0.15);
+  --success: var(--color-success-400);
+  --success-hover: var(--color-success-300);
+  --success-foreground: var(--color-success-900);
+  --success-muted: rgb(74 222 128 / 0.15);
 
-  --warning: var(--color-brand-iris-400);
-  --warning-hover: var(--color-brand-iris-300);
-  --warning-foreground: var(--color-neutral-900);
-  --warning-muted: rgb(14 124 123 / 0.15);
+  --warning: var(--color-warning-400);
+  --warning-hover: var(--color-warning-300);
+  --warning-foreground: var(--color-warning-900);
+  --warning-muted: rgb(251 191 36 / 0.15);
 
-  --info: var(--color-brand-iris-400);
-  --info-hover: var(--color-brand-iris-300);
-  --info-foreground: var(--color-neutral-900);
-  --info-muted: rgb(14 124 123 / 0.15);
+  --info: var(--color-info-400);
+  --info-hover: var(--color-info-300);
+  --info-foreground: var(--color-info-900);
+  --info-muted: rgb(14 165 233 / 0.15);
 
   /* §5 Borders */
   --border: var(--color-neutral-700);

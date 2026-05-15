@@ -12,7 +12,7 @@ import { cn } from "@hki/ui";
  * break on inner page padding.
  */
 
-const PROSE_MAX = "max-w-[84ch]";
+const PROSE_MAX = "max-w-[68ch]";
 
 export function ProseBlock({
   children,
