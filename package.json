@@ -30,6 +30,7 @@
     "audit:hki-ast:strict": "uv run --with libcst python scripts/hki_ast_audit.py --strict-internal",
     "audit:hki-ast-ts": "node scripts/hki-ast-audit-ts.mjs",
     "audit:hki-ast-ts:strict": "node scripts/hki-ast-audit-ts.mjs --strict-internal",
+    "audit:sensitive-source": "node scripts/audit-source-sensitive.mjs",
     "audit:public-release": "node scripts/audit-public-release.mjs scripts/publish-kit/out",
     "test:hki-runtime": "pnpm --dir packages/hki-runtime test",
     "typecheck:hki-runtime": "pnpm --dir packages/hki-runtime typecheck",

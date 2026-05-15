@@ -38,13 +38,23 @@
 **/.mypy_cache/
 **/.eslintcache
 
-# Terraform — provider binaries are large and should not be committed
-**/.terraform/providers/
+# Terraform — local state and environment-specific inputs must not be committed
+**/.terraform/
+**/terraform.tfstate
+**/terraform.tfstate.*
+**/terraform.tfvars
+!**/terraform.tfvars.example
 
 # GCP credentials
 deploy/compose/creds/
 **/gcp_creds.json
 **/service-account*.json
+**/service_account*.json
+**/*credentials*.json
+**/*.pem
+**/*.p12
+**/*.pfx
+**/*.key
 
 # OS
 .DS_Store

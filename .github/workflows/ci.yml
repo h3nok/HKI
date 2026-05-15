@@ -92,6 +92,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm audit:ui-tokens
+      - run: pnpm audit:sensitive-source
       - run: pnpm audit:hki
       - run: pnpm audit:hki-ast-ts
       - run: pnpm verify:hki-conformance
