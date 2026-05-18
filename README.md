@@ -47,6 +47,7 @@ An HKI-conformant runtime must prove:
 | **Plane separation**       | Admin-plane cross-domain inspection is unreachable from runtime routes                 |
 
 The full normative standard is in [spec/HKI-1.0.md](./spec/HKI-1.0.md).
+The custody research note is in [docs/HKI-package/custody_problem.md](./docs/HKI-package/custody_problem.md).
 The complete architecture paper is in [docs/HKI-package/HERMETIC-KNOWLEDGE-ISOLATION.md](./docs/HKI-package/HERMETIC-KNOWLEDGE-ISOLATION.md).
 
 ---
@@ -83,6 +84,7 @@ Start here if you are evaluating HKI for your architecture or writing a
 conformant adapter.
 
 - [HKI 1.0 Draft Standard](./spec/HKI-1.0.md) — normative invariants, envelope schema, conformance levels
+- [The Custody Problem](./docs/HKI-package/custody_problem.md) — research framing for inference-time data sovereignty, usage control, provenance, multi-domain delegation, derived artifacts, and falsifiable conformance checks
 - [HKI Agent Gateway Profile](./spec/HKI-Agent-Gateway-Profile.md) — gateway enforcement requirements
 - [Architecture Paper](./docs/HKI-package/HERMETIC-KNOWLEDGE-ISOLATION.md) — full system model, reference architecture, implementation surface, migration path
 - [Scoped Agentic Routing](./docs/SCOPED_AGENTIC_ROUTING.md) — operational runtime standard

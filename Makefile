@@ -1001,7 +1001,7 @@ dev-knowledge-api: ## Run Knowledge API on :9509 (requires infra-up)
 		ENVIRONMENT=development \
 		HKI_DEV_RUNTIME_SCOPE=dev \
 		KB_HERMETIC_ISOLATION=true \
-		PYTHONPATH="$(CURDIR)/packages/shared-py:$${PYTHONPATH:-}" \
+		PYTHONPATH="$(CURDIR)/packages/shared-py:$(CURDIR)/packages/hki-runtime-py:$${PYTHONPATH:-}" \
 		uv run uvicorn src.api.app:app --reload --port 9509 --reload-dir src
 
 dev-knowledge-api-full: ## Run Knowledge API with Neo4j on :9509
@@ -1013,7 +1013,7 @@ dev-knowledge-api-full: ## Run Knowledge API with Neo4j on :9509
 		ENVIRONMENT=development \
 		HKI_DEV_RUNTIME_SCOPE=dev \
 		KB_HERMETIC_ISOLATION=true \
-		PYTHONPATH="$(CURDIR)/packages/shared-py:$${PYTHONPATH:-}" \
+		PYTHONPATH="$(CURDIR)/packages/shared-py:$(CURDIR)/packages/hki-runtime-py:$${PYTHONPATH:-}" \
 		uv run uvicorn src.api.app:app --reload --port 9509 --reload-dir src
 
 dev-ingestion: ## Run Ingestion Pipeline Service on :9508 (requires infra-up)
@@ -1024,20 +1024,20 @@ dev-ingestion: ## Run Ingestion Pipeline Service on :9508 (requires infra-up)
 		ENVIRONMENT=development \
 		HKI_DEV_RUNTIME_SCOPE=dev \
 		KB_HERMETIC_ISOLATION=true \
-		PYTHONPATH="$(CURDIR)/packages/shared-py:$${PYTHONPATH:-}" \
+		PYTHONPATH="$(CURDIR)/packages/shared-py:$(CURDIR)/packages/hki-runtime-py:$${PYTHONPATH:-}" \
 		uv run uvicorn src.api.app:app --reload --port 9508 --reload-dir src
 
 dev-orchestrator: ## Run Orchestrator Service on :9501 (requires infra-up)
 	cd services/orchestrator-service && set -a && [ -f .env ] && . .env; set +a && unset __PYVENV_LAUNCHER__ && \
 		REDIS_URL=redis://localhost:9379/0 \
 		AUTH_ENABLED=false \
-		PYTHONPATH="$(CURDIR)/packages/shared-py:$${PYTHONPATH:-}" \
+		PYTHONPATH="$(CURDIR)/packages/shared-py:$(CURDIR)/packages/hki-runtime-py:$${PYTHONPATH:-}" \
 		uv run uvicorn src.api.app:app --reload --port 9501 --reload-dir src
 
 dev-analytics: ## Run Analytics Service on :9510
 	cd services/analytics-service && set -a && [ -f .env ] && . .env; set +a && unset __PYVENV_LAUNCHER__ && \
 		ENVIRONMENT=development \
-		PYTHONPATH="$(CURDIR)/packages/shared-py:$${PYTHONPATH:-}" \
+		PYTHONPATH="$(CURDIR)/packages/shared-py:$(CURDIR)/packages/hki-runtime-py:$${PYTHONPATH:-}" \
 		uv run uvicorn src.api.app:app --reload --port 9510 --reload-dir src
 
 dev-services: ## Restart local background services (infra + Python services)

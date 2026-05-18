@@ -24,6 +24,11 @@ export function isGlobalScope(value?: string | null): boolean {
   return normalizeScope(value)?.toLowerCase() === GLOBAL_SCOPE;
 }
 
+export function isForbiddenRuntimeScope(value?: string | null): boolean {
+  const normalized = normalizeScope(value)?.toLowerCase();
+  return !normalized || normalized === GLOBAL_SCOPE || normalized === "*";
+}
+
 export function normalizeScopeList(
   scopes?: readonly (string | null | undefined)[] | null
 ): string[] {

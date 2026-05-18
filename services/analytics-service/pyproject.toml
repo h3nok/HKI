@@ -19,10 +19,12 @@ dependencies = [
     "PyJWT>=2.8.0",
     "gunicorn>=22.0.0",
     "hki-shared",
+    "hki-runtime",
 ]
 
 [tool.uv.sources]
 hki-shared = { path = "../../packages/shared-py", editable = true }
+hki-runtime = { path = "../../packages/hki-runtime-py", editable = true }
 
 [project.optional-dependencies]
 dev = [

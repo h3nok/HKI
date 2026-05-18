@@ -34,6 +34,8 @@ class EventStoreProtocol(abc.ABC):
         event_type: str | None = None,
         user_id: str | None = None,
         org_id: str | None = None,
+        stream_id: str | None = None,
+        service: str | None = None,
     ) -> list[AgentEvent]:
         """Return the most recent events matching the given filters."""
 

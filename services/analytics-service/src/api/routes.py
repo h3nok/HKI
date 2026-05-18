@@ -7,12 +7,16 @@ Endpoints:
     GET  /v1/events/summary  — Aggregated usage metrics
 """
 
+from __future__ import annotations
+
 import base64
+import datetime
 import json
 import logging
 import typing
 
 import fastapi
+import hki_runtime
 import pydantic
 
 import src.adapters.database
@@ -66,6 +70,59 @@ class DirectEventRequest(pydantic.BaseModel):
     payload: dict[str, typing.Any] = {}
 
 
+def _validation_issues(
+    issues: tuple[hki_runtime.HkiValidationIssue, ...],
+) -> list[dict[str, str]]:
+    return [
+        {"code": issue.code, "field": issue.field, "message": issue.message}
+        for issue: hki_runtime.HkiValidationIssue in issues
+    ]
+
+
+def _audit_timestamp(value: typing.Any) -> float:
+    if isinstance(value, int | float):
+        return float(value)
+    if isinstance(value, str) and value.strip():
+        normalized: str = value.strip().replace("Z", "+00:00")
+        try:
+            return datetime.datetime.fromisoformat(normalized).timestamp()
+        except ValueError:
+            return 0.0
+    return 0.0
+
+
+def _agent_event_from_audit_event(
+    event: dict[str, typing.Any],
+) -> src.domain.entities.AgentEvent:
+    source: dict[str, typing.Any] = event.get("source") if isinstance(event.get("source"), dict) else {}
+    actor: dict[str, typing.Any] = event.get("actor") if isinstance(event.get("actor"), dict) else {}
+    boundary: dict[str, typing.Any] = event.get("boundary") if isinstance(event.get("boundary"), dict) else {}
+    operation: dict[str, typing.Any] = event.get("operation") if isinstance(event.get("operation"), dict) else {}
+
+    return src.domain.entities.AgentEvent(
+        event_type=str(operation.get("type") or "hki.audit"),
+        user_id=str(actor.get("subject_id") or ""),
+        org_id=str(boundary.get("org_id") or "default"),
+        service=str(source.get("service") or source.get("platform") or ""),
+        scope=str(boundary.get("active_domain") or ""),
+        payload=event,
+        timestamp=_audit_timestamp(event.get("occurred_at")),
+        ingested_at=_audit_timestamp(event.get("received_at")),
+    )
+
+
+def _parse_hki_audit_event(body: dict[str, typing.Any]) -> src.domain.entities.AgentEvent:
+    validation: hki_runtime.HkiAuditEventValidationResult = hki_runtime.validate_audit_event(body)
+    if not validation.ok:
+        raise fastapi.HTTPException(
+            status_code=422,
+            detail={"error": "invalid-hki-audit-event", "issues": _validation_issues(validation.issues)},
+        )
+    if validation.event is None:
+        raise fastapi.HTTPException(status_code=422, detail="invalid-hki-audit-event")
+    return _agent_event_from_audit_event(validation.event)
+
+
 @events_router.post("")
 async def ingest_direct_event(
     body: DirectEventRequest,
@@ -100,6 +157,23 @@ async def ingest_direct_event(
     return {"status": "ok"}
 
 
+@events_router.post("/audit")
+async def ingest_hki_audit_event(
+    body: dict[str, typing.Any],
+    request: fastapi.Request,
+) -> dict[str, str]:
+    """Ingest a native HKI evidence-grade audit event."""
+    store: src.adapters.database.EventStoreProtocol = _get_store(request)
+    event: src.domain.entities.AgentEvent = _parse_hki_audit_event(body)
+    await store.append(event)
+
+    logger.info(
+        "HKI audit event ingested",
+        extra={"event_type": event.event_type, "scope": event.scope},
+    )
+    return {"status": "ok", "schema": hki_runtime.HKI_AUDIT_EVENT_SCHEMA}
+
+
 @events_router.post("/ingest")
 async def ingest_event(
     envelope: PubSubMessage,
@@ -120,11 +194,14 @@ async def ingest_event(
     try:
         decoded: str = base64.b64decode(raw_data).decode("utf-8")
         raw_event = json.loads(decoded)
-    except Exception as exc:
+    except Exception as exc: Exception:
         logger.warning("Failed to decode Pub/Sub message", extra={"error": str(exc)})
         return {"status": "error", "reason": "failed to decode Pub/Sub message"}
 
-    event: src.adapters.database.AgentEvent = src.domain.use_cases.parse_pubsub_event(raw_event)
+    if "schema" in raw_event:
+        event: src.domain.entities.AgentEvent = _parse_hki_audit_event(raw_event)
+    else:
+        event: src.domain.entities.AgentEvent = src.domain.use_cases.parse_pubsub_event(raw_event)
     await store.append(event)
 
     logger.info(
@@ -138,20 +215,58 @@ async def ingest_event(
 @events_router.get("/recent")
 async def recent_events(
     request: fastapi.Request,
+    identity: RequestIdentityDependency,
     limit: int = 50,
     event_type: str | None = None,
     user_id: str | None = None,
+    org_id: str | None = None,
+    stream_id: str | None = None,
+    service: str | None = None,
+    decision: str | None = None,
 ) -> dict[str, typing.Any]:
     """
-    List recent audit events. Supports filtering by event_type and user_id.
+    List recent audit events. Supports scoped filtering for auditor timelines.
     Used by the admin dashboard for real-time audit visibility.
     """
     store: src.adapters.database.EventStoreProtocol = _get_store(request)
+    normalized_limit: int = min(max(limit, 1), 500)
+    normalized_org_id: str = (org_id or identity.org_id).strip() or identity.org_id
+    if normalized_org_id != identity.org_id:
+        raise fastapi.HTTPException(status_code=403, detail="Organization access denied")
+
+    normalized_stream_id: str = (stream_id or "").strip()
+    if not normalized_stream_id and not hki_runtime.same_domain(identity.scope, "global"):
+        normalized_stream_id = identity.scope
+    if hki_runtime.same_domain(normalized_stream_id, "global"):
+        normalized_stream_id = ""
+
+    if (
+        normalized_stream_id
+        and not any(hki_runtime.same_domain(scope, "global") for scope in identity.scopes)
+        and not any(hki_runtime.same_domain(scope, normalized_stream_id) for scope in identity.scopes)
+    ):
+        raise fastapi.HTTPException(status_code=403, detail="Stream access denied")
+
     events: list[src.domain.entities.AgentEvent] = await store.query(
-        limit=limit,
+        limit=normalized_limit,
         event_type=event_type,
         user_id=user_id,
+        org_id=normalized_org_id,
+        stream_id=normalized_stream_id or None,
+        service=service,
     )
+    if decision:
+        normalized_decision: str = decision.strip().lower()
+        events = [
+            event
+            for event: src.adapters.database.AgentEvent in events
+            if str(
+                (event.payload.get("decision") or {}).get("outcome")
+                if isinstance(event.payload.get("decision"), dict)
+                else ""
+            ).lower()
+            == normalized_decision
+        ]
     return {
         "events": [
             {
@@ -159,11 +274,12 @@ async def recent_events(
                 "user_id": e.user_id,
                 "org_id": e.org_id,
                 "service": e.service,
+                "scope": e.scope,
                 "timestamp": e.timestamp,
                 "ingested_at": e.ingested_at,
                 "payload": e.payload,
             }
-            for e in events
+            for e: src.adapters.database.AgentEvent in events
         ],
         "total": len(events),
     }
@@ -247,14 +363,14 @@ async def token_usage(
     )
 
     usage_events: list[src.domain.entities.AgentEvent] = [
-        e for e in events
+        e for e: src.adapters.database.AgentEvent in events
         if e.event_type in ("llm.usage", "embedding.usage")
         and (org_id is None or e.org_id == org_id)
     ]
 
     if stream_id:
         usage_events: list[src.domain.entities.AgentEvent] = [
-            e for e in usage_events
+            e for e: src.adapters.database.AgentEvent in usage_events
             if e.payload.get("stream_id") == stream_id
         ]
 
@@ -263,7 +379,7 @@ async def token_usage(
     total_output = 0
     total_embedding = 0
 
-    for e in usage_events:
+    for e: src.adapters.database.AgentEvent in usage_events:
         p: dict[str, typing.Any] = e.payload
         model = p.get("model", "unknown")
         if model not in by_model:

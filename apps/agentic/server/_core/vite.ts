@@ -7,6 +7,7 @@ import { createLogger } from "./logger";
 
 const log = createLogger("static");
 const appRoot = path.resolve(import.meta.dirname, "../..");
+const repoRoot = path.resolve(appRoot, "../..");
 const forceOptimizeDeps = process.env.HKI_VITE_FORCE_DEPS === "true";
 
 export async function setupVite(app: Express, server: Server) {
@@ -19,6 +20,11 @@ export async function setupVite(app: Express, server: Server) {
     middlewareMode: true,
     hmr: { server },
     allowedHosts: true as const,
+    fs: {
+      strict: true,
+      allow: [appRoot, repoRoot],
+      deny: ["**/.*"],
+    },
   };
 
   const vite: ViteDevServer = await createViteServer({

@@ -29,12 +29,16 @@ class InMemoryEventStore(src.adapters.database.EventStoreProtocol):
         event_type: str | None = None,
         user_id: str | None = None,
         org_id: str | None = None,
+        stream_id: str | None = None,
+        service: str | None = None,
     ) -> list[src.domain.entities.AgentEvent]:
         return self._store.query(
             limit=limit,
             event_type=event_type,
             user_id=user_id,
             org_id=org_id,
+            stream_id=stream_id,
+            service=service,
         )
 
     async def summarize(

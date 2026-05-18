@@ -54,7 +54,7 @@ def _extract_ragas_metric(
         except (TypeError, ValueError):
             return None
 
-    for candidate in (key, f"ragas_{key}"):
+    for candidate: str in (key, f"ragas_{key}"):
         if candidate in payload:
             try:
                 return float(payload[candidate])
@@ -95,14 +95,24 @@ class EventStore:
         event_type: str | None = None,
         user_id: str | None = None,
         org_id: str | None = None,
+        stream_id: str | None = None,
+        service: str | None = None,
     ) -> list[src.domain.entities.AgentEvent]:
         events: list[src.domain.entities.AgentEvent] = self._buffer[::-1]  # newest first
         if event_type:
-            events = [event for event in events if event.event_type == event_type]
+            events = [event for event: src.domain.entities.AgentEvent in events if event.event_type == event_type]
         if user_id:
-            events = [event for event in events if event.user_id == user_id]
+            events = [event for event: src.domain.entities.AgentEvent in events if event.user_id == user_id]
         if org_id:
-            events = [event for event in events if event.org_id == org_id]
+            events = [event for event: src.domain.entities.AgentEvent in events if event.org_id == org_id]
+        if stream_id:
+            events = [
+                event
+                for event: src.domain.entities.AgentEvent in events
+                if _event_matches_summary_scope(event, stream_id=stream_id)
+            ]
+        if service:
+            events = [event for event: src.domain.entities.AgentEvent in events if event.service == service]
         return events[:limit]
 
     @property
@@ -140,7 +150,7 @@ class EventStore:
 
         events: list[src.domain.entities.AgentEvent] = [
             event
-            for event in self._buffer
+            for event: src.domain.entities.AgentEvent in self._buffer
             if _event_matches_summary_scope(
                 event,
                 org_id=org_id,
@@ -148,7 +158,7 @@ class EventStore:
             )
         ]
 
-        for event in events:
+        for event: src.domain.entities.AgentEvent in events:
             type_counter[event.event_type] += 1
             svc_counter[event.service] += 1
             if event.user_id:
@@ -261,13 +271,13 @@ class EventStore:
     def user_activity(self, user_id: str) -> src.domain.entities.UserActivity:
         """Compute per-user activity summary."""
         events: list[src.domain.entities.AgentEvent] = [
-            event for event in self._buffer if event.user_id == user_id
+            event for event: src.domain.entities.AgentEvent in self._buffer if event.user_id == user_id
         ]
         scopes: collections.Counter[str] = collections.Counter()
         messages = tools = searches = 0
         last_ts: str = ""
 
-        for event in events:
+        for event: src.domain.entities.AgentEvent in events:
             scopes[event.scope] += 1
             if event.event_type in ("chat.message", "chat.response"):
                 messages += 1

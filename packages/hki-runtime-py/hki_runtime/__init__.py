@@ -9,9 +9,10 @@ import math
 import time
 import typing
 import urllib.parse
-from collections.abc import Mapping
+import collections.abc
 
 HKI_VERSION = "1.0"
+HKI_AUDIT_EVENT_SCHEMA = "hki.audit.event.v1"
 GLOBAL_DOMAIN = "global"
 WILDCARD_DOMAIN = "*"
 
@@ -101,6 +102,13 @@ class HkiValidationResult:
 
 
 @dataclasses.dataclass(frozen=True)
+class HkiAuditEventValidationResult:
+    ok: bool
+    event: dict[str, typing.Any] | None = None
+    issues: tuple[HkiValidationIssue, ...] = ()
+
+
+@dataclasses.dataclass(frozen=True)
 class HkiCacheKeyInput:
     envelope: HkiEnvelope
     operation: str
@@ -129,7 +137,7 @@ class HkiSpanLike(typing.Protocol):
     def set_attribute(self, key: str, value: str | int | float | bool) -> object: ...
 
 
-Record = Mapping[str, typing.Any]
+Record = collections.abc.Mapping[str, typing.Any]
 
 _REQUIRED_STRING_FIELDS = (
     "hki_version",
@@ -147,12 +155,12 @@ _REQUIRED_STRING_FIELDS = (
 def normalize_domain(value: typing.Any) -> str | None:
     if not isinstance(value, str):
         return None
-    normalized = value.strip()
+    normalized: str = value.strip()
     return normalized or None
 
 
 def is_global_domain(value: typing.Any) -> bool:
-    normalized = normalize_domain(value)
+    normalized: str | None = normalize_domain(value)
     return bool(normalized and normalized.lower() == GLOBAL_DOMAIN)
 
 
@@ -171,10 +179,10 @@ def normalize_domain_list(values: typing.Any) -> list[str]:
     seen: set[str] = set()
     result: list[str] = []
     for value in values:
-        domain = normalize_domain(value)
+        domain: str | None = normalize_domain(value)
         if domain is None:
             continue
-        key = domain.lower()
+        key: str = domain.lower()
         if key in seen:
             continue
         seen.add(key)
@@ -183,8 +191,8 @@ def normalize_domain_list(values: typing.Any) -> list[str]:
 
 
 def same_domain(a: typing.Any, b: typing.Any) -> bool:
-    left = normalize_domain(a)
-    right = normalize_domain(b)
+    left: str | None = normalize_domain(a)
+    right: str | None = normalize_domain(b)
     return bool(left and right and left.lower() == right.lower())
 
 
@@ -196,12 +204,12 @@ def validate_envelope(
     require_signature: bool = False,
     signing_secret: str | None = None,
 ) -> HkiValidationResult:
-    current_time = now if now is not None else math.floor(time.time())
-    record = _record(envelope)
+    current_time: float | int = now if now is not None else math.floor(time.time())
+    record: dict[str, Any] = _record(envelope)
     issues: list[HkiValidationIssue] = []
 
-    for field in _REQUIRED_STRING_FIELDS:
-        val = record.get(field)
+    for field: str in _REQUIRED_STRING_FIELDS:
+        val: typing.Any | None = record.get(field)
         if not normalize_domain(val):
             issues.append(
                 HkiValidationIssue(
@@ -219,7 +227,7 @@ def validate_envelope(
                 )
             )
 
-    hki_version = normalize_domain(record.get("hki_version"))
+    hki_version: str | None = normalize_domain(record.get("hki_version"))
     if hki_version and hki_version != HKI_VERSION:
         issues.append(
             HkiValidationIssue(
@@ -241,7 +249,7 @@ def validate_envelope(
                 )
             )
     elif require_signature:
-        sig = record.get("signature")
+        sig: typing.Any | None = record.get("signature")
         if not (isinstance(sig, str) and sig.strip()):
             issues.append(
                 HkiValidationIssue(
@@ -251,7 +259,7 @@ def validate_envelope(
                 )
             )
 
-    active_domain = normalize_domain(record.get("active_domain"))
+    active_domain: str | None = normalize_domain(record.get("active_domain"))
     if not active_domain or is_forbidden_runtime_domain(active_domain):
         issues.append(
             HkiValidationIssue(
@@ -261,7 +269,7 @@ def validate_envelope(
             )
         )
 
-    authorized_domains = normalize_domain_list(record.get("authorized_domains"))
+    authorized_domains: list[str] = normalize_domain_list(record.get("authorized_domains"))
     if not authorized_domains:
         issues.append(
             HkiValidationIssue(
@@ -280,7 +288,7 @@ def validate_envelope(
             )
         )
 
-    if any(is_forbidden_runtime_domain(domain) for domain in authorized_domains):
+    if any(is_forbidden_runtime_domain(domain) for domain: str in authorized_domains):
         issues.append(
             HkiValidationIssue(
                 code="invalid-domain",
@@ -292,7 +300,7 @@ def validate_envelope(
     if (
         active_domain
         and authorized_domains
-        and not any(same_domain(domain, active_domain) for domain in authorized_domains)
+        and not any(same_domain(domain, active_domain) for domain: str in authorized_domains)
     ):
         issues.append(
             HkiValidationIssue(
@@ -364,8 +372,8 @@ def assert_artifact_visible(
     envelope: HkiEnvelope | Record,
     artifact: HkiArtifactLabel | Record,
 ) -> HkiValidationIssue | None:
-    env = _coerce_envelope(envelope)
-    label = _coerce_artifact_label(artifact)
+    env: HkiEnvelope = _coerce_envelope(envelope)
+    label: HkiArtifactLabel = _coerce_artifact_label(artifact)
 
     if not normalize_domain(label.domain) or is_forbidden_runtime_domain(label.domain):
         return HkiValidationIssue(
@@ -392,8 +400,8 @@ def assert_artifact_visible(
 
 
 def derive_hki_cache_key(cache_input: HkiCacheKeyInput | Record) -> str:
-    record = _record(cache_input)
-    envelope = _coerce_envelope(record["envelope"])
+    record: dict[str, Any] = _record(cache_input)
+    envelope: HkiEnvelope = _coerce_envelope(record["envelope"])
     parts = [
         "hki",
         envelope.hki_version,
@@ -414,9 +422,9 @@ def derive_hki_cache_key(cache_input: HkiCacheKeyInput | Record) -> str:
 
 
 def assert_cache_key_bound_to_envelope(key: str, envelope: HkiEnvelope | Record) -> bool:
-    env = _coerce_envelope(envelope)
-    encoded_org = _encode_part(env.org_id)
-    encoded_domain = _encode_part(env.active_domain)
+    env: HkiEnvelope = _coerce_envelope(envelope)
+    encoded_org: str = _encode_part(env.org_id)
+    encoded_domain: str = _encode_part(env.active_domain)
     return f":{encoded_org}:" in key and f":{encoded_domain}:" in key
 
 
@@ -424,8 +432,8 @@ def evaluate_gateway_target(
     envelope: HkiEnvelope | Record,
     target: HkiGatewayTarget | Record,
 ) -> HkiGatewayDecision:
-    env = _coerce_envelope(envelope)
-    gateway_target = _coerce_gateway_target(target)
+    env: HkiEnvelope = _coerce_envelope(envelope)
+    gateway_target: HkiGatewayTarget = _coerce_gateway_target(target)
 
     if is_forbidden_runtime_domain(gateway_target.domain):
         return HkiGatewayDecision(
@@ -434,16 +442,16 @@ def evaluate_gateway_target(
             target=gateway_target,
         )
 
-    if any(is_forbidden_runtime_domain(domain) for domain in gateway_target.published_domains):
+    if any(is_forbidden_runtime_domain(domain) for domain: str in gateway_target.published_domains):
         return HkiGatewayDecision(
             allowed=False,
             reason="target published_domains include global or wildcard scope",
             target=gateway_target,
         )
 
-    is_direct_domain_match = same_domain(env.active_domain, gateway_target.domain)
-    is_published_into_domain = any(
-        same_domain(domain, env.active_domain) for domain in gateway_target.published_domains
+    is_direct_domain_match: bool = same_domain(env.active_domain, gateway_target.domain)
+    is_published_into_domain: bool = any(
+        same_domain(domain, env.active_domain) for domain: str in gateway_target.published_domains
     )
 
     if not is_direct_domain_match and not is_published_into_domain:
@@ -464,23 +472,71 @@ def reject_conflicting_scope_argument(
     envelope: HkiEnvelope | Record,
     args: Record,
 ) -> str | None:
-    env = _coerce_envelope(envelope)
+    env: HkiEnvelope = _coerce_envelope(envelope)
     candidates = ("scope", "domain", "active_domain", "activeDomain", "stream", "stream_id")
 
-    for key in candidates:
+    for key: str in candidates:
         if key not in args:
             continue
-        values = _normalize_scope_argument_values(args.get(key))
+        values: list[str] | None = _normalize_scope_argument_values(args.get(key))
         if values is None:
             return f"{key} is ambiguous and cannot override signed HKI active_domain"
-        if any(not same_domain(value, env.active_domain) for value in values):
+        if any(not same_domain(value, env.active_domain) for value: str in values):
             return f"{key} conflicts with signed HKI active_domain"
     return None
 
 
+def validate_audit_event(event: typing.Any) -> HkiAuditEventValidationResult:
+    record: dict[str, Any] = _as_record(event)
+    issues: list[HkiValidationIssue] = []
+
+    schema: str = _require_string(record, "schema", issues)
+    if schema and schema != HKI_AUDIT_EVENT_SCHEMA:
+        issues.append(
+            HkiValidationIssue(
+                code="invalid-version",
+                field="schema",
+                message=f"schema must be {HKI_AUDIT_EVENT_SCHEMA}.",
+            )
+        )
+
+    source: dict[str, Any] = _as_record(record.get("source"))
+    actor: dict[str, Any] = _as_record(record.get("actor"))
+    boundary: dict[str, Any] = _as_record(record.get("boundary"))
+    operation: dict[str, Any] = _as_record(record.get("operation"))
+    decision: dict[str, Any] = _as_record(record.get("decision"))
+
+    _require_string(record, "event_id", issues)
+    _require_string(record, "occurred_at", issues)
+    _require_string(record, "received_at", issues)
+    _require_string(source, "platform", issues, "source.platform")
+    _require_string(source, "service", issues, "source.service")
+    _require_string(actor, "subject_id", issues, "actor.subject_id")
+    _require_string(operation, "type", issues, "operation.type")
+    _require_string(decision, "outcome", issues, "decision.outcome")
+
+    active_domain: str | None = _validate_audit_boundary(boundary, issues)
+    _validate_audit_operation_target(operation, active_domain, issues)
+
+    if issues:
+        return HkiAuditEventValidationResult(ok=False, issues=tuple(issues))
+    return HkiAuditEventValidationResult(ok=True, event=record)
+
+
+def audit_boundary_from_envelope(envelope: HkiEnvelope | Record) -> dict[str, typing.Any]:
+    env: HkiEnvelope = _coerce_envelope(envelope)
+    return {
+        "org_id": env.org_id,
+        "active_domain": env.active_domain,
+        "authorized_domains": list(env.authorized_domains),
+        "policy_pack_id": env.policy_pack_id,
+        "risk_tier": env.risk_tier,
+    }
+
+
 def _normalize_scope_argument_values(value: typing.Any) -> list[str] | None:
     if isinstance(value, str):
-        normalized = value.strip()
+        normalized: str = value.strip()
         return [normalized] if normalized else None
 
     if value is None:
@@ -493,7 +549,7 @@ def _normalize_scope_argument_values(value: typing.Any) -> list[str] | None:
     for item in value:
         if not isinstance(item, str):
             return None
-        normalized = item.strip()
+        normalized: str = item.strip()
         if not normalized:
             return None
         normalized_values.append(normalized)
@@ -502,7 +558,7 @@ def _normalize_scope_argument_values(value: typing.Any) -> list[str] | None:
 
 
 def hki_trace_attributes(envelope: HkiEnvelope | Record) -> dict[str, str | float]:
-    env = _coerce_envelope(envelope)
+    env: HkiEnvelope = _coerce_envelope(envelope)
     return {
         "hki.version": env.hki_version,
         "hki.envelope_id": env.envelope_id,
@@ -534,7 +590,7 @@ def stable_stringify(value: typing.Any) -> str:
     if isinstance(value, list | tuple):
         return "[" + ",".join(stable_stringify(item) for item in value) + "]"
     if isinstance(value, dict):
-        entries = [
+        entries: list[str] = [
             json.dumps(str(key), ensure_ascii=False, separators=(",", ":"))
             + ":"
             + stable_stringify(value[key])
@@ -547,9 +603,123 @@ def stable_stringify(value: typing.Any) -> str:
 def _record(value: typing.Any) -> dict[str, typing.Any]:
     if dataclasses.is_dataclass(value):
         return dataclasses.asdict(value)
-    if isinstance(value, Mapping):
+    if isinstance(value, collections.abc.Mapping):
         return dict(value)
     raise TypeError("expected dataclass or mapping")
+
+
+def _as_record(value: typing.Any) -> dict[str, typing.Any]:
+    if isinstance(value, collections.abc.Mapping):
+        return dict(value)
+    return {}
+
+
+def _require_string(
+    record: dict[str, typing.Any],
+    key: str,
+    issues: list[HkiValidationIssue],
+    field: str | None = None,
+) -> str:
+    field_name: str = field or key
+    value: typing.Any | None = record.get(key)
+    if not isinstance(value, str) or not value.strip():
+        issues.append(
+            HkiValidationIssue(
+                code="missing-field",
+                field=field_name,
+                message=f"{field_name} is required.",
+            )
+        )
+        return ""
+    return value.strip()
+
+
+def _validate_audit_boundary(
+    boundary: dict[str, typing.Any],
+    issues: list[HkiValidationIssue],
+) -> str | None:
+    _require_string(boundary, "org_id", issues, "boundary.org_id")
+    active_domain: str | None = normalize_domain(boundary.get("active_domain"))
+    authorized_domains: list[str] = normalize_domain_list(boundary.get("authorized_domains"))
+
+    if not active_domain or is_forbidden_runtime_domain(active_domain):
+        issues.append(
+            HkiValidationIssue(
+                code="invalid-domain",
+                field="boundary.active_domain",
+                message="boundary.active_domain must be present, non-global, and non-wildcard.",
+            )
+        )
+
+    if not authorized_domains:
+        issues.append(
+            HkiValidationIssue(
+                code="missing-field",
+                field="boundary.authorized_domains",
+                message="boundary.authorized_domains must contain at least the active domain.",
+            )
+        )
+
+    if len(authorized_domains) > _MAX_AUTHORIZED_DOMAINS:
+        issues.append(
+            HkiValidationIssue(
+                code="missing-field",
+                field="boundary.authorized_domains",
+                message=f"authorized_domains must not exceed {_MAX_AUTHORIZED_DOMAINS} entries.",
+            )
+        )
+
+    if any(is_forbidden_runtime_domain(domain) for domain: str in authorized_domains):
+        issues.append(
+            HkiValidationIssue(
+                code="invalid-domain",
+                field="boundary.authorized_domains",
+                message="boundary.authorized_domains must not include global or wildcard domains.",
+            )
+        )
+
+    if active_domain and authorized_domains and not any(
+        same_domain(domain, active_domain) for domain: str in authorized_domains
+    ):
+        issues.append(
+            HkiValidationIssue(
+                code="unauthorized-domain",
+                field="boundary.active_domain",
+                message="boundary.active_domain must appear in authorized_domains.",
+            )
+        )
+
+    return active_domain
+
+
+def _validate_audit_operation_target(
+    operation: dict[str, typing.Any],
+    active_domain: str | None,
+    issues: list[HkiValidationIssue],
+) -> None:
+    plane: typing.Any | None | str = operation.get("plane") if operation.get("plane") in {"admin", "publication"} else "runtime"
+    target_domain: str | None = normalize_domain(operation.get("target_domain"))
+    if not target_domain:
+        return
+
+    if is_forbidden_runtime_domain(target_domain):
+        issues.append(
+            HkiValidationIssue(
+                code="invalid-domain",
+                field="operation.target_domain",
+                message="operation.target_domain must be non-global and non-wildcard when present.",
+            )
+        )
+        return
+
+    if plane == "runtime" and active_domain and not same_domain(target_domain, active_domain):
+        issues.append(
+            HkiValidationIssue(
+                code="unauthorized-domain",
+                field="operation.target_domain",
+                message="runtime operation.target_domain must match boundary.active_domain.",
+            )
+        )
 
 
 def _coerce_epoch(value: typing.Any) -> tuple[float, bool]:
@@ -565,7 +735,7 @@ def _coerce_epoch(value: typing.Any) -> tuple[float, bool]:
 def _coerce_envelope(value: HkiEnvelope | Record) -> HkiEnvelope:
     if isinstance(value, HkiEnvelope):
         return value
-    record = _record(value)
+    record: dict[str, Any] = _record(value)
     issued_at, _ = _coerce_epoch(record.get("issued_at"))
     expires_at, _ = _coerce_epoch(record.get("expires_at"))
     return HkiEnvelope(
@@ -588,7 +758,7 @@ def _coerce_envelope(value: HkiEnvelope | Record) -> HkiEnvelope:
 def _coerce_artifact_label(value: HkiArtifactLabel | Record) -> HkiArtifactLabel:
     if isinstance(value, HkiArtifactLabel):
         return value
-    record = _record(value)
+    record: dict[str, Any] = _record(value)
     return HkiArtifactLabel(
         org_id=str(record["org_id"]),
         domain=str(record["domain"]),
@@ -601,7 +771,7 @@ def _coerce_artifact_label(value: HkiArtifactLabel | Record) -> HkiArtifactLabel
 def _coerce_gateway_target(value: HkiGatewayTarget | Record) -> HkiGatewayTarget:
     if isinstance(value, HkiGatewayTarget):
         return value
-    record = _record(value)
+    record: dict[str, Any] = _record(value)
     return HkiGatewayTarget(
         type=typing.cast(HkiGatewayTargetType, str(record["type"])),
         id=str(record["id"]),
@@ -623,7 +793,7 @@ _SIGNING_PREFIX = "hmac-sha256:"
 
 def _canonical_payload(envelope: HkiEnvelope | Record) -> bytes:
     """Deterministic JSON of all security-relevant envelope fields."""
-    rec = _record(envelope)
+    rec: dict[str, Any] = _record(envelope)
     payload = {
         "active_domain": rec.get("active_domain", ""),
         "authorized_domains": sorted(
@@ -651,8 +821,8 @@ def sign_envelope(envelope: HkiEnvelope | Record, secret: str) -> str:
 
     The secret should come from the environment (``HKI_SIGNING_SECRET``).
     """
-    raw = _hmac_mod.new(secret.encode(), _canonical_payload(envelope), hashlib.sha256).digest()
-    sig = base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
+    raw: bytes = _hmac_mod.new(secret.encode(), _canonical_payload(envelope), hashlib.sha256).digest()
+    sig: str = base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
     return f"{_SIGNING_PREFIX}{sig}"
 
 
@@ -662,16 +832,17 @@ def verify_envelope_signature(envelope: HkiEnvelope | Record, secret: str) -> bo
     Returns ``False`` if the signature is missing, has the wrong prefix,
     or does not match the expected HMAC for the given secret.
     """
-    rec = _record(envelope)
+    rec: dict[str, Any] = _record(envelope)
     actual: str = rec.get("signature") or ""
     if not actual.startswith(_SIGNING_PREFIX):
         return False
-    expected = sign_envelope(envelope, secret)
+    expected: str = sign_envelope(envelope, secret)
     return _hmac_mod.compare_digest(expected, actual)
 
 
-__all__ = [
+__all__: list[str] = [
     "GLOBAL_DOMAIN",
+    "HKI_AUDIT_EVENT_SCHEMA",
     "HKI_VERSION",
     "WILDCARD_DOMAIN",
     "HkiArtifactLabel",
@@ -679,6 +850,7 @@ __all__ = [
     "HkiEnvelope",
     "HkiGatewayDecision",
     "HkiGatewayTarget",
+    "HkiAuditEventValidationResult",
     "HkiPurpose",
     "HkiRiskTier",
     "HkiSpanLike",
@@ -688,6 +860,7 @@ __all__ = [
     "apply_hki_trace_attributes",
     "assert_artifact_visible",
     "assert_cache_key_bound_to_envelope",
+    "audit_boundary_from_envelope",
     "derive_hki_cache_key",
     "evaluate_gateway_target",
     "hki_trace_attributes",
@@ -700,6 +873,7 @@ __all__ = [
     "same_domain",
     "sign_envelope",
     "stable_stringify",
+    "validate_audit_event",
     "validate_envelope",
     "verify_envelope_signature",
 ]

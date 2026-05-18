@@ -249,7 +249,7 @@ preflight_python_service() {
   info "Preflighting ${name}..."
   (
     cd "${dir}"
-    PYTHONPATH="${ROOT_DIR}/packages/shared-py:${PYTHONPATH:-}" \
+    PYTHONPATH="${ROOT_DIR}/packages/shared-py:${ROOT_DIR}/packages/hki-runtime-py:${PYTHONPATH:-}" \
       ./.venv/bin/python -m compileall -q src
   )
 }
@@ -357,7 +357,7 @@ set -a
 [[ -f .env ]] && . ./.env
 set +a
 unset __PYVENV_LAUNCHER__
-export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:${ROOT_DIR}/packages/hki-runtime-py:\${PYTHONPATH:-}"
 export ALLOYDB_URL="postgresql://postgres:postgres@localhost:9432/knowledge"
 export AUTH_ENABLED="false"
 export ENVIRONMENT="development"
@@ -386,7 +386,7 @@ set -a
 [[ -f .env ]] && . ./.env
 set +a
 unset __PYVENV_LAUNCHER__
-export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:${ROOT_DIR}/packages/hki-runtime-py:\${PYTHONPATH:-}"
 export ALLOYDB_URL=""
 export ANALYTICS_SERVICE_URL=""
 export AUTH_ENABLED="true"
@@ -414,7 +414,7 @@ set -a
 [[ -f .env ]] && . ./.env
 set +a
 unset __PYVENV_LAUNCHER__
-export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:${ROOT_DIR}/packages/hki-runtime-py:\${PYTHONPATH:-}"
 export KNOWLEDGE_API_URL="http://localhost:9509"
 export REDIS_URL="redis://localhost:9379/0"
 export AUTH_ENABLED="false"
@@ -444,7 +444,7 @@ set -a
 [[ -f .env ]] && . ./.env
 set +a
 unset __PYVENV_LAUNCHER__
-export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:${ROOT_DIR}/packages/hki-runtime-py:\${PYTHONPATH:-}"
 export ANALYTICS_SERVICE_URL=""
 export AUTH_ENABLED="true"
 export EMBEDDING_GATEWAY_URL=""
@@ -476,7 +476,7 @@ set -a
 [[ -f .env ]] && . ./.env
 set +a
 unset __PYVENV_LAUNCHER__
-export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:${ROOT_DIR}/packages/hki-runtime-py:\${PYTHONPATH:-}"
 export REDIS_URL="redis://localhost:9379/0"
 export AUTH_ENABLED="false"
 export JWT_SECRET="${JWT_SECRET:-local-dev-jwt-secret-67890}"
@@ -500,7 +500,7 @@ set -a
 [[ -f .env ]] && . ./.env
 set +a
 unset __PYVENV_LAUNCHER__
-export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:${ROOT_DIR}/packages/hki-runtime-py:\${PYTHONPATH:-}"
 export ANALYTICS_SERVICE_URL="http://127.0.0.1:9610"
 export AUTH_ENABLED="true"
 export ENVIRONMENT="development"
@@ -528,7 +528,7 @@ set -a
 [[ -f .env ]] && . ./.env
 set +a
 unset __PYVENV_LAUNCHER__
-export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:${ROOT_DIR}/packages/hki-runtime-py:\${PYTHONPATH:-}"
 export ENVIRONMENT="development"
 exec ./.venv/bin/uvicorn src.api.app:app --reload --port 9510 --reload-dir src
 EOF
@@ -549,7 +549,7 @@ set -a
 [[ -f .env ]] && . ./.env
 set +a
 unset __PYVENV_LAUNCHER__
-export PYTHONPATH="${ROOT_DIR}/packages/shared-py:\${PYTHONPATH:-}"
+export PYTHONPATH="${ROOT_DIR}/packages/shared-py:${ROOT_DIR}/packages/hki-runtime-py:\${PYTHONPATH:-}"
 export AUTH_ENABLED="true"
 export DATABASE_URL=""
 export ENVIRONMENT="development"

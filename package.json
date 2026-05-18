@@ -52,6 +52,7 @@
     "typecheck:hki-mcp": "pnpm --dir packages/hki-mcp typecheck",
     "verify:hki-conformance": "pnpm build:hki-runtime && pnpm build:hki-conformance && pnpm --dir packages/hki-conformance conformance",
     "evidence:hki-services": "node scripts/hki-service-evidence.mjs",
+    "evidence:hki-bundle": "node scripts/build-hki-evidence-bundle.mjs",
     "evidence:hki": "pnpm verify:hki-conformance && pnpm evidence:hki-services",
     "probe:smoke": "pnpm build:hki-runtime && pnpm build:hki-conformance && pnpm --dir packages/hki-conformance probe:smoke",
     "test:hki-conformance-py": "cd packages/hki-conformance-py && uv run --extra dev pytest -q",

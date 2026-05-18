@@ -6,6 +6,7 @@ import path from "node:path";
 import { defineConfig } from "vite";
 
 const appRoot = import.meta.dirname;
+const repoRoot = path.resolve(appRoot, "../..");
 const packageJson = JSON.parse(
   fs.readFileSync(path.resolve(appRoot, "package.json"), "utf8")
 ) as {
@@ -131,6 +132,7 @@ export default defineConfig({
     allowedHosts: true,
     fs: {
       strict: true,
+      allow: [appRoot, repoRoot],
       deny: ["**/.*"],
     },
     watch: {

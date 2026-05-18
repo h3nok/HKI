@@ -1,0 +1,297 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 760 980"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">
+    Scoped delegation for a multi-domain executive request
+  </title>
+  <desc id="desc">
+    An executive asks one question that needs legal and pharmacy data. HKI
+    coordinates the request in an executive briefing domain, delegates to
+    separate legal and pharmacy child envelopes, releases approved summaries
+    into the briefing domain, and synthesizes the final answer from released
+    artifacts only.
+  </desc>
+  <defs>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      svg {
+        --page: #f8fafc;
+        --surface: #ffffff;
+        --surface-2: #f1f5f9;
+        --text: #0f172a;
+        --muted: #475569;
+        --rule: #cbd5e1;
+        --line: #64748b;
+        --teal-fill: #ecfdf5;
+        --teal-stroke: #0f766e;
+        --teal-text: #115e59;
+        --blue-fill: #eff6ff;
+        --blue-stroke: #2563eb;
+        --blue-text: #1d4ed8;
+        --violet-fill: #f5f3ff;
+        --violet-stroke: #7c3aed;
+        --violet-text: #6d28d9;
+        --amber-fill: #fffbeb;
+        --amber-stroke: #d97706;
+        --amber-text: #92400e;
+        --red-fill: #fff1f2;
+        --red-stroke: #e11d48;
+        --red-text: #be123c;
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        svg {
+          --page: #08111f;
+          --surface: #0f172a;
+          --surface-2: #111c2d;
+          --text: #e2e8f0;
+          --muted: #94a3b8;
+          --rule: #334155;
+          --line: #7dd3fc;
+          --teal-fill: #0d2f2b;
+          --teal-stroke: #2dd4bf;
+          --teal-text: #99f6e4;
+          --blue-fill: #132546;
+          --blue-stroke: #60a5fa;
+          --blue-text: #bfdbfe;
+          --violet-fill: #27164a;
+          --violet-stroke: #a78bfa;
+          --violet-text: #ddd6fe;
+          --amber-fill: #35240b;
+          --amber-stroke: #fbbf24;
+          --amber-text: #fde68a;
+          --red-fill: #3f111d;
+          --red-stroke: #fb7185;
+          --red-text: #fecdd3;
+        }
+      }
+      .page {
+        fill: var(--page);
+      }
+      .panel {
+        fill: var(--surface);
+        stroke: var(--rule);
+        stroke-width: 2;
+        filter: url(#shadow);
+      }
+      .card {
+        stroke-width: 2.5;
+        filter: url(#card-shadow);
+      }
+      .teal {
+        fill: var(--teal-fill);
+        stroke: var(--teal-stroke);
+      }
+      .blue {
+        fill: var(--blue-fill);
+        stroke: var(--blue-stroke);
+      }
+      .violet {
+        fill: var(--violet-fill);
+        stroke: var(--violet-stroke);
+      }
+      .amber {
+        fill: var(--amber-fill);
+        stroke: var(--amber-stroke);
+      }
+      .red {
+        fill: var(--red-fill);
+        stroke: var(--red-stroke);
+      }
+      .heading {
+        fill: var(--text);
+        font-size: 34px;
+        font-weight: 850;
+      }
+      .subheading {
+        fill: var(--muted);
+        font-size: 18px;
+      }
+      .label {
+        font-size: 15px;
+        font-weight: 850;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+      }
+      .title {
+        fill: var(--text);
+        font-size: 22px;
+        font-weight: 850;
+      }
+      .body {
+        fill: var(--muted);
+        font-size: 17px;
+      }
+      .small {
+        fill: var(--muted);
+        font-size: 14px;
+      }
+      .teal-text {
+        fill: var(--teal-text);
+      }
+      .blue-text {
+        fill: var(--blue-text);
+      }
+      .violet-text {
+        fill: var(--violet-text);
+      }
+      .amber-text {
+        fill: var(--amber-text);
+      }
+      .red-text {
+        fill: var(--red-text);
+      }
+      .flow {
+        fill: none;
+        stroke: var(--line);
+        stroke-width: 4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        marker-end: url(#arrow);
+      }
+      .release {
+        fill: none;
+        stroke: var(--teal-stroke);
+        stroke-width: 4;
+        stroke-dasharray: 10 10;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        marker-end: url(#arrow-teal);
+      }
+      .blocked {
+        fill: none;
+        stroke: var(--red-stroke);
+        stroke-width: 3.5;
+        stroke-dasharray: 8 9;
+        stroke-linecap: round;
+      }
+    </style>
+    <marker
+      id="arrow"
+      viewBox="0 0 12 12"
+      refX="10"
+      refY="6"
+      markerWidth="11"
+      markerHeight="11"
+      orient="auto-start-reverse"
+    >
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--line)" />
+    </marker>
+    <marker
+      id="arrow-teal"
+      viewBox="0 0 12 12"
+      refX="10"
+      refY="6"
+      markerWidth="11"
+      markerHeight="11"
+      orient="auto-start-reverse"
+    >
+      <path d="M 0 1 L 10 6 L 0 11 Q 3 6 0 1 Z" fill="var(--teal-stroke)" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-4%" width="110%" height="112%">
+      <feDropShadow
+        dx="0"
+        dy="10"
+        stdDeviation="18"
+        flood-color="#0f172a"
+        flood-opacity="0.12"
+      />
+    </filter>
+    <filter id="card-shadow" x="-8%" y="-12%" width="116%" height="128%">
+      <feDropShadow
+        dx="0"
+        dy="6"
+        stdDeviation="10"
+        flood-color="#0f172a"
+        flood-opacity="0.12"
+      />
+    </filter>
+    <pattern
+      id="dot-grid"
+      x="0"
+      y="0"
+      width="28"
+      height="28"
+      patternUnits="userSpaceOnUse"
+    >
+      <circle cx="2" cy="2" r="1.15" fill="#8090a0" opacity="0.07" />
+    </pattern>
+  </defs>
+
+  <rect class="page" width="760" height="980" rx="30" />
+  <rect width="760" height="980" rx="30" fill="url(#dot-grid)" />
+  <rect class="panel" x="30" y="30" width="700" height="920" rx="28" />
+
+  <text class="heading" x="70" y="88">Multi-domain request</text>
+  <text class="heading" x="70" y="126">single-domain execution</text>
+  <text class="subheading" x="70" y="164">
+    <tspan x="70" dy="0">One executive task can use multiple domains.</tspan>
+    <tspan x="70" dy="24">
+      Each data-plane operation still has one active domain.
+    </tspan>
+  </text>
+
+  <rect class="card amber" x="80" y="214" width="600" height="82" rx="18" />
+  <text class="label amber-text" x="112" y="244">Executive request</text>
+  <text class="title amber-text" x="112" y="274">
+    Compare legal risk and pharmacy operations
+  </text>
+
+  <path class="flow" d="M 380 302 L 380 336" />
+
+  <rect class="card teal" x="80" y="348" width="600" height="116" rx="20" />
+  <text class="label teal-text" x="112" y="380">Coordinator envelope</text>
+  <text class="title teal-text" x="112" y="412">
+    active_domain = executive_briefing
+  </text>
+  <text class="body" x="112" y="438">Plans and mints child envelopes.</text>
+  <text class="body" x="112" y="460">
+    It cannot directly read legal or pharmacy stores.
+  </text>
+
+  <path class="flow" d="M 380 470 C 380 506 225 506 225 538" />
+  <path class="flow" d="M 380 470 C 380 506 535 506 535 538" />
+
+  <rect class="card blue" x="70" y="550" width="300" height="126" rx="20" />
+  <text class="label blue-text" x="98" y="582">Child envelope</text>
+  <text class="title blue-text" x="98" y="616">active_domain = legal</text>
+  <text class="body" x="98" y="646">Reads legal artifacts only.</text>
+
+  <rect class="card violet" x="390" y="550" width="300" height="126" rx="20" />
+  <text class="label violet-text" x="418" y="582">Child envelope</text>
+  <text class="title violet-text" x="418" y="616">
+    active_domain = pharmacy
+  </text>
+  <text class="body" x="418" y="646">Reads pharmacy artifacts only.</text>
+
+  <path class="release" d="M 225 682 C 225 724 380 724 380 756" />
+  <path class="release" d="M 535 682 C 535 724 380 724 380 756" />
+
+  <rect class="card teal" x="80" y="768" width="600" height="92" rx="20" />
+  <text class="label teal-text" x="112" y="800">
+    Release gate and synthesis
+  </text>
+  <text class="title teal-text" x="112" y="832">
+    Final brief reads released artifacts only
+  </text>
+  <text class="body" x="112" y="856">
+    Output label and provenance stay with the briefing.
+  </text>
+
+  <path class="blocked" d="M 105 910 L 362 910" />
+  <circle class="red" cx="92" cy="910" r="15" stroke-width="2.5" />
+  <path
+    d="M 86 904 L 98 916 M 98 904 L 86 916"
+    stroke="var(--red-stroke)"
+    stroke-width="3"
+    stroke-linecap="round"
+  />
+  <text class="red-text" x="382" y="916" font-size="18" font-weight="850">
+    Blocked: one mixed global prompt
+  </text>
+</svg>

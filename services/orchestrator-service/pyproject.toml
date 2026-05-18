@@ -28,10 +28,12 @@ dependencies = [
     "mcp>=1.0.0",
     "google-adk>=1.28.1",
     "hki-shared",
+    "hki-runtime",
 ]
 
 [tool.uv.sources]
 hki-shared = { path = "../../packages/shared-py", editable = true }
+hki-runtime = { path = "../../packages/hki-runtime-py", editable = true }
 
 [project.optional-dependencies]
 dev = [

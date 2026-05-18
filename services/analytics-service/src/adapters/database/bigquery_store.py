@@ -91,7 +91,7 @@ def _payload_text(payload: dict[str, typing.Any], key: str, default: str = "") -
 
 
 def _event_session_id(payload: dict[str, typing.Any], user_id: str) -> str:
-    for key in ("session_id", "conversation_id", "conversationId"):
+    for key: str in ("session_id", "conversation_id", "conversationId"):
         candidate: str = _payload_text(payload, key)
         if candidate:
             return candidate
@@ -125,7 +125,7 @@ class BigQueryEventStore(src.adapters.database.EventStoreProtocol):
         if self._client is None:
             try:
                 from google.cloud import bigquery  # type: ignore[import-untyped]
-            except ImportError as exc:
+            except ImportError as exc: ImportError:
                 raise RuntimeError(
                     "google-cloud-bigquery is required for BigQuery backend. "
                     "Install with: pip install google-cloud-bigquery"
@@ -144,7 +144,7 @@ class BigQueryEventStore(src.adapters.database.EventStoreProtocol):
     def _fqn(self) -> str:
         """Fully-qualified table name: ``project.dataset.table``."""
         parts: list[str] = [
-            part for part in (self._project, self._dataset, self._table) if part
+            part for part: str in (self._project, self._dataset, self._table) if part
         ]
         return ".".join(parts)
 
@@ -192,6 +192,8 @@ class BigQueryEventStore(src.adapters.database.EventStoreProtocol):
         event_type: str | None = None,
         user_id: str | None = None,
         org_id: str | None = None,
+        stream_id: str | None = None,
+        service: str | None = None,
     ) -> list[src.domain.entities.AgentEvent]:
         client = self._get_client()
 
@@ -206,6 +208,14 @@ class BigQueryEventStore(src.adapters.database.EventStoreProtocol):
         if org_id:
             conditions.append("COALESCE(JSON_VALUE(payload, '$.org_id'), 'default') = @org_id")
             params.append(("org_id", "STRING", org_id))
+        if stream_id:
+            conditions.append(
+                "(JSON_VALUE(payload, '$.scope') = @stream_id OR JSON_VALUE(payload, '$.stream_id') = @stream_id)"
+            )
+            params.append(("stream_id", "STRING", stream_id))
+        if service:
+            conditions.append("JSON_VALUE(payload, '$.service') = @service")
+            params.append(("service", "STRING", service))
 
         where: str = f"WHERE {' AND '.join(conditions)}" if conditions else ""
         sql: str = (

@@ -1952,8 +1952,8 @@
           <p class="subtitle">
             Every enterprise adopting third-party agentic platforms is quietly
             transferring custody of its operational reasoning to a runtime it
-            does not own. Privacy promises don't address this. Architecture has
-            to.
+            does not own. Training opt-outs do not create data sovereignty.
+            Architecture has to.
           </p>
           <div class="thesis">
             <strong>What this document argues:</strong> when an enterprise runs
@@ -1970,9 +1970,7 @@
             <span class="pill"
               ><span class="dot"></span>Runtime sovereignty</span
             >
-            <span class="pill"
-              ><span class="dot"></span>Third-party agent risk</span
-            >
+            <span class="pill"><span class="dot"></span>Usage control</span>
             <span class="pill"
               ><span class="dot"></span>Domain-scoped reasoning</span
             >
@@ -1985,7 +1983,7 @@
               <span class="stat-num">5</span>
               <span class="stat-label"
                 >Runtime surfaces that quietly accumulate operational knowledge
-                — without any model training</span
+                — even without model training</span
               >
             </div>
             <div class="stat-item">
@@ -1998,8 +1996,8 @@
             <div class="stat-item">
               <span class="stat-num">0</span>
               <span class="stat-label"
-                >Provider promises that can substitute for a custody boundary
-                the enterprise itself controls</span
+                >Training opt-outs that can replace a custody boundary the
+                enterprise itself controls</span
               >
             </div>
           </div>
@@ -2046,14 +2044,14 @@
           <div class="section-number">01 - Boundary Shift</div>
           <div>
             <h2 id="boundary-shift">
-              The security boundary has moved from training data to the agentic
+              Data sovereignty has moved from training data to the agentic
               runtime itself.
             </h2>
             <p class="lede">
-              No-training guarantees answer an important question. Off-the-shelf
-              enterprise agents add a second one: who controls the runtime that
-              assembles knowledge, invokes tools, stores memory, and decides
-              what the agent can do?
+              Training-exclusion guarantees answer an important question.
+              Off-the-shelf enterprise agents add a second one: who enforces
+              usage control over the runtime that assembles knowledge, invokes
+              tools, stores memory, and decides what the agent can do?
             </p>
           </div>
         </div>
@@ -2079,18 +2077,19 @@
               an operation-level boundary. HKI does not block legitimate
               cross-domain work; executive legal/logistics answers or pharmacy
               order lookups are composed from separately scoped operations, then
-              joined through publication, handoff, or audited provenance.
+              joined through scoped delegation, explicit release, and audited
+              provenance.
             </p>
           </div>
           <div class="visual-panel">
             <div class="figure-label">
-              Provider promise versus agent custody
+              Data sovereignty versus agent custody
             </div>
             <div class="boundary-visual">
               <div class="custody-stage promise">
                 <div class="custody-stage-label">
                   Provider layer
-                  <strong>Privacy promise</strong>
+                  <strong>Sovereignty baseline</strong>
                 </div>
                 <div class="custody-stage-body">
                   <h3>What it answers</h3>
@@ -2100,9 +2099,7 @@
                   </p>
                   <div class="custody-tags">
                     <span class="custody-tag">Tenant isolation</span>
-                    <span class="custody-tag"
-                      >No training on enterprise data</span
-                    >
+                    <span class="custody-tag">Training exclusion</span>
                     <span class="custody-tag"
                       >Encryption, logging, access controls</span
                     >
@@ -2154,7 +2151,7 @@
                       >One active domain per operation</span
                     >
                     <span class="custody-tag"
-                      >Cross-domain by publication or handoff</span
+                      >Cross-domain by scoped release</span
                     >
                     <span class="custody-tag"
                       >Exact visibility before retrieval/tools</span
@@ -2327,8 +2324,8 @@
           </div>
           <p class="caption">
             None of these layers has to become model-training data to become
-            strategic signal. Whoever controls the agentic runtime controls what
-            the agent sees, remembers, and does.
+            strategic signal. Data sovereignty depends on controlling runtime
+            usage, provenance, and release - not only training pipelines.
           </p>
         </div>
       </section>
@@ -2565,8 +2562,8 @@
           <div class="contract-statement">
             Every artifact belongs to one domain. Every runtime operation runs
             in one active domain. Cross-domain answers are composed through
-            explicit publication, handoff, or audited joins - never silent
-            global fallback.
+            scoped delegation and explicit release - never silent global
+            fallback.
           </div>
         </div>
       </section>
@@ -2677,14 +2674,14 @@
         <div>
           <div class="section-number">Bottom Line</div>
           <h2 id="bottom-line">
-            Isolation cannot remain a provider promise. It has to become
+            Data sovereignty cannot remain a provider promise. It has to become
             architecture.
           </h2>
           <p class="lede">
             The enterprises that remain sovereign in the agentic era will define
             what belongs where, what can be retrieved, what can be remembered,
-            what can be shared, and what must be explicitly published before it
-            crosses a domain boundary.
+            what can be shared, and what usage-control evidence must exist
+            before knowledge crosses a domain boundary.
           </p>
           <p
             style="
@@ -2712,7 +2709,7 @@
           </p>
           <ul class="closing-checks">
             <li>
-              One active domain signed at the gateway edge before any retrieval,
+              One active domain per operation signed before any retrieval,
               memory, or tool call begins
             </li>
             <li>
@@ -2720,8 +2717,8 @@
               and telemetry — no surface can drop them
             </li>
             <li>
-              Cross-domain sharing only through deliberate, auditable
-              publication — never silent fallback or inferred global scope
+              Cross-domain work uses scoped delegation and explicit release -
+              never silent fallback or inferred global scope
             </li>
             <li>
               Every boundary testable through adversarial probes and verifiable

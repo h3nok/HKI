@@ -11,15 +11,17 @@ import contextlib
 import typing
 import urllib.parse
 
+from ..adapters.redis_memory import RedisDeclarativeMemory, RedisEpisodicMemory, RedisProceduralMemory, RedisSemanticMemory
 import fastapi
 import fastapi.middleware.cors
 
+import src.adapters.analytics_client
 import src.core.config
 import src.core.logging
 import src.domain.guardrails
 import src.domain.memory
 
-settings = src.core.config.settings
+settings: src.core.config.Settings = src.core.config.settings
 
 # Shared modules (hki-shared package)
 try:
@@ -60,7 +62,7 @@ async def lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncGenerator[None,
     # Try Redis-backed memory first; fall back to in-process dicts
     from src.adapters.redis_memory import create_redis_memory_stores
 
-    redis_stores = await create_redis_memory_stores(settings.REDIS_URL)
+    redis_stores: tuple[RedisSemanticMemory, RedisEpisodicMemory, RedisProceduralMemory, RedisDeclarativeMemory] | None = await create_redis_memory_stores(settings.REDIS_URL)
     if redis_stores:
         sem, epi, proc, decl = redis_stores
         memory_manager = src.domain.memory.MemoryManager(
@@ -84,6 +86,10 @@ async def lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncGenerator[None,
     cache = TieredCache(redis_url=settings.REDIS_URL)
     await cache.connect()
 
+    # ── 3b. Initialize analytics/audit client ───────────────────────────
+    analytics = src.adapters.analytics_client.AnalyticsClient()
+    await analytics.start()
+
     # ── 4. Create the agent (ADK native Vertex AI) ────────────────────────
     from src.domain.agent import AdkAgent
 
@@ -101,10 +107,12 @@ async def lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncGenerator[None,
     app.state.shared_client = shared_client
     app.state.agent = agent
     app.state.cache = cache
+    app.state.analytics = analytics
 
     yield
 
     # ── Shutdown ──────────────────────────────────────────────────────────
+    await analytics.close()
     await shared_client.aclose()
 
     # Close tiered cache (Redis L2 pool)
@@ -202,7 +210,7 @@ def _get_probe_client() -> httpx.AsyncClient:
 
 def _is_expected_hostname(url: str, expected_hostname: str) -> bool:
     try:
-        hostname = urllib.parse.urlparse(url).hostname
+        hostname: str | None = urllib.parse.urlparse(url).hostname
     except ValueError:
         return False
     return (hostname or "").lower() == expected_hostname
@@ -238,7 +246,7 @@ async def readiness() -> dict[str, typing.Any]:
     # No LLM gateway health check needed
     if settings.LLM_GATEWAY_URL:
         try:
-            headers = (
+            headers: dict[str, str] = (
                 {"Authorization": f"Bearer {settings.LLM_API_KEY}"} if settings.LLM_API_KEY else {}
             )
             resp: httpx.Response = await client.get(
@@ -246,7 +254,7 @@ async def readiness() -> dict[str, typing.Any]:
                 headers=headers,
             )
             checks["llm_gateway"] = _gateway_probe_status(resp)
-        except Exception as exc:
+        except Exception as exc: Exception:
             checks["llm_gateway"] = f"error:{type(exc).__name__}"
     else:
         checks["vertex_ai"] = "ok:direct"
@@ -255,7 +263,7 @@ async def readiness() -> dict[str, typing.Any]:
     try:
         resp: httpx.Response = await client.get(f"{settings.KNOWLEDGE_API_URL}/health")
         checks["knowledge_api"] = "ok" if resp.status_code == 200 else f"error:{resp.status_code}"
-    except Exception as exc:
+    except Exception as exc: Exception:
         checks["knowledge_api"] = f"error:{type(exc).__name__}"
 
     # Cache check (L2 Redis)
@@ -266,8 +274,8 @@ async def readiness() -> dict[str, typing.Any]:
     else:
         checks["cache_l2"] = "degraded:not_initialized"
 
-    required_checks: list[str] = [k for k in checks if not checks[k].startswith("degraded")]
-    all_ok: bool = all(checks.get(name, "").startswith("ok") for name in required_checks)
+    required_checks: list[str] = [k for k: str in checks if not checks[k].startswith("degraded")]
+    all_ok: bool = all(checks.get(name, "").startswith("ok") for name: str in required_checks)
     return {
         "status": "ready" if all_ok else "degraded",
         "checks": checks,

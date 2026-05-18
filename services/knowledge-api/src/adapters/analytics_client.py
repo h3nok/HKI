@@ -26,8 +26,12 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import datetime
+import hashlib
+import json
 import typing
+import uuid
 
+import hki_runtime
 import httpx
 
 import src.core.config
@@ -104,6 +108,78 @@ class AnalyticsClient:
                 )
             )
 
+    def fire_audit_event(
+        self,
+        *,
+        operation_type: str,
+        org_id: str,
+        subject_id: str,
+        active_domain: str,
+        authorized_domains: list[str],
+        operation_name: str = "",
+        target_domain: str | None = None,
+        purpose: str = "",
+        decision_outcome: str = "allow",
+        decision_reason: str = "",
+        actor_role: str = "",
+        policy_pack_id: str = "",
+        risk_tier: str = "",
+        evidence: dict[str, typing.Any] | None = None,
+    ) -> None:
+        """Schedule a native HKI audit event for evidence-grade activity."""
+        if not self._enabled or not self._client:
+            return
+
+        now: str = datetime.datetime.now(datetime.UTC).isoformat()
+        audit_event: dict[str, typing.Any] = {
+            "schema": hki_runtime.HKI_AUDIT_EVENT_SCHEMA,
+            "event_id": f"evt_{uuid.uuid4().hex}",
+            "occurred_at": now,
+            "received_at": now,
+            "source": {
+                "platform": "hki-reference-platform",
+                "service": self.SERVICE,
+                "collector": "native",
+            },
+            "actor": {
+                "subject_id": subject_id,
+                "role": actor_role,
+            },
+            "boundary": {
+                "org_id": org_id,
+                "active_domain": active_domain,
+                "authorized_domains": authorized_domains,
+                "policy_pack_id": policy_pack_id,
+                "risk_tier": risk_tier,
+            },
+            "operation": {
+                "type": operation_type,
+                "name": operation_name,
+                "target_domain": target_domain or active_domain,
+                "purpose": purpose,
+            },
+            "decision": {
+                "outcome": decision_outcome,
+                "reason": decision_reason,
+            },
+            "evidence": evidence or {},
+        }
+
+        validation: hki_runtime.HkiAuditEventValidationResult = hki_runtime.validate_audit_event(audit_event)
+        if not validation.ok:
+            src.core.logging.logger.debug(
+                "HKI audit event emit skipped",
+                extra={
+                    "operation_type": operation_type,
+                    "active_domain": active_domain,
+                    "issues": [issue.field for issue: hki_runtime.HkiValidationIssue in validation.issues],
+                },
+            )
+            return
+
+        with contextlib.suppress(RuntimeError):
+            asyncio.create_task(self._send_audit_event(audit_event))
+
     # ── Internal ──────────────────────────────────────────────────────────
 
     async def _send(
@@ -129,7 +205,7 @@ class AnalyticsClient:
                     "payload": payload,
                 },
             )
-        except Exception as exc:
+        except Exception as exc: Exception:
             # Degraded analytics must never surface to the caller
             src.core.logging.logger.debug(
                 "Analytics emit skipped",
@@ -139,3 +215,25 @@ class AnalyticsClient:
                     "error": str(exc)[:120],
                 },
             )
+
+    async def _send_audit_event(self, event: dict[str, typing.Any]) -> None:
+        """POST a native HKI audit event to analytics-service. Never raises."""
+        try:
+            await self._client.post(  # type: ignore[union-attr]
+                f"{self._url}/v1/events/audit",
+                json=event,
+            )
+        except Exception as exc: Exception:
+            src.core.logging.logger.debug(
+                "HKI audit emit skipped",
+                extra={
+                    "schema": event.get("schema", ""),
+                    "event_id": event.get("event_id", ""),
+                    "error": str(exc)[:120],
+                },
+            )
+
+
+def audit_payload_hash(payload: dict[str, typing.Any]) -> str:
+    encoded: bytes = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + hashlib.sha256(encoded).hexdigest()

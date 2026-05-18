@@ -35,3 +35,17 @@ export {
 export { applyHkiTraceAttributes, hkiTraceAttributes } from "./telemetry";
 export { stableStringify } from "./stable-stringify";
 export { signEnvelope, verifyEnvelopeSignature } from "./signing";
+export {
+  HKI_AUDIT_EVENT_SCHEMA,
+  auditBoundaryFromEnvelope,
+  validateAuditEvent,
+  type HkiAuditEvent,
+  type HkiAuditEventActor,
+  type HkiAuditEventBoundary,
+  type HkiAuditEventDecision,
+  type HkiAuditEventEvidence,
+  type HkiAuditEventOperation,
+  type HkiAuditEventSource,
+  type HkiAuditEventValidationResult,
+  type HkiAuditPlane,
+} from "./audit";

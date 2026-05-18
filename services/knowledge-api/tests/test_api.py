@@ -247,6 +247,50 @@ class TestSearch:
         finally:
             client.app.dependency_overrides = original_overrides
 
+    def test_search_emits_native_hki_audit_event(
+        self, client: fastapi.testclient.TestClient
+    ) -> None:
+        class FakeAnalytics:
+            def __init__(self) -> None:
+                self.audit_events: list[dict[str, typing.Any]] = []
+
+            def fire(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+                pass
+
+            def fire_audit_event(self, **kwargs: typing.Any) -> None:
+                self.audit_events.append(kwargs)
+
+        def pharmacy_identity() -> src.core.auth.RequestIdentity:
+            return src.core.auth.RequestIdentity(
+                user_id="pharmacy-user",
+                name="Pharmacy User",
+                role="manager",
+                scope="pharmacy",
+                scopes=["pharmacy"],
+                org_id="default",
+                groups=["role:manager"],
+            )
+
+        fake_analytics = FakeAnalytics()
+        client.app.state.analytics = fake_analytics
+        original_overrides = dict(client.app.dependency_overrides)
+        try:
+            client.app.dependency_overrides[src.core.auth.verify_request_jwt] = pharmacy_identity
+            resp: httpx.Response = client.post(
+                "/v1/search",
+                json={"query": "flu shot policy", "mode": "keyword", "top_k": 1},
+            )
+        finally:
+            client.app.dependency_overrides = original_overrides
+
+        assert resp.status_code == 200
+        assert fake_analytics.audit_events
+        event: dict[str, Any] = fake_analytics.audit_events[-1]
+        assert event["operation_type"] == "retrieval.search"
+        assert event["active_domain"] == "pharmacy"
+        assert event["authorized_domains"] == ["pharmacy"]
+        assert event["evidence"]["redaction_profile"] == "metadata-only"
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Internal Store (pipeline-service → knowledge-api write path)

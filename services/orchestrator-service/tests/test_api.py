@@ -13,32 +13,32 @@ Covers:
 from __future__ import annotations
 
 import json
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+import typing
+import unittest.mock
 
-from fastapi.testclient import TestClient
+import fastapi.testclient
 
-from src.api.app import app
+import src.api.app
 
 # ── Helpers ───────────────────────────────────────────────────────────────
 
 
 def _make_mock_agent(
-    chunks: list[dict[str, Any] | str] | None = None,
+    chunks: list[dict[str, typing.Any] | str] | None = None,
     tools: list | None = None,
-):
+) -> unittest.mock.MagicMock:
     """Build a mock AdkAgent whose ``chat_stream`` yields *chunks*."""
-    agent = MagicMock()
+    agent = unittest.mock.MagicMock()
     agent.chat_stream_calls = []
 
     if chunks is None:
         chunks = [{"type": "final_response_chunk", "content": "Hello!"}]
 
-    async def _fake_stream(*, session_id: str, message: str, **kwargs):
+    async def _fake_stream(*, session_id: str, message: str, **kwargs) -> typing.Generator[dict[str, Any] | str, typing.Any, None]:
         agent.chat_stream_calls.append(
             {"session_id": session_id, "message": message, **kwargs}
         )
-        for c in chunks:
+        for c: dict[str, Any] | str in chunks:
             yield c
 
     agent.chat_stream = _fake_stream
@@ -46,10 +46,19 @@ def _make_mock_agent(
     return agent
 
 
-def _inject_agent(agent) -> TestClient:
+class _FakeAnalytics:
+    def __init__(self) -> None:
+        self.audit_events: list[dict[str, typing.Any]] = []
+
+    def fire_audit_event(self, **kwargs: typing.Any) -> None:
+        self.audit_events.append(kwargs)
+
+
+def _inject_agent(agent, analytics: _FakeAnalytics | None = None) -> fastapi.testclient.TestClient:
     """Return a ``TestClient`` with the given mock agent on ``app.state``."""
-    app.state.agent = agent
-    return TestClient(app, raise_server_exceptions=False)
+    src.api.app.app.state.agent = agent
+    src.api.app.app.state.analytics = analytics
+    return fastapi.testclient.TestClient(src.api.app.app, raise_server_exceptions=False)
 
 
 def _chat_payload(
@@ -67,19 +76,19 @@ def _chat_payload(
 class TestHealthEndpoints:
     """Tests for GET /health, GET /ready, GET /health/ready."""
 
-    def test_health_returns_200(self, client):
+    def test_health_returns_200(self, client) -> None:
         resp = client.get("/health")
         assert resp.status_code == 200
         body = resp.json()
         assert body["status"] == "healthy"
         assert "service" in body
 
-    def test_readiness_returns_200(self, client):
+    def test_readiness_returns_200(self, client) -> None:
         """Readiness probe — regardless of upstream status it should not 5xx."""
-        with patch("src.api.app._get_probe_client") as mock_probe:
-            mock_http = AsyncMock()
-            mock_resp = MagicMock(status_code=200)
-            mock_http.get = AsyncMock(return_value=mock_resp)
+        with unittest.mock.patch("src.api.app._get_probe_client") as mock_probe: unittest.mock.MagicMock | unittest.mock.AsyncMock:
+            mock_http = unittest.mock.AsyncMock()
+            mock_resp = unittest.mock.MagicMock(status_code=200)
+            mock_http.get = unittest.mock.AsyncMock(return_value=mock_resp)
             mock_probe.return_value = mock_http
 
             resp = client.get("/ready")
@@ -88,12 +97,12 @@ class TestHealthEndpoints:
             assert body["status"] in ("ready", "degraded")
             assert "checks" in body
 
-    def test_readiness_alias(self, client):
+    def test_readiness_alias(self, client) -> None:
         """GET /health/ready is an alias for /ready."""
-        with patch("src.api.app._get_probe_client") as mock_probe:
-            mock_http = AsyncMock()
-            mock_resp = MagicMock(status_code=200)
-            mock_http.get = AsyncMock(return_value=mock_resp)
+        with unittest.mock.patch("src.api.app._get_probe_client") as mock_probe: unittest.mock.MagicMock | unittest.mock.AsyncMock:
+            mock_http = unittest.mock.AsyncMock()
+            mock_resp = unittest.mock.MagicMock(status_code=200)
+            mock_http.get = unittest.mock.AsyncMock(return_value=mock_resp)
             mock_probe.return_value = mock_http
 
             resp = client.get("/health/ready")
@@ -101,23 +110,23 @@ class TestHealthEndpoints:
             body = resp.json()
             assert body["status"] in ("ready", "degraded")
 
-    def test_readiness_degraded_when_llm_down(self, client):
+    def test_readiness_degraded_when_llm_down(self, client) -> None:
         """If LLM gateway check fails, readiness should report degraded."""
         with (
-            patch("src.api.app.settings") as mock_settings,
-            patch("src.api.app._get_probe_client") as mock_probe,
+            unittest.mock.patch("src.api.app.settings") as mock_settings: unittest.mock.MagicMock | unittest.mock.AsyncMock,
+            unittest.mock.patch("src.api.app._get_probe_client") as mock_probe: unittest.mock.MagicMock | unittest.mock.AsyncMock,
         ):
             mock_settings.LLM_GATEWAY_URL = "http://fake-gateway:4000/v1"
             mock_settings.KNOWLEDGE_API_URL = "http://localhost:9509"
             mock_settings.SERVICE_NAME = "orchestrator"
-            mock_http = AsyncMock()
+            mock_http = unittest.mock.AsyncMock()
 
-            async def _side_effect(url: str, **kw):
+            async def _side_effect(url: str, **kw) -> unittest.mock.MagicMock:
                 if "models" in url:
                     raise ConnectionError("refused")
-                return MagicMock(status_code=200)
+                return unittest.mock.MagicMock(status_code=200)
 
-            mock_http.get = AsyncMock(side_effect=_side_effect)
+            mock_http.get = unittest.mock.AsyncMock(side_effect=_side_effect)
             mock_probe.return_value = mock_http
 
             resp = client.get("/ready")
@@ -135,9 +144,9 @@ class TestHealthEndpoints:
 class TestChatEndpoint:
     """Tests for POST /v1/chat."""
 
-    def test_basic_chat(self):
+    def test_basic_chat(self) -> None:
         """A simple final_response_chunk is aggregated into a full response."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[{"type": "final_response_chunk", "content": "Hello!"}],
         )
         client = _inject_agent(agent)
@@ -153,9 +162,9 @@ class TestChatEndpoint:
         assert body["trace"] == []
         assert body["citations"] == []
 
-    def test_multi_chunk_aggregation(self):
+    def test_multi_chunk_aggregation(self) -> None:
         """Multiple final_response_chunks are concatenated."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[
                 {"type": "final_response_chunk", "content": "Hello"},
                 {"type": "final_response_chunk", "content": " World"},
@@ -167,9 +176,9 @@ class TestChatEndpoint:
         assert resp.status_code == 200
         assert resp.json()["content"] == "Hello World"
 
-    def test_tool_call_and_result(self):
+    def test_tool_call_and_result(self) -> None:
         """Tool call + tool result events appear in tool_calls list."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[
                 {
                     "type": "tool_call",
@@ -210,18 +219,18 @@ class TestChatEndpoint:
         assert tc["output"] == {"products": []}
         assert tc["duration_ms"] == 150
 
-    def test_raw_string_chunks(self):
+    def test_raw_string_chunks(self) -> None:
         """Raw string chunks (non-dict) are accumulated as text."""
-        agent = _make_mock_agent(chunks=["Hello", " there"])
+        agent: unittest.mock.MagicMock = _make_mock_agent(chunks=["Hello", " there"])
         client = _inject_agent(agent)
 
         resp = client.post("/v1/chat", json=_chat_payload())
         assert resp.status_code == 200
         assert resp.json()["content"] == "Hello there"
 
-    def test_thinking_events_ignored_in_content(self):
+    def test_thinking_events_ignored_in_content(self) -> None:
         """Thinking trace events should not leak into content."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[
                 {"type": "thinking", "step": 1, "content": "Analyzing"},
                 {"type": "final_response_chunk", "content": "Answer"},
@@ -233,18 +242,18 @@ class TestChatEndpoint:
         assert resp.status_code == 200
         assert resp.json()["content"] == "Answer"
 
-    def test_empty_stream(self):
+    def test_empty_stream(self) -> None:
         """No chunks from agent → empty content, no error."""
-        agent = _make_mock_agent(chunks=[])
+        agent: unittest.mock.MagicMock = _make_mock_agent(chunks=[])
         client = _inject_agent(agent)
 
         resp = client.post("/v1/chat", json=_chat_payload())
         assert resp.status_code == 200
         assert resp.json()["content"] == ""
 
-    def test_confidence_and_metadata(self):
+    def test_confidence_and_metadata(self) -> None:
         """Verify fixed metadata fields in the response envelope."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[{"type": "final_response_chunk", "content": "ok"}],
         )
         client = _inject_agent(agent)
@@ -255,9 +264,9 @@ class TestChatEndpoint:
         assert isinstance(body["guardrails"], dict)
         assert isinstance(body["citations"], list)
 
-    def test_body_scopes_do_not_override_verified_identity(self):
+    def test_body_scopes_do_not_override_verified_identity(self) -> None:
         """Request body scope hints must not widen the signed caller identity."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[{"type": "final_response_chunk", "content": "ok"}],
         )
         client = _inject_agent(agent)
@@ -267,7 +276,7 @@ class TestChatEndpoint:
             "scopes": ["surgery", "global"],
         }
 
-        with patch.dict(
+        with unittest.mock.patch.dict(
             "os.environ",
             {"AUTH_ENABLED": "false", "HKI_DEV_RUNTIME_SCOPE": "pharmacy"},
             clear=False,
@@ -278,6 +287,27 @@ class TestChatEndpoint:
         assert agent.chat_stream_calls[-1]["scope"] == "pharmacy"
         assert agent.chat_stream_calls[-1]["scopes"] == ["pharmacy"]
 
+    def test_chat_emits_native_hki_audit_event(self) -> None:
+        agent: unittest.mock.MagicMock = _make_mock_agent(
+            chunks=[{"type": "final_response_chunk", "content": "Hello!"}],
+        )
+        analytics = _FakeAnalytics()
+        client = _inject_agent(agent, analytics=analytics)
+
+        resp = client.post(
+            "/v1/chat",
+            json=_chat_payload(message="What products do you carry?"),
+        )
+
+        assert resp.status_code == 200
+        assert analytics.audit_events
+        event: dict[str, Any] = analytics.audit_events[-1]
+        assert event["operation_type"] == "agent.chat"
+        assert event["decision_outcome"] == "allow"
+        assert event["evidence"]["redaction_profile"] == "metadata-only"
+        assert event["evidence"]["message_hash"].startswith("sha256:")
+        assert "What products do you carry?" not in json.dumps(event["evidence"])
+
 
 # ═════════════════════════════════════════════════════════════════════════════
 # POST /v1/chat  — validation
@@ -287,19 +317,19 @@ class TestChatEndpoint:
 class TestChatValidation:
     """Pydantic validation on POST /v1/chat."""
 
-    def test_missing_message_returns_422(self, client):
+    def test_missing_message_returns_422(self, client) -> None:
         resp = client.post("/v1/chat", json={"conversation_id": "c1"})
         assert resp.status_code == 422
 
-    def test_missing_conversation_id_returns_422(self, client):
+    def test_missing_conversation_id_returns_422(self, client) -> None:
         resp = client.post("/v1/chat", json={"message": "hi"})
         assert resp.status_code == 422
 
-    def test_empty_body_returns_422(self, client):
+    def test_empty_body_returns_422(self, client) -> None:
         resp = client.post("/v1/chat", json={})
         assert resp.status_code == 422
 
-    def test_no_body_returns_422(self, client):
+    def test_no_body_returns_422(self, client) -> None:
         resp = client.post("/v1/chat")
         assert resp.status_code == 422
 
@@ -316,18 +346,18 @@ class TestChatStreamEndpoint:
     def _parse_sse(text: str) -> list[dict | str]:
         """Parse SSE text into a list of JSON objects or raw strings."""
         events: list[dict | str] = []
-        for line in text.strip().splitlines():
+        for line: str in text.strip().splitlines():
             if line.startswith("data: "):
-                payload = line[len("data: ") :]
+                payload: str = line[len("data: ") :]
                 if payload == "[DONE]":
                     events.append("[DONE]")
                 else:
                     events.append(json.loads(payload))
         return events
 
-    def test_basic_stream(self):
+    def test_basic_stream(self) -> None:
         """SSE stream yields chunk events, a terminal response, and [DONE]."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[{"type": "final_response_chunk", "content": "Hi!"}],
         )
         client = _inject_agent(agent)
@@ -351,9 +381,9 @@ class TestChatStreamEndpoint:
         assert len(final_events) >= 1
         assert final_events[-1]["content"] == "Hi!"
 
-    def test_stream_cumulative_text(self):
+    def test_stream_cumulative_text(self) -> None:
         """Chunk events stay incremental while final_response is cumulative."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[
                 {"type": "final_response_chunk", "content": "Hello"},
                 {"type": "final_response_chunk", "content": " World"},
@@ -374,9 +404,9 @@ class TestChatStreamEndpoint:
         assert [event["content"] for event in chunk_events] == ["Hello", " World"]
         assert final_events[-1]["content"] == "Hello World"
 
-    def test_stream_thinking_event(self):
+    def test_stream_thinking_event(self) -> None:
         """Thinking events are forwarded verbatim."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[
                 {"type": "thinking", "step": 1, "content": "Analyzing"},
                 {"type": "final_response_chunk", "content": "Done"},
@@ -390,9 +420,9 @@ class TestChatStreamEndpoint:
         assert len(thinking) == 1
         assert thinking[0]["content"] == "Analyzing"
 
-    def test_stream_tool_events(self):
+    def test_stream_tool_events(self) -> None:
         """Tool call + result events are forwarded in SSE."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[
                 {
                     "type": "tool_call",
@@ -419,9 +449,9 @@ class TestChatStreamEndpoint:
         assert "final_response_chunk" in types_seen
         assert "final_response" in types_seen
 
-    def test_stream_raw_string_chunks(self):
+    def test_stream_raw_string_chunks(self) -> None:
         """Raw string chunks are wrapped as final_response_chunk."""
-        agent = _make_mock_agent(chunks=["Hello"])
+        agent: unittest.mock.MagicMock = _make_mock_agent(chunks=["Hello"])
         client = _inject_agent(agent)
 
         resp = client.post("/v1/chat/stream", json=_chat_payload())
@@ -438,17 +468,17 @@ class TestChatStreamEndpoint:
         assert chunk_events[0]["content"] == "Hello"
         assert final_events[-1]["content"] == "Hello"
 
-    def test_stream_headers(self):
+    def test_stream_headers(self) -> None:
         """SSE response contains required no-cache headers."""
-        agent = _make_mock_agent()
+        agent: unittest.mock.MagicMock = _make_mock_agent()
         client = _inject_agent(agent)
 
         resp = client.post("/v1/chat/stream", json=_chat_payload())
         assert resp.headers.get("cache-control") == "no-cache"
 
-    def test_stream_body_scopes_do_not_override_verified_identity(self):
+    def test_stream_body_scopes_do_not_override_verified_identity(self) -> None:
         """SSE route uses the verified identity scopes, not request body hints."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[{"type": "final_response_chunk", "content": "ok"}],
         )
         client = _inject_agent(agent)
@@ -458,7 +488,7 @@ class TestChatStreamEndpoint:
             "scopes": ["surgery", "global"],
         }
 
-        with patch.dict(
+        with unittest.mock.patch.dict(
             "os.environ",
             {"AUTH_ENABLED": "false", "HKI_DEV_RUNTIME_SCOPE": "pharmacy"},
             clear=False,
@@ -478,7 +508,7 @@ class TestChatStreamEndpoint:
 class TestToolsEndpoint:
     """Tests for GET /v1/tools."""
 
-    def test_list_tools(self, client):
+    def test_list_tools(self, client) -> None:
         """Default agent tools are listed."""
         resp = client.get("/v1/tools")
         assert resp.status_code == 200
@@ -491,7 +521,7 @@ class TestToolsEndpoint:
         assert "search_products" in names
         assert "check_inventory" in names
 
-    def test_tool_schema(self, client):
+    def test_tool_schema(self, client) -> None:
         """Each tool has the expected ToolInfo shape."""
         resp = client.get("/v1/tools")
         for tool in resp.json():
@@ -500,31 +530,31 @@ class TestToolsEndpoint:
             assert "parameters" in tool
             assert "category" in tool
 
-    def test_empty_tools(self):
+    def test_empty_tools(self) -> None:
         """Agent with no tools → empty list, no crash."""
-        agent = _make_mock_agent(tools=[])
+        agent: unittest.mock.MagicMock = _make_mock_agent(tools=[])
         client = _inject_agent(agent)
 
         resp = client.get("/v1/tools")
         assert resp.status_code == 200
         assert resp.json() == []
 
-    def test_tool_category_assignment(self):
+    def test_tool_category_assignment(self) -> None:
         """Tools are assigned category based on keyword mapping."""
 
-        def search_products():
+        def search_products() -> None:
             """Search products by keyword."""
             pass
 
-        def analyze_sales():
+        def analyze_sales() -> None:
             """Analyze sales data."""
             pass
 
-        def do_something():
+        def do_something() -> None:
             """Unclassified tool."""
             pass
 
-        agent = _make_mock_agent(tools=[search_products, analyze_sales, do_something])
+        agent: unittest.mock.MagicMock = _make_mock_agent(tools=[search_products, analyze_sales, do_something])
         client = _inject_agent(agent)
 
         resp = client.get("/v1/tools")
@@ -533,14 +563,14 @@ class TestToolsEndpoint:
         assert tools["analyze_sales"]["category"] == "compute"
         assert tools["do_something"]["category"] == "other"
 
-    def test_tool_description_extracted(self):
+    def test_tool_description_extracted(self) -> None:
         """Tool docstring is used as description."""
 
-        def my_tool():
+        def my_tool() -> None:
             """My helpful description."""
             pass
 
-        agent = _make_mock_agent(tools=[my_tool])
+        agent: unittest.mock.MagicMock = _make_mock_agent(tools=[my_tool])
         client = _inject_agent(agent)
 
         resp = client.get("/v1/tools")
@@ -558,18 +588,18 @@ class TestGuardrailsInRoutes:
     @staticmethod
     def _parse_sse(text: str) -> list[dict | str]:
         events: list[dict | str] = []
-        for line in text.strip().splitlines():
+        for line: str in text.strip().splitlines():
             if line.startswith("data: "):
-                payload = line[len("data: ") :]
+                payload: str = line[len("data: ") :]
                 if payload == "[DONE]":
                     events.append("[DONE]")
                 else:
                     events.append(json.loads(payload))
         return events
 
-    def test_pii_input_rejected_sync(self):
+    def test_pii_input_rejected_sync(self) -> None:
         """POST /v1/chat rejects input containing PII (SSN)."""
-        agent = _make_mock_agent()
+        agent: unittest.mock.MagicMock = _make_mock_agent()
         client = _inject_agent(agent)
 
         resp = client.post(
@@ -581,9 +611,28 @@ class TestGuardrailsInRoutes:
         assert body["error"] == "input_guardrail_violation"
         assert any(v["rule"] == "pii_detection" for v in body["violations"])
 
-    def test_injection_input_rejected_sync(self):
+    def test_input_guardrail_rejection_emits_denied_audit_event(self) -> None:
+        agent: unittest.mock.MagicMock = _make_mock_agent()
+        analytics = _FakeAnalytics()
+        client = _inject_agent(agent, analytics=analytics)
+
+        resp = client.post(
+            "/v1/chat",
+            json=_chat_payload(message="My SSN is 123-45-6789"),
+        )
+
+        assert resp.status_code == 422
+        assert analytics.audit_events
+        event: dict[str, Any] = analytics.audit_events[-1]
+        assert event["operation_type"] == "agent.chat"
+        assert event["decision_outcome"] == "deny"
+        assert event["decision_reason"] == "input_guardrail_violation"
+        assert event["evidence"]["input_guardrail_passed"] is False
+        assert "123-45-6789" not in json.dumps(event["evidence"])
+
+    def test_injection_input_rejected_sync(self) -> None:
         """POST /v1/chat rejects prompt injection."""
-        agent = _make_mock_agent()
+        agent: unittest.mock.MagicMock = _make_mock_agent()
         client = _inject_agent(agent)
 
         resp = client.post(
@@ -597,9 +646,9 @@ class TestGuardrailsInRoutes:
         assert body["error"] == "input_guardrail_violation"
         assert any(v["rule"] == "prompt_injection" for v in body["violations"])
 
-    def test_clean_input_passes_sync(self):
+    def test_clean_input_passes_sync(self) -> None:
         """POST /v1/chat passes clean input through to agent."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[{"type": "final_response_chunk", "content": "Hello!"}],
         )
         client = _inject_agent(agent)
@@ -611,9 +660,9 @@ class TestGuardrailsInRoutes:
         assert resp.status_code == 200
         assert resp.json()["content"] == "Hello!"
 
-    def test_pii_input_rejected_stream(self):
+    def test_pii_input_rejected_stream(self) -> None:
         """POST /v1/chat/stream rejects PII input with 422 (not SSE)."""
-        agent = _make_mock_agent()
+        agent: unittest.mock.MagicMock = _make_mock_agent()
         client = _inject_agent(agent)
 
         resp = client.post(
@@ -624,9 +673,9 @@ class TestGuardrailsInRoutes:
         body = resp.json()
         assert body["error"] == "input_guardrail_violation"
 
-    def test_stream_contains_guardrail_events(self):
+    def test_stream_contains_guardrail_events(self) -> None:
         """POST /v1/chat/stream emits guardrail events (input + output)."""
-        agent = _make_mock_agent(
+        agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[
                 {
                     "type": "final_response_chunk",
@@ -652,9 +701,9 @@ class TestGuardrailsInRoutes:
         assert "INPUT_GUARDRAILS" in sections
         assert "OUTPUT_GUARDRAILS" in sections
 
-    def test_toxicity_rejected(self):
+    def test_toxicity_rejected(self) -> None:
         """POST /v1/chat rejects toxic input."""
-        agent = _make_mock_agent()
+        agent: unittest.mock.MagicMock = _make_mock_agent()
         client = _inject_agent(agent)
 
         resp = client.post(

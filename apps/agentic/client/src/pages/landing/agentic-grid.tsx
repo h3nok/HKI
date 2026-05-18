@@ -158,48 +158,6 @@ function roundedRectPath(
   ctx.closePath();
 }
 
-function drawMicroLabel(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  label: string,
-  detail: string,
-  palette: Palette,
-  dark: boolean,
-  align: "left" | "center" = "left"
-) {
-  const labelWidth = Math.max(78, label.length * 7.2 + 20);
-  const width = detail
-    ? Math.max(labelWidth, detail.length * 5.8 + 20)
-    : labelWidth;
-  const height = detail ? 42 : 28;
-  const left = align === "center" ? x - width / 2 : x;
-
-  ctx.save();
-  ctx.globalCompositeOperation = dark ? "screen" : "multiply";
-  roundedRectPath(ctx, left, y, width, height, 8);
-  ctx.fillStyle = rgba(palette.background, dark ? 0.42 : 0.58);
-  ctx.fill();
-  ctx.strokeStyle = rgba(palette.primary, dark ? 0.2 : 0.16);
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
-  ctx.font = "700 10px 'Plus Jakarta Sans', Inter, sans-serif";
-  ctx.letterSpacing = "0.12em";
-  ctx.textAlign = align;
-  ctx.textBaseline = "top";
-  ctx.fillStyle = rgba(palette.soft, dark ? 0.68 : 0.58);
-  ctx.fillText(label, align === "center" ? x : left + 10, y + 8);
-
-  if (detail) {
-    ctx.font = "600 9px 'Plus Jakarta Sans', Inter, sans-serif";
-    ctx.letterSpacing = "0.04em";
-    ctx.fillStyle = rgba(palette.foreground, dark ? 0.34 : 0.36);
-    ctx.fillText(detail, align === "center" ? x : left + 10, y + 24);
-  }
-  ctx.restore();
-}
-
 function drawBackground(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -221,8 +179,8 @@ function drawBackground(
     height * 0.48,
     width * 0.58
   );
-  field.addColorStop(0, rgba(palette.primary, dark ? 0.17 : 0.12));
-  field.addColorStop(0.46, rgba(palette.primary, dark ? 0.06 : 0.055));
+  field.addColorStop(0, rgba(palette.primary, dark ? 0.17 : 0.20));
+  field.addColorStop(0.46, rgba(palette.primary, dark ? 0.06 : 0.09));
   field.addColorStop(1, rgba(palette.primary, 0));
   ctx.fillStyle = field;
   ctx.fillRect(0, 0, width, height);
@@ -255,8 +213,8 @@ function drawGrid(
 ) {
   const step = width < 900 ? 58 : 48;
   const originY = height * 0.2;
-  const primaryAlpha = dark ? 0.038 : 0.034;
-  const secondaryAlpha = dark ? 0.026 : 0.024;
+  const primaryAlpha = dark ? 0.038 : 0.055;
+  const secondaryAlpha = dark ? 0.026 : 0.038;
 
   ctx.save();
   ctx.globalCompositeOperation = dark ? "screen" : "multiply";
@@ -348,7 +306,7 @@ function drawDataPointField(
       const pulse = Math.sin(time * 0.72 + row * 0.29 + col * 0.17) * 0.5 + 0.5;
       const alpha =
         ((dark ? 0.048 : 0.05) +
-          containment * (dark ? 0.12 : 0.095) +
+          containment * (dark ? 0.12 : 0.14) +
           cursorFocus * (dark ? 0.12 : 0.08) +
           pulse * (dark ? 0.012 : 0.01)) *
         textFade *
@@ -377,7 +335,7 @@ function drawExecutionMap(
   palette: Palette,
   dark: boolean
 ) {
-  const { core, domains, scale } = model;
+  const { core, scale } = model;
   const compact = width < 820;
   const domainWidth = core.r * (compact ? 2.7 : 3.35);
   const domainHeight = core.r * (compact ? 2.15 : 2.55);
@@ -401,8 +359,8 @@ function drawExecutionMap(
     core.y,
     domainWidth
   );
-  domainGlow.addColorStop(0, rgba(palette.primary, dark ? 0.07 : 0.045));
-  domainGlow.addColorStop(0.58, rgba(palette.primary, dark ? 0.035 : 0.024));
+  domainGlow.addColorStop(0, rgba(palette.primary, dark ? 0.07 : 0.075));
+  domainGlow.addColorStop(0.58, rgba(palette.primary, dark ? 0.035 : 0.042));
   domainGlow.addColorStop(1, rgba(palette.primary, 0));
   ctx.fillStyle = domainGlow;
   ctx.beginPath();
@@ -410,7 +368,7 @@ function drawExecutionMap(
   ctx.fill();
 
   ctx.lineWidth = 1;
-  ctx.strokeStyle = rgba(palette.primary, dark ? 0.16 : 0.12);
+  ctx.strokeStyle = rgba(palette.primary, dark ? 0.16 : 0.22);
   ctx.beginPath();
   ctx.ellipse(
     core.x,
@@ -425,7 +383,7 @@ function drawExecutionMap(
 
   ctx.setLineDash([4, 12]);
   ctx.lineDashOffset = -time * 3.2;
-  ctx.strokeStyle = rgba(palette.soft, dark ? 0.18 : 0.13);
+  ctx.strokeStyle = rgba(palette.soft, dark ? 0.18 : 0.24);
   ctx.beginPath();
   ctx.ellipse(
     core.x,
@@ -449,7 +407,7 @@ function drawExecutionMap(
       x: core.x - core.r * 0.24,
       y: core.y + (index - 1.5) * core.r * 0.08,
     };
-    ctx.strokeStyle = rgba(palette.primary, dark ? 0.1 : 0.075);
+    ctx.strokeStyle = rgba(palette.primary, dark ? 0.1 : 0.14);
     ctx.lineWidth = 1.15;
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
@@ -479,7 +437,7 @@ function drawExecutionMap(
         Math.sin(progress * Math.PI) * core.r * 0.12;
       ctx.fillStyle = rgba(
         palette.soft,
-        (dark ? 0.3 : 0.22) * Math.sin(progress * Math.PI)
+        (dark ? 0.3 : 0.32) * Math.sin(progress * Math.PI)
       );
       ctx.beginPath();
       ctx.arc(x, y, 1.4 * scale, 0, Math.PI * 2);
@@ -497,12 +455,12 @@ function drawExecutionMap(
   );
   ctx.fillStyle = rgba(palette.background, dark ? 0.34 : 0.54);
   ctx.fill();
-  ctx.strokeStyle = rgba(palette.soft, dark ? 0.34 : 0.26);
+  ctx.strokeStyle = rgba(palette.soft, dark ? 0.34 : 0.42);
   ctx.lineWidth = 1.2;
   ctx.stroke();
 
   for (let i = 0; i < 4; i += 1) {
-    ctx.fillStyle = rgba(palette.soft, dark ? 0.62 : 0.46);
+    ctx.fillStyle = rgba(palette.soft, dark ? 0.62 : 0.62);
     ctx.beginPath();
     ctx.arc(
       gate.x,
@@ -512,61 +470,6 @@ function drawExecutionMap(
       Math.PI * 2
     );
     ctx.fill();
-  }
-
-  const blocked = domains.find(domain => domain.kind === "memory");
-  if (blocked) {
-    const edge = {
-      x: blocked.x - core.r * 0.82,
-      y: blocked.y + core.r * 0.18,
-    };
-    ctx.strokeStyle = rgba(palette.foreground, dark ? 0.16 : 0.13);
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 10]);
-    ctx.beginPath();
-    ctx.moveTo(blocked.x - core.r * 0.16, blocked.y + core.r * 0.12);
-    ctx.lineTo(edge.x, edge.y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.strokeStyle = rgba(palette.soft, dark ? 0.32 : 0.24);
-    ctx.beginPath();
-    ctx.moveTo(edge.x - 6 * scale, edge.y - 6 * scale);
-    ctx.lineTo(edge.x + 6 * scale, edge.y + 6 * scale);
-    ctx.moveTo(edge.x + 6 * scale, edge.y - 6 * scale);
-    ctx.lineTo(edge.x - 6 * scale, edge.y + 6 * scale);
-    ctx.stroke();
-  }
-
-  if (!compact) {
-    drawMicroLabel(
-      ctx,
-      source.x - 18 * scale,
-      source.y - core.r * 0.86,
-      "AGENT REQUEST",
-      "context enters runtime",
-      palette,
-      dark
-    );
-    drawMicroLabel(
-      ctx,
-      gate.x - 42 * scale,
-      gate.y - core.r * 0.98,
-      "SIGNED SCOPE",
-      "domain gate",
-      palette,
-      dark,
-      "center"
-    );
-    drawMicroLabel(
-      ctx,
-      core.x,
-      core.y + core.r * 1.24,
-      "ISOLATED EXECUTION",
-      "RAG · tools · memory · traces",
-      palette,
-      dark,
-      "center"
-    );
   }
 
   ctx.restore();
@@ -648,16 +551,16 @@ function drawRoute(
   ctx.lineCap = "round";
 
   const glow = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
-  glow.addColorStop(0, rgba(palette.primary, dark ? 0.015 : 0.012));
+  glow.addColorStop(0, rgba(palette.primary, dark ? 0.015 : 0.022));
   glow.addColorStop(
     0.5,
-    rgba(palette.primary, dark ? 0.1 + focus * 0.08 : 0.08 + focus * 0.05)
+    rgba(palette.primary, dark ? 0.1 + focus * 0.08 : 0.14 + focus * 0.08)
   );
   glow.addColorStop(
     0.56,
-    rgba(palette.soft, dark ? 0.2 + focus * 0.15 : 0.16 + focus * 0.08)
+    rgba(palette.soft, dark ? 0.2 + focus * 0.15 : 0.26 + focus * 0.12)
   );
-  glow.addColorStop(1, rgba(palette.primary, dark ? 0.015 : 0.012));
+  glow.addColorStop(1, rgba(palette.primary, dark ? 0.015 : 0.022));
 
   ctx.strokeStyle = glow;
   ctx.lineWidth = 4.4 + focus * 1.1;
@@ -668,7 +571,7 @@ function drawRoute(
 
   ctx.strokeStyle = rgba(
     palette.soft,
-    dark ? 0.16 + focus * 0.14 : 0.12 + focus * 0.08
+    dark ? 0.16 + focus * 0.14 : 0.22 + focus * 0.12
   );
   ctx.lineWidth = 1;
   ctx.setLineDash([7, 18]);
@@ -685,7 +588,7 @@ function drawRoute(
     const envelope = Math.sin(u * Math.PI);
     ctx.fillStyle = rgba(
       palette.soft,
-      (dark ? 0.09 + focus * 0.14 : 0.075 + focus * 0.08) * envelope
+      (dark ? 0.09 + focus * 0.14 : 0.14 + focus * 0.12) * envelope
     );
     ctx.beginPath();
     ctx.arc(p.x, p.y, 0.85 + focus * 0.35, 0, Math.PI * 2);
@@ -713,7 +616,7 @@ function drawSealGate(
 
   ctx.strokeStyle = rgba(
     palette.soft,
-    dark ? 0.2 + focus * 0.18 : 0.16 + focus * 0.1
+    dark ? 0.2 + focus * 0.18 : 0.28 + focus * 0.16
   );
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -723,7 +626,7 @@ function drawSealGate(
   ctx.setLineDash([4, 9]);
   ctx.strokeStyle = rgba(
     palette.soft,
-    dark ? 0.22 + focus * 0.16 : 0.18 + focus * 0.1
+    dark ? 0.22 + focus * 0.16 : 0.30 + focus * 0.16
   );
   ctx.beginPath();
   ctx.arc(0, 0, radius * 0.62, 0, Math.PI * 2);
@@ -732,7 +635,7 @@ function drawSealGate(
 
   ctx.fillStyle = rgba(
     palette.soft,
-    dark ? 0.48 + focus * 0.18 : 0.36 + focus * 0.12
+    dark ? 0.48 + focus * 0.18 : 0.56 + focus * 0.18
   );
   ctx.beginPath();
   ctx.arc(0, 0, 2.2 + focus * 0.8, 0, Math.PI * 2);
@@ -759,7 +662,7 @@ function drawDomainGlyph(
   const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, 68 * scale);
   halo.addColorStop(
     0,
-    rgba(palette.primary, dark ? 0.1 + focus * 0.05 : 0.08 + focus * 0.035)
+    rgba(palette.primary, dark ? 0.1 + focus * 0.05 : 0.16 + focus * 0.06)
   );
   halo.addColorStop(1, rgba(palette.primary, 0));
   ctx.fillStyle = halo;
@@ -769,7 +672,7 @@ function drawDomainGlyph(
 
   ctx.strokeStyle = rgba(
     palette.soft,
-    dark ? 0.2 + focus * 0.18 : 0.16 + focus * 0.1
+    dark ? 0.2 + focus * 0.18 : 0.30 + focus * 0.16
   );
   ctx.lineWidth = 1.1;
   ctx.beginPath();
@@ -778,7 +681,7 @@ function drawDomainGlyph(
 
   ctx.strokeStyle = rgba(
     palette.primary,
-    dark ? 0.15 + focus * 0.12 : 0.12 + focus * 0.08
+    dark ? 0.15 + focus * 0.12 : 0.22 + focus * 0.12
   );
   ctx.beginPath();
   ctx.arc(0, 0, 49 * scale, 0, Math.PI * 2);
@@ -786,7 +689,7 @@ function drawDomainGlyph(
 
   ctx.strokeStyle = rgba(
     palette.soft,
-    dark ? 0.34 + focus * 0.18 : 0.25 + focus * 0.12
+    dark ? 0.34 + focus * 0.18 : 0.42 + focus * 0.18
   );
   ctx.lineWidth = 1.2;
 
@@ -868,11 +771,11 @@ function drawSealedCore(
   const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 2.05);
   glow.addColorStop(
     0,
-    rgba(palette.soft, dark ? 0.15 + focus * 0.05 : 0.1 + focus * 0.03)
+    rgba(palette.soft, dark ? 0.15 + focus * 0.05 : 0.20 + focus * 0.06)
   );
   glow.addColorStop(
     0.42,
-    rgba(palette.primary, dark ? 0.06 + focus * 0.03 : 0.045 + focus * 0.02)
+    rgba(palette.primary, dark ? 0.06 + focus * 0.03 : 0.09 + focus * 0.04)
   );
   glow.addColorStop(1, rgba(palette.primary, 0));
   ctx.fillStyle = glow;
@@ -884,7 +787,7 @@ function drawSealedCore(
     const radius = r * (0.72 + i * 0.22 + focus * 0.015);
     ctx.strokeStyle = rgba(
       i % 2 === 0 ? palette.soft : palette.primary,
-      dark ? 0.16 - i * 0.018 + focus * 0.04 : 0.12 - i * 0.014 + focus * 0.025
+      dark ? 0.16 - i * 0.018 + focus * 0.04 : 0.22 - i * 0.018 + focus * 0.04
     );
     ctx.lineWidth = i === 0 ? 1.5 : 0.9;
     ctx.setLineDash(i === 1 || i === 3 ? [8, 16] : []);
@@ -899,11 +802,11 @@ function drawSealedCore(
   ctx.rotate(time * 0.06);
   ctx.strokeStyle = rgba(
     palette.soft,
-    dark ? 0.32 + focus * 0.1 : 0.24 + focus * 0.06
+    dark ? 0.32 + focus * 0.1 : 0.40 + focus * 0.1
   );
   ctx.fillStyle = rgba(
     palette.primary,
-    dark ? 0.07 + focus * 0.03 : 0.045 + focus * 0.02
+    dark ? 0.07 + focus * 0.03 : 0.10 + focus * 0.04
   );
   ctx.lineWidth = 1.2;
   ctx.beginPath();
@@ -925,7 +828,7 @@ function drawSealedCore(
     const py = Math.sin(angle) * r * 0.31;
     ctx.strokeStyle = rgba(
       palette.soft,
-      dark ? 0.16 + focus * 0.08 : 0.12 + focus * 0.05
+      dark ? 0.16 + focus * 0.08 : 0.24 + focus * 0.10
     );
     ctx.beginPath();
     ctx.moveTo(0, 0);
@@ -934,16 +837,16 @@ function drawSealedCore(
 
     ctx.fillStyle = rgba(
       palette.soft,
-      dark ? 0.56 + focus * 0.12 : 0.42 + focus * 0.08
+      dark ? 0.56 + focus * 0.12 : 0.58 + focus * 0.12
     );
     ctx.beginPath();
     ctx.arc(px, py, 1.9 + focus * 0.6, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  ctx.fillStyle = rgba(palette.soft, dark ? 0.74 : 0.54);
-  ctx.shadowColor = rgba(palette.soft, dark ? 0.62 : 0.2);
-  ctx.shadowBlur = dark ? 18 + focus * 7 : 7 + focus * 3;
+  ctx.fillStyle = rgba(palette.soft, dark ? 0.74 : 0.72);
+  ctx.shadowColor = rgba(palette.soft, dark ? 0.62 : 0.36);
+  ctx.shadowBlur = dark ? 18 + focus * 7 : 14 + focus * 5;
   ctx.beginPath();
   ctx.arc(0, 0, 4.2 + focus * 1.2, 0, Math.PI * 2);
   ctx.fill();
@@ -1020,7 +923,7 @@ export function AgenticGrid() {
         soft: mixRgb(
           tokenRgb("--primary", PRIMARY_FALLBACK),
           tokenRgb("--foreground", dark.current ? "#f5f5f5" : "#0a0a0a"),
-          dark.current ? 0.42 : 0.2
+          dark.current ? 0.42 : 0.32
         ),
       } satisfies Palette,
     };
@@ -1041,7 +944,7 @@ export function AgenticGrid() {
         background,
         foreground,
         primary,
-        soft: mixRgb(primary, foreground, dark.current ? 0.42 : 0.2),
+        soft: mixRgb(primary, foreground, dark.current ? 0.42 : 0.32),
       };
     };
 

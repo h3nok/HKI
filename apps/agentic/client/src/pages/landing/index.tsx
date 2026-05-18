@@ -11,6 +11,7 @@ import { motion, useInView } from "framer-motion";
 import {
   Archive,
   ArrowRight,
+  ChevronDown,
   FileSearch,
   KeyRound,
   ShieldAlert,
@@ -392,88 +393,65 @@ function PlatformCards({
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
 
-const STATS = [
-  { value: PLATFORM_LAYER_COUNT, suffix: "", label: "Control Surfaces" },
-  { value: PLATFORM_CAPABILITY_COUNT, suffix: "", label: "Scoped Controls" },
-  { value: LIVE_LAYER_COUNT, suffix: "", label: "Live Layers" },
-  { value: 100, suffix: "%", label: "Vendor Neutral" },
+const CONFORMANCE_METRICS = [
+  { value: "L4",    label: "Conformance" },
+  { value: "28/28", label: "Cases"       },
+  { value: "10/10", label: "Probes"      },
+  { value: "15",    label: "Threats"     },
 ] as const;
-
-function HeroProofStrip() {
-  return (
-    <div className="grid w-full max-w-xl grid-cols-2 overflow-hidden rounded-lg border border-border bg-muted/40 text-left shadow-sm sm:grid-cols-4">
-      {STATS.map(stat => (
-        <div
-          key={stat.label}
-          className="bg-card/70 px-3.5 py-2.5 backdrop-blur-sm"
-        >
-          <p
-            className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
-            style={{ fontFamily: HEADING }}
-          >
-            {stat.label}
-          </p>
-          <p
-            className="mt-1 text-xl font-extrabold tabular-nums text-foreground"
-            style={{ fontFamily: HEADING }}
-          >
-            {stat.value}
-            {stat.suffix}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
     <section className="relative z-10 flex min-h-[calc(100svh-57px)] snap-start scroll-mt-16 flex-col items-center justify-center px-6 py-14 text-center md:py-16">
-      <div className="flex flex-col items-center">
-        {/* Icon */}
+      <div className="flex max-w-3xl flex-col items-center">
+
+        {/* Kicker — replaces the floating icon */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: EASE }}
-          className="mb-8"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: EASE }}
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5"
         >
-          <HkiMark size={48} variant="color" />
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          <span
+            className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary"
+            style={{ fontFamily: HEADING }}
+          >
+            Runtime Isolation Framework
+          </span>
         </motion.div>
 
         {/* Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.15, ease: EASE }}
-          className="mb-5 max-w-3xl text-3xl font-extrabold leading-[1.1] tracking-[-0.03em] sm:text-4xl lg:text-5xl"
+          transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
+          className="mb-6 text-4xl font-extrabold leading-[1.06] tracking-[-0.035em] sm:text-5xl lg:text-6xl"
           style={{ fontFamily: HEADING }}
         >
           <span className="text-primary">Hermetic</span>{" "}
-          <span className="text-foreground">Knowledge Isolation</span>
+          <span className="text-foreground">Knowledge</span>
+          <br />
+          <span className="text-foreground">Isolation</span>
         </motion.h1>
 
         {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: EASE }}
-          className="max-w-xl mb-8 text-base sm:text-lg font-medium leading-[1.38] text-foreground/72"
-          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+          transition={{ duration: 0.6, delay: 0.25, ease: EASE }}
+          className="mb-9 max-w-xl text-base leading-relaxed text-foreground/58 sm:text-lg"
         >
-          Every agentic execution needs an isolated domain. Without that
-          boundary, enterprises are{" "}
-          <span className="font-semibold" style={{ color: "var(--secondary)" }}>
-            already at risk:
-          </span>{" "}
+          Every agentic execution needs an isolated domain. Without it,
           context leaks, tools overreach, and memory persists beyond intent.
         </motion.p>
 
         {/* CTAs */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.45, ease: EASE }}
-          className="flex flex-col sm:flex-row items-center gap-3 mb-8"
+          transition={{ duration: 0.5, delay: 0.38, ease: EASE }}
+          className="mb-10 flex flex-wrap items-center justify-center gap-3"
         >
           <a
             href={HKI_STANDARD_ROUTE}
@@ -481,14 +459,10 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
               e.preventDefault();
               onNavigate(HKI_STANDARD_ROUTE);
             }}
-            className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl
-                     border border-border/60 bg-card/70 backdrop-blur-sm
-                     text-foreground text-sm font-semibold
-                     hover:border-primary/35 hover:bg-card
-                     hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+            className="group inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-[13px] font-bold text-primary-foreground shadow-md shadow-primary/25 transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-primary/30 hover:brightness-105"
           >
             Read the Standard
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </a>
           <a
             href={LIVE_AGENT_ROUTE}
@@ -496,27 +470,46 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
               e.preventDefault();
               onNavigate(LIVE_AGENT_ROUTE);
             }}
-            className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl
-                     relative overflow-hidden isolate text-sm font-semibold
-                     ring-1 ring-black/10 dark:ring-white/10 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25
-                     hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
-            style={{
-              background: LIVE_AGENT_BACKGROUND,
-            }}
+            className="group inline-flex items-center gap-2 rounded-xl border border-border/50 bg-card/65 px-6 py-3 text-[13px] font-semibold text-foreground backdrop-blur-sm transition-all duration-200 hover:-translate-y-px hover:border-primary/28 hover:bg-card"
           >
-            <span aria-hidden className="hidden" />
-            <span className={LIVE_AGENT_CONTENT_CLASS}>
-              <span className="inline-flex items-center gap-1.5">
-                <span className={LIVE_AGENT_DOT_CLASS} />
-                Run Reference Flow
-              </span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </span>
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+            Run Reference Flow
           </a>
         </motion.div>
 
-        <HeroProofStrip />
+        {/* Conformance strip */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.55, ease: EASE }}
+          className="flex divide-x divide-border/60 overflow-hidden rounded-xl border border-border/40 bg-card/50 shadow-sm backdrop-blur-sm"
+        >
+          {CONFORMANCE_METRICS.map(stat => (
+            <div key={stat.label} className="flex flex-col items-center px-5 py-3">
+              <span
+                className="text-base font-extrabold tabular-nums text-foreground"
+                style={{ fontFamily: HEADING }}
+              >
+                {stat.value}
+              </span>
+              <span className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">
+                {stat.label}
+              </span>
+            </div>
+          ))}
+        </motion.div>
       </div>
+
+      {/* Scroll hint */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2, delay: 1.6, ease: EASE }}
+        className="absolute bottom-7 left-1/2 -translate-x-1/2"
+        aria-hidden
+      >
+        <ChevronDown className="h-4 w-4 animate-bounce text-muted-foreground/28" />
+      </motion.div>
     </section>
   );
 }

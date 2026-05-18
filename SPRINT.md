@@ -78,6 +78,25 @@ industry profile skeletons for finance, healthcare, government, legal,
 retail/operations, and manufacturing/IP. The next blocker is external proof, not
 internal process.
 
+### May 17 audit appliance sprint checkpoint
+
+**Verdict:** The first end-to-end Audit & Evidence Appliance slice is now wired
+through the reference stack. The remaining MVP risk is hardening release gates
+and external collector/on-prem deployment polish, not the core event path.
+
+| Exit bar surface      | Current state                                                                                                                                                                         | Validation                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Native audit contract | TypeScript and Python runtimes expose `hki.audit.event.v1`, schema exports, boundary helpers, and fail-closed validation for forbidden and mismatched domains.                        | Focused TS runtime audit tests and Python runtime audit tests pass.                                    |
+| Audit ingestion       | Analytics accepts strict native events at `/v1/events/audit`, routes schema-bearing Pub/Sub payloads through validation, and serves scoped recent-event queries.                      | Focused analytics API tests pass for ingest, recent timeline filters, and usage summary compatibility. |
+| Reference producers   | `knowledge-api` emits `retrieval.search`; `orchestrator-service` emits `agent.chat` allow/deny decisions with metadata-only evidence and no raw prompt payloads.                      | Focused knowledge-api and orchestrator producer tests pass.                                            |
+| Auditor workspace     | `/admin/audit` is routed in the Control Plane, proxies `governance.auditTimeline` with a narrowed service token, filters by domain/event/decision/service, and exports native events. | Focused BFF audit timeline test passes; Agentic typecheck passes.                                      |
+| Evidence bundle       | `pnpm evidence:hki-bundle` builds a portable `hki.evidence.bundle.v1` bundle with event hashes, invariant summary, invalid-event accounting, and manifest hash.                       | Bundle smoke passed with 1 native event, 0 invalid events, and a manifest hash.                        |
+
+**Next sprint moves:** add external collector preview docs, on-prem retention
+and storage profile, CI wiring for the focused audit appliance gates, and one
+demo script that produces a denied guardrail event plus a valid scoped retrieval
+event for the auditor workspace.
+
 ---
 
 ## Scorecard

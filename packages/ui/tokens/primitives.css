@@ -28,7 +28,7 @@
   --color-brand-iris-200: #6ee0da;
   --color-brand-iris-300: #3dcbc6;
   --color-brand-iris-400: #1fa9a5;
-  --color-brand-iris-500: #0e7c7b; /* ★ HKI Iris (deep teal) */
+  --color-brand-iris-500: #0d8584; /* ★ HKI Iris (deep teal) */
   --color-brand-iris-600: #0b6261;
   --color-brand-iris-700: #094948;
   --color-brand-iris-800: #063030;
@@ -48,6 +48,36 @@
   --color-brand-pulse-800: #063030;
   --color-brand-pulse-900: #031818;
   --color-brand-pulse-950: #010c0c;
+
+  /* HKI Coral — Warm vermillion. Threat signals, violations, energetic accents.
+     Pairs with Iris as its warm counterpart — teal/coral is a classic high-contrast pair. */
+  --color-brand-coral-25:  #fff5f2;
+  --color-brand-coral-50:  #ffebe4;
+  --color-brand-coral-100: #ffc9b5;
+  --color-brand-coral-200: #ff9d7d;
+  --color-brand-coral-300: #f77a55;
+  --color-brand-coral-400: #ea5c38;
+  --color-brand-coral-500: #d94f35; /* ★ HKI Coral (vermillion) */
+  --color-brand-coral-600: #b83d26;
+  --color-brand-coral-700: #922d1b;
+  --color-brand-coral-800: #6b2013;
+  --color-brand-coral-900: #3d120a;
+  --color-brand-coral-950: #220907;
+
+  /* HKI Violet — Rich purple. Domain accents, pharma-tier, publication plane.
+     Triadic partner to Iris — sits ~120° away on the wheel, no hue clash. */
+  --color-brand-violet-25:  #faf5ff;
+  --color-brand-violet-50:  #f3e8ff;
+  --color-brand-violet-100: #e9d4ff;
+  --color-brand-violet-200: #d3a8ff;
+  --color-brand-violet-300: #bc78f9;
+  --color-brand-violet-400: #a855f7; /* used in architecture diagrams */
+  --color-brand-violet-500: #8b36d6; /* ★ HKI Violet */
+  --color-brand-violet-600: #7129b8;
+  --color-brand-violet-700: #5a1f97;
+  --color-brand-violet-800: #401674;
+  --color-brand-violet-900: #290e4d;
+  --color-brand-violet-950: #180830;
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §2 NEUTRAL SCALE — Clean System Gray
@@ -141,16 +171,16 @@
      - Print reproduction
      - Dark/light mode contrast
      ═══════════════════════════════════════════════════════════════════════════ */
-  --color-data-1: #0e7c7b; /* HKI Iris (teal) */
-  --color-data-2: #0e7c7b; /* HKI Iris duplicate for duotone */
-  --color-data-3: #10b981; /* Emerald */
-  --color-data-4: #f59e0b; /* Amber */
-  --color-data-5: #8b5cf6; /* Violet */
-  --color-data-6: #06b6d4; /* Cyan */
-  --color-data-7: #ec4899; /* Pink */
-  --color-data-8: #84cc16; /* Lime */
-  --color-data-9: #f97316; /* Orange */
-  --color-data-10: #14b8a6; /* Teal */
+  --color-data-1: var(--color-brand-iris-500);   /* HKI Iris — teal */
+  --color-data-2: var(--color-brand-violet-400); /* HKI Violet — purple */
+  --color-data-3: var(--color-success-500);      /* Emerald green */
+  --color-data-4: var(--color-warning-400);      /* Amber */
+  --color-data-5: var(--color-brand-coral-500);  /* HKI Coral — vermillion */
+  --color-data-6: var(--color-info-400);         /* Sky blue */
+  --color-data-7: var(--color-brand-violet-600); /* Deep violet */
+  --color-data-8: var(--color-brand-coral-300);  /* Coral light */
+  --color-data-9: var(--color-brand-iris-300);   /* Iris light */
+  --color-data-10: var(--color-brand-iris-600);  /* Iris deep */
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §5 SPACING SCALE — 4px Base Unit
@@ -294,7 +324,7 @@
   --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
 
   /* Colored shadows for emphasis */
-  --shadow-primary: 0 4px 14px -3px rgb(14 124 123 / 0.3);
+  --shadow-primary: 0 4px 14px -3px rgb(13 133 132 / 0.3);
 
   --shadow-secondary: 0 4px 14px -3px rgb(224 122 31 / 0.25);
 

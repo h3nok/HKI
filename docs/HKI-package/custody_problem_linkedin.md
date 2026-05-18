@@ -1,13 +1,13 @@
 # The Custody Problem in Enterprise Agentic AI
 
-**Provider privacy promises are necessary. They are not enough.**
-The next security boundary is _runtime custody_ — who controls the context, memory, tools, retrieval, and domain boundaries that your agents reason through.
+**Data sovereignty is the real enterprise AI boundary.**
+Training opt-outs and tenant isolation are necessary, but sovereignty means controlling how data is used after access is granted — including context, memory, tools, retrieval, derived artifacts, and domain boundaries at inference time.
 
 > **Cover image:** `docs/images/hki/newsletter-cover.png` (1600×900) — upload as the LinkedIn newsletter cover.
 
 ---
 
-_An enterprise is only as secure as the data and context boundaries around its operational reasoning. In an agentic future, the danger is not data leakage or model training. It is silent context bleed: knowledge, memory, or tool access from one domain entering another without explicit publication, provenance, or audit._
+_An enterprise is only as secure as the data and context boundaries around its operational reasoning. In an agentic future, the danger is not only data leakage or model training. It is loss of usage control: knowledge, memory, or tool access from one domain entering another without explicit publication, provenance, or audit._
 
 ---
 
@@ -24,7 +24,7 @@ Enterprises need a way to make every request answer the same operational questio
 - What must stay out?
 - What evidence proves the boundary held?
 
-> **The engineering problem:** build a runtime where context is never broadened by convenience, fallback, connector reach, or accumulated memory. Every request must carry one enforceable scope, every artifact must preserve domain provenance, and cross-domain knowledge must move only through explicit publication.
+> **The engineering problem:** build a runtime where context is never broadened by convenience, fallback, connector reach, or accumulated memory. Every runtime operation must carry one enforceable scope, every artifact must preserve domain provenance, and cross-domain knowledge must move only through scoped delegation and explicit publication.
 
 The four failure modes:
 
@@ -37,11 +37,11 @@ The four failure modes:
 
 ## 2 · Clarification
 
-This is not an argument against AI. It is an argument for _runtime sovereignty_.
+This is not an argument against AI. It is an argument for _runtime data sovereignty_.
 
 The models are useful. Retrieval, tool use, memory, orchestration, and agentic workflows are real engineering gains. I am not writing from fear of the technology. I am writing from familiarity with what happens when powerful infrastructure becomes invisible.
 
-Most provider assurances answer an important question: _will my enterprise data be used to train a general model, and is my tenant isolated from other tenants?_ Those are necessary questions. They are not the whole security problem anymore.
+Most provider assurances answer important questions: _will my enterprise data be used to train a general model, and is my tenant isolated from other tenants?_ Those are necessary controls. They are not the whole data-sovereignty problem anymore.
 
 > **The missing question:** at runtime, during this specific task, what knowledge is allowed to enter the agent's reasoning space — and who decides that boundary?
 
@@ -49,17 +49,17 @@ That is the custody problem. It is not primarily about whether the provider is m
 
 ---
 
-## 3 · Why provider promises are insufficient
+## 3 · Why training opt-outs are not data sovereignty
 
-No-training guarantees solve one layer. Agentic systems create another.
+Training-exclusion guarantees solve one layer. Agentic systems create another.
 
 A provider can truthfully say _"we do not train on your enterprise data,"_ while the agentic runtime still retrieves enterprise documents, injects internal context, calls tools, stores memory, routes requests, logs telemetry, and learns operational preferences during inference.
 
 That may all be authorized. It may even be necessary. But authorization at the user or tenant level is not the same as **domain-scoped reasoning**. A person may have permission to legal, finance, engineering, HR, and strategy documents. That does not mean every request should be allowed to draw from all of them.
 
-> **The deepest enterprise AI security boundary is not the model-training pipeline. It is the reasoning context.**
+> **The deepest enterprise AI sovereignty boundary is not the model-training pipeline. It is usage control over the reasoning context.**
 
-The problem moves from _"will the provider train on my data?"_ to _"can the runtime silently assemble context across boundaries simply because the user, connector, or service account can technically reach it?"_
+The problem moves from _"will the provider train on my data?"_ to _"can the runtime silently assemble, transform, cache, or delegate context across boundaries simply because the user, connector, or service account can technically reach it?"_
 
 ---
 
@@ -124,13 +124,15 @@ The answer is not to reject frontier providers. Enterprises will use several of 
 
 > **Hermetic Knowledge Isolation · v1**
 >
-> _Every artifact belongs to one domain. Every request runs in one active domain. Shared knowledge appears only through explicit publication — never silent global fallback._
+> _Every artifact belongs to one domain. Every runtime operation runs in one active domain. Multi-domain business questions are composed through scoped delegation and explicit release — never silent global fallback._
 
 Three invariants:
 
-1. **One active domain per request** — the gateway decides where the request is running before retrieval, memory, tools, or model calls begin.
+1. **One active domain per runtime operation** — the gateway or orchestrator decides where the operation is running before retrieval, memory, tools, or model calls begin.
 2. **Domain labels never disappear** — artifacts, cache entries, memories, embeddings, tool calls, and outputs preserve provenance and scope.
 3. **Publication is the only bridge** — cross-domain knowledge moves through reviewed, auditable publication. Not silent fallback. Not hidden retrieval.
+
+An executive can still ask a legal + pharmacy question. HKI answers it by fan-out: legal work runs under a legal child envelope, pharmacy work runs under a pharmacy child envelope, approved summaries are released into an executive briefing domain, and final synthesis happens there. What HKI rejects is one mixed prompt that treats broad `authorized_domains` as runtime read visibility.
 
 This converts security from a _promise_ into an _invariant_. The provider may still be excellent. The enterprise may still benefit from frontier models. But the authority to widen context remains with the enterprise — not the platform underneath it.
 
@@ -140,11 +142,11 @@ This converts security from a _promise_ into an _invariant_. The provider may st
 
 Build the boundary while it still belongs to you.
 
-Enterprise AI security cannot stop at _"we do not train on your data."_ That promise matters, but it addresses only part of the risk. Agentic systems reason with context, and **context is power**.
+Enterprise AI security cannot stop at _"we do not train on your data."_ That control matters, but data sovereignty also requires usage control, provenance, and auditable information-flow boundaries during inference. Agentic systems reason with context, and **context is power**.
 
 The enterprises that remain sovereign in the agentic era will be the ones that define runtime custody early: what belongs where, what can be retrieved, what can be remembered, what can be shared, and what must be explicitly published before it crosses a domain boundary.
 
-> **In enterprise AI, isolation cannot remain a provider promise. It has to become architecture.**
+> **In enterprise AI, data sovereignty cannot remain a provider promise. It has to become architecture.**
 
 ---
 
@@ -157,9 +159,9 @@ _Henok Ghebrechristos, PhD — deep learning, industrial AI deployment, agentic 
 ### Posting checklist (LinkedIn newsletter editor)
 
 - **Title:** _The Custody Problem in Enterprise Agentic AI_
-- **Subtitle:** _Why provider privacy promises are not enough — and what runtime sovereignty actually requires_
+- **Subtitle:** _Why training opt-outs are not data sovereignty — and what runtime sovereignty requires_
 - **Cover:** upload `docs/images/hki/newsletter-cover.png`
 - **Hook (first 2 lines, shown in feed preview):**
-  > Provider privacy promises are necessary. They are not enough. The next security boundary is runtime custody — who controls the context, memory, tools, retrieval, and domain boundaries your agents reason through.
-- **Suggested CTA at the end:** _"If you are building or buying agentic infrastructure in 2026, the question is no longer whether your provider trains on your data. It is whether your runtime still belongs to you. Reply with the word **custody** if you'd like the v1 spec."_
+  > Data sovereignty is the real enterprise AI boundary. Training opt-outs are necessary, but sovereignty means controlling how data is used after access is granted.
+- **Suggested CTA at the end:** _"If you are building or buying agentic infrastructure in 2026, the question is no longer only whether your provider trains on your data. It is whether your runtime enforces usage control, provenance, and domain-scoped execution. Reply with the word **custody** if you'd like the v1 spec."_
 - **Hashtags:** keep 3–5 max for LinkedIn — recommend `#AgenticAI #AISecurity #EnterpriseAI #AIGovernance #HKI`

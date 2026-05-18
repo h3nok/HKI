@@ -31,7 +31,12 @@ import {
 
 import { cn } from "@hki/ui";
 
-import { PLANES, PLANE_ORDER, type PlaneId } from "./architecture/planes";
+import {
+  ARCHITECTURE_COLORS,
+  PLANES,
+  PLANE_ORDER,
+  type PlaneId,
+} from "./architecture/planes";
 import {
   ARCH_NODES,
   ARCH_EDGES,
@@ -58,6 +63,19 @@ const HANDLE_STYLE: React.CSSProperties = {
   border: 0,
 };
 
+const SURFACE = ARCHITECTURE_COLORS.surface;
+const STATUS = ARCHITECTURE_COLORS.status;
+
+function primitiveButtonStyle(
+  accent: string = STATUS.focus
+): React.CSSProperties {
+  return {
+    background: SURFACE.panelRaised,
+    borderColor: SURFACE.border,
+    color: accent,
+  };
+}
+
 const StageNode = memo(({ data }: NodeProps<Node<StageNodeData>>) => {
   const { arch, selected, onPath, onSelect } = data;
   const Icon = arch.icon;
@@ -70,18 +88,29 @@ const StageNode = memo(({ data }: NodeProps<Node<StageNodeData>>) => {
       aria-label={`${arch.label} — ${arch.short}`}
       onClick={() => onSelect(arch.id)}
       className={cn(
-        "group relative block rounded-lg border bg-card/95 px-3 py-2.5 text-left shadow-xs backdrop-blur-sm transition-all outline-none",
+        "group relative block rounded-lg border px-3 py-2.5 text-left shadow-xs backdrop-blur-sm transition-all outline-none",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         selected
-          ? "border-foreground/80 shadow-md"
+          ? "shadow-md"
           : onPath
-            ? "border-border hover:border-foreground/60 hover:shadow-md"
-            : "border-border/40 opacity-60 hover:opacity-100"
+            ? "hover:shadow-md"
+            : "opacity-60 hover:opacity-100"
       )}
       style={{
         width: NODE_DIMENSIONS.width,
         height: NODE_DIMENSIONS.height,
-        ...(selected ? { boxShadow: `0 0 0 2px ${accent}` } : {}),
+        background: SURFACE.panel,
+        borderColor: selected
+          ? accent
+          : onPath
+            ? SURFACE.border
+            : SURFACE.borderMuted,
+        color: SURFACE.text,
+        ...(selected
+          ? {
+              boxShadow: `0 0 0 2px ${accent}, 0 16px 32px -26px ${SURFACE.shadow}`,
+            }
+          : {}),
       }}
     >
       <span
@@ -93,18 +122,21 @@ const StageNode = memo(({ data }: NodeProps<Node<StageNodeData>>) => {
       <div className="flex items-center gap-1.5 pl-1.5">
         <span
           className="inline-flex h-4 w-4 shrink-0 items-center justify-center"
-          style={{ color: onPath ? accent : "var(--muted-foreground)" }}
+          style={{ color: onPath ? accent : SURFACE.textSubtle }}
         >
           <Icon className="h-4 w-4" />
         </span>
-        <span className="truncate text-[12px] font-bold leading-tight text-foreground">
+        <span
+          className="truncate text-[12px] font-bold leading-tight"
+          style={{ color: SURFACE.text }}
+        >
           {arch.label}
         </span>
       </div>
       <div
         className="mt-1 truncate pl-1.5 text-[10.5px] leading-tight"
         style={{
-          color: onPath ? "var(--foreground)" : "var(--muted-foreground)",
+          color: onPath ? SURFACE.textMuted : SURFACE.textSubtle,
         }}
       >
         {arch.short}
@@ -116,7 +148,7 @@ const StageNode = memo(({ data }: NodeProps<Node<StageNodeData>>) => {
           className="absolute -right-1 -top-1 inline-flex h-2 w-2 rounded-full"
           style={{
             background: accent,
-            boxShadow: "0 0 0 2px var(--background)",
+            boxShadow: `0 0 0 2px ${SURFACE.panel}`,
           }}
         />
       )}
@@ -171,7 +203,7 @@ const PlaneNode = memo(({ data }: NodeProps<Node<PlaneNodeData>>) => {
         className="absolute left-3 top-2 inline-flex items-center gap-2 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em]"
         style={{
           color: tok.accent,
-          background: "color-mix(in srgb, var(--background) 70%, transparent)",
+          background: SURFACE.panel,
           border: `1px solid ${tok.tintBorder}`,
         }}
       >
@@ -183,7 +215,7 @@ const PlaneNode = memo(({ data }: NodeProps<Node<PlaneNodeData>>) => {
         <span
           className="text-[9px] font-medium normal-case tracking-normal"
           style={{
-            color: "color-mix(in srgb, var(--foreground) 55%, transparent)",
+            color: SURFACE.textMuted,
           }}
         >
           · {tok.sub}
@@ -224,7 +256,7 @@ function PlaneEdge({
     curvature: 0.32,
   });
 
-  const accent = data?.accent ?? "var(--foreground)";
+  const accent = data?.accent ?? SURFACE.text;
   const dim = !!data?.dim;
   const dashed = !!data?.dashed;
 
@@ -234,14 +266,10 @@ function PlaneEdge({
         id={id}
         path={path}
         style={{
-          stroke: dim
-            ? "color-mix(in srgb, var(--foreground) 14%, transparent)"
-            : accent,
+          stroke: dim ? STATUS.dimEdge : accent,
           strokeWidth: dim ? 1 : 1.6,
           strokeDasharray: dashed ? "5 4" : undefined,
-          filter: dim
-            ? undefined
-            : `drop-shadow(0 0 2px color-mix(in srgb, ${accent} 35%, transparent))`,
+          filter: dim ? undefined : `drop-shadow(0 0 2px ${accent})`,
         }}
         markerEnd={markerEnd}
       />
@@ -265,8 +293,8 @@ function PlaneEdge({
               position: "absolute",
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               color: accent,
-              background:
-                "color-mix(in srgb, var(--background) 80%, transparent)",
+              background: SURFACE.panel,
+              border: `1px solid ${SURFACE.borderMuted}`,
             }}
           >
             {data.label}
@@ -369,9 +397,7 @@ function buildFlow(
   const edges: Edge[] = ARCH_EDGES.map((e, i) => {
     const isOnView = e.mode === view;
     const fromNode = ARCH_NODES.find(n => n.id === e.from);
-    const accent = fromNode
-      ? PLANES[fromNode.plane].accent
-      : "var(--foreground)";
+    const accent = fromNode ? PLANES[fromNode.plane].accent : SURFACE.text;
 
     return {
       id: `${e.from}->${e.to}-${e.mode}-${i}`,
@@ -403,19 +429,31 @@ function InspectorField({
   children: React.ReactNode;
   tone?: "default" | "primary" | "danger";
 }) {
+  const labelColor =
+    tone === "primary"
+      ? STATUS.focus
+      : tone === "danger"
+        ? STATUS.danger
+        : SURFACE.textSubtle;
+
   return (
-    <div className="rounded-lg border border-border bg-muted/30 p-3">
+    <div
+      className="rounded-lg border p-3"
+      style={{
+        background: SURFACE.panelRaised,
+        borderColor: SURFACE.borderMuted,
+      }}
+    >
       <p
-        className={cn(
-          "text-[10px] font-bold uppercase tracking-[0.14em]",
-          tone === "primary" && "text-primary",
-          tone === "danger" && "text-destructive",
-          tone === "default" && "text-muted-foreground"
-        )}
+        className="text-[10px] font-bold uppercase tracking-[0.14em]"
+        style={{ color: labelColor }}
       >
         {label}
       </p>
-      <div className="mt-2 text-[13px] leading-6 text-foreground/85">
+      <div
+        className="mt-2 text-[13px] leading-6"
+        style={{ color: SURFACE.textMuted }}
+      >
         {children}
       </div>
     </div>
@@ -452,29 +490,63 @@ function InspectorPanel({
   const pathNodes = getPathNodes(view);
 
   return (
-    <aside className="flex min-h-0 flex-col border-b border-border bg-card lg:border-b-0 lg:border-r">
-      <div className="border-b border-border p-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+    <aside
+      className="flex min-h-0 flex-col border-b lg:border-b-0 lg:border-r"
+      style={{
+        background: SURFACE.panel,
+        borderColor: SURFACE.border,
+      }}
+    >
+      <div className="border-b p-4" style={{ borderColor: SURFACE.border }}>
+        <p
+          className="text-[10px] font-bold uppercase tracking-[0.18em]"
+          style={{ color: SURFACE.textSubtle }}
+        >
           Reference architecture
         </p>
-        <h2 className="mt-2 text-xl font-extrabold leading-tight tracking-tight text-foreground">
+        <h2
+          className="mt-2 text-xl font-extrabold leading-tight tracking-tight"
+          style={{ color: SURFACE.text }}
+        >
           HKI flow inspector
         </h2>
-        <p className="mt-2 text-sm font-semibold leading-6 text-foreground">
+        <p
+          className="mt-2 text-sm font-semibold leading-6"
+          style={{ color: SURFACE.textMuted }}
+        >
           {VIEW_META[view].tagline}
         </p>
 
-        <div className="mt-4 grid grid-cols-3 divide-x divide-border overflow-hidden rounded-lg border border-border bg-muted/40 text-center">
+        <div
+          className="mt-4 grid grid-cols-3 overflow-hidden rounded-lg border text-center"
+          style={{
+            background: SURFACE.panelRaised,
+            borderColor: SURFACE.border,
+          }}
+        >
           {[
             { label: "Nodes", value: ARCH_NODES.length },
             { label: "Edges", value: ARCH_EDGES.length },
             { label: "Planes", value: PLANE_ORDER.length },
-          ].map(stat => (
-            <div key={stat.label} className="px-2 py-2">
-              <p className="text-lg font-extrabold tabular-nums text-foreground">
+          ].map((stat, index) => (
+            <div
+              key={stat.label}
+              className="px-2 py-2"
+              style={{
+                borderRight:
+                  index === 2 ? undefined : `1px solid ${SURFACE.border}`,
+              }}
+            >
+              <p
+                className="text-lg font-extrabold tabular-nums"
+                style={{ color: SURFACE.text }}
+              >
                 {stat.value}
               </p>
-              <p className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              <p
+                className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.12em]"
+                style={{ color: SURFACE.textSubtle }}
+              >
                 {stat.label}
               </p>
             </div>
@@ -496,12 +568,15 @@ function InspectorPanel({
                 role="tab"
                 aria-selected={active}
                 onClick={() => onViewChange(v)}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] font-bold transition-all",
-                  active
-                    ? "border-foreground/40 bg-foreground text-background shadow-sm"
-                    : "border-border bg-muted/40 text-muted-foreground hover:border-border hover:bg-muted/60 hover:text-foreground"
-                )}
+                className="flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] font-bold transition-all hover:opacity-85"
+                style={{
+                  background: active ? STATUS.focus : SURFACE.panelRaised,
+                  borderColor: active ? STATUS.focus : SURFACE.border,
+                  color: active ? SURFACE.panel : SURFACE.textMuted,
+                  boxShadow: active
+                    ? `0 12px 26px -20px ${STATUS.focus}`
+                    : undefined,
+                }}
               >
                 <PathIcon className="h-3.5 w-3.5 shrink-0" />
                 {VIEW_META[v].label}
@@ -514,7 +589,8 @@ function InspectorPanel({
           <button
             type="button"
             onClick={onFit}
-            className="inline-flex items-center justify-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            className="inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-[11px] font-semibold transition-opacity hover:opacity-80"
+            style={primitiveButtonStyle()}
           >
             <RotateCcw className="h-3.5 w-3.5" />
             Fit
@@ -522,7 +598,8 @@ function InspectorPanel({
           <button
             type="button"
             onClick={onCenterSelected}
-            className="inline-flex items-center justify-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            className="inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-[11px] font-semibold transition-opacity hover:opacity-80"
+            style={primitiveButtonStyle()}
           >
             <LocateFixed className="h-3.5 w-3.5" />
             Node
@@ -530,7 +607,8 @@ function InspectorPanel({
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="inline-flex items-center justify-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            className="inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-[11px] font-semibold transition-opacity hover:opacity-80"
+            style={primitiveButtonStyle()}
           >
             {expanded ? (
               <Minimize2 className="h-3.5 w-3.5" />
@@ -542,24 +620,31 @@ function InspectorPanel({
         </div>
       </div>
 
-      <div className="border-b border-border p-4">
+      <div className="border-b p-4" style={{ borderColor: SURFACE.border }}>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+            <p
+              className="text-[10px] font-bold uppercase tracking-[0.16em]"
+              style={{ color: SURFACE.textSubtle }}
+            >
               Path steps
             </p>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            <p
+              className="mt-1 text-xs leading-5"
+              style={{ color: SURFACE.textMuted }}
+            >
               Select a node to inspect enforcement at that boundary.
             </p>
           </div>
           <button
             type="button"
             onClick={() => onCopy("path")}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-opacity hover:opacity-80"
+            style={primitiveButtonStyle()}
             aria-label="Copy path summary"
           >
             {copied === "path" ? (
-              <Check className="h-3.5 w-3.5 text-success" />
+              <Check className="h-3.5 w-3.5" style={{ color: STATUS.focus }} />
             ) : (
               <Clipboard className="h-3.5 w-3.5" />
             )}
@@ -574,14 +659,24 @@ function InspectorPanel({
                 key={node.id}
                 type="button"
                 onClick={() => onSelect(node.id)}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-colors",
-                  active
-                    ? "border-foreground/40 bg-background text-foreground shadow-xs"
-                    : "border-border bg-muted/30 text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground"
-                )}
+                className="flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-opacity hover:opacity-85"
+                style={{
+                  background: active ? SURFACE.panelMuted : SURFACE.panelRaised,
+                  borderColor: active ? STATUS.focus : SURFACE.borderMuted,
+                  color: active ? SURFACE.text : SURFACE.textMuted,
+                  boxShadow: active
+                    ? `0 10px 22px -18px ${STATUS.focus}`
+                    : undefined,
+                }}
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border text-[10px] font-bold tabular-nums">
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[10px] font-bold tabular-nums"
+                  style={{
+                    borderColor: active ? STATUS.focus : SURFACE.border,
+                    background: active ? SURFACE.panel : SURFACE.panelRaised,
+                    color: active ? STATUS.focus : SURFACE.textSubtle,
+                  }}
+                >
                   {index + 1}
                 </span>
                 <StepIcon className="h-3.5 w-3.5 shrink-0" />
@@ -589,7 +684,12 @@ function InspectorPanel({
                   <span className="block truncate text-[12px] font-semibold">
                     {node.label}
                   </span>
-                  <span className="block truncate text-[10.5px] text-muted-foreground">
+                  <span
+                    className="block truncate text-[10.5px]"
+                    style={{
+                      color: active ? SURFACE.textMuted : SURFACE.textSubtle,
+                    }}
+                  >
                     {node.short}
                   </span>
                 </span>
@@ -613,7 +713,10 @@ function InspectorPanel({
               <Icon className="h-3.5 w-3.5" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-bold text-foreground">
+              <p
+                className="truncate text-[13px] font-bold"
+                style={{ color: SURFACE.text }}
+              >
                 {arch.label}
               </p>
               <p
@@ -627,11 +730,12 @@ function InspectorPanel({
           <button
             type="button"
             onClick={() => onCopy("node")}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-opacity hover:opacity-80"
+            style={primitiveButtonStyle(tok.accent)}
             aria-label="Copy selected node summary"
           >
             {copied === "node" ? (
-              <Check className="h-3.5 w-3.5 text-success" />
+              <Check className="h-3.5 w-3.5" style={{ color: STATUS.focus }} />
             ) : (
               <Clipboard className="h-3.5 w-3.5" />
             )}
@@ -646,10 +750,20 @@ function InspectorPanel({
           {arch.rejects}
         </InspectorField>
         <div>
-          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+          <p
+            className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
+            style={{ color: SURFACE.textSubtle }}
+          >
             Implementation surface
           </p>
-          <code className="block break-all rounded-md border border-border bg-muted/50 px-2 py-1.5 font-mono text-[11px] text-muted-foreground">
+          <code
+            className="block break-all rounded-md border px-2 py-1.5 font-mono text-[11px]"
+            style={{
+              background: SURFACE.panelRaised,
+              borderColor: SURFACE.borderMuted,
+              color: SURFACE.textMuted,
+            }}
+          >
             {arch.surface}
           </code>
         </div>
@@ -662,7 +776,14 @@ function InspectorPanel({
 
 function Legend() {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border bg-muted/30 px-4 py-2.5 text-[11px] text-muted-foreground sm:px-5">
+    <div
+      className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t px-4 py-2.5 text-[11px] sm:px-5"
+      style={{
+        background: SURFACE.panelRaised,
+        borderColor: SURFACE.border,
+        color: SURFACE.textMuted,
+      }}
+    >
       {PLANE_ORDER.map(p => (
         <span key={p} className="inline-flex items-center gap-1.5">
           <span
@@ -672,13 +793,15 @@ function Legend() {
               border: `1px solid ${PLANES[p].tintBorder}`,
             }}
           />
-          <span className="font-medium text-foreground">{PLANES[p].label}</span>
+          <span className="font-medium" style={{ color: SURFACE.text }}>
+            {PLANES[p].label}
+          </span>
         </span>
       ))}
       <span className="ml-auto inline-flex items-center gap-1.5">
         <span
           className="inline-block h-0 w-5 border-t-2 border-dashed"
-          style={{ borderColor: "var(--muted-foreground)" }}
+          style={{ borderColor: SURFACE.textSubtle }}
         />
         Async / cache
       </span>
@@ -769,14 +892,20 @@ function DiagramInner() {
   return (
     <>
       {expanded && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" />
+        <div
+          className="fixed inset-0 z-50 backdrop-blur-sm"
+          style={{ background: SURFACE.overlay }}
+        />
       )}
       <div
         className={cn(
-          "overflow-hidden rounded-xl border border-border bg-card shadow-surface",
-          expanded &&
-            "fixed inset-4 z-60 flex flex-col bg-background shadow-2xl"
+          "overflow-hidden rounded-xl border shadow-surface",
+          expanded && "fixed inset-4 z-60 flex flex-col shadow-2xl"
         )}
+        style={{
+          background: SURFACE.panel,
+          borderColor: SURFACE.border,
+        }}
       >
         <div className="grid min-h-0 flex-1 lg:grid-cols-[360px_minmax(0,1fr)]">
           <InspectorPanel
@@ -794,8 +923,9 @@ function DiagramInner() {
           />
 
           <div
-            className="hki-rf-host relative bg-linear-to-b from-background/40 to-card/40"
+            className="hki-rf-host relative"
             style={{
+              background: `linear-gradient(180deg, ${SURFACE.page} 0%, ${SURFACE.panel} 100%)`,
               height: expanded ? "calc(100vh - 92px)" : "calc(100vh - 154px)",
               minHeight: 620,
             }}
@@ -817,11 +947,31 @@ function DiagramInner() {
               proOptions={{ hideAttribution: true }}
               className="hki-rf"
             >
+              <style>{`
+                .hki-rf-controls {
+                  background: ${SURFACE.panel} !important;
+                  border: 1px solid ${SURFACE.border} !important;
+                  border-radius: 8px !important;
+                  box-shadow: 0 18px 34px -28px ${SURFACE.shadow} !important;
+                  overflow: hidden;
+                }
+                .hki-rf-controls button {
+                  background: ${SURFACE.panel} !important;
+                  border-bottom: 1px solid ${SURFACE.borderMuted} !important;
+                  color: ${SURFACE.textMuted} !important;
+                  fill: ${SURFACE.textMuted} !important;
+                }
+                .hki-rf-controls button:hover {
+                  background: ${SURFACE.panelRaised} !important;
+                  color: ${SURFACE.text} !important;
+                  fill: ${SURFACE.text} !important;
+                }
+              `}</style>
               <Background
                 variant={BackgroundVariant.Dots}
                 gap={18}
                 size={1}
-                color="color-mix(in srgb, var(--foreground) 12%, transparent)"
+                color={SURFACE.grid}
               />
               <Controls
                 showInteractive={false}
@@ -832,18 +982,17 @@ function DiagramInner() {
                 pannable
                 zoomable
                 position="top-right"
-                maskColor="color-mix(in srgb, var(--background) 70%, transparent)"
+                maskColor={SURFACE.minimapMask}
                 nodeColor={n => {
                   if (n.type === "plane")
                     return PLANES[(n.data as PlaneNodeData).plane].tintBg;
                   const arch = (n.data as StageNodeData)?.arch;
-                  return arch ? PLANES[arch.plane].accent : "var(--muted)";
+                  return arch ? PLANES[arch.plane].accent : SURFACE.panelRaised;
                 }}
-                nodeStrokeColor="transparent"
+                nodeStrokeColor={SURFACE.panel}
                 style={{
-                  background:
-                    "color-mix(in srgb, var(--card) 90%, var(--background))",
-                  border: "1px solid var(--border)",
+                  background: SURFACE.panel,
+                  border: `1px solid ${SURFACE.border}`,
                   borderRadius: 8,
                   width: expanded ? 170 : 150,
                   height: expanded ? 108 : 96,

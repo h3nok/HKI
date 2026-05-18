@@ -40,6 +40,7 @@ Knowledge Isolation reference platform.
 - `../packages/hki-runtime/README.md` - TypeScript runtime helpers and JSON Schemas for HKI envelopes and artifact labels
 - `../packages/hki-runtime-py/README.md` - Python runtime helpers for the same HKI envelope and artifact-label contract
 - `../packages/hki-conformance/README.md` - conformance adapter contract and CLI runner for runtime evidence
+- `HKI-package/custody_problem.md` - research note defining HKI as inference-time data sovereignty through usage control, provenance, scoped delegation, and falsifiable runtime checks
 - `HKI-package/HERMETIC-KNOWLEDGE-ISOLATION.md` - full Hermetic Knowledge Isolation paper and runtime model
 - `SCOPED_AGENTIC_ROUTING.md` - operational standard for scoped agentic routing across models, knowledge, memory, tools, cache, eval, and audit
 - `MCP_GATEWAY_AND_BUS.md` - MCP tool control-plane design bound to HKI/SAR enforcement

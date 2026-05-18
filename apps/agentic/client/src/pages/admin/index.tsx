@@ -38,6 +38,7 @@ import {
   ExternalLink,
   Moon,
   Sun,
+  ShieldCheck,
   SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
@@ -78,6 +79,7 @@ import { Search } from "lucide-react";
 import DashboardPage from "./DashboardPage";
 import StreamsPage from "./StreamsPage";
 import UsersPage from "./UsersPage";
+import AuditPage from "./AuditPage";
 import FeatureControlsPage from "./FeatureControlsPage";
 import FeaturePresetsPage from "./FeaturePresetsPage";
 import { a } from "./theme";
@@ -137,6 +139,13 @@ const NAV_GROUPS: NavGroup[] = [
         shortcut: "⌘3",
         adminOnly: true,
       },
+      {
+        icon: ShieldCheck,
+        label: "Audit Evidence",
+        path: "/admin/audit",
+        shortcut: "⌘6",
+        adminOnly: true,
+      },
     ],
   },
   {
@@ -179,11 +188,13 @@ type AdminPage =
   | "dashboard"
   | "streams"
   | "users"
+  | "audit"
   | "features"
   | "featurePresets";
 
 function resolvePageFromPath(pathname: string): AdminPage {
   if (pathname === SETTINGS_PRESETS_PATH) return "featurePresets";
+  if (pathname === "/admin/audit") return "audit";
   if (pathname === "/admin/streams") return "streams";
   if (pathname === "/admin/users") return "users";
   if (pathname === "/admin/features" || pathname === SETTINGS_PATH)
@@ -566,6 +577,11 @@ const ADMIN_PAGE_META: Record<
     group: "Governance",
     groupPath: "/admin",
   },
+  audit: {
+    title: "Audit Evidence",
+    group: "Governance",
+    groupPath: "/admin",
+  },
   features: {
     title: "Settings",
   },
@@ -686,6 +702,7 @@ function AdminContent() {
             <div className="admin-internal-page-frame w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
               {guardedPage === "streams" && <StreamsPage />}
               {guardedPage === "users" && isAdmin && <UsersPage />}
+              {guardedPage === "audit" && isAdmin && <AuditPage />}
               {guardedPage === "features" && isAdmin && <FeatureControlsPage />}
               {guardedPage === "featurePresets" && isAdmin && (
                 <FeaturePresetsPage />

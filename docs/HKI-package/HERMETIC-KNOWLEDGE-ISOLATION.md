@@ -12,7 +12,7 @@ By Henok Ghebrechristos, PhD
 
 1. Most enterprise RAG and agent platforms claim to be "domain-aware," but isolation often exists only as a final retrieval filter. Rewriters, graph edges, caches, jobs, traces, and review workflows can still lose or widen scope.
 2. As agent autonomy increases, weak scope becomes an enterprise control failure. An autonomous agent that can rewrite, retrieve, remember, call tools, and start jobs must not be allowed to discover its boundary from convenience filters or natural language.
-3. **Hermetic Knowledge Isolation (HKI)** turns isolation identity into a mandatory execution label: one domain per runtime artifact, one active domain per request, no null-scope, no global fallback, and no cross-domain visibility except through publication.
+3. **Hermetic Knowledge Isolation (HKI)** turns isolation identity into a mandatory execution label: one domain per runtime artifact, one active domain per runtime operation, no null-scope, no global fallback, and no cross-domain visibility except through publication.
 4. The primitives — labeled security, information-flow control, fail-closed authorization — are familiar. The contribution is a deployable whole-stack contract for agentic RAG and MCP-style systems, with conformance checks that can be audited before release.
 
 ## One-Picture Summary
@@ -34,7 +34,7 @@ The paper moves from plain-language explanation, to system design, to theory and
 
 ## Executive Summary
 
-Hermetic Knowledge Isolation, or HKI, is a runtime isolation model for enterprise knowledge and agent platforms. The basic idea is simple: every knowledge artifact belongs to one isolation domain, every runtime request executes in one active domain, and shared knowledge appears in a domain only through explicit publication or replication.
+Hermetic Knowledge Isolation, or HKI, is a runtime isolation model for enterprise knowledge and agent platforms. In data-sovereignty terms, it is an inference-time usage-control and provenance mechanism: every knowledge artifact belongs to one isolation domain, every runtime operation executes in one active domain, and shared knowledge appears in a domain only through explicit publication or replication.
 
 In plain language, HKI asks teams to stop treating scope as a search filter and start treating it as an execution label. That label must survive query rewriting, graph traversal, caching, ingestion, review, and tool calls. If the label is missing, ambiguous, or contradictory, the system fails closed.
 
@@ -94,19 +94,19 @@ In a regulated environment this is not a minor access control gap. It is an audi
 
 ## Glossary
 
-| Term                          | Meaning                                                                                                                       |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| **Domain**                    | A semantic isolation context (e.g., a value stream, business unit, regulated product line). The unit of hermetic execution.   |
-| **Active domain**             | The single domain a runtime request executes in, selected at the gateway, even if the principal is authorized for many.       |
-| **Artifact**                  | Any runtime object: document, chunk, graph node or edge, cache entry, review record, ingestion job, trace, derived output.    |
-| **σ(a)**                      | Domain label assigned to artifact `a`. Mandatory. Never null in the runtime plane.                                            |
-| **τ(r)**                      | Active domain label resolved for request `r`. Signed at the gateway. Propagated end to end.                                   |
-| **Signed scope envelope**     | The tamper-resistant token that carries `(org, active_domain, authorized_domains, op, exp)` to every downstream service.      |
-| **Runtime plane**             | The hermetic execution path: gateway, orchestrator, retrieval, ingestion, review, evaluators, tools, domain-scoped analytics. |
-| **Admin plane**               | A separate surface for cross-domain audit, reporting, and oversight. Never invoked from runtime code paths.                   |
-| **Publication / replication** | The only authorized bridge between domains. Materializes new domain-labeled artifacts from a curated master.                  |
-| **Null-scope artifact**       | An artifact with missing or empty domain identity. HKI treats this as a deploy-blocking defect, not a fallback.               |
-| **HVSI**                      | Hermetic Value-Stream Isolation — another name for HKI when the domain label is a business value stream.                      |
+| Term                          | Meaning                                                                                                                                   |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Domain**                    | A semantic isolation context (e.g., a value stream, business unit, regulated product line). The unit of hermetic execution.               |
+| **Active domain**             | The single domain a runtime operation executes in, selected at the gateway or orchestrator, even if the principal is authorized for many. |
+| **Artifact**                  | Any runtime object: document, chunk, graph node or edge, cache entry, review record, ingestion job, trace, derived output.                |
+| **σ(a)**                      | Domain label assigned to artifact `a`. Mandatory. Never null in the runtime plane.                                                        |
+| **τ(r)**                      | Active domain label resolved for request `r`. Signed at the gateway. Propagated end to end.                                               |
+| **Signed scope envelope**     | The tamper-resistant token that carries `(org, active_domain, authorized_domains, op, exp)` to every downstream service.                  |
+| **Runtime plane**             | The hermetic execution path: gateway, orchestrator, retrieval, ingestion, review, evaluators, tools, domain-scoped analytics.             |
+| **Admin plane**               | A separate surface for cross-domain audit, reporting, and oversight. Never invoked from runtime code paths.                               |
+| **Publication / replication** | The only authorized bridge between domains. Materializes new domain-labeled artifacts from a curated master.                              |
+| **Null-scope artifact**       | An artifact with missing or empty domain identity. HKI treats this as a deploy-blocking defect, not a fallback.                           |
+| **HVSI**                      | Hermetic Value-Stream Isolation — another name for HKI when the domain label is a business value stream.                                  |
 
 ## The Problem HKI Solves
 
@@ -131,11 +131,11 @@ The enterprise version of this problem is especially severe because agentic syst
 HKI rests on four claims. Put plainly:
 
 1. **Every artifact has one domain.** Documents, chunks, graph structures, review records, ingestion jobs, release artifacts, and scope-sensitive telemetry all belong to one isolation domain.
-2. **Every request runs in one active domain.** A user may be authorized for many domains, but any single request still executes in only one.
+2. **Every runtime operation runs in one active domain.** A user may be authorized for many domains, and a business request may delegate across several of them, but each retrieval, tool, cache, memory, and synthesis step still executes in exactly one active domain.
 3. **Shared knowledge is published, not globally visible.** If the same policy or playbook needs to appear in several domains, it is replicated into those domains explicitly.
 4. **Ambiguity fails closed.** Missing scope, ambiguous scope, or unauthorized scope causes rejection, not fallback.
 
-The formal statement is compact. For each artifact `a`, assign exactly one domain label `σ(a)` drawn from the set of domains `D`. For each runtime request `r`, resolve exactly one active domain `τ(r) ∈ D`. Runtime visibility of artifact `a` to request `r` is then permitted **only when all three conditions hold**:
+The formal statement is compact. For each artifact `a`, assign exactly one domain label `σ(a)` drawn from the set of domains `D`. For each runtime operation `r`, resolve exactly one active domain `τ(r) ∈ D`. Runtime visibility of artifact `a` to operation `r` is then permitted **only when all three conditions hold**:
 
 1. The organization labels match.
 2. `τ(r) = σ(a)` (exact-domain equality).
@@ -171,7 +171,7 @@ Each artifact has at least the following metadata, whether represented directly 
 4. Lifecycle state such as draft, reviewed, released, or archived.
 5. Policy envelope controlling who may read, write, publish, or administer it.
 
-Each runtime request carries at least the following:
+Each runtime operation carries at least the following:
 
 1. Authenticated principal identity.
 2. Authorized domain set.
@@ -329,23 +329,23 @@ HKI's signed scope envelope, null-scope blocking, and conformance test suite pro
 
 **NIST AI Risk Management Framework (AI RMF 1.0)**
 
-| NIST Function | Subcategory | HKI Mapping |
-|---|---|---|
-| GOVERN | 1.1 — AI risk priorities are established | HKI formalizes isolation priorities as runtime enforcement, not convention |
-| MAP | 2.1 — Scientific findings and regulations used to identify AI risks | HKI's threat model and failure mode table map directly to this function |
-| MEASURE | 2.5 — AI system data provenance is documented and maintained | HKI requires provenance on every artifact including derived graph nodes, cached entries, and review records |
-| MANAGE | 3.1 — Responses to risks are documented and communicated | HKI's conformance gate results and null-scope audit outputs serve as this evidence |
+| NIST Function | Subcategory                                                         | HKI Mapping                                                                                                 |
+| ------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| GOVERN        | 1.1 — AI risk priorities are established                            | HKI formalizes isolation priorities as runtime enforcement, not convention                                  |
+| MAP           | 2.1 — Scientific findings and regulations used to identify AI risks | HKI's threat model and failure mode table map directly to this function                                     |
+| MEASURE       | 2.5 — AI system data provenance is documented and maintained        | HKI requires provenance on every artifact including derived graph nodes, cached entries, and review records |
+| MANAGE        | 3.1 — Responses to risks are documented and communicated            | HKI's conformance gate results and null-scope audit outputs serve as this evidence                          |
 
 **HIPAA — Minimum Necessary Standard (Healthcare AI)**
 For healthcare enterprises deploying agents across clinical, pharmacy, supply chain, and administrative domains, HIPAA's minimum necessary standard applies not only to what principals can query but to what an autonomous agent can observe. HKI's exact-domain equality rule and fail-closed graph traversal directly implement minimum necessary at the execution level — preventing an agent operating in one care domain from observing PHI labeled to another, even through a derived graph edge or semantic cache hit.
 
 **SOC 2 Type II (Logical Access and Data Integrity)**
 
-| Control | Description | HKI Evidence |
-|---|---|---|
-| CC6.1 | Logical access security over protected information assets | Signed envelope validation, null-domain rejection logs, plane separation test results |
-| CC6.7 | Restriction of data transmission to authorized users | Publication-only cross-domain bridge, provenance records on every materialized artifact |
-| CC7.2 | Monitoring for unauthorized or unusual activity | Null-scope audit reports, cross-domain read rejection rate, conformance regression suite |
+| Control | Description                                               | HKI Evidence                                                                             |
+| ------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| CC6.1   | Logical access security over protected information assets | Signed envelope validation, null-domain rejection logs, plane separation test results    |
+| CC6.7   | Restriction of data transmission to authorized users      | Publication-only cross-domain bridge, provenance records on every materialized artifact  |
+| CC7.2   | Monitoring for unauthorized or unusual activity           | Null-scope audit reports, cross-domain read rejection rate, conformance regression suite |
 
 A single HKI audit report — null-scope artifact count, cross-domain read rejection rate, conformance gate pass/fail, publication provenance records — provides directly usable evidence for all four frameworks. That evidence quality is not achievable with ad-hoc retrieval filters, because filters operate only at the final read and cannot speak to what happened at graph traversal, cache population, or async job handoff.
 
@@ -512,17 +512,17 @@ Useful acceptance thresholds are concrete: zero successful cross-domain reads in
 
 The following nine checks must pass before a system ships under an HKI conformance claim. Each is binary. Partial credit does not apply.
 
-| # | Check | What a Failure Looks Like |
-|---|---|---|
-| 1 | **Envelope validation on every service** — Automated tests confirm that every runtime service rejects requests with missing, null, or `"global"` active domain before touching any store | Any service that returns a result given a null or missing active domain |
-| 2 | **Zero null-scope artifacts in runtime plane** — A full scan of every persisted artifact class returns zero records with missing domain identity | Any document, chunk, graph node, cache entry, or job record with null domain |
-| 3 | **Cache key structure audit** — Every cache layer confirmed to include `org`, `active_domain`, and `op` in key structure; three spot-checked cache hits verified against expected key shape | A cache hit returned without verifying active domain in the key |
-| 4 | **Graph edge label coverage** — Every edge class in the runtime graph confirmed to carry a domain label; extraction pipeline confirmed to propagate domain identity from source artifacts | Any edge class without mandatory domain label, or extraction pipeline that infers label from neighbors |
-| 5 | **Async job domain binding** — Every background job type (ingest, review, reprocess, sync) confirmed to carry and validate active domain at every stage transition | Any worker that reconstructs scope from payload content or uses a default |
-| 6 | **Admin plane separation** — No runtime endpoint has a code path that calls an admin-plane or cross-domain query; confirmed by static analysis or automated test | Any runtime endpoint that shares code with a cross-domain reporting or audit query |
-| 7 | **Publication gate** — Every cross-domain content publication goes through a dedicated workflow producing new domain-labeled artifacts with provenance; no shared artifacts have null or wildcard scope | Any artifact that is visible in multiple domains through runtime visibility rather than explicit publication |
-| 8 | **Adversarial regression suite** — Full conformance test suite run returns zero successful cross-domain reads across all nine test categories | Any passing test in the cross-domain read categories |
-| 9 | **Deploy-time readiness block** — CI/CD pipeline is configured to fail deployment on non-zero null-scope artifact count or any failing conformance test | A deployment that completes despite failing checks, even in non-production environments |
+| #   | Check                                                                                                                                                                                                   | What a Failure Looks Like                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 1   | **Envelope validation on every service** — Automated tests confirm that every runtime service rejects requests with missing, null, or `"global"` active domain before touching any store                | Any service that returns a result given a null or missing active domain                                      |
+| 2   | **Zero null-scope artifacts in runtime plane** — A full scan of every persisted artifact class returns zero records with missing domain identity                                                        | Any document, chunk, graph node, cache entry, or job record with null domain                                 |
+| 3   | **Cache key structure audit** — Every cache layer confirmed to include `org`, `active_domain`, and `op` in key structure; three spot-checked cache hits verified against expected key shape             | A cache hit returned without verifying active domain in the key                                              |
+| 4   | **Graph edge label coverage** — Every edge class in the runtime graph confirmed to carry a domain label; extraction pipeline confirmed to propagate domain identity from source artifacts               | Any edge class without mandatory domain label, or extraction pipeline that infers label from neighbors       |
+| 5   | **Async job domain binding** — Every background job type (ingest, review, reprocess, sync) confirmed to carry and validate active domain at every stage transition                                      | Any worker that reconstructs scope from payload content or uses a default                                    |
+| 6   | **Admin plane separation** — No runtime endpoint has a code path that calls an admin-plane or cross-domain query; confirmed by static analysis or automated test                                        | Any runtime endpoint that shares code with a cross-domain reporting or audit query                           |
+| 7   | **Publication gate** — Every cross-domain content publication goes through a dedicated workflow producing new domain-labeled artifacts with provenance; no shared artifacts have null or wildcard scope | Any artifact that is visible in multiple domains through runtime visibility rather than explicit publication |
+| 8   | **Adversarial regression suite** — Full conformance test suite run returns zero successful cross-domain reads across all nine test categories                                                           | Any passing test in the cross-domain read categories                                                         |
+| 9   | **Deploy-time readiness block** — CI/CD pipeline is configured to fail deployment on non-zero null-scope artifact count or any failing conformance test                                                 | A deployment that completes despite failing checks, even in non-production environments                      |
 
 A team that checks all nine has a defensible HKI conformance claim. A team that fails one check knows exactly where the boundary is broken — which is the point.
 
@@ -580,7 +580,7 @@ The theoretical limits are equally clear:
 A useful theorem sketch is the following.
 
 > **Theorem (sketch) — Runtime Noninterference under HKI.**
-> If every runtime artifact has exactly one domain label, every runtime request has exactly one active domain label, every runtime read enforces exact domain equality, every runtime write preserves or explicitly assigns the current domain label, caches are keyed by domain, and cross-domain reuse occurs only through explicit publication that materializes new domain-labeled artifacts, then runtime outputs satisfy a noninterference-style isolation property, modulo side channels and shared-model effects.
+> If every runtime artifact has exactly one domain label, every runtime operation has exactly one active domain label, every runtime read enforces exact domain equality, every runtime write preserves or explicitly assigns the current domain label, caches are keyed by domain, and cross-domain reuse occurs only through explicit publication that materializes new domain-labeled artifacts, then runtime outputs satisfy a noninterference-style isolation property, modulo side channels and shared-model effects.
 
 That is a respectable theoretical contribution for a systems paper even if it is not a new theory paper.
 

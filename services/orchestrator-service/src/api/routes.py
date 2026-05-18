@@ -7,44 +7,46 @@ Endpoints:
 
 from __future__ import annotations
 
+import hashlib
 import json
-from typing import Any
+import typing
 
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel
+import fastapi
+import fastapi.responses
+import pydantic
 
-from src.adapters.llm_client import LLMClient
-from src.core.auth import RequestIdentity, verify_request_jwt
-from src.domain.agent import AdkAgent
-from src.domain.guardrails import check_input, check_output
-from src.domain.models import GuardrailsReport, StreamConfig
-from src.domain.tools import get_tool_catalog
+import src.adapters.analytics_client
+import src.adapters.llm_client
+import src.core.auth
+import src.domain.agent
+import src.domain.guardrails
+import src.domain.models
+import src.domain.tools
 
-router = APIRouter(prefix="/v1", tags=["orchestration"])
+router = fastapi.APIRouter(prefix="/v1", tags=["orchestration"])
 
 
-class ChatRequest(BaseModel):
+class ChatRequest(pydantic.BaseModel):
     """Inbound chat request from the BFF."""
 
     conversation_id: str
     message: str
     user_id: str | None = None
     org_id: str | None = None
-    history: list[dict[str, Any]] | None = None
+    history: list[dict[str, typing.Any]] | None = None
     scope: str | None = None
     scopes: list[str] | None = None
-    stream_config: StreamConfig | None = None
+    stream_config: src.domain.models.StreamConfig | None = None
 
 
-class CompletionMessage(BaseModel):
+class CompletionMessage(pydantic.BaseModel):
     """Single chat-completion message for direct LLM calls."""
 
     role: str
     content: str
 
 
-class CompletionRequest(BaseModel):
+class CompletionRequest(pydantic.BaseModel):
     """Low-level completion request for BFF admin features."""
 
     messages: list[CompletionMessage]
@@ -55,16 +57,71 @@ class CompletionRequest(BaseModel):
     fallback_to_vertex_direct: bool = True
 
 
-def _get_agent(request: Request) -> AdkAgent:
+def _get_agent(request: fastapi.Request) -> src.domain.agent.AdkAgent:
     return request.app.state.agent
 
 
-def _report_payload(report: GuardrailsReport) -> dict[str, Any]:
+def _get_analytics(request: fastapi.Request) -> src.adapters.analytics_client.AnalyticsClient | None:
+    return getattr(request.app.state, "analytics", None)
+
+
+def _report_payload(report: src.domain.models.GuardrailsReport) -> dict[str, typing.Any]:
     return report.model_dump()
 
 
+def _message_hash(message: str) -> str:
+    return "sha256:" + hashlib.sha256(message.encode()).hexdigest()
+
+
+def _emit_chat_audit_event(
+    request: fastapi.Request,
+    *,
+    body: ChatRequest,
+    identity: src.core.auth.RequestIdentity,
+    effective_user_id: str,
+    decision_outcome: str,
+    decision_reason: str,
+    input_report: src.domain.models.GuardrailsReport,
+    output_report: src.domain.models.GuardrailsReport | None = None,
+    tool_call_count: int = 0,
+    response_metadata: dict[str, typing.Any] | None = None,
+) -> None:
+    analytics: src.adapters.analytics_client.AnalyticsClient | None = _get_analytics(request)
+    if analytics is None:
+        return
+
+    active_domain = identity.scope
+    authorized_domains = list(identity.scopes or [identity.scope])
+    response_metadata = response_metadata or {}
+    analytics.fire_audit_event(
+        operation_type="agent.chat",
+        org_id=body.org_id or identity.org_id,
+        subject_id=effective_user_id,
+        active_domain=active_domain,
+        authorized_domains=authorized_domains,
+        operation_name="orchestrator.chat",
+        target_domain=active_domain,
+        purpose="chat",
+        decision_outcome=decision_outcome,
+        decision_reason=decision_reason,
+        actor_role=identity.role,
+        evidence={
+            "conversation_id": body.conversation_id,
+            "message_hash": _message_hash(body.message),
+            "input_guardrail_passed": input_report.passed,
+            "output_guardrail_passed": output_report.passed if output_report else None,
+            "input_guardrail_score": input_report.score,
+            "output_guardrail_score": output_report.score if output_report else None,
+            "tool_call_count": tool_call_count,
+            "agent": response_metadata.get("agent", "adk_agent"),
+            "model": response_metadata.get("model", ""),
+            "redaction_profile": "metadata-only",
+        },
+    )
+
+
 def _is_retryable_gateway_failure(exc: Exception) -> bool:
-    message = str(exc).lower()
+    message: str = str(exc).lower()
     return (
         "llm returned 429" in message
         or "llm returned 302" in message
@@ -84,11 +141,11 @@ def _is_retryable_gateway_failure(exc: Exception) -> bool:
 
 
 async def _run_completion(
-    client: LLMClient,
+    client: src.adapters.llm_client.LLMClient,
     body: CompletionRequest,
-) -> dict[str, Any]:
-    response = await client.chat(
-        messages=[message.model_dump() for message in body.messages],
+) -> dict[str, typing.Any]:
+    response: src.adapters.llm_client.LLMResponse = await client.chat(
+        messages=[message.model_dump() for message: CompletionMessage in body.messages],
         model=body.model,
         temperature=body.temperature,
         max_tokens=body.max_tokens,
@@ -111,9 +168,9 @@ async def _run_completion(
 @router.post("/chat/stream", response_model=None)
 async def chat_stream(
     body: ChatRequest,
-    request: Request,
-    identity: RequestIdentity = Depends(verify_request_jwt),  # noqa: B008
-) -> StreamingResponse | JSONResponse:
+    request: fastapi.Request,
+    identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),  # noqa: B008
+) -> fastapi.responses.StreamingResponse | fastapi.responses.JSONResponse:
     """
     Process a user message with SSE streaming back to the BFF.
     Stream structure mimics the expected format of the frontend.
@@ -121,23 +178,32 @@ async def chat_stream(
     effective_user_id = body.user_id or identity.user_id
 
     # ── Input Guardrails (blocking — reject before reaching the LLM) ─────
-    input_report = check_input(body.message, effective_user_id)
+    input_report: src.domain.models.GuardrailsReport = src.domain.guardrails.check_input(body.message, effective_user_id)
     if not input_report.passed:
-        return JSONResponse(
+        _emit_chat_audit_event(
+            request,
+            body=body,
+            identity=identity,
+            effective_user_id=effective_user_id,
+            decision_outcome="deny",
+            decision_reason="input_guardrail_violation",
+            input_report=input_report,
+        )
+        return fastapi.responses.JSONResponse(
             status_code=422,
             content={
                 "error": "input_guardrail_violation",
                 "violations": [
                     {"rule": v.rule, "message": v.message, "severity": v.severity}
-                    for v in input_report.input_violations
+                    for v: src.domain.models.GuardrailViolation in input_report.input_violations
                 ],
                 "score": input_report.score,
             },
         )
 
-    agent = _get_agent(request)
+    agent: src.domain.agent.AdkAgent = _get_agent(request)
 
-    async def event_generator():
+    async def event_generator() -> typing.Generator[str, typing.Any, None]:
         # Emit guardrail pass event so the UI can show the shield icon
         input_guardrail_event = {
             "type": "guardrail",
@@ -153,8 +219,8 @@ async def chat_stream(
         }
         yield f"data: {json.dumps(input_guardrail_event)}\n\n"
 
-        cumulative_text = ""
-        response_metadata: dict[str, Any] = {}
+        cumulative_text: str = ""
+        response_metadata: dict[str, typing.Any] = {}
         async for chunk in agent.chat_stream(
             session_id=body.conversation_id,
             user_id=effective_user_id,
@@ -183,7 +249,7 @@ async def chat_stream(
 
         # ── Output Guardrails (after full response is assembled) ─────────
         if cumulative_text:
-            output_report = check_output(cumulative_text, body.message)
+            output_report: src.domain.models.GuardrailsReport = src.domain.guardrails.check_output(cumulative_text, body.message)
             guardrail_event = {
                 "type": "guardrail",
                 "step": 999,
@@ -196,11 +262,23 @@ async def chat_stream(
                     "report": _report_payload(output_report),
                     "violations": [
                         {"rule": v.rule, "message": v.message, "severity": v.severity}
-                        for v in output_report.output_violations
+                        for v: src.domain.models.GuardrailViolation in output_report.output_violations
                     ],
                 },
             }
             yield f"data: {json.dumps(guardrail_event)}\n\n"
+            _emit_chat_audit_event(
+                request,
+                body=body,
+                identity=identity,
+                effective_user_id=effective_user_id,
+                decision_outcome="allow" if output_report.passed else "escalate",
+                decision_reason="completed" if output_report.passed else "output_guardrail_flagged",
+                input_report=input_report,
+                output_report=output_report,
+                tool_call_count=0,
+                response_metadata=response_metadata,
+            )
             final_event = {
                 "type": "final_response",
                 "content": cumulative_text,
@@ -211,7 +289,7 @@ async def chat_stream(
 
         yield "data: [DONE]\n\n"
 
-    return StreamingResponse(
+    return fastapi.responses.StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
         headers={
@@ -225,36 +303,45 @@ async def chat_stream(
 @router.post("/chat", response_model=None)
 async def chat(
     body: ChatRequest,
-    request: Request,
-    identity: RequestIdentity = Depends(verify_request_jwt),  # noqa: B008
-) -> dict[str, Any] | JSONResponse:
+    request: fastapi.Request,
+    identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),  # noqa: B008
+) -> dict[str, typing.Any] | fastapi.responses.JSONResponse:
     """
     Synchronous fallback endpoint that accumulates the stream before returning.
     """
     effective_user_id = body.user_id or identity.user_id
 
     # ── Input Guardrails (blocking) ──────────────────────────────────────
-    input_report = check_input(body.message, effective_user_id)
+    input_report: src.domain.models.GuardrailsReport = src.domain.guardrails.check_input(body.message, effective_user_id)
     if not input_report.passed:
-        return JSONResponse(
+        _emit_chat_audit_event(
+            request,
+            body=body,
+            identity=identity,
+            effective_user_id=effective_user_id,
+            decision_outcome="deny",
+            decision_reason="input_guardrail_violation",
+            input_report=input_report,
+        )
+        return fastapi.responses.JSONResponse(
             status_code=422,
             content={
                 "error": "input_guardrail_violation",
                 "violations": [
                     {"rule": v.rule, "message": v.message, "severity": v.severity}
-                    for v in input_report.input_violations
+                    for v: src.domain.models.GuardrailViolation in input_report.input_violations
                 ],
                 "score": input_report.score,
             },
         )
 
-    agent = _get_agent(request)
+    agent: src.domain.agent.AdkAgent = _get_agent(request)
 
-    full_response = ""
+    full_response: str = ""
     tool_calls = []
-    trace: list[dict[str, Any]] = []
-    citations: list[dict[str, Any]] = []
-    response_metadata: dict[str, Any] = {}
+    trace: list[dict[str, typing.Any]] = []
+    citations: list[dict[str, typing.Any]] = []
+    response_metadata: dict[str, typing.Any] = {}
 
     async for chunk in agent.chat_stream(
         session_id=body.conversation_id,
@@ -294,14 +381,26 @@ async def chat(
         else:
             full_response += chunk
 
-    output_report = (
-        check_output(full_response, body.message) if full_response else GuardrailsReport()
+    output_report: src.domain.models.GuardrailsReport = (
+        src.domain.guardrails.check_output(full_response, body.message) if full_response else src.domain.models.GuardrailsReport()
     )
-    combined_guardrails = GuardrailsReport(
+    combined_guardrails = src.domain.models.GuardrailsReport(
         passed=input_report.passed and output_report.passed,
         input_violations=input_report.input_violations,
         output_violations=output_report.output_violations,
         score=min(input_report.score, output_report.score),
+    )
+    _emit_chat_audit_event(
+        request,
+        body=body,
+        identity=identity,
+        effective_user_id=effective_user_id,
+        decision_outcome="allow" if combined_guardrails.passed else "escalate",
+        decision_reason="completed" if combined_guardrails.passed else "output_guardrail_flagged",
+        input_report=input_report,
+        output_report=output_report,
+        tool_call_count=len(tool_calls),
+        response_metadata=response_metadata,
     )
 
     return {
@@ -320,24 +419,24 @@ async def chat(
 @router.post("/llm/complete", response_model=None)
 async def llm_complete(
     body: CompletionRequest,
-    identity: RequestIdentity = Depends(verify_request_jwt),  # noqa: B008
-) -> dict[str, Any] | JSONResponse:
+    identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),  # noqa: B008
+) -> dict[str, typing.Any] | fastapi.responses.JSONResponse:
     """
     Guarded low-level completion endpoint used by the BFF's admin/KB Gemini routes.
     Uses the configured gateway first, then falls back to direct Vertex AI only when
     the gateway is unavailable or transiently failing.
     """
     _ = identity
-    primary = LLMClient(api_key=body.api_key, model=body.model)
+    primary = src.adapters.llm_client.LLMClient(api_key=body.api_key, model=body.model)
     try:
         return await _run_completion(primary, body)
-    except Exception as exc:
+    except Exception as exc: Exception:
         if (
             not body.fallback_to_vertex_direct
             or getattr(primary, "_vertex_direct", False)
             or not _is_retryable_gateway_failure(exc)
         ):
-            return JSONResponse(
+            return fastapi.responses.JSONResponse(
                 status_code=502,
                 content={
                     "error": "llm_completion_failed",
@@ -347,13 +446,13 @@ async def llm_complete(
     finally:
         await primary.close()
 
-    fallback = LLMClient(base_url="", api_key=body.api_key, model=body.model)
+    fallback = src.adapters.llm_client.LLMClient(base_url="", api_key=body.api_key, model=body.model)
     try:
-        result = await _run_completion(fallback, body)
+        result: dict[str, Any] = await _run_completion(fallback, body)
         result["fallback_used"] = True
         return result
-    except Exception as exc:
-        return JSONResponse(
+    except Exception as exc: Exception:
+        return fastapi.responses.JSONResponse(
             status_code=502,
             content={
                 "error": "llm_completion_failed",
@@ -364,12 +463,12 @@ async def llm_complete(
         await fallback.close()
 
 
-class ToolInfo(BaseModel):
+class ToolInfo(pydantic.BaseModel):
     """Public tool info for the UI registry browser."""
 
     name: str
     description: str
-    parameters: dict[str, Any]
+    parameters: dict[str, typing.Any]
     category: str = "other"
     risk_level: str = "low"
     approval_required: bool = False
@@ -377,16 +476,16 @@ class ToolInfo(BaseModel):
 
 @router.get("/tools", response_model=list[ToolInfo])
 async def list_tools(
-    request: Request,
-    identity: RequestIdentity = Depends(verify_request_jwt),  # noqa: B008
+    request: fastapi.Request,
+    identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),  # noqa: B008
 ) -> list[ToolInfo]:
     """List all available tools for the UI tool registry browser."""
     _ = identity
-    agent = _get_agent(request)
+    agent: src.domain.agent.AdkAgent = _get_agent(request)
     tools: list[ToolInfo] = []
-    governed_catalog = get_tool_catalog()
+    governed_catalog: dict[str, ToolSpec] = src.domain.tools.get_tool_catalog()
 
-    category_map = {
+    category_map: dict[str, str] = {
         "knowledge": "knowledge",
         "search": "search",
         "inventory": "data",
@@ -400,18 +499,18 @@ async def list_tools(
 
     for fn in agent.tools:
         if callable(fn):
-            name = fn.__name__.lstrip("_")
-            desc = (fn.__doc__ or "").strip()
+            name: str = fn.__name__.lstrip("_")
+            desc: str = (fn.__doc__ or "").strip()
         else:
             name = str(fn)
-            desc = ""
+            desc: str = ""
 
-        governed = governed_catalog.get(name)
-        category = governed.category if governed else "other"
+        governed: src.domain.tools.ToolSpec | None = governed_catalog.get(name)
+        category: str = governed.category if governed else "other"
         if not governed:
             for keyword, mapped_category in category_map.items():
                 if keyword in name:
-                    category = mapped_category
+                    category: str = mapped_category
                     break
 
         tools.append(

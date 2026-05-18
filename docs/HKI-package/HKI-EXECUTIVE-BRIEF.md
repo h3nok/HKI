@@ -10,7 +10,9 @@ By Henok Ghebrechristos, PhD
 
 ## In One Sentence
 
-Hermetic Knowledge Isolation (HKI) is a runtime contract for enterprise agentic systems: every artifact belongs to one domain, every request runs in one active domain, and shared knowledge appears only through explicit publication, never through silent global fallback.
+Hermetic Knowledge Isolation (HKI) is a runtime contract for enterprise agentic systems: every artifact belongs to one domain, every runtime operation runs in one active domain, and multi-domain business questions are composed through scoped delegation and explicit release, never through silent global fallback.
+
+Put in current data-governance language: HKI operationalizes inference-time data sovereignty. It gives enterprises usage control, provenance, and auditable information-flow boundaries after access has already been granted.
 
 ## Why This Matters Now
 
@@ -35,7 +37,7 @@ The contrast is straightforward: conventional "domain-aware" systems often treat
 HKI asks teams to adopt four rules.
 
 1. **Every artifact has one domain.** Documents, chunks, graph nodes, review records, jobs, caches, and derived outputs must all be labeled.
-2. **Every request has one active domain.** A user may be authorized for many domains, but each runtime execution still runs in exactly one.
+2. **Every runtime operation has one active domain.** A user may be authorized for many domains, and a business request may delegate across several of them, but each retrieval, tool, cache, memory, and synthesis step still runs in exactly one active domain.
 3. **Shared knowledge is published, not globally visible.** If the same content must appear in several domains, the system materializes domain-local copies explicitly.
 4. **Ambiguity fails closed.** Missing scope, contradictory scope, null scope, or unauthorized scope causes rejection, not fallback.
 
@@ -44,6 +46,8 @@ If you remember only one rule, remember this one:
 > **Runtime visibility requires exact-domain equality.**
 
 In shorthand: a request running in Domain A must not observe artifacts labeled Domain B unless the system has explicitly published that knowledge into A.
+
+Multi-domain business questions are still supported. For an executive legal-plus-pharmacy briefing, the orchestrator fans out to legal and pharmacy child envelopes, releases approved summaries into an executive briefing domain, and synthesizes the final answer there. The forbidden shortcut is a single mixed prompt or cache path that treats broad `authorized_domains` as runtime read visibility.
 
 The minimum proof points are concrete:
 
@@ -74,7 +78,7 @@ HKI changes two architectural habits.
 
 First, it splits the platform into a **runtime plane** and an **admin plane**.
 
-- The **runtime plane** is hermetic. It handles live retrieval, chat, tools, ingestion, review, and release workflows inside one active domain.
+- The **runtime plane** is hermetic. It handles live retrieval, chat, tools, ingestion, review, and release workflows inside one active domain per operation.
 - The **admin plane** may inspect across domains, but only through dedicated audit and oversight surfaces. Cross-domain visibility is never smuggled back into runtime endpoints.
 
 Second, HKI replaces implicit shared visibility with **explicit publication**. Shared enterprise policies, playbooks, or curated artifacts are copied into domains through a publication workflow rather than left unscoped.
@@ -112,11 +116,11 @@ HKI does not claim novelty at the level of security labels. The underlying ideas
 
 It is relevant because enterprise agentic systems now fail in places that older access-control designs did not fully model: graph traversal, query rewriting, semantic caches, long-running workflows, and tool execution.
 
-It complements row-level security, tenant isolation, Zanzibar-style authorization, vector metadata filters, and DLP controls. Those mechanisms answer important local questions. HKI adds the whole-runtime question: did every transformation preserve the one active domain selected for this request?
+It complements row-level security, tenant isolation, Zanzibar-style authorization, vector metadata filters, and DLP controls. Those mechanisms answer important local questions. HKI adds the whole-runtime question: did every transformation preserve the one active domain selected for this operation?
 
 HKI gives those systems a single, testable rule for runtime observation:
 
-> one request, one active domain, no implicit global visibility.
+> one operation, one active domain, no implicit global visibility.
 
 ## Bottom Line
 

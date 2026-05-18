@@ -1,341 +1,216 @@
-import { useCallback, type ComponentType } from "react";
+import { useCallback, useMemo, useRef, type MouseEvent } from "react";
 import { useLocation } from "wouter";
-import {
-  ArrowRight,
-  BookOpen,
-  Bot,
-  BrainCircuit,
-  CheckCircle2,
-  ClipboardCheck,
-  Database,
-  FileText,
-  GitBranch,
-  LockKeyhole,
-  Network,
-  Search,
-  ShieldCheck,
-  Wrench,
-} from "lucide-react";
-import { HkiMark, cn } from "@hki/ui";
+import { ArrowRight, FileText, GitBranch, Home } from "lucide-react";
+import { HkiMark, cn, hub } from "@hki/ui";
 
 import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   ENGINEERING_HUB_ROUTE,
-  HKI_ARCHITECTURE_ROUTE,
+  HKI_CUSTODY_PROBLEM_ROUTE,
   HKI_STANDARD_ROUTE,
 } from "@/pages/engineering/constants";
 import { EngineeringHeader } from "@/pages/engineering/components/EngineeringHeader";
+import { PublicationMasthead } from "@/pages/engineering/components/PublicationMasthead";
+import { DocumentOutline } from "@/pages/engineering/components/DocumentOutline";
+import { ReadingProgress } from "@/pages/engineering/components/ReadingProgress";
+import { ArticleMarkdown } from "@/pages/engineering/components/ArticleMarkdown";
+import { ProseBlock } from "@/pages/engineering/components/WideSection";
+import {
+  useActiveHeading,
+  useDocumentOutline,
+} from "@/pages/engineering/components/useDocumentOutline";
 
-type PanelTone = "primary" | "success" | "warning" | "neutral";
+import custodyProblemRaw from "../../../../../docs/HKI-package/custody_problem.md?raw";
+import multiDomainDelegationUrl from "../../../../../docs/HKI-package/images/hki/07-multi-domain-delegation.svg";
 
-type InfoCard = {
-  label: string;
-  title: string;
-  body: string;
-  icon: ComponentType<{ className?: string }>;
-  tone?: PanelTone;
+const CUSTODY_PROBLEM = custodyProblemRaw
+  .replace(/^# .*\n+/, "")
+  .replace(
+    /^\*\*Status:\*\*.*\n\*\*Version:\*\*.*\n\*\*Author:\*\*.*\n\*\*Relationship to HKI:\*\*.*\n+/,
+    ""
+  );
+const READING_TIME_MIN = Math.max(
+  1,
+  Math.ceil(CUSTODY_PROBLEM.split(/\s+/).filter(Boolean).length / 220)
+);
+
+const SOURCE_HREF =
+  "https://github.com/innovationlab/Hki/blob/main/docs/HKI-package/custody_problem.md";
+const PACKAGE_HREF =
+  "https://github.com/innovationlab/Hki/tree/main/docs/HKI-package";
+const IMAGE_URLS: Record<string, string> = {
+  "images/hki/07-multi-domain-delegation.svg": multiDomainDelegationUrl,
 };
 
-const AGENTIC_PARTS: readonly InfoCard[] = [
+const PUBLICATION_LINKS = [
   {
-    label: "01",
-    title: "Retrieval",
-    body: "The system pulls documents, tickets, records, code, or knowledge base entries into the task.",
-    icon: Search,
-    tone: "primary",
+    label: "Canonical Markdown",
+    href: SOURCE_HREF,
+    icon: FileText,
+    external: true,
   },
   {
-    label: "02",
-    title: "Memory",
-    body: "The system may reuse previous preferences, conversations, summaries, or operational habits.",
-    icon: Database,
-    tone: "success",
+    label: "HKI Package",
+    href: PACKAGE_HREF,
+    icon: GitBranch,
+    external: true,
   },
   {
-    label: "03",
-    title: "Tools",
-    body: "The system calls APIs, changes records, sends messages, creates jobs, or triggers workflows.",
-    icon: Wrench,
-    tone: "warning",
-  },
-  {
-    label: "04",
-    title: "Policy",
-    body: "The system applies routing rules, filters, evaluators, model choices, and output constraints.",
-    icon: LockKeyhole,
-    tone: "neutral",
-  },
-];
-
-const PROBLEMS: readonly InfoCard[] = [
-  {
-    label: "Scope ambiguity",
-    title: "User access is broader than the task.",
-    body: "A person may be allowed to see legal, finance, HR, and strategy documents. That does not mean one support question should reason across all of them.",
-    icon: ShieldCheck,
-  },
-  {
-    label: "Context bleed",
-    title: "Adjacent knowledge can influence an answer invisibly.",
-    body: "A leaked artifact does not need to be quoted to cause harm. It can shape the recommendation, ranking, escalation, or action the agent chooses next.",
-    icon: Network,
-  },
-  {
-    label: "Runtime accumulation",
-    title: "Memory and telemetry become operational intelligence.",
-    body: "Prompts, tool calls, retries, preferences, and failure paths teach the runtime how work is done, even when no model training occurs.",
-    icon: BrainCircuit,
-  },
-  {
-    label: "Unprovable assurance",
-    title: "Promises are not enough for release gates.",
-    body: "The enterprise needs evidence that retrieval, cache, graph, tool, job, and memory boundaries held for this request and this domain.",
-    icon: ClipboardCheck,
-  },
-];
-
-const CONTRACT_STEPS = [
-  {
-    title: "One active domain",
-    body: "Every request starts inside exactly one named domain before retrieval, tools, cache, memory, or model calls begin.",
-  },
-  {
-    title: "Labels persist",
-    body: "Artifacts, memories, graph edges, jobs, tool calls, and outputs carry provenance instead of losing scope downstream.",
-  },
-  {
-    title: "Publication is explicit",
-    body: "Cross-domain knowledge moves through reviewed publication, never silent fallback, inherited visibility, or global reads.",
-  },
-  {
-    title: "Proof is automated",
-    body: "Conformance cases, probes, and audits make the boundary falsifiable before release.",
+    label: "Engineering Hub",
+    href: ENGINEERING_HUB_ROUTE,
+    icon: Home,
+    external: false,
   },
 ] as const;
 
-function toneClass(tone: PanelTone = "primary") {
-  return {
-    primary: "border-primary/25 bg-primary/8 text-primary",
-    success: "border-success/25 bg-success/8 text-success",
-    warning: "border-warning/25 bg-warning/8 text-warning",
-    neutral: "border-border bg-muted/40 text-foreground",
-  }[tone];
+type Navigate = (path: string) => void;
+
+function PublicationLinks({ onNavigate }: { onNavigate: Navigate }) {
+  return (
+    <div className="mt-8 grid gap-3 border-b border-border pb-8 sm:grid-cols-3">
+      {PUBLICATION_LINKS.map(link => {
+        const Icon = link.icon;
+        const handleClick = link.external
+          ? undefined
+          : (event: MouseEvent<HTMLAnchorElement>) => {
+              event.preventDefault();
+              onNavigate(link.href);
+            };
+        return (
+          <a
+            key={link.label}
+            href={link.href}
+            target={link.external ? "_blank" : undefined}
+            rel={link.external ? "noopener noreferrer" : undefined}
+            onClick={handleClick}
+            className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground shadow-surface outline-none transition-all hover:-translate-y-px hover:shadow-surface-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <span className="inline-flex items-center gap-2.5">
+              <Icon className="h-4 w-4 text-primary" />
+              {link.label}
+            </span>
+            <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+          </a>
+        );
+      })}
+    </div>
+  );
 }
 
-function InfoPanel({ card }: { card: InfoCard }) {
-  const Icon = card.icon;
+function ArticleFooter({ onNavigate }: { onNavigate: Navigate }) {
   return (
-    <article className="rounded-lg border border-border bg-card shadow-surface p-5">
-      <div className="flex items-start justify-between gap-4">
-        <span
-          className={cn(
-            "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border",
-            toneClass(card.tone)
-          )}
-        >
-          <Icon className="h-5 w-5" />
-        </span>
-        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-          {card.label}
-        </span>
+    <footer className="mt-24 border-t border-border pt-10">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
+            Publishable artifact
+          </p>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+            This research note is the canonical custody framing for HKI. The
+            normative rules stay in the HKI 1.0 standard; this document explains
+            why those rules exist and how to test custody as a falsifiable
+            runtime property.
+          </p>
+        </div>
+        <div className="space-y-2">
+          <a
+            href={HKI_STANDARD_ROUTE}
+            onClick={event => {
+              event.preventDefault();
+              onNavigate(HKI_STANDARD_ROUTE);
+            }}
+            className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground shadow-surface outline-none transition-all hover:-translate-y-px hover:shadow-surface-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Read HKI Standard
+            <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+          </a>
+          <a
+            href={ENGINEERING_HUB_ROUTE}
+            onClick={event => {
+              event.preventDefault();
+              onNavigate(ENGINEERING_HUB_ROUTE);
+            }}
+            className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground shadow-surface outline-none transition-all hover:-translate-y-px hover:shadow-surface-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Back to Hub
+            <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+          </a>
+        </div>
       </div>
-      <h3 className="mt-4 text-lg font-extrabold tracking-tight text-foreground">
-        {card.title}
-      </h3>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        {card.body}
-      </p>
-    </article>
+    </footer>
   );
 }
 
 export default function EngineeringCustodyProblemPage() {
   usePageMeta("HKI Custody Problem");
+  const articleRef = useRef<HTMLElement>(null);
   const [, setLocation] = useLocation();
 
   const navigate = useCallback(
     (path: string) => {
       setLocation(path);
+      const hash = path.split("#")[1];
+      if (!hash) return;
+
+      window.setTimeout(() => {
+        document
+          .getElementById(decodeURIComponent(hash))
+          ?.scrollIntoView({ block: "start" });
+      }, 0);
     },
     [setLocation]
   );
 
+  const outline = useDocumentOutline(articleRef, [CUSTODY_PROBLEM]);
+  const headingIds = useMemo(() => outline.map(n => n.id), [outline]);
+  const activeId = useActiveHeading(headingIds);
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className={cn(hub.page, "bg-background")}>
+      <ReadingProgress trackRef={articleRef} />
       <EngineeringHeader />
 
-      <main className="flex-1 py-10 sm:py-14">
-        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
-          <section className="border-b border-border pb-12">
-            <div className="inline-flex items-center gap-2 rounded-md border border-primary/20 bg-primary/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-              <FileText className="h-3.5 w-3.5" />
-              Read first
-            </div>
-            <h1 className="mt-5 max-w-[22ch] text-4xl font-extrabold leading-tight tracking-tight text-foreground sm:text-[44px]">
-              The Custody Problem
-            </h1>
-            <p className="mt-4 max-w-[60ch] text-base leading-7 text-muted-foreground">
-              Provider privacy promises matter, but agentic systems introduce a
-              second boundary: who controls the context, memory, tools,
-              retrieval, and domain rules that shape the agent's reasoning at
-              runtime.
-            </p>
-            <div className="mt-7 inline-block rounded-md border border-border bg-muted/40 px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                Boundary shift
-              </p>
-              <p className="mt-1 text-sm font-bold text-foreground">
-                From model-training privacy to runtime context custody.
-              </p>
-            </div>
-          </section>
+      <main
+        className={cn(
+          hub.pageInner,
+          "relative z-10 mx-auto w-full max-w-7xl px-5 pt-7 pb-12 sm:px-8"
+        )}
+      >
+        <div className="grid gap-10 xl:grid-cols-[220px_minmax(0,1fr)]">
+          <DocumentOutline nodes={outline} activeId={activeId} />
 
-          <section className="border-b border-border py-12">
-            <div className="grid gap-4 md:grid-cols-3 md:items-stretch">
-              <div className="rounded-lg border border-border bg-card shadow-surface p-5">
-                <BookOpen className="h-5 w-5 text-primary" />
-                <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                  Old assurance
-                </p>
-                <h2 className="mt-2 text-lg font-extrabold tracking-tight text-foreground">
-                  Will the provider train on our data?
-                </h2>
-              </div>
-              <div className="rounded-lg border border-primary/25 bg-primary/8 p-5">
-                <Bot className="h-5 w-5 text-primary" />
-                <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-                  Agentic runtime
-                </p>
-                <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground">
-                  The system assembles context, remembers, calls tools, and
-                  acts.
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  That may be authorized and useful. The question is whether the
-                  enterprise can prove which knowledge was allowed to enter this
-                  specific task.
-                </p>
-              </div>
-              <div className="rounded-lg border border-border bg-card shadow-surface p-5">
-                <ShieldCheck className="h-5 w-5 text-success" />
-                <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                  New assurance
-                </p>
-                <h2 className="mt-2 text-lg font-extrabold tracking-tight text-foreground">
-                  What context can enter this task right now?
-                </h2>
-              </div>
-            </div>
-          </section>
+          <article
+            ref={articleRef}
+            className="mx-auto min-w-0 w-full"
+            aria-labelledby="hki-article-title"
+          >
+            <PublicationMasthead
+              eyebrow="HKI Research Note · Runtime Custody"
+              title="The Custody Problem in Enterprise Agentic AI"
+              abstract="Access control asks who may enter. Custody asks whether scoped authority and scoped knowledge remain scoped after an agent retrieves, summarizes, caches, delegates across domains, remembers, and acts."
+              authors="Henok Ghebrechristos, PhD"
+              publishedOn="17 May 2026"
+              readingMinutes={READING_TIME_MIN}
+              version="2026-05-17"
+              beginHref={`${HKI_CUSTODY_PROBLEM_ROUTE}#abstract`}
+              onBegin={navigate}
+            />
 
-          <section className="border-b border-border py-12">
-            <div className="mb-6 max-w-[60ch]">
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                Agentic systems, simply
-              </p>
-              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                The model is only one part of the system.
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                The surrounding runtime decides what the model sees and what the
-                agent can do. That runtime is where enterprise custody must
-                live.
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {AGENTIC_PARTS.map(card => (
-                <InfoPanel key={card.title} card={card} />
-              ))}
-            </div>
-          </section>
+            <ProseBlock>
+              <PublicationLinks onNavigate={navigate} />
+            </ProseBlock>
 
-          <section className="border-b border-border py-12">
-            <div className="mb-6 max-w-[60ch]">
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                The problem we solve
-              </p>
-              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                Enterprise context can cross boundaries without looking like a
-                data leak.
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                The dangerous path is often invisible: a document, memory, graph
-                edge, cache result, or tool permission from one domain shapes
-                work in another domain.
-              </p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {PROBLEMS.map(card => (
-                <InfoPanel key={card.label} card={card} />
-              ))}
-            </div>
-          </section>
+            <ProseBlock className="mt-12">
+              <ArticleMarkdown
+                source={CUSTODY_PROBLEM}
+                imageUrls={IMAGE_URLS}
+              />
+            </ProseBlock>
 
-          <section className="py-12">
-            <div className="rounded-lg border border-primary/25 bg-primary/8 p-6 sm:p-8">
-              <div className="max-w-[60ch]">
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                  HKI answer
-                </p>
-                <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                  Turn runtime custody into a contract the system can enforce.
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  HKI makes the runtime carry one active domain through
-                  retrieval, tools, graph, cache, memory, jobs, and response.
-                  Cross-domain sharing becomes explicit publication, not a side
-                  effect of broad access.
-                </p>
-              </div>
-
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {CONTRACT_STEPS.map(step => (
-                  <div
-                    key={step.title}
-                    className="rounded-md border border-border bg-muted/40 p-4"
-                  >
-                    <CheckCircle2 className="h-4 w-4 text-success" />
-                    <h3 className="mt-3 text-sm font-extrabold text-foreground">
-                      {step.title}
-                    </h3>
-                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                      {step.body}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-8 border-t border-primary/20 pt-6">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
-                  Read next
-                </p>
-                <div className="mt-3 flex flex-wrap gap-3">
-                  <a
-                    href={HKI_STANDARD_ROUTE}
-                    onClick={event => {
-                      event.preventDefault();
-                      navigate(HKI_STANDARD_ROUTE);
-                    }}
-                    className="group inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-surface transition-all hover:-translate-y-px hover:shadow-surface-md"
-                  >
-                    HKI Standard
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </a>
-                  <a
-                    href={HKI_ARCHITECTURE_ROUTE}
-                    onClick={event => {
-                      event.preventDefault();
-                      navigate(HKI_ARCHITECTURE_ROUTE);
-                    }}
-                    className="group inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-surface transition-all hover:-translate-y-px hover:shadow-surface-md"
-                  >
-                    Reference Architecture
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </section>
+            <ProseBlock>
+              <ArticleFooter onNavigate={navigate} />
+            </ProseBlock>
+          </article>
         </div>
       </main>
 
@@ -343,7 +218,7 @@ export default function EngineeringCustodyProblemPage() {
         <div className="mx-auto flex min-h-12 w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs text-muted-foreground sm:px-8">
           <div className="flex items-center gap-2">
             <HkiMark size={14} variant="color" />
-            <span>HKI Custody Problem · Engineering Hub</span>
+            <span>HKI Custody Problem · Research Note</span>
           </div>
           <a
             href={ENGINEERING_HUB_ROUTE}

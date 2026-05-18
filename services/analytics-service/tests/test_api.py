@@ -37,6 +37,30 @@ def _ingest(client: fastapi.testclient.TestClient, event: dict) -> dict:
     return resp.json()
 
 
+def _audit_event(overrides: dict | None = None) -> dict:
+    event = {
+        "schema": "hki.audit.event.v1",
+        "event_id": "evt-chat-1",
+        "occurred_at": "2026-05-16T00:00:00.000Z",
+        "received_at": "2026-05-16T00:00:01.000Z",
+        "source": {"platform": "agentic", "service": "orchestrator-service", "environment": "test"},
+        "actor": {"subject_id": "u-1", "role": "admin"},
+        "boundary": {
+            "org_id": "default",
+            "active_domain": "pharmacy",
+            "authorized_domains": ["pharmacy"],
+            "policy_pack_id": "policy-1",
+            "risk_tier": "read-only",
+        },
+        "operation": {"type": "agent.chat", "name": "orchestrator.chat", "target_domain": "pharmacy"},
+        "decision": {"outcome": "allow", "reason": "completed"},
+        "evidence": {"payload_hash": "sha256:abc", "redaction_profile": "metadata-only"},
+    }
+    if overrides:
+        event.update(overrides)
+    return event
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Health Endpoints
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -121,6 +145,55 @@ class TestIngest:
         assert resp.status_code == 422
 
 
+class TestHkiAuditIngest:
+    def test_direct_audit_event_ingest_rejects_forbidden_domain(
+        self, client: fastapi.testclient.TestClient
+    ) -> None:
+        resp: httpx.Response = client.post(
+            "/v1/events/audit",
+            json=_audit_event(
+                {
+                    "boundary": {
+                        "org_id": "default",
+                        "active_domain": "global",
+                        "authorized_domains": ["global"],
+                    }
+                }
+            ),
+        )
+
+        assert resp.status_code == 422
+        assert resp.json()["detail"]["error"] == "invalid-hki-audit-event"
+
+    def test_direct_audit_event_ingest_stores_native_payload(
+        self, client: fastapi.testclient.TestClient
+    ) -> None:
+        resp: httpx.Response = client.post("/v1/events/audit", json=_audit_event())
+
+        assert resp.status_code == 200
+        assert resp.json() == {"status": "ok", "schema": "hki.audit.event.v1"}
+
+        recent: httpx.Response = client.get("/v1/events/recent?stream_id=pharmacy")
+        assert recent.status_code == 200
+        data = recent.json()
+        assert data["total"] == 1
+        assert data["events"][0]["event_type"] == "agent.chat"
+        assert data["events"][0]["org_id"] == "default"
+        assert data["events"][0]["scope"] == "pharmacy"
+        assert data["events"][0]["payload"]["schema"] == "hki.audit.event.v1"
+
+    def test_pubsub_audit_event_uses_strict_validation(
+        self, client: fastapi.testclient.TestClient
+    ) -> None:
+        resp: httpx.Response = client.post(
+            "/v1/events/ingest",
+            json=_make_envelope(_audit_event({"operation": {"type": "agent.chat", "target_domain": "optical"}})),
+        )
+
+        assert resp.status_code == 422
+        assert resp.json()["detail"]["error"] == "invalid-hki-audit-event"
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Recent Events
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -145,7 +218,7 @@ class TestRecentEvents:
         assert "chat.request" in event_types
 
     def test_limit_parameter(self, client: fastapi.testclient.TestClient) -> None:
-        for i in range(5):
+        for i: int in range(5):
             _ingest(client, {"event_type": "auth.request", "user_id": str(i)})
         resp: httpx.Response = client.get("/v1/events/recent?limit=3")
         assert resp.status_code == 200

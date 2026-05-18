@@ -29,6 +29,7 @@ import {
 } from "@/pages/engineering/constants";
 
 import { EngineeringHeader } from "@/pages/engineering/components/EngineeringHeader";
+import { HeroArt } from "@/pages/engineering/components/HeroArt";
 import conformanceRegistry from "../../../../../conformance.json";
 
 type Tone = "primary" | "success" | "neutral";
@@ -77,9 +78,10 @@ const EVIDENCE = {
 
 const STORY_FRAMES: readonly StoryFrame[] = [
   {
-    label: "1 · Familiar promise",
-    title: "No training on your data",
-    detail: "Necessary, but it only covers one security layer.",
+    label: "1 · Sovereignty gap",
+    title: "Training opt-out is not sovereignty",
+    detail:
+      "Data sovereignty requires usage control over inference-time context.",
     icon: BookOpen,
     tone: "neutral",
   },
@@ -112,8 +114,8 @@ const HUB_CARDS: readonly HubCard[] = [
     eyebrow: "Read first",
     title: "The Custody Problem",
     detail:
-      "A plain-language story for why agentic systems need runtime context custody.",
-    action: "Start here",
+      "The research note behind HKI: authority, derived artifacts, and runtime custody.",
+    action: "Read note",
     href: HKI_CUSTODY_PROBLEM_ROUTE,
     icon: FileText,
     meta: "Primer",
@@ -285,6 +287,38 @@ function RuntimeMap() {
   );
 }
 
+function HeroEvidencePanel() {
+  return (
+    <aside className="relative overflow-hidden rounded-xl border border-border bg-card shadow-surface">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,hsl(var(--primary)/0.12),transparent_58%)]" />
+      <div className="relative min-h-90 p-4 sm:p-6 lg:min-h-130">
+        <HeroArt className="h-full min-h-80 w-full lg:min-h-117.5" />
+      </div>
+      <div className="relative grid grid-cols-2 border-t border-border bg-background/55 md:grid-cols-4">
+        {QUICK_STATS.map(stat => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.label}
+              className="border-r border-border px-4 py-3 last:border-r-0"
+            >
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Icon className="h-3.5 w-3.5" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">
+                  {stat.label}
+                </span>
+              </div>
+              <p className="mt-1.5 truncate text-lg font-bold tabular-nums text-foreground">
+                {stat.value}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </aside>
+  );
+}
+
 function HubCardLink({
   card,
   onNavigate,
@@ -380,19 +414,19 @@ export default function EngineeringHub() {
 
       <main className="flex-1 py-8 sm:py-10">
         <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
-          <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-            <div className="min-w-0">
+          <section className="grid gap-9 lg:min-h-155 lg:grid-cols-[minmax(0,0.88fr)_minmax(460px,1.12fr)] lg:items-center">
+            <div className="min-w-0 lg:pr-2">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/12 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                 <Cpu className="h-3 w-3" />
                 Engineering work index
               </div>
-              <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-[46px]">
-                Understand the runtime before you trust the agent.
+              <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-[1.02] tracking-tight text-foreground sm:text-5xl xl:text-[64px]">
+                The runtime is the security boundary.
               </h1>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
-                HKI is a boundary system for agentic AI: it keeps retrieval,
-                memory, tools, cache, jobs, and responses inside one signed
-                domain scope.
+              <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
+                HKI gives every agentic execution one signed domain and then
+                makes retrieval, memory, tools, cache, jobs, audit, and response
+                generation prove they stayed inside it.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
@@ -418,40 +452,29 @@ export default function EngineeringHub() {
                   <Network className="h-4 w-4" />
                 </a>
               </div>
-            </div>
 
-            <aside className="rounded-xl border border-border bg-card shadow-surface p-5">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-success shadow-sm shadow-success/50" />
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                  Release signal
-                </p>
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {QUICK_STATS.map(stat => {
-                  const Icon = stat.icon;
+              <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
+                {STORY_FRAMES.map(frame => {
+                  const Icon = frame.icon;
                   return (
                     <div
-                      key={stat.label}
-                      className="rounded-lg border border-border bg-muted/40 p-3"
+                      key={frame.label}
+                      className="border-l border-border pl-3"
                     >
-                      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-                      <p className="mt-2 text-lg font-bold tabular-nums text-foreground">
-                        {stat.value}
+                      <Icon className="h-4 w-4 text-primary" />
+                      <p className="mt-2 text-xs font-bold text-foreground">
+                        {frame.title}
                       </p>
-                      <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                        {stat.label}
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        {frame.detail}
                       </p>
                     </div>
                   );
                 })}
               </div>
-              {EVIDENCE.commit && (
-                <p className="mt-4 border-t border-border pt-3 font-mono text-[11px] text-muted-foreground">
-                  build @{EVIDENCE.commit}
-                </p>
-              )}
-            </aside>
+            </div>
+
+            <HeroEvidencePanel />
           </section>
 
           <div className="mt-10">

@@ -26,6 +26,7 @@ import asyncio
 import time
 import typing
 
+from ..domain.feedback import FeedbackResponse
 import fastapi
 import pydantic
 
@@ -142,8 +143,8 @@ async def search(
     Returns 500 if the embedding gateway is unreachable.
     """
     _t_start: float = time.perf_counter()
-    store = _get_store(request)
-    embedder = _get_embedder(request)
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
+    embedder: src.adapters.embedding_client.EmbeddingClient = _get_embedder(request)
 
     # Build the domain query (org_id + scopes from JWT, never from client body).
     # identity.scopes carries the caller's runtime stream scopes; we forward
@@ -186,14 +187,14 @@ async def search(
     if search_query.mode in (src.domain.models.SearchMode.VECTOR, src.domain.models.SearchMode.HYBRID):
         try:
             query_embedding = await embedder.embed_single(body.query)
-        except src.adapters.embedding_client.EmbeddingError as exc:
+        except src.adapters.embedding_client.EmbeddingError as exc: src.adapters.embedding_client.EmbeddingError:
             src.core.logging.logger.warning(
                 "Embedding failed, falling back to keyword search",
                 extra={"error": str(exc)},
             )
             search_query.mode = src.domain.models.SearchMode.KEYWORD
 
-    result = await store.search(search_query, query_embedding)
+    result: src.domain.models.SearchResponse = await store.search(search_query, query_embedding)
 
     # ── LLM Reranking (optional, ~200–400 ms) ────────────────────────────
     # Re-scores the top-k candidates using a single Gemini batch call for
@@ -209,7 +210,7 @@ async def search(
                     top_k=body.top_k,
                 )
                 result = result.model_copy(update={"results": reranked_results})
-            except Exception as exc:
+            except Exception as exc: Exception:
                 src.core.logging.logger.warning("Reranker failed, keeping RRF order: %s", exc)
 
     # ── Context shaping (optional, for agent consumption) ─────────
@@ -217,7 +218,7 @@ async def search(
     shaping_stats = None
     if body.shape_context and result.results and query_embedding:
         shaper = src.domain.context_shaping.ContextShaper()
-        scored = [
+        scored: list[ScoredChunk] = [
             src.domain.context_shaping.ScoredChunk(
                 chunk_id=r.chunk_id,
                 document_id=r.document_id,
@@ -232,7 +233,7 @@ async def search(
         ]
         # Fetch real chunk embeddings for MMR diversity scoring.
         # Falls back to query_embedding for any chunk not found (e.g. deleted).
-        raw_chunks = await asyncio.gather(
+        raw_chunks: list[Chunk | BaseException | None] = await asyncio.gather(
             *[
                 store.get_chunk(
                     r.chunk_id,
@@ -251,7 +252,7 @@ async def search(
                 if (c and not isinstance(c, Exception) and c.embedding)
                 else query_embedding
             )
-            for c in raw_chunks
+            for c: src.domain.models.Chunk | None | BaseException in raw_chunks
         ]
         cfg = src.domain.context_shaping.ShapingConfig(
             max_tokens=body.shaping_max_tokens,
@@ -259,9 +260,9 @@ async def search(
             diversity_weight=body.shaping_diversity_weight,
             format=body.shaping_format,
         )
-        shaped = shaper.shape(scored, query_embedding, chunk_embs, cfg)
-        shaped_text = shaped.text
-        shaping_stats = {
+        shaped: src.domain.context_shaping.ShapedContext = shaper.shape(scored, query_embedding, chunk_embs, cfg)
+        shaped_text: str = shaped.text
+        shaping_stats: dict[str, int] = {
             "chunks_received": shaped.chunks_received,
             "chunks_after_gate": shaped.chunks_after_gate,
             "chunks_final": shaped.chunks_final,
@@ -284,14 +285,14 @@ async def search(
     # ── Emit kb.search analytics event ───────────────────────────────────
     # tokens_in_context is the CMOS numerator: average this across searches
     # to get Context Memory Optimization Score for the knowledge base.
-    _tokens_in_context = (
+    _tokens_in_context: int = (
         shaping_stats["total_tokens"]
         if shaping_stats
         else sum(max(1, len(r.content) // 4) for r in result.results)
     )
     _top_score = result.results[0].score if result.results else 0.0
-    _stream_id = identity.scope if identity.scope and identity.scope != "global" else ""
-    _analytics_scope = _stream_id or UNSCOPED_SEARCH_ANALYTICS_SCOPE
+    _stream_id: str = identity.scope if identity.scope and identity.scope != "global" else ""
+    _analytics_scope: str = _stream_id or UNSCOPED_SEARCH_ANALYTICS_SCOPE
     analytics_payload = {
         "query_tokens": len(body.query.split()),
         "chunks_returned": result.total_results,
@@ -310,6 +311,24 @@ async def search(
         scope=_analytics_scope,
         payload=analytics_payload,
     )
+    if _stream_id:
+        _get_analytics(request).fire_audit_event(
+            operation_type="retrieval.search",
+            org_id=identity.org_id,
+            subject_id=identity.user_id,
+            active_domain=_stream_id,
+            authorized_domains=caller_scopes,
+            operation_name="knowledge.search",
+            target_domain=_stream_id,
+            purpose="retrieve",
+            decision_outcome="allow",
+            decision_reason="active-domain-match",
+            actor_role=identity.role,
+            evidence={
+                "payload_hash": src.adapters.analytics_client.audit_payload_hash(analytics_payload),
+                "redaction_profile": "metadata-only",
+            },
+        )
 
     # Attach shaping data to response if requested
     if shaped_text is not None:
@@ -344,7 +363,7 @@ async def list_documents(
     identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),
 ) -> DocumentListResponse:
     """List all indexed documents with pagination (scoped by org)."""
-    store = _get_store(request)
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
     caller_scopes: list[str] = _caller_stream_scopes(identity)
     docs, total = await store.list_documents(
         limit=limit,
@@ -368,7 +387,7 @@ async def list_documents(
                 "chunk_count": doc.chunk_count,
                 "created_at": doc.created_at.isoformat(),
             }
-            for doc in docs
+            for doc: src.domain.models.Document in docs
         ],
         total=total,
         limit=limit,
@@ -385,7 +404,7 @@ async def document_inventory_summary(
     identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),
 ) -> src.domain.models.DocumentInventorySummary:
     """Return aggregated document inventory metrics for overview surfaces."""
-    store = _get_store(request)
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
     return await store.document_inventory_summary(
         org_id=identity.org_id,
         allowed_streams=_caller_stream_scopes(identity),
@@ -401,8 +420,8 @@ async def get_document(
     identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),
 ) -> dict[str, typing.Any]:
     """Get detailed information about a specific document (scoped by org)."""
-    store = _get_store(request)
-    doc = await store.get_document(
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
+    doc: src.domain.models.Document | None = await store.get_document(
         document_id,
         org_id=identity.org_id,
         allowed_streams=_caller_stream_scopes(identity),
@@ -430,8 +449,8 @@ async def delete_document(
     identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),
 ) -> dict[str, str]:
     """Remove a document and all its chunks (scoped by org)."""
-    store = _get_store(request)
-    deleted = await store.delete_document(
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
+    deleted: bool = await store.delete_document(
         document_id,
         org_id=identity.org_id,
         allowed_streams=_caller_stream_scopes(identity),
@@ -455,14 +474,14 @@ async def batch_delete_documents(
     identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),
 ) -> dict[str, typing.Any]:
     """Delete multiple documents in one request (max 100)."""
-    store = _get_store(request)
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
     deleted_ids: list[str] = []
     failed_ids: list[str] = []
     caller_scopes: list[str] = _caller_stream_scopes(identity)
 
-    for doc_id in body.document_ids:
+    for doc_id: str in body.document_ids:
         try:
-            ok = await store.delete_document(
+            ok: bool = await store.delete_document(
                 doc_id,
                 org_id=identity.org_id,
                 allowed_streams=caller_scopes,
@@ -506,8 +525,8 @@ async def update_document_status(
             status_code=400,
             detail=f"Invalid status '{body.status}'. Must be one of: {', '.join(sorted(allowed))}",
         )
-    store = _get_store(request)
-    updated = await store.update_document_status(
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
+    updated: bool = await store.update_document_status(
         document_id,
         body.status,
         org_id=identity.org_id,
@@ -533,8 +552,8 @@ async def get_document_content(
     """
     Return full document content (not truncated) for export or reprocessing.
     """
-    store = _get_store(request)
-    doc = await store.get_document(
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
+    doc: src.domain.models.Document | None = await store.get_document(
         document_id,
         org_id=identity.org_id,
         allowed_streams=_caller_stream_scopes(identity),
@@ -576,8 +595,8 @@ async def list_tags(
     identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),
 ) -> dict[str, list[str]]:
     """Return all unique tags across documents for autocomplete / filtering."""
-    store = _get_store(request)
-    tags = await store.list_tags(
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
+    tags: list[str] = await store.list_tags(
         org_id=identity.org_id,
         allowed_streams=_caller_stream_scopes(identity),
         user_id=identity.user_id,
@@ -597,8 +616,8 @@ async def update_document_metadata(
     Partially update document metadata (title, department, tags, etc.).
     Only fields that are provided (non-null) will be updated.
     """
-    store = _get_store(request)
-    doc = await store.get_document(
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
+    doc: src.domain.models.Document | None = await store.get_document(
         document_id,
         org_id=identity.org_id,
         allowed_streams=_caller_stream_scopes(identity),
@@ -620,7 +639,7 @@ async def update_document_metadata(
 
         try:
             doc.metadata.document_type = src.domain.models.DocumentType(body.document_type)
-        except ValueError as exc:
+        except ValueError as exc: ValueError:
             raise fastapi.HTTPException(
                 status_code=400,
                 detail=f"Invalid document_type '{body.document_type}'",
@@ -637,7 +656,7 @@ async def update_document_metadata(
 
         try:
             doc.metadata.classification = DocumentClassification(body.classification)
-        except ValueError as exc:
+        except ValueError as exc: ValueError:
             raise fastapi.HTTPException(
                 status_code=400,
                 detail=f"Invalid classification '{body.classification}'",
@@ -662,7 +681,7 @@ async def update_document_metadata(
         raise fastapi.HTTPException(status_code=400, detail="No fields to update")
 
     # Persist — pass only the changed fields (AlloyDB updates individual columns)
-    updated = await store.update_document_metadata(
+    updated: bool = await store.update_document_metadata(
         document_id,
         updates,
         org_id=identity.org_id,
@@ -698,7 +717,7 @@ async def graph_neighbors(
     connected by co-occurrence, cross-reference, or semantic similarity edges.
     Used for "see also" suggestions in the UI.
     """
-    store = _get_store(request)
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
     return await store.get_neighbors(
         chunk_id,
         org_id=identity.org_id,
@@ -895,7 +914,7 @@ async def list_gaps(
 
     Results are from the in-process ring buffer — cleared on restart.
     """
-    caller_org = identity.org_id
+    caller_org: str = identity.org_id
     gaps: list[dict] = [g for g in request.app.state.recent_gaps if g.get("org_id") == caller_org]
     # Most recent first
     gaps = gaps[::-1][:limit]
@@ -921,7 +940,7 @@ async def submit_feedback(
     """
     from src.domain.feedback import FeedbackProcessor, FeedbackRequest
 
-    store = _get_store(request)
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
     processor = FeedbackProcessor(store)
 
     fb = FeedbackRequest(
@@ -933,7 +952,7 @@ async def submit_feedback(
         user_id=identity.user_id,
         org_id=identity.org_id,
     )
-    result = await processor.process(fb)
+    result: FeedbackResponse = await processor.process(fb)
     return result.model_dump()
 
 
@@ -948,7 +967,7 @@ async def stats(
     identity: src.core.auth.RequestIdentity = fastapi.Depends(src.core.auth.verify_request_jwt),
 ) -> dict[str, typing.Any]:
     """Return knowledge base statistics scoped to the caller's org."""
-    store = _get_store(request)
+    store: src.domain.protocols.VectorStoreProtocol = _get_store(request)
     caller_scopes: list[str] = _caller_stream_scopes(identity)
     if hasattr(store, "stats_async"):
         return await store.stats_async(

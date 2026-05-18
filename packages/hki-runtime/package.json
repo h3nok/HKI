@@ -40,7 +40,8 @@
       "require": "./dist/index.js"
     },
     "./schema/hki-envelope.schema.json": "./schema/hki-envelope.schema.json",
-    "./schema/hki-artifact-label.schema.json": "./schema/hki-artifact-label.schema.json"
+    "./schema/hki-artifact-label.schema.json": "./schema/hki-artifact-label.schema.json",
+    "./schema/hki-audit-event.schema.json": "./schema/hki-audit-event.schema.json"
   },
   "scripts": {
     "build": "tsup",

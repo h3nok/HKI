@@ -1,7 +1,9 @@
 /** Governance & Observability — platform-wide stats, traces, tool analytics. */
 
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, router } from "./_core/trpc";
+import { isForbiddenRuntimeScope } from "./_core/hki-scope";
 import { getDb } from "./db";
 import {
   conversations,
@@ -16,6 +18,119 @@ import { ANALYTICS_URL, serviceJson } from "./service-client";
 import { ENV } from "./_core/env";
 
 const log = createLogger("governance");
+
+type RawAuditTimelineEvent = {
+  event_id?: unknown;
+  event_type?: unknown;
+  user_id?: unknown;
+  org_id?: unknown;
+  service?: unknown;
+  scope?: unknown;
+  timestamp?: unknown;
+  ingested_at?: unknown;
+  payload?: unknown;
+};
+
+type RawAuditTimelineResponse = {
+  total?: unknown;
+  events?: RawAuditTimelineEvent[];
+};
+
+type AuditTimelineEvent = {
+  id: string;
+  eventType: string;
+  service: string;
+  scope: string;
+  userId: string;
+  occurredAt: string;
+  receivedAt: string;
+  decision: string;
+  decisionReason: string;
+  operationName: string;
+  targetDomain: string;
+  payloadHash: string;
+  evidenceProfile: string;
+  metadataOnly: boolean;
+  rawEvent?: Record<string, unknown>;
+};
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function asText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
+  return "";
+}
+
+function timestampToIso(value: unknown): string {
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? new Date(parsed).toISOString() : "";
+  }
+  if (typeof value === "number") {
+    const millis = value < 10_000_000_000 ? value * 1000 : value;
+    return new Date(millis).toISOString();
+  }
+  return "";
+}
+
+function countBy(
+  events: AuditTimelineEvent[],
+  keyFor: (event: AuditTimelineEvent) => string
+): Record<string, number> {
+  return events.reduce<Record<string, number>>((acc, event) => {
+    const key = keyFor(event) || "unknown";
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
+}
+
+function normalizeAuditTimelineEvent(
+  event: RawAuditTimelineEvent
+): AuditTimelineEvent {
+  const payload = asRecord(event.payload) ?? {};
+  const source = asRecord(payload.source) ?? {};
+  const actor = asRecord(payload.actor) ?? {};
+  const boundary = asRecord(payload.boundary) ?? {};
+  const operation = asRecord(payload.operation) ?? {};
+  const decision = asRecord(payload.decision) ?? {};
+  const evidence = asRecord(payload.evidence) ?? {};
+  const isNativeAuditEvent = asText(payload.schema) === "hki.audit.event.v1";
+  const evidenceProfile = asText(evidence.redaction_profile);
+  const eventType = asText(operation.type) || asText(event.event_type);
+  const occurredAt =
+    timestampToIso(payload.occurred_at) || timestampToIso(event.timestamp);
+
+  return {
+    id:
+      asText(payload.event_id) ||
+      asText(event.event_id) ||
+      `${eventType || "audit"}-${occurredAt || Date.now()}`,
+    eventType,
+    service: asText(source.service) || asText(event.service),
+    scope: asText(boundary.active_domain) || asText(event.scope),
+    userId: asText(actor.subject_id) || asText(event.user_id),
+    occurredAt,
+    receivedAt:
+      timestampToIso(payload.received_at) || timestampToIso(event.ingested_at),
+    decision: asText(decision.outcome),
+    decisionReason: asText(decision.reason),
+    operationName: asText(operation.name),
+    targetDomain: asText(operation.target_domain),
+    payloadHash:
+      asText(evidence.message_hash) ||
+      asText(evidence.payload_hash) ||
+      asText(evidence.event_hash),
+    evidenceProfile,
+    metadataOnly: evidenceProfile === "metadata-only",
+    rawEvent: isNativeAuditEvent ? payload : undefined,
+  };
+}
 
 // ── LLM Gateway (same config as gemini.ts) ──────────────────────────────────
 const LLM_GATEWAY_URL =
@@ -607,6 +722,65 @@ export const governanceRouter = router({
     }
   }),
 
+  auditTimeline: adminProcedure
+    .input(
+      z.object({
+        scope: z.string().trim().min(1),
+        limit: z.number().int().min(1).max(200).default(50),
+        eventType: z.string().trim().min(1).optional(),
+        service: z.string().trim().min(1).optional(),
+        decision: z.enum(["allow", "deny", "escalate", "error"]).optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const scope = input.scope.trim();
+      if (isForbiddenRuntimeScope(scope)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Audit timeline requires a named runtime domain",
+        });
+      }
+
+      const params = new URLSearchParams({
+        limit: String(input.limit),
+        org_id: ctx.user.orgId || "default",
+        stream_id: scope,
+      });
+      if (input.eventType) params.set("event_type", input.eventType);
+      if (input.service) params.set("service", input.service);
+      if (input.decision) params.set("decision", input.decision);
+
+      try {
+        const data = await serviceJson<RawAuditTimelineResponse>(
+          `${ANALYTICS_URL}/v1/events/recent?${params}`,
+          { ...ctx, scopes: [scope], isGlobalScope: false }
+        );
+        const events = (data.events ?? []).map(normalizeAuditTimelineEvent);
+        return {
+          unavailable: false,
+          total: Number(data.total ?? events.length),
+          events,
+          summary: {
+            byDecision: countBy(events, event => event.decision),
+            byService: countBy(events, event => event.service),
+            byEventType: countBy(events, event => event.eventType),
+          },
+        };
+      } catch (err) {
+        log.warn({ err, scope }, "Audit timeline unavailable");
+        return {
+          unavailable: true,
+          total: 0,
+          events: [] as AuditTimelineEvent[],
+          summary: {
+            byDecision: {},
+            byService: {},
+            byEventType: {},
+          },
+        };
+      }
+    }),
+
   tokenUsage: adminProcedure
     .input(
       z
@@ -625,7 +799,11 @@ export const governanceRouter = router({
       }
 
       const streams = await db
-        .select({ id: valueStreams.id, name: valueStreams.name, icon: valueStreams.icon })
+        .select({
+          id: valueStreams.id,
+          name: valueStreams.name,
+          icon: valueStreams.icon,
+        })
         .from(valueStreams);
 
       try {
@@ -635,9 +813,16 @@ export const governanceRouter = router({
           `${ANALYTICS_URL}/v1/events/usage?${params}`,
           ctx
         );
-        return { streams, analytics: analyticsData, costPerMillion: ENV.costPerMillion };
+        return {
+          streams,
+          analytics: analyticsData,
+          costPerMillion: ENV.costPerMillion,
+        };
       } catch (err) {
-        log.warn({ err }, "Analytics service unavailable — returning DB-only data");
+        log.warn(
+          { err },
+          "Analytics service unavailable — returning DB-only data"
+        );
         return { streams, analytics: null, costPerMillion: ENV.costPerMillion };
       }
     }),
