@@ -24,7 +24,7 @@ import { AgenticGrid } from "./agentic-grid";
 import { STACK_LAYERS, ROLES, EASE, COLORS } from "./constants";
 import { HKI_STANDARD_ROUTE } from "@/pages/engineering/constants";
 
-const HEADING = "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif";
+const HEADING = "var(--font-display)";
 const HAIRLINE_SHADOW = "var(--shadow-xs)";
 const RAISED_SHADOW = "var(--shadow-lg)";
 
@@ -394,17 +394,16 @@ function PlatformCards({
 // ── Hero ──────────────────────────────────────────────────────────────────────
 
 const CONFORMANCE_METRICS = [
-  { value: "L4",    label: "Conformance" },
-  { value: "28/28", label: "Cases"       },
-  { value: "10/10", label: "Probes"      },
-  { value: "15",    label: "Threats"     },
+  { value: "L4", label: "Conformance" },
+  { value: "28/28", label: "Cases" },
+  { value: "10/10", label: "Probes" },
+  { value: "15", label: "Threats" },
 ] as const;
 
 function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
     <section className="relative z-10 flex min-h-[calc(100svh-57px)] snap-start scroll-mt-16 flex-col items-center justify-center px-6 py-14 text-center md:py-16">
       <div className="flex max-w-3xl flex-col items-center">
-
         {/* Kicker — replaces the floating icon */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -442,8 +441,8 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
           transition={{ duration: 0.6, delay: 0.25, ease: EASE }}
           className="mb-9 max-w-xl text-base leading-relaxed text-foreground/58 sm:text-lg"
         >
-          Every agentic execution needs an isolated domain. Without it,
-          context leaks, tools overreach, and memory persists beyond intent.
+          Every agentic execution needs an isolated domain. Without it, context
+          leaks, tools overreach, and memory persists beyond intent.
         </motion.p>
 
         {/* CTAs */}
@@ -485,7 +484,10 @@ function HeroSection({ onNavigate }: { onNavigate: (path: string) => void }) {
           className="flex divide-x divide-border/60 overflow-hidden rounded-xl border border-border/40 bg-card/50 shadow-sm backdrop-blur-sm"
         >
           {CONFORMANCE_METRICS.map(stat => (
-            <div key={stat.label} className="flex flex-col items-center px-5 py-3">
+            <div
+              key={stat.label}
+              className="flex flex-col items-center px-5 py-3"
+            >
               <span
                 className="text-base font-extrabold tabular-nums text-foreground"
                 style={{ fontFamily: HEADING }}

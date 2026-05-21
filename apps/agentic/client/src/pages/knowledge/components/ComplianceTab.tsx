@@ -28,9 +28,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-const OBSERVABILITY_URL =
-  import.meta.env.VITE_OBSERVABILITY_URL ||
-  "https://console.cloud.google.com/monitoring/dashboards?project=p-642-cilab-gke";
+const OBSERVABILITY_URL = import.meta.env.VITE_OBSERVABILITY_URL || "";
 import { cn } from "@hki/ui";
 import { trpc } from "@/lib/trpc";
 import { k } from "../theme";

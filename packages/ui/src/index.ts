@@ -209,8 +209,16 @@ export {
 export const FONT_FAMILY = {
   heading:
     '"Plus Jakarta Sans", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+  display:
+    '"Plus Jakarta Sans", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
   body: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
   sans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+  reading:
+    '"Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif',
+  serif:
+    '"Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif',
+  editorial:
+    '"Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif',
   mono: '"JetBrains Mono", "SF Mono", "Fira Code", Consolas, monospace',
 } as const;
 

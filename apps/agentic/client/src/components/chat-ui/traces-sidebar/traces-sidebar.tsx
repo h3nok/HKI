@@ -278,7 +278,7 @@ export function TracesSidebar({
       executing: { type: "tool-use", name: "Tool Execution" },
       tool_call: { type: "tool-use", name: "Tool Execution" },
       tool_result: { type: "tool-use", name: "Tool Execution" },
-      reflecting: { type: "retail", name: "Synthesis" },
+      reflecting: { type: "knowledge", name: "Synthesis" },
     };
 
     const nodes: AgentNode[] = [];
@@ -315,7 +315,7 @@ export function TracesSidebar({
     );
     if (["tool_call", "executing", "tool_result"].includes(last))
       return "tool-use";
-    if (last === "reflecting") return "retail";
+    if (last === "reflecting") return "knowledge";
     if (last === "planning") return "router";
     return "supervisor";
   }, [displaySpans]);
@@ -345,7 +345,7 @@ export function TracesSidebar({
         agentType = "tool-use";
         agentName = "Tool Executor";
       } else if (t === "reflecting") {
-        agentType = "retail";
+        agentType = "knowledge";
         agentName = "Synthesis";
       } else {
         agentType = "supervisor";
@@ -373,7 +373,7 @@ export function TracesSidebar({
       let activeKey: Agent["type"] = "supervisor";
       if (["executing", "tool_call", "tool_result"].includes(lastType))
         activeKey = "tool-use";
-      else if (lastType === "reflecting") activeKey = "retail";
+      else if (lastType === "reflecting") activeKey = "knowledge";
       const active = map.get(activeKey);
       if (active) {
         active.status = "active";

@@ -73,7 +73,7 @@ const components = (imageUrls: Record<string, string>) => ({
     return (
       <h2
         id={id}
-        className="group mt-20 scroll-mt-24 border-t border-border pt-12 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground sm:text-3xl"
+        className="group mt-20 scroll-mt-24 border-t border-border pt-12 font-serif text-[28px] font-bold leading-[1.15] tracking-tight text-foreground sm:text-3xl"
       >
         {children}
         <HeadingAnchor id={id} />
@@ -85,7 +85,7 @@ const components = (imageUrls: Record<string, string>) => ({
     return (
       <h3
         id={id}
-        className="group mt-10 scroll-mt-24 text-lg font-bold tracking-tight text-foreground"
+        className="group mt-10 scroll-mt-24 font-serif text-lg font-bold tracking-tight text-foreground"
       >
         {children}
         <HeadingAnchor id={id} />
@@ -94,14 +94,14 @@ const components = (imageUrls: Record<string, string>) => ({
   },
   h4({ children }: { children?: ReactNode }) {
     return (
-      <h4 className="mt-6 text-base font-semibold tracking-tight text-foreground">
+      <h4 className="mt-6 font-serif text-base font-semibold tracking-tight text-foreground">
         {children}
       </h4>
     );
   },
   p({ children }: { children?: ReactNode }) {
     return (
-      <p className="my-5 text-[17px] leading-[1.75] text-foreground/85">
+      <p className="my-5 font-serif text-[17px] leading-[1.75] text-foreground/85">
         {children}
       </p>
     );
@@ -134,7 +134,7 @@ const components = (imageUrls: Record<string, string>) => ({
   },
   blockquote({ children }: { children?: ReactNode }) {
     return (
-      <blockquote className="my-8 rounded-r-md border-l-[3px] border-primary bg-primary/8 py-4 pl-5 pr-4 text-foreground/90 not-italic">
+      <blockquote className="my-8 rounded-r-md border-l-[3px] border-primary bg-primary/8 py-4 pl-5 pr-4 font-serif text-foreground/90 not-italic">
         {children}
       </blockquote>
     );
@@ -155,7 +155,7 @@ const components = (imageUrls: Record<string, string>) => ({
   },
   li({ children }: { children?: ReactNode }) {
     return (
-      <li className="text-[17px] leading-[1.75] text-foreground/85">
+      <li className="font-serif text-[17px] leading-[1.75] text-foreground/85">
         {children}
       </li>
     );

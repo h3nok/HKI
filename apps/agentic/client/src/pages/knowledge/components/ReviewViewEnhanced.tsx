@@ -1,7 +1,7 @@
 /**
  * Enhanced ReviewView — Validation Workflow Queue
  *
- * Retail-grade features:
+ * Domain-scoped features:
  *  - Categorized pending queue (stale, low confidence, manually submitted)
  *  - Inline diff preview (highlighting changes if replacing)
  *  - Clear risk warnings (PII)

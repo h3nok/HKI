@@ -612,7 +612,13 @@ export const typography = {
     sans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
     mono: '"JetBrains Mono", "SF Mono", "Fira Code", Consolas, monospace',
     display:
-      'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      '"Plus Jakarta Sans", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    reading:
+      '"Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif',
+    serif:
+      '"Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif',
+    editorial:
+      '"Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif',
   },
 
   fontSize: {
@@ -937,7 +943,7 @@ export function getStatusColors(status: StatusType) {
 export function transition(
   properties: string | string[] = "all",
   durationKey: DurationKey = "normal",
-  easingKey: EasingKey = "smooth",
+  easingKey: EasingKey = "smooth"
 ): string {
   const props = Array.isArray(properties) ? properties.join(", ") : properties;
   return `${props} ${duration[durationKey]}ms ${easing[easingKey]}`;

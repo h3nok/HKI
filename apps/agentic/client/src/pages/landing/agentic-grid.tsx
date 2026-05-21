@@ -9,6 +9,9 @@ type Palette = {
   foreground: Rgb;
   primary: Rgb;
   soft: Rgb;
+  runtime: Rgb;
+  publication: Rgb;
+  admin: Rgb;
 };
 
 type Domain = {
@@ -106,6 +109,13 @@ function mixRgb(a: Rgb, b: Rgb, amount: number): Rgb {
   };
 }
 
+function domainAccent(palette: Palette, kind: DomainKind) {
+  if (kind === "rag") return palette.publication;
+  if (kind === "tools") return palette.runtime;
+  if (kind === "memory") return palette.admin;
+  return palette.soft;
+}
+
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
@@ -136,28 +146,6 @@ function cubicPoint(
   };
 }
 
-function roundedRectPath(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number
-) {
-  const r = Math.min(radius, width / 2, height / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + width - r, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
-  ctx.lineTo(x + width, y + height - r);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
-  ctx.lineTo(x + r, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-
 function drawBackground(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -171,34 +159,227 @@ function drawBackground(
   ctx.save();
   ctx.globalCompositeOperation = dark ? "screen" : "multiply";
 
-  const field = ctx.createRadialGradient(
-    width * 0.72,
-    height * 0.48,
-    20,
-    width * 0.72,
-    height * 0.48,
-    width * 0.58
-  );
-  field.addColorStop(0, rgba(palette.primary, dark ? 0.17 : 0.20));
-  field.addColorStop(0.46, rgba(palette.primary, dark ? 0.06 : 0.09));
-  field.addColorStop(1, rgba(palette.primary, 0));
-  ctx.fillStyle = field;
+  const wash = ctx.createLinearGradient(0, 0, width, height);
+  wash.addColorStop(0, rgba(palette.runtime, 0));
+  wash.addColorStop(0.56, rgba(palette.runtime, dark ? 0.026 : 0.022));
+  wash.addColorStop(0.82, rgba(palette.publication, dark ? 0.018 : 0.016));
+  wash.addColorStop(1, rgba(palette.admin, dark ? 0.02 : 0.014));
+  ctx.fillStyle = wash;
   ctx.fillRect(0, 0, width, height);
 
-  const plane = ctx.createLinearGradient(0, height, width, height * 0.08);
+  const prism = ctx.createLinearGradient(width * 0.32, 0, width, height);
+  prism.addColorStop(0, rgba(palette.runtime, 0));
+  prism.addColorStop(0.38, rgba(palette.runtime, dark ? 0.016 : 0.018));
+  prism.addColorStop(0.62, rgba(palette.publication, dark ? 0.018 : 0.018));
+  prism.addColorStop(0.82, rgba(palette.admin, dark ? 0.012 : 0.012));
+  prism.addColorStop(1, rgba(palette.primary, 0));
+  ctx.fillStyle = prism;
+  ctx.fillRect(0, 0, width, height);
+
+  const plane = ctx.createLinearGradient(
+    width * 0.38,
+    height * 0.12,
+    width,
+    height * 0.88
+  );
   plane.addColorStop(0, rgba(palette.primary, 0));
-  plane.addColorStop(0.45, rgba(palette.primary, dark ? 0.08 : 0.055));
+  plane.addColorStop(0.36, rgba(palette.primary, dark ? 0.04 : 0.034));
   plane.addColorStop(1, rgba(palette.primary, 0));
   ctx.fillStyle = plane;
   ctx.beginPath();
-  ctx.moveTo(width * -0.1, height * 0.96);
-  ctx.lineTo(width * 0.42, height * 0.64);
-  ctx.lineTo(width * 1.08, height * 0.3);
-  ctx.lineTo(width * 1.08, height * 0.5);
-  ctx.lineTo(width * 0.52, height * 0.72);
-  ctx.lineTo(width * -0.1, height * 1.04);
+  ctx.moveTo(width * 0.42, height * 0.1);
+  ctx.lineTo(width * 1.08, height * 0.0);
+  ctx.lineTo(width * 1.08, height * 0.82);
+  ctx.lineTo(width * 0.34, height * 1.02);
   ctx.closePath();
   ctx.fill();
+
+  ctx.strokeStyle = rgba(palette.primary, dark ? 0.075 : 0.085);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(width * 0.45, height * 0.14);
+  ctx.lineTo(width * 1.02, height * 0.04);
+  ctx.moveTo(width * 0.38, height * 0.94);
+  ctx.lineTo(width * 1.02, height * 0.76);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawHermeticBoundary(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  model: LayoutModel,
+  time: number,
+  palette: Palette,
+  dark: boolean
+) {
+  const compact = width < 820;
+  const { core, scale } = model;
+  const ringWidth = core.r * (compact ? 2.9 : 3.72);
+  const ringHeight = core.r * (compact ? 2.0 : 2.38);
+  const sourceX = core.x - core.r * (compact ? 2.36 : 3.54);
+  const gatewayX = core.x - core.r * (compact ? 1.38 : 1.68);
+
+  ctx.save();
+  ctx.globalCompositeOperation = dark ? "screen" : "multiply";
+
+  const field = ctx.createRadialGradient(
+    core.x,
+    core.y,
+    core.r * 0.5,
+    core.x,
+    core.y,
+    ringWidth
+  );
+  field.addColorStop(0, rgba(palette.runtime, dark ? 0.026 : 0.028));
+  field.addColorStop(0.48, rgba(palette.publication, dark ? 0.012 : 0.014));
+  field.addColorStop(0.78, rgba(palette.admin, dark ? 0.008 : 0.01));
+  field.addColorStop(1, rgba(palette.primary, 0));
+  ctx.fillStyle = field;
+  ctx.beginPath();
+  ctx.ellipse(core.x, core.y, ringWidth, ringHeight, -0.07, 0, Math.PI * 2);
+  ctx.fill();
+
+  const arcs = [
+    {
+      accent: palette.runtime,
+      scaleX: 0.98,
+      scaleY: 0.92,
+      start: -0.24,
+      length: Math.PI * 1.42,
+      speed: 1.8,
+    },
+    {
+      accent: palette.publication,
+      scaleX: 0.74,
+      scaleY: 0.68,
+      start: Math.PI * 0.64,
+      length: Math.PI * 0.82,
+      speed: -1.3,
+    },
+    {
+      accent: palette.admin,
+      scaleX: 0.53,
+      scaleY: 0.5,
+      start: Math.PI * 1.52,
+      length: Math.PI * 0.42,
+      speed: 1.1,
+    },
+  ];
+
+  arcs.forEach((arc, index) => {
+    ctx.strokeStyle = rgba(
+      arc.accent,
+      dark ? 0.15 - index * 0.02 : 0.17 - index * 0.018
+    );
+    ctx.lineWidth = index === 0 ? 1.15 : 0.85;
+    ctx.beginPath();
+    const offset = time * 0.018 * arc.speed;
+    ctx.ellipse(
+      core.x,
+      core.y,
+      ringWidth * arc.scaleX,
+      ringHeight * arc.scaleY,
+      -0.07,
+      arc.start + offset,
+      arc.start + offset + arc.length
+    );
+    ctx.stroke();
+  });
+
+  const ticks = compact ? 8 : 10;
+  for (let i = 0; i < ticks; i += 1) {
+    const angle = (i / ticks) * Math.PI * 2 + time * 0.018;
+    const tickX = core.x + Math.cos(angle) * ringWidth * 0.88;
+    const tickY = core.y + Math.sin(angle) * ringHeight * 0.82;
+    const tickLength = (i % 3 === 0 ? 16 : 9) * scale;
+    ctx.save();
+    ctx.translate(tickX, tickY);
+    ctx.rotate(angle + Math.PI / 2);
+    ctx.strokeStyle = rgba(
+      i % 3 === 0
+        ? palette.runtime
+        : i % 3 === 1
+          ? palette.publication
+          : palette.soft,
+      dark ? 0.12 : 0.13
+    );
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-tickLength / 2, 0);
+    ctx.lineTo(tickLength / 2, 0);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  const lanes = 3;
+  for (let i = 0; i < lanes; i += 1) {
+    const laneT = lanes === 1 ? 0 : i / (lanes - 1);
+    const laneY = core.y + (laneT - 0.5) * ringHeight * 0.74;
+    const accent =
+      i % 3 === 0
+        ? palette.runtime
+        : i % 3 === 1
+          ? palette.publication
+          : palette.admin;
+    const controlX = lerp(sourceX, core.x, 0.46);
+    const controlY = lerp(laneY, core.y, 0.3);
+
+    ctx.strokeStyle = rgba(accent, dark ? 0.078 : 0.088);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(sourceX, laneY);
+    ctx.bezierCurveTo(
+      controlX,
+      laneY,
+      controlX,
+      controlY,
+      core.x - core.r * 0.48,
+      core.y
+    );
+    ctx.stroke();
+
+    for (let j = 0; j < 2; j += 1) {
+      const progress = (time * 0.03 + i * 0.13 + j * 0.48) % 1;
+      const px = lerp(sourceX, core.x - core.r * 0.58, progress);
+      const py =
+        lerp(laneY, core.y, progress) -
+        Math.sin(progress * Math.PI) * core.r * 0.12;
+      ctx.fillStyle = rgba(
+        accent,
+        (dark ? 0.14 : 0.16) * Math.sin(progress * Math.PI)
+      );
+      ctx.beginPath();
+      ctx.arc(px, py, 2.2 * scale, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(gatewayX, laneY, 3.2 * scale, 0, Math.PI * 2);
+    ctx.strokeStyle = rgba(accent, dark ? 0.28 : 0.32);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  const scanY =
+    core.y + (Math.sin(time * 0.23) * 0.5 + 0.5 - 0.5) * ringHeight * 1.12;
+  const scan = ctx.createLinearGradient(
+    sourceX,
+    scanY,
+    core.x + ringWidth,
+    scanY
+  );
+  scan.addColorStop(0, rgba(palette.runtime, 0));
+  scan.addColorStop(0.44, rgba(palette.runtime, dark ? 0.11 : 0.1));
+  scan.addColorStop(1, rgba(palette.publication, 0));
+  ctx.strokeStyle = scan;
+  ctx.lineWidth = 0.9;
+  ctx.beginPath();
+  ctx.moveTo(sourceX, scanY);
+  ctx.lineTo(core.x + ringWidth * 0.62, scanY);
+  ctx.stroke();
 
   ctx.restore();
 }
@@ -211,13 +392,17 @@ function drawGrid(
   dark: boolean,
   time: number
 ) {
-  const step = width < 900 ? 58 : 48;
-  const originY = height * 0.2;
-  const primaryAlpha = dark ? 0.038 : 0.055;
-  const secondaryAlpha = dark ? 0.026 : 0.038;
+  const compact = width < 900;
+  const step = compact ? 86 : 78;
+  const originY = height * 0.16;
+  const primaryAlpha = dark ? 0.016 : 0.02;
+  const secondaryAlpha = dark ? 0.011 : 0.016;
 
   ctx.save();
   ctx.globalCompositeOperation = dark ? "screen" : "multiply";
+  ctx.beginPath();
+  ctx.rect(compact ? width * 0.06 : width * 0.36, 0, width, height);
+  ctx.clip();
   ctx.lineWidth = 1;
   ctx.strokeStyle = rgba(palette.primary, primaryAlpha);
 
@@ -253,11 +438,11 @@ function drawDataPointField(
   dark: boolean
 ) {
   const compact = width < 820;
-  const stepX = compact ? 25 : 27;
-  const stepY = compact ? 23 : 25;
-  const startX = compact ? width * -0.04 : width * 0.12;
-  const startY = height * 0.16;
-  const endY = height * 0.96;
+  const stepX = compact ? 42 : 48;
+  const stepY = compact ? 38 : 44;
+  const startX = compact ? width * 0.0 : width * 0.38;
+  const startY = height * 0.12;
+  const endY = height * 0.98;
   const corePoint = { x: model.core.x, y: model.core.y };
   const domainRadius = (compact ? 95 : 130) * model.scale;
   const coreRadius = model.core.r * 2.3;
@@ -266,7 +451,7 @@ function drawDataPointField(
   ctx.globalCompositeOperation = dark ? "screen" : "multiply";
 
   const rows = Math.ceil((endY - startY) / stepY) + 4;
-  const cols = Math.ceil((width * 1.28) / stepX) + 10;
+  const cols = Math.ceil((width * 0.86) / stepX) + 8;
 
   for (let row = -2; row < rows; row += 1) {
     const y = startY + row * stepY;
@@ -284,8 +469,8 @@ function drawDataPointField(
 
       const point = { x, y };
       const textFade = compact
-        ? 0.72
-        : clamp((x - width * 0.18) / (width * 0.34), 0.12, 1);
+        ? 0.58
+        : clamp((x - width * 0.48) / (width * 0.24), 0.05, 1);
       const bottomFade = clamp((height - y) / (height * 0.28), 0.16, 1);
       const coreContain = Math.max(
         0,
@@ -305,19 +490,26 @@ function drawDataPointField(
           : 0;
       const pulse = Math.sin(time * 0.72 + row * 0.29 + col * 0.17) * 0.5 + 0.5;
       const alpha =
-        ((dark ? 0.048 : 0.05) +
-          containment * (dark ? 0.12 : 0.14) +
-          cursorFocus * (dark ? 0.12 : 0.08) +
-          pulse * (dark ? 0.012 : 0.01)) *
+        ((dark ? 0.018 : 0.02) +
+          containment * (dark ? 0.058 : 0.064) +
+          cursorFocus * (dark ? 0.06 : 0.044) +
+          pulse * (dark ? 0.005 : 0.004)) *
         textFade *
         bottomFade;
       const radius =
         0.62 + containment * 0.66 + cursorFocus * 0.5 + depth * 0.06;
+      const accent =
+        containment > 0.08
+          ? palette.soft
+          : (row + col) % 29 === 0
+            ? palette.publication
+            : (row - col) % 31 === 0
+              ? palette.admin
+              : (row + col) % 23 === 0
+                ? palette.runtime
+                : palette.primary;
 
-      ctx.fillStyle = rgba(
-        containment > 0.08 ? palette.soft : palette.primary,
-        alpha
-      );
+      ctx.fillStyle = rgba(accent, alpha);
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
@@ -359,8 +551,12 @@ function drawExecutionMap(
     core.y,
     domainWidth
   );
-  domainGlow.addColorStop(0, rgba(palette.primary, dark ? 0.07 : 0.075));
-  domainGlow.addColorStop(0.58, rgba(palette.primary, dark ? 0.035 : 0.042));
+  domainGlow.addColorStop(0, rgba(palette.runtime, dark ? 0.052 : 0.06));
+  domainGlow.addColorStop(
+    0.46,
+    rgba(palette.publication, dark ? 0.028 : 0.032)
+  );
+  domainGlow.addColorStop(0.68, rgba(palette.admin, dark ? 0.018 : 0.022));
   domainGlow.addColorStop(1, rgba(palette.primary, 0));
   ctx.fillStyle = domainGlow;
   ctx.beginPath();
@@ -368,7 +564,7 @@ function drawExecutionMap(
   ctx.fill();
 
   ctx.lineWidth = 1;
-  ctx.strokeStyle = rgba(palette.primary, dark ? 0.16 : 0.22);
+  ctx.strokeStyle = rgba(palette.runtime, dark ? 0.16 : 0.18);
   ctx.beginPath();
   ctx.ellipse(
     core.x,
@@ -383,7 +579,7 @@ function drawExecutionMap(
 
   ctx.setLineDash([4, 12]);
   ctx.lineDashOffset = -time * 3.2;
-  ctx.strokeStyle = rgba(palette.soft, dark ? 0.18 : 0.24);
+  ctx.strokeStyle = rgba(palette.publication, dark ? 0.16 : 0.18);
   ctx.beginPath();
   ctx.ellipse(
     core.x,
@@ -407,7 +603,13 @@ function drawExecutionMap(
       x: core.x - core.r * 0.24,
       y: core.y + (index - 1.5) * core.r * 0.08,
     };
-    ctx.strokeStyle = rgba(palette.primary, dark ? 0.1 : 0.14);
+    const laneAccent =
+      index % 3 === 0
+        ? palette.runtime
+        : index % 3 === 1
+          ? palette.publication
+          : palette.admin;
+    ctx.strokeStyle = rgba(laneAccent, dark ? 0.086 : 0.105);
     ctx.lineWidth = 1.15;
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
@@ -436,8 +638,8 @@ function drawExecutionMap(
         lerp(start.y, laneCore.y, progress) +
         Math.sin(progress * Math.PI) * core.r * 0.12;
       ctx.fillStyle = rgba(
-        palette.soft,
-        (dark ? 0.3 : 0.32) * Math.sin(progress * Math.PI)
+        mixRgb(laneAccent, palette.soft, 0.38),
+        (dark ? 0.24 : 0.26) * Math.sin(progress * Math.PI)
       );
       ctx.beginPath();
       ctx.arc(x, y, 1.4 * scale, 0, Math.PI * 2);
@@ -445,22 +647,29 @@ function drawExecutionMap(
     }
   });
 
-  roundedRectPath(
-    ctx,
-    gate.x - 8 * scale,
+  const gateGlow = ctx.createLinearGradient(
+    gate.x,
     gate.y - core.r * 0.58,
-    16 * scale,
-    core.r * 1.16,
-    8 * scale
+    gate.x,
+    gate.y + core.r * 0.58
   );
-  ctx.fillStyle = rgba(palette.background, dark ? 0.34 : 0.54);
-  ctx.fill();
-  ctx.strokeStyle = rgba(palette.soft, dark ? 0.34 : 0.42);
-  ctx.lineWidth = 1.2;
+  gateGlow.addColorStop(0, rgba(palette.admin, 0));
+  gateGlow.addColorStop(0.5, rgba(palette.admin, dark ? 0.52 : 0.58));
+  gateGlow.addColorStop(1, rgba(palette.admin, 0));
+  ctx.strokeStyle = gateGlow;
+  ctx.lineWidth = 2.2 * scale;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(gate.x, gate.y - core.r * 0.55);
+  ctx.lineTo(gate.x, gate.y + core.r * 0.55);
   ctx.stroke();
+  ctx.lineCap = "butt";
 
   for (let i = 0; i < 4; i += 1) {
-    ctx.fillStyle = rgba(palette.soft, dark ? 0.62 : 0.62);
+    ctx.fillStyle = rgba(
+      i % 2 === 0 ? palette.runtime : palette.publication,
+      dark ? 0.66 : 0.66
+    );
     ctx.beginPath();
     ctx.arc(
       gate.x,
@@ -479,38 +688,38 @@ function layout(width: number, height: number): LayoutModel {
   const scale = clamp(Math.min(width / 1440, height / 900), 0.7, 1.08);
   const compact = width < 820;
   const core = {
-    x: width * (compact ? 1.08 : 0.76),
-    y: height * (compact ? 0.62 : 0.48),
-    r: (compact ? 84 : 96) * scale,
+    x: width * (compact ? 1.02 : 0.82),
+    y: height * (compact ? 0.64 : 0.5),
+    r: (compact ? 78 : 90) * scale,
   };
 
   const domains: Domain[] = [
     {
       kind: "rag",
       label: "RAG",
-      x: core.x - (compact ? 126 : 260) * scale,
-      y: core.y - (compact ? 132 : 148) * scale,
+      x: core.x - (compact ? 108 : 226) * scale,
+      y: core.y - (compact ? 118 : 132) * scale,
       phase: 0.1,
     },
     {
       kind: "tools",
       label: "MCP TOOLS",
-      x: core.x + (compact ? 116 : 248) * scale,
-      y: core.y - (compact ? 116 : 135) * scale,
+      x: core.x + (compact ? 106 : 214) * scale,
+      y: core.y - (compact ? 104 : 120) * scale,
       phase: 1.5,
     },
     {
       kind: "memory",
       label: "MEMORY",
-      x: core.x - (compact ? 120 : 246) * scale,
-      y: core.y + (compact ? 118 : 150) * scale,
+      x: core.x - (compact ? 106 : 218) * scale,
+      y: core.y + (compact ? 108 : 136) * scale,
       phase: 2.4,
     },
     {
       kind: "trace",
       label: "TRACES",
-      x: core.x + (compact ? 114 : 244) * scale,
-      y: core.y + (compact ? 114 : 146) * scale,
+      x: core.x + (compact ? 104 : 212) * scale,
+      y: core.y + (compact ? 106 : 132) * scale,
       phase: 3.2,
     },
   ];
@@ -541,6 +750,7 @@ function drawRoute(
   index: number,
   time: number,
   focus: number,
+  accent: Rgb,
   palette: Palette,
   dark: boolean
 ) {
@@ -551,27 +761,27 @@ function drawRoute(
   ctx.lineCap = "round";
 
   const glow = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
-  glow.addColorStop(0, rgba(palette.primary, dark ? 0.015 : 0.022));
+  glow.addColorStop(0, rgba(palette.primary, dark ? 0.008 : 0.012));
   glow.addColorStop(
     0.5,
-    rgba(palette.primary, dark ? 0.1 + focus * 0.08 : 0.14 + focus * 0.08)
+    rgba(accent, dark ? 0.082 + focus * 0.07 : 0.105 + focus * 0.065)
   );
   glow.addColorStop(
     0.56,
-    rgba(palette.soft, dark ? 0.2 + focus * 0.15 : 0.26 + focus * 0.12)
+    rgba(palette.soft, dark ? 0.14 + focus * 0.11 : 0.17 + focus * 0.09)
   );
-  glow.addColorStop(1, rgba(palette.primary, dark ? 0.015 : 0.022));
+  glow.addColorStop(1, rgba(palette.primary, dark ? 0.008 : 0.012));
 
   ctx.strokeStyle = glow;
-  ctx.lineWidth = 4.4 + focus * 1.1;
+  ctx.lineWidth = 3.4 + focus * 0.9;
   ctx.beginPath();
   ctx.moveTo(p0.x, p0.y);
   ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
   ctx.stroke();
 
   ctx.strokeStyle = rgba(
-    palette.soft,
-    dark ? 0.16 + focus * 0.14 : 0.22 + focus * 0.12
+    mixRgb(accent, palette.soft, 0.28),
+    dark ? 0.12 + focus * 0.1 : 0.15 + focus * 0.09
   );
   ctx.lineWidth = 1;
   ctx.setLineDash([7, 18]);
@@ -582,13 +792,13 @@ function drawRoute(
   ctx.stroke();
   ctx.setLineDash([]);
 
-  for (let i = 0; i < 4; i += 1) {
-    const u = (i / 4 + time * 0.018 + index * 0.13) % 1;
+  for (let i = 0; i < 3; i += 1) {
+    const u = (i / 3 + time * 0.015 + index * 0.13) % 1;
     const p = cubicPoint(p0, p1, p2, p3, u);
     const envelope = Math.sin(u * Math.PI);
     ctx.fillStyle = rgba(
-      palette.soft,
-      (dark ? 0.09 + focus * 0.14 : 0.14 + focus * 0.12) * envelope
+      mixRgb(accent, palette.soft, 0.34),
+      (dark ? 0.08 + focus * 0.11 : 0.1 + focus * 0.09) * envelope
     );
     ctx.beginPath();
     ctx.arc(p.x, p.y, 0.85 + focus * 0.35, 0, Math.PI * 2);
@@ -604,6 +814,7 @@ function drawSealGate(
   time: number,
   focus: number,
   phase: number,
+  accent: Rgb,
   palette: Palette,
   dark: boolean
 ) {
@@ -615,8 +826,8 @@ function drawSealGate(
   ctx.globalCompositeOperation = dark ? "screen" : "multiply";
 
   ctx.strokeStyle = rgba(
-    palette.soft,
-    dark ? 0.2 + focus * 0.18 : 0.28 + focus * 0.16
+    accent,
+    dark ? 0.22 + focus * 0.18 : 0.3 + focus * 0.16
   );
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -626,7 +837,7 @@ function drawSealGate(
   ctx.setLineDash([4, 9]);
   ctx.strokeStyle = rgba(
     palette.soft,
-    dark ? 0.22 + focus * 0.16 : 0.30 + focus * 0.16
+    dark ? 0.22 + focus * 0.16 : 0.31 + focus * 0.16
   );
   ctx.beginPath();
   ctx.arc(0, 0, radius * 0.62, 0, Math.PI * 2);
@@ -634,8 +845,8 @@ function drawSealGate(
   ctx.setLineDash([]);
 
   ctx.fillStyle = rgba(
-    palette.soft,
-    dark ? 0.48 + focus * 0.18 : 0.56 + focus * 0.18
+    mixRgb(accent, palette.soft, 0.42),
+    dark ? 0.52 + focus * 0.18 : 0.58 + focus * 0.18
   );
   ctx.beginPath();
   ctx.arc(0, 0, 2.2 + focus * 0.8, 0, Math.PI * 2);
@@ -654,17 +865,37 @@ function drawDomainGlyph(
   dark: boolean
 ) {
   const size = 40 * scale;
+  const accent = domainAccent(palette, domain.kind);
 
   ctx.save();
   ctx.translate(domain.x, domain.y);
   ctx.globalCompositeOperation = dark ? "screen" : "multiply";
 
+  const wash = ctx.createRadialGradient(
+    -size * 0.12,
+    -size * 0.1,
+    0,
+    0,
+    0,
+    68 * scale
+  );
+  wash.addColorStop(
+    0,
+    rgba(accent, dark ? 0.09 + focus * 0.045 : 0.12 + focus * 0.05)
+  );
+  wash.addColorStop(0.56, rgba(palette.foreground, dark ? 0.022 : 0.055));
+  wash.addColorStop(1, rgba(accent, 0));
+  ctx.fillStyle = wash;
+  ctx.beginPath();
+  ctx.arc(0, 0, 68 * scale, 0, Math.PI * 2);
+  ctx.fill();
+
   const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, 68 * scale);
   halo.addColorStop(
     0,
-    rgba(palette.primary, dark ? 0.1 + focus * 0.05 : 0.16 + focus * 0.06)
+    rgba(accent, dark ? 0.075 + focus * 0.045 : 0.105 + focus * 0.05)
   );
-  halo.addColorStop(1, rgba(palette.primary, 0));
+  halo.addColorStop(1, rgba(accent, 0));
   ctx.fillStyle = halo;
   ctx.beginPath();
   ctx.arc(0, 0, 68 * scale, 0, Math.PI * 2);
@@ -672,7 +903,7 @@ function drawDomainGlyph(
 
   ctx.strokeStyle = rgba(
     palette.soft,
-    dark ? 0.2 + focus * 0.18 : 0.30 + focus * 0.16
+    dark ? 0.14 + focus * 0.14 : 0.2 + focus * 0.12
   );
   ctx.lineWidth = 1.1;
   ctx.beginPath();
@@ -680,28 +911,25 @@ function drawDomainGlyph(
   ctx.stroke();
 
   ctx.strokeStyle = rgba(
-    palette.primary,
-    dark ? 0.15 + focus * 0.12 : 0.22 + focus * 0.12
+    accent,
+    dark ? 0.14 + focus * 0.11 : 0.18 + focus * 0.11
   );
   ctx.beginPath();
   ctx.arc(0, 0, 49 * scale, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.strokeStyle = rgba(
-    palette.soft,
-    dark ? 0.34 + focus * 0.18 : 0.42 + focus * 0.18
+    mixRgb(accent, palette.soft, 0.34),
+    dark ? 0.28 + focus * 0.15 : 0.34 + focus * 0.14
   );
   ctx.lineWidth = 1.2;
 
   if (domain.kind === "rag") {
     for (let y = -1; y <= 1; y += 1) {
       for (let x = -1; x <= 1; x += 1) {
-        ctx.strokeRect(
-          x * size * 0.25 - size * 0.07,
-          y * size * 0.21 - size * 0.07,
-          size * 0.14,
-          size * 0.14
-        );
+        ctx.beginPath();
+        ctx.arc(x * size * 0.25, y * size * 0.21, size * 0.045, 0, Math.PI * 2);
+        ctx.stroke();
       }
     }
   }
@@ -771,11 +999,11 @@ function drawSealedCore(
   const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 2.05);
   glow.addColorStop(
     0,
-    rgba(palette.soft, dark ? 0.15 + focus * 0.05 : 0.20 + focus * 0.06)
+    rgba(palette.soft, dark ? 0.1 + focus * 0.04 : 0.13 + focus * 0.05)
   );
   glow.addColorStop(
     0.42,
-    rgba(palette.primary, dark ? 0.06 + focus * 0.03 : 0.09 + focus * 0.04)
+    rgba(palette.primary, dark ? 0.04 + focus * 0.025 : 0.058 + focus * 0.032)
   );
   glow.addColorStop(1, rgba(palette.primary, 0));
   ctx.fillStyle = glow;
@@ -783,11 +1011,26 @@ function drawSealedCore(
   ctx.arc(0, 0, r * 2.05, 0, Math.PI * 2);
   ctx.fill();
 
-  for (let i = 0; i < 5; i += 1) {
-    const radius = r * (0.72 + i * 0.22 + focus * 0.015);
+  const coreGlass = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.95);
+  coreGlass.addColorStop(0, rgba(palette.foreground, dark ? 0.055 : 0.13));
+  coreGlass.addColorStop(0.46, rgba(palette.runtime, dark ? 0.07 : 0.085));
+  coreGlass.addColorStop(1, rgba(palette.background, dark ? 0.035 : 0.18));
+  ctx.fillStyle = coreGlass;
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.76, 0, Math.PI * 2);
+  ctx.fill();
+
+  const ringColors = [
+    palette.runtime,
+    palette.publication,
+    palette.admin,
+    palette.soft,
+  ];
+  for (let i = 0; i < 4; i += 1) {
+    const radius = r * (0.74 + i * 0.25 + focus * 0.015);
     ctx.strokeStyle = rgba(
-      i % 2 === 0 ? palette.soft : palette.primary,
-      dark ? 0.16 - i * 0.018 + focus * 0.04 : 0.22 - i * 0.018 + focus * 0.04
+      ringColors[i % ringColors.length],
+      dark ? 0.12 - i * 0.016 + focus * 0.035 : 0.16 - i * 0.016 + focus * 0.035
     );
     ctx.lineWidth = i === 0 ? 1.5 : 0.9;
     ctx.setLineDash(i === 1 || i === 3 ? [8, 16] : []);
@@ -802,11 +1045,11 @@ function drawSealedCore(
   ctx.rotate(time * 0.06);
   ctx.strokeStyle = rgba(
     palette.soft,
-    dark ? 0.32 + focus * 0.1 : 0.40 + focus * 0.1
+    dark ? 0.24 + focus * 0.085 : 0.3 + focus * 0.085
   );
   ctx.fillStyle = rgba(
     palette.primary,
-    dark ? 0.07 + focus * 0.03 : 0.10 + focus * 0.04
+    dark ? 0.045 + focus * 0.025 : 0.065 + focus * 0.03
   );
   ctx.lineWidth = 1.2;
   ctx.beginPath();
@@ -828,7 +1071,7 @@ function drawSealedCore(
     const py = Math.sin(angle) * r * 0.31;
     ctx.strokeStyle = rgba(
       palette.soft,
-      dark ? 0.16 + focus * 0.08 : 0.24 + focus * 0.10
+      dark ? 0.11 + focus * 0.06 : 0.16 + focus * 0.075
     );
     ctx.beginPath();
     ctx.moveTo(0, 0);
@@ -837,16 +1080,16 @@ function drawSealedCore(
 
     ctx.fillStyle = rgba(
       palette.soft,
-      dark ? 0.56 + focus * 0.12 : 0.58 + focus * 0.12
+      dark ? 0.44 + focus * 0.1 : 0.46 + focus * 0.1
     );
     ctx.beginPath();
     ctx.arc(px, py, 1.9 + focus * 0.6, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  ctx.fillStyle = rgba(palette.soft, dark ? 0.74 : 0.72);
-  ctx.shadowColor = rgba(palette.soft, dark ? 0.62 : 0.36);
-  ctx.shadowBlur = dark ? 18 + focus * 7 : 14 + focus * 5;
+  ctx.fillStyle = rgba(palette.soft, dark ? 0.58 : 0.56);
+  ctx.shadowColor = rgba(palette.soft, dark ? 0.42 : 0.24);
+  ctx.shadowBlur = dark ? 14 + focus * 6 : 10 + focus * 4;
   ctx.beginPath();
   ctx.arc(0, 0, 4.2 + focus * 1.2, 0, Math.PI * 2);
   ctx.fill();
@@ -920,6 +1163,9 @@ export function AgenticGrid() {
           dark.current ? "#f5f5f5" : "#0a0a0a"
         ),
         primary: tokenRgb("--primary", PRIMARY_FALLBACK),
+        runtime: tokenRgb("--plane-runtime", PRIMARY_FALLBACK),
+        publication: tokenRgb("--plane-publication", "#8b5cf6"),
+        admin: tokenRgb("--plane-admin", "#fb7185"),
         soft: mixRgb(
           tokenRgb("--primary", PRIMARY_FALLBACK),
           tokenRgb("--foreground", dark.current ? "#f5f5f5" : "#0a0a0a"),
@@ -940,10 +1186,16 @@ export function AgenticGrid() {
         dark.current ? "#f5f5f5" : "#0a0a0a"
       );
       const primary = tokenRgb("--primary", PRIMARY_FALLBACK);
+      const runtime = tokenRgb("--plane-runtime", PRIMARY_FALLBACK);
+      const publication = tokenRgb("--plane-publication", "#8b5cf6");
+      const admin = tokenRgb("--plane-admin", "#fb7185");
       palette.current = {
         background,
         foreground,
         primary,
+        runtime,
+        publication,
+        admin,
         soft: mixRgb(primary, foreground, dark.current ? 0.42 : 0.32),
       };
     };
@@ -1011,6 +1263,15 @@ export function AgenticGrid() {
 
       drawBackground(ctx, width, height, currentPalette, dark.current);
       drawGrid(ctx, width, height, currentPalette, dark.current, time);
+      drawHermeticBoundary(
+        ctx,
+        width,
+        height,
+        model,
+        time,
+        currentPalette,
+        dark.current
+      );
       drawDataPointField(
         ctx,
         width,
@@ -1045,6 +1306,7 @@ export function AgenticGrid() {
           index,
           time,
           focus,
+          domainAccent(currentPalette, domain.kind),
           currentPalette,
           dark.current
         );
@@ -1068,6 +1330,7 @@ export function AgenticGrid() {
           time,
           gateFocus,
           domain.phase + index,
+          domainAccent(currentPalette, domain.kind),
           currentPalette,
           dark.current
         );
@@ -1141,10 +1404,38 @@ export function AgenticGrid() {
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-background"
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/88 to-background/0" />
-      <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-background/92 to-background/0" />
-      <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background/80 to-background/0" />
-      <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background/80 to-background/0" />
+      <div
+        className="absolute inset-x-0 top-0"
+        style={{
+          height: 160,
+          background:
+            "linear-gradient(180deg, color-mix(in srgb, var(--background) 92%, transparent), transparent)",
+        }}
+      />
+      <div
+        className="absolute inset-x-0 bottom-0"
+        style={{
+          height: 208,
+          background:
+            "linear-gradient(0deg, color-mix(in srgb, var(--background) 94%, transparent), transparent)",
+        }}
+      />
+      <div
+        className="absolute inset-y-0 left-0"
+        style={{
+          width: "34vw",
+          background:
+            "linear-gradient(90deg, color-mix(in srgb, var(--background) 92%, transparent), transparent)",
+        }}
+      />
+      <div
+        className="absolute inset-y-0 right-0"
+        style={{
+          width: "16vw",
+          background:
+            "linear-gradient(270deg, color-mix(in srgb, var(--background) 72%, transparent), transparent)",
+        }}
+      />
     </div>
   );
 }

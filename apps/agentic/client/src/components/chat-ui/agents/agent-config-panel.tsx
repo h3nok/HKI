@@ -64,7 +64,7 @@ export type AgentType =
   | "router"
   | "tool-use"
   | "generation"
-  | "retail"
+  | "knowledge"
   | "feedback";
 
 export interface AgentConfig {

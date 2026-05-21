@@ -288,11 +288,17 @@
      ═══════════════════════════════════════════════════════════════════════ */
 
   /* Font families */
-  --font-sans:
+  --font-ui:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", "Consolas", monospace;
-  --font-display: "Inter", var(--font-sans);
+  --font-sans: var(--font-ui);
+  --font-reading:
+    "Source Serif 4", "Iowan Old Style", "Georgia", "Times New Roman", serif;
+  --font-serif: var(--font-reading);
+  --font-code: "JetBrains Mono", "SF Mono", "Fira Code", "Consolas", monospace;
+  --font-mono: var(--font-code);
+  --font-display: "Plus Jakarta Sans", var(--font-sans);
+  --font-editorial: var(--font-reading);
 
   /* Type scale (Major Third — 1.25) */
   --text-xs: 0.75rem; /* 12px */

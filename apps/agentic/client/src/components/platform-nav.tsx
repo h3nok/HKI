@@ -23,7 +23,7 @@ import {
 
 const OBSERVABILITY_URL =
   import.meta.env.VITE_OBSERVABILITY_URL ||
-  "https://console.cloud.google.com/monitoring/dashboards?project=p-642-cilab-gke";
+  "";
 
 export function PlatformNav() {
   const [location] = useLocation();

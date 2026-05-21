@@ -1,5 +1,5 @@
 /**
- * Enhanced SourcePanel — Left card of Knowledge Studio with retail-grade features.
+ * Enhanced SourcePanel — Left card of Knowledge Studio with domain-scoped features.
  *
  * New capabilities:
  *   - Batch actions toolbar (select all, analyze selected, clear)

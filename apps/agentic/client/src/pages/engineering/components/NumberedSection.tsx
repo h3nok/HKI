@@ -52,17 +52,13 @@ export function NumberedSection({
         <h2
           id={id ? `${id}-title` : undefined}
           className="font-serif text-[34px] font-semibold leading-[1.1] tracking-[-0.015em] text-foreground sm:text-[40px]"
-          style={{ fontFamily: '"Source Serif 4", ui-serif, Georgia, serif' }}
         >
           {title}
         </h2>
       </header>
 
       {lede && (
-        <p
-          className="mt-6 max-w-[60ch] text-[18px] leading-[1.65] text-foreground/75"
-          style={{ fontFamily: '"Source Serif 4", ui-serif, Georgia, serif' }}
-        >
+        <p className="mt-6 max-w-[60ch] font-serif text-[18px] leading-[1.65] text-foreground/75">
           {lede}
         </p>
       )}

@@ -1,15 +1,25 @@
 /**
  * Typography System
- * Premium typography with Inter font and fluid scaling
+ * Platform typography with shared UI, display, reading, and code faces.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap");
 
 :root {
   /* Font Families */
-  --font-sans:
-    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+  --font-ui:
+    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --font-sans: var(--font-ui);
+  --font-display:
+    "Plus Jakarta Sans", "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+    sans-serif;
+  --font-reading:
+    "Source Serif 4", "Iowan Old Style", "Georgia", "Times New Roman", serif;
+  --font-serif: var(--font-reading);
+  --font-editorial: var(--font-reading);
+  --font-code: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+  --font-mono: var(--font-code);
 
   /* Font Weights */
   --font-light: 300;

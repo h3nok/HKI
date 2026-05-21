@@ -9,7 +9,7 @@
  *
  *   <Eyebrow />          uppercase tracked label (with optional rule)
  *   <DisplayHeading />   editorial display headline (Plus Jakarta Sans)
- *   <EditorialAccent />  italic Instrument Serif inline accent
+ *   <EditorialAccent />  italic Source Serif 4 inline accent
  *   <Hairline />         precision 1px rule (full or brand-tinted)
  *   <PlaneChip />        runtime / publication / admin pill
  *   <StampedCard />      card with top accent rail + inset highlight

@@ -834,7 +834,7 @@ export const geminiRouter = router({
         [
           {
             role: "system",
-            content: `You are an expert at writing system prompts for AI assistants deployed in enterprise retail environments.
+            content: `You are an expert at writing system prompts for AI assistants deployed in enterprise agentic platforms.
 
 Your output should be a complete system prompt (persona) that will be injected as the system message for an LLM-based agent. The prompt should:
 1. Define a clear identity and expertise area
@@ -851,7 +851,7 @@ Output ONLY the system prompt text. No markdown fences, no explanations, no prea
 
 Domain context: ${domainHint}
 
-The agent serves employees at a large retail/warehouse company. It has access to a knowledge base of documents and domain-specific tools.`,
+The agent serves users within the "${input.streamName}" domain. It has access to a domain-scoped knowledge base and tools bound to that domain via HKI envelope enforcement.`,
           },
         ],
         { apiKey }

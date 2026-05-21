@@ -21,10 +21,7 @@ export function PullQuote({
         className
       )}
     >
-      <blockquote
-        className="font-serif text-[24px] font-medium leading-[1.35] tracking-[-0.01em] text-foreground sm:text-[28px]"
-        style={{ fontFamily: '"Source Serif 4", ui-serif, Georgia, serif' }}
-      >
+      <blockquote className="font-serif text-[24px] font-medium leading-[1.35] tracking-[-0.01em] text-foreground sm:text-[28px]">
         {children}
       </blockquote>
       {attribution && (

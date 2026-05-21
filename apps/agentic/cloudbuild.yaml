@@ -6,8 +6,9 @@
 # (packages/ui, packages/chat) are accessible during the build.
 #
 substitutions:
+  _GCP_PROJECT: YOUR_GCP_PROJECT
   _REGION: us-west1
-  _REGISTRY: cilab
+  _REGISTRY: hki
   _IMAGE: agentic
 
 steps:
@@ -17,14 +18,14 @@ steps:
       - -f
       - agentic/Dockerfile
       - -t
-      - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:$COMMIT_SHA
+      - ${_REGION}-docker.pkg.dev/${_GCP_PROJECT}/${_REGISTRY}/${_IMAGE}:$COMMIT_SHA
       - -t
-      - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:latest
+      - ${_REGION}-docker.pkg.dev/${_GCP_PROJECT}/${_REGISTRY}/${_IMAGE}:latest
       - .
 
 images:
-  - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:$COMMIT_SHA
-  - ${_REGION}-docker.pkg.dev/p-642-cilab-infrastructure/${_REGISTRY}/${_IMAGE}:latest
+  - ${_REGION}-docker.pkg.dev/${_GCP_PROJECT}/${_REGISTRY}/${_IMAGE}:$COMMIT_SHA
+  - ${_REGION}-docker.pkg.dev/${_GCP_PROJECT}/${_REGISTRY}/${_IMAGE}:latest
 
 options:
   logging: CLOUD_LOGGING_ONLY

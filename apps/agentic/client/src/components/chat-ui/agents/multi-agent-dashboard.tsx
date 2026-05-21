@@ -32,7 +32,7 @@ export interface Agent {
     | "router"
     | "tool-use"
     | "generation"
-    | "retail"
+    | "knowledge"
     | "feedback";
   status: "idle" | "active" | "busy" | "error";
   currentTask?: string;
@@ -54,7 +54,7 @@ const agentIcons = {
   router: Activity,
   "tool-use": Wrench,
   generation: MessageSquare,
-  retail: Search,
+  knowledge: Search,
   feedback: Shield,
 };
 

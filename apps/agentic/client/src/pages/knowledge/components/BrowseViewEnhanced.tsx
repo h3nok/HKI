@@ -1,7 +1,7 @@
 /**
  * Enhanced BrowseView — Knowledge Domain Document Repository
  *
- * Retail-grade features:
+ * Domain-scoped features:
  *  - Batch selection & bulk actions (review, delete, tag, reprocess)
  *  - Visual status indicators (Pending Review, Published, Processing, Archived)
  *  - Enhanced filters (Type, Department, Status)

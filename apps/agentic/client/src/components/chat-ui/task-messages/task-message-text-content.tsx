@@ -7,8 +7,7 @@ import type { Evidence } from "../ui/evidence-chip";
 import type { TextContent } from "../types";
 import { useTypewriter } from "../hooks/use-typewriter";
 
-const RESPONSE_FONT =
-  '"Plus Jakarta Sans", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
+const RESPONSE_FONT = FONT_FAMILY.body;
 
 const variants = cva(
   "min-w-0 text-[14.5px] leading-[1.72] tracking-normal sm:text-[15px]",

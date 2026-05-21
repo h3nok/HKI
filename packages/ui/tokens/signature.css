@@ -5,7 +5,7 @@
 
    HKI SIGNATURE LAYER v1.0 — opt-in utility classes
 
-   Editorial + industrial primitives that make HKI surfaces look unique:
+  Editorial + industrial primitives that make HKI surfaces look unique:
      §1 Typography          — display, editorial, eyebrow, drop-cap
      §2 Hairlines           — precision 1px detailing
      §3 Stamped surfaces    — accent-rail card with inset highlight
@@ -43,6 +43,15 @@
   letter-spacing: -0.005em;
   line-height: 1.15;
   -webkit-font-smoothing: antialiased;
+}
+
+.text-reading {
+  font-family: var(--font-reading);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 .text-mono-precise {

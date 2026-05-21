@@ -53,15 +53,11 @@ export function PublicationMasthead({
         <h1
           id="hki-article-title"
           className="font-serif text-[44px] font-semibold leading-[1.03] tracking-[-0.02em] text-foreground sm:text-[60px] md:text-[72px]"
-          style={{ fontFamily: '"Source Serif 4", ui-serif, Georgia, serif' }}
         >
           {title}
         </h1>
 
-        <p
-          className="mt-8 max-w-[60ch] text-[19px] leading-[1.6] text-foreground/80 sm:text-[21px]"
-          style={{ fontFamily: '"Source Serif 4", ui-serif, Georgia, serif' }}
-        >
+        <p className="mt-8 max-w-[60ch] font-serif text-[19px] leading-[1.6] text-foreground/80 sm:text-[21px]">
           {abstract}
         </p>
       </div>

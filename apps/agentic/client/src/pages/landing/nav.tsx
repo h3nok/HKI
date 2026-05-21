@@ -30,9 +30,9 @@ export function Nav({ onNavigate }: NavProps) {
 
   return (
     <Topbar
-      variant="blur"
+      variant="transparent"
       showMenuTrigger={false}
-      className="engineering-topbar sticky top-0 z-50 border-b!"
+      className="engineering-topbar sticky top-0 z-50"
       leftContent={
         <a
           href="/"
@@ -85,7 +85,6 @@ export function Nav({ onNavigate }: NavProps) {
       }
       actions={
         <div className="flex items-center gap-1.5">
-          <div className="w-px h-5 bg-border/40 mx-1 hidden sm:block" />
           <button
             onClick={toggleTheme}
             className="engineering-icon-button outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"

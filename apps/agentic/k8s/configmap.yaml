@@ -33,4 +33,4 @@ data:
   GOOGLE_DRIVE_REDIRECT_URI: "https://agentic.cilabs.np.hki.com/api/connectors/google-drive/callback"
 
   # GCP-native observability console link used by the Agentic UI.
-  VITE_OBSERVABILITY_URL: "https://console.cloud.google.com/monitoring/dashboards?project=p-642-cilab-gke"
+  VITE_OBSERVABILITY_URL: "https://console.cloud.google.com/monitoring/dashboards?project=YOUR_GCP_PROJECT"

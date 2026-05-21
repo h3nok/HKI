@@ -26,7 +26,27 @@ import {
 
 export const BRAND = brandColors;
 
-export const FONT_FAMILY = SHARED_FONT_FAMILY;
+const sharedFontFamily = SHARED_FONT_FAMILY as typeof SHARED_FONT_FAMILY & {
+  display?: string;
+  reading?: string;
+  serif?: string;
+  editorial?: string;
+};
+
+const READING_FONT_FAMILY =
+  '"Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif';
+
+export const FONT_FAMILY = {
+  ...SHARED_FONT_FAMILY,
+  display: sharedFontFamily.display ?? SHARED_FONT_FAMILY.heading,
+  reading: sharedFontFamily.reading ?? READING_FONT_FAMILY,
+  serif:
+    sharedFontFamily.serif ?? sharedFontFamily.reading ?? READING_FONT_FAMILY,
+  editorial:
+    sharedFontFamily.editorial ??
+    sharedFontFamily.reading ??
+    READING_FONT_FAMILY,
+} as const;
 
 /** Warm neutral scale — matches CSS primitives.css / semantic.css */
 export const NEUTRAL = colors.neutral;

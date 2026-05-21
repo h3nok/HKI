@@ -35,8 +35,8 @@ import {
   Logo,
   STREAM_ICON_OPTIONS,
   StreamIcon,
-  FONT_FAMILY,
 } from "@hki/ui";
+import { FONT_FAMILY } from "@/design-system/tokens";
 import {
   ThinkingAnimation,
   ThinkingInline,
@@ -55,12 +55,8 @@ const DOMAIN_STRUCTURE =
 const DOMAIN_ACCENT =
   "var(--stream-icon-accent, var(--color-brand-iris-500, #0E7C7B))";
 const INDIGO = IRIS;
-const SHOWCASE_HEADING_FONT =
-  (FONT_FAMILY as typeof FONT_FAMILY & { heading?: string }).heading ??
-  '"Plus Jakarta Sans", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
-const SHOWCASE_BODY_FONT =
-  (FONT_FAMILY as typeof FONT_FAMILY & { body?: string }).body ??
-  FONT_FAMILY.sans;
+const SHOWCASE_HEADING_FONT = FONT_FAMILY.display;
+const SHOWCASE_BODY_FONT = FONT_FAMILY.body;
 
 // ── Nav ────────────────────────────────────────────────────────────────────────
 
@@ -495,23 +491,30 @@ function TypographySection() {
       id="type"
       num="03"
       title="Typography"
-      subtitle="Plus Jakarta Sans for headings, Inter for body, JetBrains Mono for code — exported as FONT_FAMILY tokens."
+      subtitle="Plus Jakarta Sans for display, Inter for UI, Source Serif 4 for reading, JetBrains Mono for code — exported as FONT_FAMILY tokens."
     >
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
-            role: "Heading",
+            role: "Display",
             display: "Plus Jakarta Sans",
             weight: "800 · Extra Bold",
             family: SHOWCASE_HEADING_FONT,
-            token: "FONT_FAMILY.heading",
+            token: "FONT_FAMILY.display",
           },
           {
-            role: "Body",
+            role: "UI",
             display: "Inter / System",
             weight: "400 · Regular",
             family: SHOWCASE_BODY_FONT,
             token: "FONT_FAMILY.body",
+          },
+          {
+            role: "Reading",
+            display: "Source Serif 4",
+            weight: "400 · Regular",
+            family: FONT_FAMILY.reading,
+            token: "FONT_FAMILY.reading",
           },
           {
             role: "Mono",

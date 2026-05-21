@@ -194,11 +194,16 @@ const PlaneNode = memo(({ data }: NodeProps<Node<PlaneNodeData>>) => {
       style={{
         width: data.width,
         height: data.height,
-        background: tok.tintBg,
-        border: `1px dashed ${tok.tintBorder}`,
+        background: "transparent",
+        border: `1px solid ${tok.tintBorder}`,
         position: "relative",
       }}
     >
+      <div
+        aria-hidden
+        className="absolute inset-x-3 top-0 h-px rounded-full"
+        style={{ background: tok.accent }}
+      />
       <div
         className="absolute left-3 top-2 inline-flex items-center gap-2 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em]"
         style={{
@@ -491,76 +496,25 @@ function InspectorPanel({
 
   return (
     <aside
-      className="flex min-h-0 flex-col border-b lg:border-b-0 lg:border-r"
+      className="flex min-h-0 flex-col overflow-hidden border-b lg:border-b-0 lg:border-r"
       style={{
         background: SURFACE.panel,
         borderColor: SURFACE.border,
       }}
     >
-      <div className="border-b p-4" style={{ borderColor: SURFACE.border }}>
-        <p
-          className="text-[10px] font-bold uppercase tracking-[0.18em]"
-          style={{ color: SURFACE.textSubtle }}
-        >
-          Reference architecture
-        </p>
-        <h2
-          className="mt-2 text-xl font-extrabold leading-tight tracking-tight"
-          style={{ color: SURFACE.text }}
-        >
-          HKI flow inspector
-        </h2>
-        <p
-          className="mt-2 text-sm font-semibold leading-6"
-          style={{ color: SURFACE.textMuted }}
-        >
-          {VIEW_META[view].tagline}
-        </p>
-
-        <div
-          className="mt-4 grid grid-cols-3 overflow-hidden rounded-lg border text-center"
-          style={{
-            background: SURFACE.panelRaised,
-            borderColor: SURFACE.border,
-          }}
-        >
-          {[
-            { label: "Nodes", value: ARCH_NODES.length },
-            { label: "Edges", value: ARCH_EDGES.length },
-            { label: "Planes", value: PLANE_ORDER.length },
-          ].map((stat, index) => (
-            <div
-              key={stat.label}
-              className="px-2 py-2"
-              style={{
-                borderRight:
-                  index === 2 ? undefined : `1px solid ${SURFACE.border}`,
-              }}
-            >
-              <p
-                className="text-lg font-extrabold tabular-nums"
-                style={{ color: SURFACE.text }}
-              >
-                {stat.value}
-              </p>
-              <p
-                className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.12em]"
-                style={{ color: SURFACE.textSubtle }}
-              >
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
-
+      <div
+        className="border-b p-2 sm:p-3 lg:p-4"
+        style={{ borderColor: SURFACE.border }}
+      >
         <div
           role="tablist"
           aria-label="Architecture path"
-          className="mt-4 grid gap-1.5"
+          className="grid grid-cols-3 gap-1.5 sm:grid-cols-1"
         >
           {(["runtime", "publication", "admin"] as const).map(v => {
             const active = view === v;
             const PathIcon = VIEW_META[v].icon;
+            const pathAccent = PLANES[v].accent;
             return (
               <button
                 key={v}
@@ -568,24 +522,27 @@ function InspectorPanel({
                 role="tab"
                 aria-selected={active}
                 onClick={() => onViewChange(v)}
-                className="flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] font-bold transition-all hover:opacity-85"
+                className="flex min-w-0 items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-center text-[11px] font-bold transition-all hover:opacity-85 sm:justify-start sm:gap-2 sm:px-3 sm:py-2 sm:text-left sm:text-[12px]"
                 style={{
-                  background: active ? STATUS.focus : SURFACE.panelRaised,
-                  borderColor: active ? STATUS.focus : SURFACE.border,
+                  background: active ? pathAccent : SURFACE.panelRaised,
+                  borderColor: active ? pathAccent : SURFACE.border,
                   color: active ? SURFACE.panel : SURFACE.textMuted,
                   boxShadow: active
-                    ? `0 12px 26px -20px ${STATUS.focus}`
+                    ? `0 12px 26px -20px ${pathAccent}`
                     : undefined,
                 }}
               >
                 <PathIcon className="h-3.5 w-3.5 shrink-0" />
-                {VIEW_META[v].label}
+                <span className="truncate sm:hidden">
+                  {VIEW_META[v].label.replace(" path", "")}
+                </span>
+                <span className="hidden sm:inline">{VIEW_META[v].label}</span>
               </button>
             );
           })}
         </div>
 
-        <div className="mt-3 grid grid-cols-3 gap-1.5">
+        <div className="mt-2 hidden grid-cols-3 gap-1.5 sm:mt-3 sm:grid">
           <button
             type="button"
             onClick={onFit}
@@ -620,7 +577,10 @@ function InspectorPanel({
         </div>
       </div>
 
-      <div className="border-b p-4" style={{ borderColor: SURFACE.border }}>
+      <div
+        className="hidden border-b p-4 lg:block"
+        style={{ borderColor: SURFACE.border }}
+      >
         <div className="flex items-center justify-between gap-3">
           <div>
             <p
@@ -654,6 +614,7 @@ function InspectorPanel({
           {pathNodes.map((node, index) => {
             const active = node.id === selectedId;
             const StepIcon = node.icon;
+            const stepAccent = PLANES[node.plane].accent;
             return (
               <button
                 key={node.id}
@@ -662,19 +623,19 @@ function InspectorPanel({
                 className="flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-opacity hover:opacity-85"
                 style={{
                   background: active ? SURFACE.panelMuted : SURFACE.panelRaised,
-                  borderColor: active ? STATUS.focus : SURFACE.borderMuted,
+                  borderColor: active ? stepAccent : SURFACE.borderMuted,
                   color: active ? SURFACE.text : SURFACE.textMuted,
                   boxShadow: active
-                    ? `0 10px 22px -18px ${STATUS.focus}`
+                    ? `0 10px 22px -18px ${stepAccent}`
                     : undefined,
                 }}
               >
                 <span
                   className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[10px] font-bold tabular-nums"
                   style={{
-                    borderColor: active ? STATUS.focus : SURFACE.border,
+                    borderColor: active ? stepAccent : SURFACE.border,
                     background: active ? SURFACE.panel : SURFACE.panelRaised,
-                    color: active ? STATUS.focus : SURFACE.textSubtle,
+                    color: active ? stepAccent : SURFACE.textSubtle,
                   }}
                 >
                   {index + 1}
@@ -699,13 +660,13 @@ function InspectorPanel({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+      <div className="hidden min-h-0 flex-1 space-y-3 overflow-y-auto p-4 lg:block">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <span
               className="inline-flex h-7 w-7 items-center justify-center rounded-md"
               style={{
-                background: tok.tintBg,
+                background: SURFACE.panelRaised,
                 border: `1px solid ${tok.tintBorder}`,
                 color: tok.accent,
               }}
@@ -777,7 +738,7 @@ function InspectorPanel({
 function Legend() {
   return (
     <div
-      className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t px-4 py-2.5 text-[11px] sm:px-5"
+      className="flex flex-nowrap items-center gap-x-3 overflow-hidden border-t px-3 py-2 text-[10px] sm:gap-x-5 sm:px-5 sm:text-[11px]"
       style={{
         background: SURFACE.panelRaised,
         borderColor: SURFACE.border,
@@ -785,11 +746,11 @@ function Legend() {
       }}
     >
       {PLANE_ORDER.map(p => (
-        <span key={p} className="inline-flex items-center gap-1.5">
+        <span key={p} className="inline-flex shrink-0 items-center gap-1.5">
           <span
             className="inline-block h-2.5 w-2.5 rounded-sm"
             style={{
-              background: PLANES[p].tintBg,
+              background: "transparent",
               border: `1px solid ${PLANES[p].tintBorder}`,
             }}
           />
@@ -798,12 +759,12 @@ function Legend() {
           </span>
         </span>
       ))}
-      <span className="ml-auto inline-flex items-center gap-1.5">
+      <span className="inline-flex min-w-0 shrink items-center gap-1.5 sm:ml-auto">
         <span
           className="inline-block h-0 w-5 border-t-2 border-dashed"
           style={{ borderColor: SURFACE.textSubtle }}
         />
-        Async / cache
+        <span className="truncate">Async / cache</span>
       </span>
     </div>
   );
@@ -899,14 +860,18 @@ function DiagramInner() {
       )}
       <div
         className={cn(
-          "engineering-panel overflow-hidden",
-          expanded && "fixed inset-4 z-60 flex flex-col shadow-2xl"
+          "flex h-full min-h-0 flex-col overflow-hidden",
+          expanded &&
+            "fixed inset-4 z-60 flex flex-col rounded-xl border shadow-2xl"
         )}
         style={{
+          background: SURFACE.panel,
           borderColor: SURFACE.border,
+          borderTop: expanded ? undefined : `1px solid ${SURFACE.border}`,
+          boxShadow: expanded ? "var(--shadow-stamped)" : "none",
         }}
       >
-        <div className="grid min-h-0 flex-1 lg:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[360px_minmax(0,1fr)] lg:grid-rows-1">
           <InspectorPanel
             view={view}
             arch={selected}
@@ -922,11 +887,10 @@ function DiagramInner() {
           />
 
           <div
-            className="hki-rf-host relative"
+            className="hki-rf-host relative h-full min-h-0"
             style={{
-              background: `linear-gradient(180deg, ${SURFACE.page} 0%, ${SURFACE.panel} 100%)`,
-              height: expanded ? "calc(100vh - 92px)" : "calc(100vh - 154px)",
-              minHeight: 620,
+              background: SURFACE.page,
+              height: "100%",
             }}
           >
             <ReactFlow
@@ -983,8 +947,7 @@ function DiagramInner() {
                 position="top-right"
                 maskColor={SURFACE.minimapMask}
                 nodeColor={n => {
-                  if (n.type === "plane")
-                    return PLANES[(n.data as PlaneNodeData).plane].tintBg;
+                  if (n.type === "plane") return SURFACE.panelRaised;
                   const arch = (n.data as StageNodeData)?.arch;
                   return arch ? PLANES[arch.plane].accent : SURFACE.panelRaised;
                 }}
@@ -1015,7 +978,7 @@ export function ReferenceArchitectureDiagram({
   className?: string;
 }) {
   return (
-    <div className={cn(className)}>
+    <div className={cn("plane-runtime flex min-h-0 flex-col", className)}>
       <ReactFlowProvider>
         <DiagramInner />
       </ReactFlowProvider>

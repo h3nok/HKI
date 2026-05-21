@@ -98,9 +98,9 @@ const AVAILABLE_TOOLS = [
     category: "search",
   },
   {
-    id: "search_products",
-    name: "Search Products",
-    description: "Search the retail product catalog",
+    id: "search_domain",
+    name: "Search Domain",
+    description: "Search within the active domain's document collection",
     category: "search",
   },
   {

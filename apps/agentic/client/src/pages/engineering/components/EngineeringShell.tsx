@@ -53,7 +53,7 @@ export function EngineeringShell({
   return (
     <div
       className={cn(
-        "engineering-canvas flex flex-col",
+        "engineering-canvas plane-runtime flex flex-col",
         fullViewport ? "h-screen overflow-hidden" : "min-h-screen"
       )}
       style={themeVars as CSSProperties}

@@ -4,7 +4,7 @@ const log = createLogger("env");
 const isProduction = process.env.NODE_ENV === "production";
 const isDevelopment = process.env.NODE_ENV === "development";
 const DEFAULT_LOCAL_DATABASE_URL =
-  "mysql://root:root@127.0.0.1:9306/retail_agentic";
+  "mysql://root:root@127.0.0.1:9306/hki_agentic";
 const DEFAULT_EMAIL_FROM = "AI Platform <noreply@hki.com>";
 
 export function isKbHermeticIsolationEnabled(): boolean {

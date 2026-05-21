@@ -30,7 +30,7 @@ spec:
               app.kubernetes.io/name: agentic-bff
       containers:
         - name: agentic-bff
-          image: us-west1-docker.pkg.dev/p-642-cilab-infrastructure/cilab/agentic:latest
+          image: YOUR_REGION-docker.pkg.dev/YOUR_GCP_PROJECT/hki/agentic:latest
           ports:
             - name: http
               containerPort: 9001
@@ -80,13 +80,13 @@ spec:
             failureThreshold: 3
 
         # Cloud SQL Auth Proxy — IAM-authenticated MySQL connection (BFF database)
-        # Instance: p-642-cilab-demo:us-west1:agentic-db (Cloud SQL MySQL, READY)
+        # Instance: YOUR_GCP_PROJECT:us-west1:agentic-db (Cloud SQL MySQL, READY)
         - name: cloud-sql-proxy
           image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
           args:
             - "--private-ip"
             - "--unix-socket=/cloudsql"
-            - "p-642-cilab-demo:us-west1:agentic-db"
+            - "YOUR_GCP_PROJECT:us-west1:agentic-db"
           volumeMounts:
             - name: cloudsql
               mountPath: /cloudsql

@@ -9,7 +9,7 @@ import {
 } from "mysql2/promise";
 
 export const DEFAULT_LOCAL_DATABASE_URL =
-  "mysql://root:root@127.0.0.1:9306/retail_agentic";
+  "mysql://root:root@127.0.0.1:9306/hki_agentic";
 export const DEFAULT_MIGRATION_LOCK_NAME = "agentic_schema_migrations";
 export const DEFAULT_MIGRATION_TABLE = "appSchemaMigrations";
 

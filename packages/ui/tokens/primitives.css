@@ -243,18 +243,20 @@
      ═══════════════════════════════════════════════════════════════════════════ */
 
   /* Font Stacks */
-  --font-sans:
+  --font-ui:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif:
-    "Instrument Serif", "Iowan Old Style", "Georgia", "Times New Roman", serif;
-  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", "Consolas", monospace;
+  --font-sans: var(--font-ui);
+  --font-reading:
+    "Source Serif 4", "Iowan Old Style", "Georgia", "Times New Roman", serif;
+  --font-serif: var(--font-reading);
+  --font-code: "JetBrains Mono", "SF Mono", "Fira Code", "Consolas", monospace;
+  --font-mono: var(--font-code);
   /* Display — Plus Jakarta Sans is the canonical HKI display face.
      Geometric, slightly humanist, distinctive at large sizes. */
   --font-display:
     "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  /* Editorial — Instrument Serif for italic pull-quotes, mastheads, callouts. */
-  --font-editorial:
-    "Instrument Serif", "Iowan Old Style", "Georgia", "Times New Roman", serif;
+  /* Editorial / reading — same face as Standard page prose. */
+  --font-editorial: var(--font-reading);
 
   /* Font Sizes — Modular scale (1.25 ratio) */
   --text-2xs: 0.625rem; /* 10px */

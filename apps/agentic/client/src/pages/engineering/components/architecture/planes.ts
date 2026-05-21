@@ -2,9 +2,9 @@
  * Shared plane tokens used by every architecture diagram.
  *
  * Colors are architecture primitives layered over @hki/ui theme tokens.
- * Light mode keeps explicit paper/diagram values; dark mode inherits the app
- * semantic surfaces so the top bar, standard, and architecture pages stay in
- * the same dark theme.
+ * The diagram must not carry its own color story: it borrows semantic
+ * surfaces plus the three HKI plane tokens so the architecture view, standard,
+ * admin, runtime, and publication surfaces stay visually coherent.
  */
 
 export type PlaneId = "edge" | "runtime" | "publication" | "admin";
@@ -51,73 +51,87 @@ export const ARCHITECTURE_THEME_VARS: Record<
   Record<`--arch-${string}`, string>
 > = {
   light: {
-    "--arch-page": "#F9FAFB",
-    "--arch-panel": "#FFFFFF",
-    "--arch-panel-raised": "#F3F4F6",
-    "--arch-panel-muted": "#F8FAFC",
-    "--arch-border": "#D1D5DB",
-    "--arch-border-muted": "#E5E7EB",
-    "--arch-text": "#111827",
-    "--arch-text-muted": "#4B5563",
-    "--arch-text-subtle": "#6B7280",
-    "--arch-grid": "#D1D5DB",
-    "--arch-overlay": "rgba(17, 24, 39, 0.36)",
-    "--arch-shadow": "rgba(17, 24, 39, 0.12)",
-    "--arch-minimap-mask": "rgba(249, 250, 251, 0.72)",
-    "--arch-focus": "#0E7C7B",
-    "--arch-danger": "#DC2626",
-    "--arch-dim-edge": "#D1D5DB",
-    "--arch-edge-accent": "#0E7C7B",
-    "--arch-edge-bg": "#ECFDFC",
-    "--arch-edge-border": "#6EE0DA",
-    "--arch-runtime-accent": "#2563EB",
-    "--arch-runtime-bg": "#EFF6FF",
-    "--arch-runtime-border": "#BFDBFE",
-    "--arch-publication-accent": "#CA8A04",
-    "--arch-publication-bg": "#FEFCE8",
-    "--arch-publication-border": "#FEF08A",
-    "--arch-admin-accent": "#DC2626",
-    "--arch-admin-bg": "#FEF2F2",
-    "--arch-admin-border": "#FECACA",
+    "--arch-page":
+      "color-mix(in srgb, var(--background) 84%, var(--muted) 16%)",
+    "--arch-panel": "color-mix(in srgb, var(--card) 94%, var(--muted) 6%)",
+    "--arch-panel-raised":
+      "color-mix(in srgb, var(--card) 78%, var(--muted) 22%)",
+    "--arch-panel-muted":
+      "color-mix(in srgb, var(--muted) 82%, var(--card) 18%)",
+    "--arch-border":
+      "color-mix(in srgb, var(--border) 84%, var(--foreground) 8%)",
+    "--arch-border-muted": "color-mix(in srgb, var(--border) 70%, transparent)",
+    "--arch-text": "var(--foreground)",
+    "--arch-text-muted": "var(--muted-foreground)",
+    "--arch-text-subtle":
+      "color-mix(in srgb, var(--muted-foreground) 76%, transparent)",
+    "--arch-grid": "color-mix(in srgb, var(--foreground) 8%, transparent)",
+    "--arch-overlay": "color-mix(in srgb, var(--background) 64%, transparent)",
+    "--arch-shadow":
+      "color-mix(in srgb, var(--color-neutral-950) 18%, transparent)",
+    "--arch-minimap-mask":
+      "color-mix(in srgb, var(--background) 74%, transparent)",
+    "--arch-focus": "var(--plane-runtime)",
+    "--arch-danger": "var(--plane-admin)",
+    "--arch-dim-edge": "color-mix(in srgb, var(--border) 78%, transparent)",
+    "--arch-edge-accent": "var(--primary)",
+    "--arch-edge-bg":
+      "color-mix(in srgb, var(--arch-page) 88%, var(--primary) 12%)",
+    "--arch-edge-border":
+      "color-mix(in srgb, var(--primary) 34%, var(--border) 66%)",
+    "--arch-runtime-accent": "var(--plane-runtime)",
+    "--arch-runtime-bg":
+      "color-mix(in srgb, var(--plane-runtime-muted) 56%, var(--arch-page) 44%)",
+    "--arch-runtime-border": "var(--plane-runtime-border)",
+    "--arch-publication-accent": "var(--plane-publication)",
+    "--arch-publication-bg":
+      "color-mix(in srgb, var(--plane-publication-muted) 56%, var(--arch-page) 44%)",
+    "--arch-publication-border": "var(--plane-publication-border)",
+    "--arch-admin-accent": "var(--plane-admin)",
+    "--arch-admin-bg":
+      "color-mix(in srgb, var(--plane-admin-muted) 56%, var(--arch-page) 44%)",
+    "--arch-admin-border": "var(--plane-admin-border)",
   },
   dark: {
-    "--arch-page": "var(--background)",
-    "--arch-panel": "var(--card)",
+    "--arch-page":
+      "color-mix(in srgb, var(--background) 88%, var(--muted) 12%)",
+    "--arch-panel": "color-mix(in srgb, var(--card) 92%, var(--muted) 8%)",
     "--arch-panel-raised":
-      "color-mix(in srgb, var(--card) 82%, var(--muted) 18%)",
+      "color-mix(in srgb, var(--card) 78%, var(--muted) 22%)",
     "--arch-panel-muted":
-      "color-mix(in srgb, var(--card) 68%, var(--muted) 32%)",
+      "color-mix(in srgb, var(--card) 64%, var(--muted) 36%)",
     "--arch-border": "var(--border)",
     "--arch-border-muted": "var(--border-muted)",
     "--arch-text": "var(--foreground)",
     "--arch-text-muted": "var(--muted-foreground)",
     "--arch-text-subtle":
       "color-mix(in srgb, var(--muted-foreground) 72%, transparent)",
-    "--arch-grid": "color-mix(in srgb, var(--border) 62%, transparent)",
+    "--arch-grid": "color-mix(in srgb, var(--foreground) 5%, transparent)",
     "--arch-overlay": "color-mix(in srgb, var(--background) 72%, transparent)",
-    "--arch-shadow": "rgba(0, 0, 0, 0.45)",
+    "--arch-shadow":
+      "color-mix(in srgb, var(--color-neutral-950) 58%, transparent)",
     "--arch-minimap-mask":
       "color-mix(in srgb, var(--background) 76%, transparent)",
-    "--arch-focus": "var(--primary)",
-    "--arch-danger": "var(--destructive)",
+    "--arch-focus": "var(--plane-runtime)",
+    "--arch-danger": "var(--plane-admin)",
     "--arch-dim-edge": "var(--border)",
     "--arch-edge-accent": "var(--primary)",
-    "--arch-edge-bg": "color-mix(in srgb, var(--card) 90%, var(--primary) 10%)",
+    "--arch-edge-bg":
+      "color-mix(in srgb, var(--arch-page) 88%, var(--primary) 12%)",
     "--arch-edge-border":
       "color-mix(in srgb, var(--primary) 36%, var(--border) 64%)",
-    "--arch-runtime-accent": "#60A5FA",
-    "--arch-runtime-bg": "color-mix(in srgb, var(--card) 90%, #60A5FA 10%)",
-    "--arch-runtime-border":
-      "color-mix(in srgb, #60A5FA 34%, var(--border) 66%)",
-    "--arch-publication-accent": "#FACC15",
-    "--arch-publication-bg": "color-mix(in srgb, var(--card) 90%, #FACC15 10%)",
-    "--arch-publication-border":
-      "color-mix(in srgb, #FACC15 30%, var(--border) 70%)",
-    "--arch-admin-accent": "var(--destructive)",
+    "--arch-runtime-accent": "var(--plane-runtime)",
+    "--arch-runtime-bg":
+      "color-mix(in srgb, var(--plane-runtime-muted) 68%, var(--arch-page) 32%)",
+    "--arch-runtime-border": "var(--plane-runtime-border)",
+    "--arch-publication-accent": "var(--plane-publication)",
+    "--arch-publication-bg":
+      "color-mix(in srgb, var(--plane-publication-muted) 68%, var(--arch-page) 32%)",
+    "--arch-publication-border": "var(--plane-publication-border)",
+    "--arch-admin-accent": "var(--plane-admin)",
     "--arch-admin-bg":
-      "color-mix(in srgb, var(--card) 90%, var(--destructive) 10%)",
-    "--arch-admin-border":
-      "color-mix(in srgb, var(--destructive) 34%, var(--border) 66%)",
+      "color-mix(in srgb, var(--plane-admin-muted) 68%, var(--arch-page) 32%)",
+    "--arch-admin-border": "var(--plane-admin-border)",
   },
 };
 

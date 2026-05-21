@@ -38,21 +38,18 @@ type MarkdownResponseProps = {
   libraryScopeId?: string | null;
 };
 
-const RESPONSE_FONT =
-  '"Plus Jakarta Sans", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
-
 const PROSE_BODY_STYLE = {
   color: "var(--foreground)",
-  fontFamily: RESPONSE_FONT,
+  fontFamily: FONT_FAMILY.body,
   fontKerning: "normal" as const,
-  letterSpacing: "-0.012em",
+  letterSpacing: "0",
   lineHeight: 1.72,
   fontWeight: 400,
   overflowWrap: "anywhere" as const,
 };
 
 const PROSE_HEADING_STYLE = {
-  fontFamily: RESPONSE_FONT,
+  fontFamily: FONT_FAMILY.display,
   letterSpacing: "-0.02em",
 };
 
@@ -203,7 +200,8 @@ const components: React.ComponentPropsWithoutRef<
       <blockquote
         className="my-3 rounded-r-xl py-2 pl-4 pr-4"
         style={{
-          borderLeft: "3px solid color-mix(in srgb, var(--primary) 60%, var(--border))",
+          borderLeft:
+            "3px solid color-mix(in srgb, var(--primary) 60%, var(--border))",
           color: "var(--foreground)",
           background: "color-mix(in srgb, var(--primary) 4%, var(--card))",
           fontStyle: "normal",
@@ -427,7 +425,7 @@ function injectCitationChips(
   children: ReactNode,
   evidence: Evidence[],
   canViewLibrary: boolean,
-  libraryScopeId: string | null | undefined,
+  libraryScopeId: string | null | undefined
 ): ReactNode {
   if (!children) return children;
 
@@ -455,7 +453,7 @@ function injectCitationChips(
           index={idx}
           canViewLibrary={canViewLibrary}
           libraryScopeId={libraryScopeId}
-        />,
+        />
       );
       lastIndex = re.lastIndex;
     }
@@ -505,14 +503,24 @@ function MarkdownResponseImpl({
         p({ children: pChildren, ...props }: any) {
           return (
             <p className="my-2 leading-[1.68] text-foreground/93" {...props}>
-              {injectCitationChips(pChildren, evidence, canViewLibrary, libraryScopeId)}
+              {injectCitationChips(
+                pChildren,
+                evidence,
+                canViewLibrary,
+                libraryScopeId
+              )}
             </p>
           );
         },
         li({ children: liChildren, ...props }: any) {
           return (
             <li className="pl-1 leading-[1.62] [&>p]:my-0.5" {...props}>
-              {injectCitationChips(liChildren, evidence, canViewLibrary, libraryScopeId)}
+              {injectCitationChips(
+                liChildren,
+                evidence,
+                canViewLibrary,
+                libraryScopeId
+              )}
             </li>
           );
         },
@@ -528,7 +536,10 @@ function MarkdownResponseImpl({
       )}
       style={PROSE_BODY_STYLE}
     >
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={effectiveComponents}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={effectiveComponents}
+      >
         {children}
       </ReactMarkdown>
     </div>

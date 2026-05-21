@@ -36,7 +36,7 @@ export type AgentType =
   | "router"
   | "tool-use"
   | "generation"
-  | "retail"
+  | "knowledge"
   | "feedback"
   | "guardrails";
 
@@ -95,11 +95,11 @@ const agentConfig = {
     label: "Generation",
     description: "Generates natural language responses",
   },
-  retail: {
+  knowledge: {
     icon: Search,
     color: "color-mix(in srgb, var(--primary) 72%, var(--foreground))",
-    label: "Retail",
-    description: "Handles retail-specific queries",
+    label: "Knowledge",
+    description: "Domain-scoped knowledge retrieval",
   },
   feedback: {
     icon: Shield,

@@ -2,7 +2,7 @@
 set -e
 
 # Configuration
-export SPOKE_PROJECT_ID="p-642-cilab-demo"
+export SPOKE_PROJECT_ID="${GCP_PROJECT_ID:-YOUR_GCP_PROJECT}"
 export REGION="us-west1"
 export REGISTRY_NAME="demo-registry"
 export IMAGE_NAME="agentic-bff"

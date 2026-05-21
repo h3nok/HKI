@@ -37,7 +37,7 @@ export function EngineeringHeader({ className }: { className?: string }) {
 
   return (
     <header
-      className={cn("engineering-topbar sticky top-0 z-50 border-b", className)}
+      className={cn("engineering-topbar sticky top-0 z-50", className)}
       style={themeVars as CSSProperties}
     >
       <div className="mx-auto grid h-14 w-full max-w-7xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-5 sm:px-8">

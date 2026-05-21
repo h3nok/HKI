@@ -1,10 +1,10 @@
-import type { ThemeConfig } from 'antd';
+import type { ThemeConfig } from "antd";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ANT DESIGN THEME (used by ConfigProvider in design-system.tsx)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { colors } from './design-system';
+import { colors } from "./design-system";
 
 /**
  * Ant Design theme configuration mapped from the Signature Design System.
@@ -12,12 +12,13 @@ import { colors } from './design-system';
  */
 export const signatureTheme: ThemeConfig = {
   token: {
-    colorPrimary: '#0E7C7B',
-    colorInfo: '#0284c7',
-    colorSuccess: '#16a34a',
-    colorWarning: '#d97706',
-    colorError: '#dc2626',
-    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+    colorPrimary: "#0E7C7B",
+    colorInfo: "#0284c7",
+    colorSuccess: "#16a34a",
+    colorWarning: "#d97706",
+    colorError: "#dc2626",
+    fontFamily:
+      'var(--font-sans), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
     fontSize: 14,
     borderRadius: 6,
     borderRadiusSM: 4,
@@ -33,16 +34,19 @@ export const signatureTheme: ThemeConfig = {
     colorTextQuaternary: colors.neutral[300],
     colorBorder: colors.neutral[200],
     colorBorderSecondary: colors.neutral[150],
-    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 1px 3px 0 rgba(0, 0, 0, 0.06)',
-    boxShadowSecondary: '0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 4px 6px -1px rgba(0, 0, 0, 0.07)',
-    boxShadowTertiary: '0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 10px 15px -3px rgba(0, 0, 0, 0.08)',
+    boxShadow:
+      "0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 1px 3px 0 rgba(0, 0, 0, 0.06)",
+    boxShadowSecondary:
+      "0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 4px 6px -1px rgba(0, 0, 0, 0.07)",
+    boxShadowTertiary:
+      "0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 10px 15px -3px rgba(0, 0, 0, 0.08)",
   },
   components: {
     Button: {
       algorithm: true,
       controlHeight: 36,
       borderRadius: 6,
-      primaryShadow: '0 2px 0 rgba(14,124,123, 0.12)',
+      primaryShadow: "0 2px 0 rgba(14,124,123, 0.12)",
       defaultBorderColor: colors.neutral[200],
       defaultBg: colors.neutral[0],
     },
@@ -58,8 +62,8 @@ export const signatureTheme: ThemeConfig = {
       headerHeight: 64,
     },
     Menu: {
-      itemSelectedBg: '#D5F8F5',
-      itemSelectedColor: '#0B6261',
+      itemSelectedBg: "#D5F8F5",
+      itemSelectedColor: "#0B6261",
       itemHoverBg: colors.neutral[75],
       activeBarBorderWidth: 0,
       itemBorderRadius: 6,
@@ -67,7 +71,7 @@ export const signatureTheme: ThemeConfig = {
     Table: {
       headerBg: colors.neutral[75],
       headerColor: colors.neutral[600],
-      headerSplitColor: 'transparent',
+      headerSplitColor: "transparent",
       rowHoverBg: colors.neutral[50],
       borderColor: colors.neutral[150],
     },
@@ -75,13 +79,13 @@ export const signatureTheme: ThemeConfig = {
       colorBgContainer: colors.neutral[0],
       colorBorder: colors.neutral[200],
       hoverBorderColor: colors.neutral[300],
-      activeBorderColor: '#0E7C7B',
-      activeShadow: '0 0 0 3px rgba(14,124,123, 0.16)',
+      activeBorderColor: "#0E7C7B",
+      activeShadow: "0 0 0 3px rgba(14,124,123, 0.16)",
     },
     Select: {
       colorBgContainer: colors.neutral[0],
       colorBorder: colors.neutral[200],
-      optionSelectedBg: '#D5F8F5',
+      optionSelectedBg: "#D5F8F5",
     },
     Modal: {
       contentBg: colors.neutral[0],
@@ -140,7 +144,7 @@ export {
   type SizeVariant,
   type GlowIntensity,
   type DesignTokens,
-} from './design-system';
+} from "./design-system";
 
 export {
   cn,
@@ -151,4 +155,4 @@ export {
   either,
   type UIUtilities,
   type HubPresets,
-} from './utilities';
+} from "./utilities";
