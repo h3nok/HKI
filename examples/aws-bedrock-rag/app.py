@@ -228,11 +228,11 @@ async def chat(request: Request) -> JSONResponse:
 
 # ---------------------------------------------------------------------------
 # Demo (AWS_STUB=1 python app.py)
+# To serve: AWS_STUB=1 uvicorn app:app --port 8001 --reload
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     import base64
-    import uvicorn
     from hki_runtime.client import mint_envelope
 
     print("=== HKI + AWS Bedrock RAG example ===")
@@ -257,5 +257,3 @@ if __name__ == "__main__":
         print(f"[{domain}] {query!r}")
         print(f"  {label} {len(docs)} docs → {response[:80]}")
         print()
-
-    uvicorn.run(app, host="127.0.0.1", port=8001, log_level="warning")

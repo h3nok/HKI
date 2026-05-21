@@ -45,6 +45,8 @@
     "test:hki-adapters": "pnpm test:hki-litellm && pnpm test:hki-langchain && pnpm test:hki-llamaindex && pnpm test:hki-adk && pnpm test:hki-autogen && pnpm test:hki-crewai",
     "test:hki-integration": "cd packages/hki-integration-tests && uv run --extra dev pytest -q",
     "demo:hki": "uv run --project packages/hki-integration-tests python examples/end_to_end_demo.py",
+    "demo:aws-bedrock-rag": "AWS_STUB=1 uv run --project examples/aws-bedrock-rag python examples/aws-bedrock-rag/app.py",
+    "demo:agent-platform": "uv run --project examples/agent-platform-hki python examples/agent-platform-hki/agent.py",
     "test:hki-threats": "cd packages/hki-runtime-py && uv run --extra dev pytest -q ../../examples/threats",
     "test:hki-conformance": "pnpm --dir packages/hki-conformance test",
     "typecheck:hki-conformance": "pnpm --dir packages/hki-conformance typecheck",
