@@ -122,6 +122,10 @@ HKI gives those systems a single, testable rule for runtime observation:
 
 > one operation, one active domain, no implicit global visibility.
 
+HKI does not replace agent runtimes, identity systems, registries, managed RAG,
+evaluation services, traces, or audit logs. It gives those systems the portable
+isolation contract and evidence model they need to preserve.
+
 ## Bottom Line
 
 HKI is a practical answer to a modern enterprise AI problem.

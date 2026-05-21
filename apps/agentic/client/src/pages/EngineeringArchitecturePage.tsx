@@ -1,7 +1,6 @@
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { EngineeringShell } from "@/pages/engineering/components/EngineeringShell";
 import { ReferenceArchitectureDiagram } from "@/pages/engineering/components/ReferenceArchitectureDiagram";
-import { ARCHITECTURE_COLORS } from "@/pages/engineering/components/architecture/planes";
 
 const CONTEXT_PILLS: readonly string[] = [
   "Runtime path",
@@ -17,25 +16,13 @@ export default function EngineeringArchitecturePage() {
       fullViewport
       contentClassName="px-3 py-3 sm:px-4 sm:py-4"
       contextStrip={
-        <div
-          className="border-b backdrop-blur-xl"
-          style={{
-            background: ARCHITECTURE_COLORS.surface.panel,
-            borderColor: ARCHITECTURE_COLORS.surface.border,
-          }}
-        >
+        <div className="engineering-topbar border-b">
           <div className="flex min-h-12 flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-6">
             <div>
-              <p
-                className="text-[10px] font-bold uppercase tracking-[0.18em]"
-                style={{ color: ARCHITECTURE_COLORS.surface.textSubtle }}
-              >
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 HKI Reference Architecture
               </p>
-              <h1
-                className="text-sm font-extrabold tracking-tight sm:text-base"
-                style={{ color: ARCHITECTURE_COLORS.surface.text }}
-              >
+              <h1 className="text-sm font-extrabold tracking-tight text-foreground sm:text-base">
                 Flow inspector workspace
               </h1>
             </div>
@@ -43,12 +30,7 @@ export default function EngineeringArchitecturePage() {
               {CONTEXT_PILLS.map(pill => (
                 <span
                   key={pill}
-                  className="rounded-md border px-2.5 py-1"
-                  style={{
-                    background: ARCHITECTURE_COLORS.surface.panelRaised,
-                    borderColor: ARCHITECTURE_COLORS.surface.border,
-                    color: ARCHITECTURE_COLORS.surface.textMuted,
-                  }}
+                  className="engineering-chip rounded-md px-2.5 py-1 text-muted-foreground"
                 >
                   {pill}
                 </span>

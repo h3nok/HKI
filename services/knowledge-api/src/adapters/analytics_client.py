@@ -172,7 +172,7 @@ class AnalyticsClient:
                 extra={
                     "operation_type": operation_type,
                     "active_domain": active_domain,
-                    "issues": [issue.field for issue: hki_runtime.HkiValidationIssue in validation.issues],
+                    "issues": [issue.field for issue in validation.issues],
                 },
             )
             return
@@ -205,7 +205,7 @@ class AnalyticsClient:
                     "payload": payload,
                 },
             )
-        except Exception as exc: Exception:
+        except Exception as exc:
             # Degraded analytics must never surface to the caller
             src.core.logging.logger.debug(
                 "Analytics emit skipped",
@@ -223,7 +223,7 @@ class AnalyticsClient:
                 f"{self._url}/v1/events/audit",
                 json=event,
             )
-        except Exception as exc: Exception:
+        except Exception as exc:
             src.core.logging.logger.debug(
                 "HKI audit emit skipped",
                 extra={

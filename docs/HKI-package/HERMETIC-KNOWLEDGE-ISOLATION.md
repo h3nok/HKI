@@ -46,6 +46,8 @@ HKI does not claim to invent isolation. It builds on familiar ideas from informa
 
 The strongest claim for HKI is therefore modest but important: not that it invents isolation, but that it defines a precise, falsifiable, operationally enforceable isolation contract for enterprise agentic systems.
 
+HKI is also deliberately not an agent platform. It does not replace ADK, MCP, A2A, OAuth, OIDC, IAM, agent registries, managed RAG, evaluation services, traces, or audit logs. Those systems still own orchestration, identity, retrieval, policy, and observability. HKI defines the domain-isolation contract and evidence model they must preserve.
+
 The practical test is blunt: a runtime path is HKI-conformant only if removing the active domain makes it fail, changing the active domain to an unauthorized value makes it fail, and adding artifacts in Domain B cannot change the observable output of a Domain A request except through explicit publication into A.
 
 ## Why Autonomy Makes Isolation Fundamental
@@ -102,10 +104,12 @@ In a regulated environment this is not a minor access control gap. It is an audi
 | **σ(a)**                      | Domain label assigned to artifact `a`. Mandatory. Never null in the runtime plane.                                                        |
 | **τ(r)**                      | Active domain label resolved for request `r`. Signed at the gateway. Propagated end to end.                                               |
 | **Signed scope envelope**     | The tamper-resistant token that carries `(org, active_domain, authorized_domains, op, exp)` to every downstream service.                  |
+| **Authorized domains**        | The set of domains the subject may select at the gateway. This set is not a runtime read filter.                                          |
 | **Runtime plane**             | The hermetic execution path: gateway, orchestrator, retrieval, ingestion, review, evaluators, tools, domain-scoped analytics.             |
 | **Admin plane**               | A separate surface for cross-domain audit, reporting, and oversight. Never invoked from runtime code paths.                               |
 | **Publication / replication** | The only authorized bridge between domains. Materializes new domain-labeled artifacts from a curated master.                              |
 | **Null-scope artifact**       | An artifact with missing or empty domain identity. HKI treats this as a deploy-blocking defect, not a fallback.                           |
+| **Managed service evidence**  | Runtime, identity, registry, retrieval, evaluation, trace, or audit-log references that prove a managed platform preserved HKI.           |
 | **HVSI**                      | Hermetic Value-Stream Isolation — another name for HKI when the domain label is a business value stream.                                  |
 
 ## The Problem HKI Solves
@@ -253,6 +257,8 @@ HKI becomes credible only when every layer has a specific responsibility. The ta
 | ---------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
 | Gateway or BFF               | Resolve exactly one active domain, verify authorization, and issue a short-lived signed scope envelope | Defaulting to `global`, first authorized domain, or UI-selected scope without validation |
 | Orchestrator and MCP gateway | Forward the envelope to every tool and prevent tool arguments from overriding runtime scope            | Letting a model or tool call infer a broader domain from natural language                |
+| Managed agent runtime        | Preserve the envelope in run, session, tool, memory, and trace context                                 | Treating managed session metadata as a substitute for envelope validation                |
+| Agent identity and registry  | Bind agent principals and target-domain metadata to audit evidence                                     | Letting identity, registry labels, or IAM grants override the active domain              |
 | Retrieval and vector store   | Bind every read, re-rank, and citation to `(org, active_domain)`                                       | Applying a domain filter only to the final query, after rewrites or candidate expansion  |
 | Graph store                  | Label nodes and edges, and require exact-domain traversal                                              | Following an unlabeled derived edge into another domain                                  |
 | Ingestion and connectors     | Persist active domain on jobs, documents, chunks, extracted entities, and derived outputs              | Ingesting first and assigning scope later                                                |
@@ -280,16 +286,24 @@ The gateway issues an envelope containing `org`, `active_domain`, `op`, and expi
 
 ```json
 {
-  "org": "acme",
+  "hki_version": "1.0",
+  "envelope_id": "env_01HX...",
+  "org_id": "org_acme",
+  "subject_id": "user_42",
   "active_domain": "vs_payments",
   "authorized_domains": ["vs_payments", "vs_fraud"],
-  "op": "retrieve",
-  "exp": 1745000300
+  "purpose": "retrieve",
+  "risk_tier": "read-only",
+  "policy_pack_id": "policy_2026_05",
+  "issued_at": 1777900000,
+  "expires_at": 1777900300,
+  "issuer": "agent-gateway",
+  "signature": "..."
 }
 ```
 
 **2. Null domain fails closed, unconditionally.**
-A runtime path that encounters a missing, null, or `"global"` active domain rejects the request before touching any store. No fallback, no default domain, no "best effort" selection. Rejection is logged. The log is part of the conformance record.
+A runtime path that encounters a missing, null, wildcard, unauthorized, or `"global"` active domain rejects the request before touching any store. No fallback, no default domain, no "best effort" selection. Rejection is logged. The log is part of the conformance record.
 
 **3. Cache keys include the active domain.**
 A cache key must be at minimum `(org, active_domain, op, query_fingerprint)`. A cache lookup that drops `active_domain` is not an optimization — it is a boundary failure. Semantic similarity is not a substitute for domain identity.
@@ -307,6 +321,8 @@ If your platform satisfies all five, you have a defensible minimum. Expanding to
 HKI matters most where modern systems are most dynamic. Agents do more than issue direct document lookups. They compose tools, traverse graphs, reformulate queries, accumulate memory, and interact with caches, evaluators, and release workflows. The attack surface for boundary failure is therefore larger than in a conventional search application.
 
 In an MCP-oriented architecture, HKI is not the bus — it is the policy law the bus must preserve.
+
+In a managed-agent architecture, HKI is not the runtime either. ADK, Gemini Enterprise Agent Platform, Agent Platform Runtime, Agent Gateway, Agent Registry, RAG Engine, Vector Search, evaluation services, Cloud Trace, and Cloud Audit Logs can all provide the managed platform. HKI provides the portable isolation contract: carry the envelope, enforce exact-domain equality, reject scope widening, label artifacts, and emit evidence that links managed resources back to the active domain.
 
 If an enterprise MCP gateway is built under HKI, then every tool invocation must satisfy the following:
 
@@ -494,23 +510,28 @@ The most important technical claim is not just that filtered search results are 
 
 HKI should be tested as a boundary invariant, not as a documentation promise. A useful regression suite includes at least the following cases.
 
-| Test                       | Failure Being Exercised                                          | Expected HKI Behavior                                             |
-| -------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Missing active domain      | Runtime endpoint receives no domain context                      | Reject before retrieval, tool execution, or job creation          |
-| Unauthorized active domain | Principal is authorized for A but request asks for B             | Reject at the gateway or first policy check                       |
-| Null or global artifact    | Runtime store contains unlabeled or wildcard-labeled data        | Block readiness or make artifact invisible to runtime paths       |
-| Query rewrite broadening   | Corrective RAG expands the query toward another domain           | Preserve the original active domain through retrieval             |
-| Cross-domain graph edge    | Graph traversal encounters an unlabeled or B-labeled edge from A | Reject the edge or stop traversal                                 |
-| Cache key missing domain   | Cache lookup is keyed by organization and query only             | Miss the cache or reject the read as non-conformant               |
-| Async job loses scope      | Worker reconstructs scope from payload or defaults               | Fail the stage transition before producing artifacts              |
-| Runtime calls admin query  | Live request attempts to use cross-domain operational query      | Deny the call and log a plane-separation violation                |
-| Publication fan-out        | Shared policy is published from a curated source into A and B    | Create separate A-labeled and B-labeled artifacts with provenance |
+| Test                        | Failure Being Exercised                                          | Expected HKI Behavior                                             |
+| --------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Missing active domain       | Runtime endpoint receives no domain context                      | Reject before retrieval, tool execution, or job creation          |
+| Unauthorized active domain  | Principal is authorized for A but request asks for B             | Reject at the gateway or first policy check                       |
+| Forged or expired envelope  | Runtime endpoint receives a bad signature or expired envelope    | Reject before executing runtime work                              |
+| Wildcard or global scope    | Request, authorized domain, or artifact uses `*` or `global`     | Reject or make the artifact invisible in the runtime plane        |
+| Body or tool scope override | Request body, prompt, or tool argument asks for another domain   | Reject the conflicting argument; never widen the signed envelope  |
+| Null or global artifact     | Runtime store contains unlabeled or wildcard-labeled data        | Block readiness or make artifact invisible to runtime paths       |
+| Query rewrite broadening    | Corrective RAG expands the query toward another domain           | Preserve the original active domain through retrieval             |
+| Cross-domain graph edge     | Graph traversal encounters an unlabeled or B-labeled edge from A | Reject the edge or stop traversal                                 |
+| Cache key missing domain    | Cache lookup is keyed by organization and query only             | Miss the cache or reject the read as non-conformant               |
+| Async job loses scope       | Worker reconstructs scope from payload or defaults               | Fail the stage transition before producing artifacts              |
+| MCP tool outside domain     | Agent calls a tool or resource not published into active domain  | Deny the tool call and record the target-domain decision          |
+| A2A handoff widens scope    | Child agent receives broader domains than the parent             | Reject the handoff or mint a narrower child envelope              |
+| Runtime calls admin query   | Live request attempts to use cross-domain operational query      | Deny the call and log a plane-separation violation                |
+| Publication fan-out         | Shared policy is published from a curated source into A and B    | Create separate A-labeled and B-labeled artifacts with provenance |
 
 Useful acceptance thresholds are concrete: zero successful cross-domain reads in the adversarial suite, zero runtime endpoints that answer without active domain, zero cache keys that omit active domain, zero async job records without domain identity, and a readiness block whenever null-scope runtime artifacts are detected.
 
 ### Pre-Release Conformance Checklist
 
-The following nine checks must pass before a system ships under an HKI conformance claim. Each is binary. Partial credit does not apply.
+The following ten checks must pass before a system ships under an HKI conformance claim. Each is binary. Partial credit does not apply.
 
 | #   | Check                                                                                                                                                                                                   | What a Failure Looks Like                                                                                    |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -521,10 +542,11 @@ The following nine checks must pass before a system ships under an HKI conforman
 | 5   | **Async job domain binding** — Every background job type (ingest, review, reprocess, sync) confirmed to carry and validate active domain at every stage transition                                      | Any worker that reconstructs scope from payload content or uses a default                                    |
 | 6   | **Admin plane separation** — No runtime endpoint has a code path that calls an admin-plane or cross-domain query; confirmed by static analysis or automated test                                        | Any runtime endpoint that shares code with a cross-domain reporting or audit query                           |
 | 7   | **Publication gate** — Every cross-domain content publication goes through a dedicated workflow producing new domain-labeled artifacts with provenance; no shared artifacts have null or wildcard scope | Any artifact that is visible in multiple domains through runtime visibility rather than explicit publication |
-| 8   | **Adversarial regression suite** — Full conformance test suite run returns zero successful cross-domain reads across all nine test categories                                                           | Any passing test in the cross-domain read categories                                                         |
+| 8   | **Adversarial regression suite** — Full conformance test suite run returns zero successful cross-domain reads across the required test categories                                                       | Any passing test in the cross-domain read categories                                                         |
 | 9   | **Deploy-time readiness block** — CI/CD pipeline is configured to fail deployment on non-zero null-scope artifact count or any failing conformance test                                                 | A deployment that completes despite failing checks, even in non-production environments                      |
+| 10  | **Managed-service evidence binding** — Claims that rely on managed runtime, identity, registry, retrieval, evaluation, tracing, or audit services include evidence references tied to HKI envelope IDs  | Managed resource names, traces, audit logs, or eval results are claimed without envelope/domain correlation  |
 
-A team that checks all nine has a defensible HKI conformance claim. A team that fails one check knows exactly where the boundary is broken — which is the point.
+A team that checks all ten has a defensible HKI conformance claim. A team that fails one check knows exactly where the boundary is broken — which is the point.
 
 ## Adoption and Migration Path
 
@@ -625,6 +647,7 @@ It does not by itself address:
 2. Side channels such as timing, cost, or traffic analysis.
 3. Governance questions about who should be allowed into which stream.
 4. The economics of replication at very large scale.
+5. General-purpose orchestration, agent design, identity management, registry management, retrieval infrastructure, evaluation infrastructure, observability, or audit-log storage.
 
 It also does not require physical sharding. One cluster, one database, or one vector store may still host many domains so long as the runtime isolation invariants are preserved.
 

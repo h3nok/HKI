@@ -254,7 +254,7 @@ async def readiness() -> dict[str, typing.Any]:
                 headers=headers,
             )
             checks["llm_gateway"] = _gateway_probe_status(resp)
-        except Exception as exc: Exception:
+        except Exception as exc:
             checks["llm_gateway"] = f"error:{type(exc).__name__}"
     else:
         checks["vertex_ai"] = "ok:direct"
@@ -263,7 +263,7 @@ async def readiness() -> dict[str, typing.Any]:
     try:
         resp: httpx.Response = await client.get(f"{settings.KNOWLEDGE_API_URL}/health")
         checks["knowledge_api"] = "ok" if resp.status_code == 200 else f"error:{resp.status_code}"
-    except Exception as exc: Exception:
+    except Exception as exc:
         checks["knowledge_api"] = f"error:{type(exc).__name__}"
 
     # Cache check (L2 Redis)
@@ -274,8 +274,8 @@ async def readiness() -> dict[str, typing.Any]:
     else:
         checks["cache_l2"] = "degraded:not_initialized"
 
-    required_checks: list[str] = [k for k: str in checks if not checks[k].startswith("degraded")]
-    all_ok: bool = all(checks.get(name, "").startswith("ok") for name: str in required_checks)
+    required_checks: list[str] = [k for k in checks if not checks[k].startswith("degraded")]
+    all_ok: bool = all(checks.get(name, "").startswith("ok") for name in required_checks)
     return {
         "status": "ready" if all_ok else "degraded",
         "checks": checks,

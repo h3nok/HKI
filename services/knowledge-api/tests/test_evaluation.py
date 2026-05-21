@@ -15,7 +15,7 @@ class MockEmbedder:
     async def embed(self, texts: list[str]) -> list[list[float]]:
         # Simple hash-based deterministic embeddings (4-dim)
         vectors = []
-        for text: str in texts:
+        for text in texts:
             h: int = hash(text) % 10000
             vectors.append(
                 [
@@ -39,7 +39,7 @@ class MockJudge:
         # Simple heuristic: overlap between answer and context words
         answer_words: set[str] = set(answer.lower().split())
         ctx_words = set()
-        for ctx: str in contexts:
+        for ctx in contexts:
             ctx_words.update(ctx.lower().split())
         if not answer_words:
             return 0.0
@@ -183,7 +183,7 @@ class TestRetrievalEvaluator:
                 retrieved_contexts=["Some context here."],
                 generated_answer="An answer.",
             )
-            for i: int in range(5)
+            for i in range(5)
         ]
         report = await evaluator.evaluate(cases)
         assert report.total_cases == 5

@@ -162,7 +162,7 @@ const components = (imageUrls: Record<string, string>) => ({
   },
   table({ children }: { children?: ReactNode }) {
     return (
-      <div className="my-8 overflow-x-auto rounded-lg border border-border">
+      <div className="engineering-panel my-8 overflow-x-auto">
         <table className="min-w-full text-left text-sm">{children}</table>
       </div>
     );

@@ -26,7 +26,6 @@ import asyncio
 import time
 import typing
 
-from ..domain.feedback import FeedbackResponse
 import fastapi
 import pydantic
 
@@ -37,6 +36,8 @@ import src.core.logging
 import src.domain.context_shaping
 import src.domain.models
 import src.domain.protocols
+
+from ..domain.feedback import FeedbackResponse
 
 router = fastapi.APIRouter(prefix="/v1", tags=["knowledge"], dependencies=[fastapi.Depends(src.core.auth.verify_request_jwt)])
 UNSCOPED_SEARCH_ANALYTICS_SCOPE = "unscoped-search"
@@ -187,7 +188,7 @@ async def search(
     if search_query.mode in (src.domain.models.SearchMode.VECTOR, src.domain.models.SearchMode.HYBRID):
         try:
             query_embedding = await embedder.embed_single(body.query)
-        except src.adapters.embedding_client.EmbeddingError as exc: src.adapters.embedding_client.EmbeddingError:
+        except src.adapters.embedding_client.EmbeddingError as exc:
             src.core.logging.logger.warning(
                 "Embedding failed, falling back to keyword search",
                 extra={"error": str(exc)},
@@ -210,7 +211,7 @@ async def search(
                     top_k=body.top_k,
                 )
                 result = result.model_copy(update={"results": reranked_results})
-            except Exception as exc: Exception:
+            except Exception as exc:
                 src.core.logging.logger.warning("Reranker failed, keeping RRF order: %s", exc)
 
     # ── Context shaping (optional, for agent consumption) ─────────
@@ -252,7 +253,7 @@ async def search(
                 if (c and not isinstance(c, Exception) and c.embedding)
                 else query_embedding
             )
-            for c: src.domain.models.Chunk | None | BaseException in raw_chunks
+            for c in raw_chunks
         ]
         cfg = src.domain.context_shaping.ShapingConfig(
             max_tokens=body.shaping_max_tokens,
@@ -387,7 +388,7 @@ async def list_documents(
                 "chunk_count": doc.chunk_count,
                 "created_at": doc.created_at.isoformat(),
             }
-            for doc: src.domain.models.Document in docs
+            for doc in docs
         ],
         total=total,
         limit=limit,
@@ -479,7 +480,7 @@ async def batch_delete_documents(
     failed_ids: list[str] = []
     caller_scopes: list[str] = _caller_stream_scopes(identity)
 
-    for doc_id: str in body.document_ids:
+    for doc_id in body.document_ids:
         try:
             ok: bool = await store.delete_document(
                 doc_id,
@@ -639,7 +640,7 @@ async def update_document_metadata(
 
         try:
             doc.metadata.document_type = src.domain.models.DocumentType(body.document_type)
-        except ValueError as exc: ValueError:
+        except ValueError as exc:
             raise fastapi.HTTPException(
                 status_code=400,
                 detail=f"Invalid document_type '{body.document_type}'",
@@ -656,7 +657,7 @@ async def update_document_metadata(
 
         try:
             doc.metadata.classification = DocumentClassification(body.classification)
-        except ValueError as exc: ValueError:
+        except ValueError as exc:
             raise fastapi.HTTPException(
                 status_code=400,
                 detail=f"Invalid classification '{body.classification}'",

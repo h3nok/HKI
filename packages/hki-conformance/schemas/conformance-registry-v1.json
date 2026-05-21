@@ -116,6 +116,97 @@
       },
       "additionalProperties": true
     },
+    "managedEvidence": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "profile",
+        "source",
+        "services",
+        "coverage",
+        "missingCapabilities"
+      ],
+      "properties": {
+        "schemaVersion": { "type": "string", "minLength": 1 },
+        "profile": {
+          "type": "string",
+          "enum": ["none", "sample", "smoke", "live", "release"]
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "object",
+              "required": ["path", "sha256"],
+              "properties": {
+                "path": { "type": "string", "minLength": 1 },
+                "sha256": { "type": "string", "minLength": 1 },
+                "generatedAt": { "type": ["string", "null"] }
+              },
+              "additionalProperties": true
+            },
+            { "type": "null" }
+          ]
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "status", "probes"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "provider": { "type": ["string", "null"] },
+              "capability": { "type": ["string", "null"] },
+              "status": {
+                "type": "string",
+                "enum": ["pass", "fail", "missing", "unknown"]
+              },
+              "resource": { "type": ["string", "null"] },
+              "evidenceRefs": { "type": ["object", "null"] },
+              "probes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "status"],
+                  "properties": {
+                    "id": { "type": "string", "minLength": 1 },
+                    "status": {
+                      "type": "string",
+                      "enum": ["pass", "fail", "missing", "unknown"]
+                    },
+                    "capability": { "type": ["string", "null"] },
+                    "resource": { "type": ["string", "null"] },
+                    "evidenceRefs": { "type": ["object", "null"] }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "required": ["services", "probes", "byCapability"],
+          "properties": {
+            "services": { "$ref": "#/$defs/managedEvidenceStatusCounts" },
+            "probes": { "$ref": "#/$defs/managedEvidenceStatusCounts" },
+            "byCapability": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/managedEvidenceStatusCounts"
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "missingCapabilities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": true
+    },
     "evidenceProfile": {
       "type": "string",
       "enum": ["none", "smoke", "live", "release"]
@@ -194,6 +285,20 @@
         "L4-tested",
         "L5-audited"
       ]
+    }
+  },
+  "$defs": {
+    "managedEvidenceStatusCounts": {
+      "type": "object",
+      "required": ["total", "passed", "failed", "missing", "unknown"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "missing": { "type": "integer", "minimum": 0 },
+        "unknown": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true

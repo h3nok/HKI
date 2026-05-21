@@ -24,6 +24,8 @@ Knowledge Isolation reference platform.
   local commands, and hashed bundle format
 - `HKI_PUBLIC_READINESS_PLAN.md` - end-to-end roadmap for making HKI ready for
   public adoption as an open-source standard and reference runtime
+- `HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md` - ADK-first managed-services plan for
+  Gemini Enterprise Agent Platform integration and managed evidence
 - `SERVICE_PORTS.md` - local and in-cluster port reference
 - `SERVICE_BOUNDARIES.md` - service ownership by responsibility and change surface
 

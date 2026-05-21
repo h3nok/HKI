@@ -90,7 +90,7 @@ function CitationBlock({ citation }: { citation: string }) {
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
         Cite this work
       </p>
-      <div className="group relative mt-4 overflow-hidden rounded-md border border-border bg-muted/25">
+      <div className="engineering-panel group relative mt-4 overflow-hidden bg-muted/25">
         <pre className="overflow-x-auto px-5 py-4 text-[12.5px] leading-6 text-foreground/85">
           <code className="font-mono">{citation}</code>
         </pre>
@@ -220,7 +220,7 @@ function CanonicalLinks({
                   }
                 : undefined
             }
-            className="group flex items-center justify-between gap-3 border-b border-transparent py-2 text-sm font-semibold text-foreground transition-colors hover:border-border hover:text-foreground"
+            className="engineering-panel engineering-panel-interactive group flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:text-foreground"
           >
             <span className="inline-flex items-center gap-2.5">
               <Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />

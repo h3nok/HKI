@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import types
 
+import hki_runtime
+
+
+
 import pytest
 
 import hki_crewai
@@ -127,7 +131,7 @@ def test_crew_guard_passes_when_consistent() -> None:
             _task(context={"hki_envelope": VALID}),
         ]
     )
-    env = hki_crewai.HkiCrewGuard().assert_crew_authorized(crew)
+    env: hki_runtime.HkiEnvelope = hki_crewai.HkiCrewGuard().assert_crew_authorized(crew)
     assert env.envelope_id == "env_1"
 
 
@@ -144,10 +148,10 @@ def test_cache_key_segregates_by_domain() -> None:
     assert a != b
 
 
-def _validated(domain: str):
+def _validated(domain: str) -> hki_runtime.HkiEnvelope:
     from hki_runtime import validate_envelope
 
     payload = {**VALID, "active_domain": domain, "authorized_domains": [domain]}
-    res = validate_envelope(payload, require_signature=True)
+    res: hki_runtime.HkiValidationResult = validate_envelope(payload, require_signature=True)
     assert res.envelope is not None
     return res.envelope

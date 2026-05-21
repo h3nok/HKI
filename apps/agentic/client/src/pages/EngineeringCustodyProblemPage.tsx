@@ -83,7 +83,7 @@ function PublicationLinks({ onNavigate }: { onNavigate: Navigate }) {
             target={link.external ? "_blank" : undefined}
             rel={link.external ? "noopener noreferrer" : undefined}
             onClick={handleClick}
-            className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground shadow-surface outline-none transition-all hover:-translate-y-px hover:shadow-surface-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="engineering-panel engineering-panel-interactive group flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <span className="inline-flex items-center gap-2.5">
               <Icon className="h-4 w-4 text-primary" />
@@ -119,7 +119,7 @@ function ArticleFooter({ onNavigate }: { onNavigate: Navigate }) {
               event.preventDefault();
               onNavigate(HKI_STANDARD_ROUTE);
             }}
-            className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground shadow-surface outline-none transition-all hover:-translate-y-px hover:shadow-surface-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="engineering-panel engineering-panel-interactive group flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Read HKI Standard
             <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
@@ -130,7 +130,7 @@ function ArticleFooter({ onNavigate }: { onNavigate: Navigate }) {
               event.preventDefault();
               onNavigate(ENGINEERING_HUB_ROUTE);
             }}
-            className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground shadow-surface outline-none transition-all hover:-translate-y-px hover:shadow-surface-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="engineering-panel engineering-panel-interactive group flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Back to Hub
             <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
@@ -166,7 +166,7 @@ export default function EngineeringCustodyProblemPage() {
   const activeId = useActiveHeading(headingIds);
 
   return (
-    <div className={cn(hub.page, "bg-background")}>
+    <div className="engineering-canvas flex min-h-screen flex-col font-sans text-foreground transition-colors">
       <ReadingProgress trackRef={articleRef} />
       <EngineeringHeader />
 
@@ -214,7 +214,7 @@ export default function EngineeringCustodyProblemPage() {
         </div>
       </main>
 
-      <footer className="border-t border-border">
+      <footer className="engineering-footer">
         <div className="mx-auto flex min-h-12 w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs text-muted-foreground sm:px-8">
           <div className="flex items-center gap-2">
             <HkiMark size={14} variant="color" />

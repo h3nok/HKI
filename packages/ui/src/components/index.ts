@@ -24,6 +24,25 @@ export {
   CardContent,
 } from "./card";
 
+// HKI Signature Primitives — editorial + industrial opt-in layer
+export {
+  Eyebrow,
+  DisplayHeading,
+  EditorialAccent,
+  Hairline,
+  PlaneChip,
+  PrecisionCard,
+  StampedCard,
+} from "./signature";
+export type {
+  EyebrowProps,
+  DisplayHeadingProps,
+  HairlineProps,
+  PlaneChipProps,
+  StampedCardProps,
+  HkiPlane,
+} from "./signature";
+
 export { Input } from "./input";
 export type { InputProps } from "./input";
 

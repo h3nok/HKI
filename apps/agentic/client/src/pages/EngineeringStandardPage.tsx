@@ -58,9 +58,8 @@ const READING_TIME_MIN = Math.max(
 const SECTION_COUNT = (HKI_PAPER.match(/^##\s+/gm) ?? []).length;
 
 const PRINTABLE_BRIEF_HREF =
-  "https://github.com/innovationlab/Hki/blob/main/docs/HKI-package/HKI-EXECUTIVE-BRIEF.md";
-const SOURCE_HREF =
-  "https://github.com/innovationlab/Hki/tree/main/docs/HKI-package";
+  "https://github.com/h3nok/HKI/blob/main/docs/HKI-package/HKI-EXECUTIVE-BRIEF.md";
+const SOURCE_HREF = "https://github.com/h3nok/HKI/tree/main/docs/HKI-package";
 
 const CITATION_BIBTEX = `@techreport{ghebrechristos2026hki,
   title  = {Hermetic Knowledge Isolation: A Runtime Contract
@@ -69,14 +68,14 @@ const CITATION_BIBTEX = `@techreport{ghebrechristos2026hki,
   year   = {2026},
   type   = {HKI Standard},
   number = {HKI-1.0},
-  url    = {https://github.com/innovationlab/Hki}
+  url    = {https://github.com/h3nok/HKI}
 }`;
 
 const VERSION_HISTORY = [
   {
     version: "v1.0",
     date: "2026-04-22",
-    note: "Initial public standard. Six invariants, three planes, conformance L4-deployed.",
+    note: "Draft standard. Six invariants, three planes, conformance L4-tested with evidence-profile qualifiers.",
   },
   {
     version: "v0.9",
@@ -94,8 +93,8 @@ type Navigate = (path: string) => void;
 
 function ArchitectureLaunchPanel({ onNavigate }: { onNavigate: Navigate }) {
   return (
-    <div className="border-y border-border bg-muted/30 py-6">
-      <div className="grid gap-7 px-1 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
+    <div className="engineering-panel overflow-hidden p-6">
+      <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
         <div className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
             Architecture workspace
@@ -115,14 +114,14 @@ function ArchitectureLaunchPanel({ onNavigate }: { onNavigate: Navigate }) {
               event.preventDefault();
               onNavigate(HKI_ARCHITECTURE_ROUTE);
             }}
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/30 active:translate-y-0"
+            className="engineering-primary-action mt-6"
           >
             Open Architecture Workspace
             <ArrowRight className="h-4 w-4" />
           </a>
         </div>
 
-        <ul className="grid gap-3 border-t border-border pt-5 text-sm lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+        <ul className="grid gap-3 border-t border-border/80 pt-5 text-sm lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
           {[
             [
               "Runtime path",
@@ -177,7 +176,7 @@ export default function EngineeringStandardPage() {
   const activeId = useActiveHeading(headingIds);
 
   return (
-    <div className={cn(hub.page, "bg-background")}>
+    <div className="engineering-canvas flex min-h-screen flex-col font-sans text-foreground transition-colors">
       <ReadingProgress trackRef={articleRef} />
       <EngineeringHeader />
 
@@ -299,7 +298,8 @@ export default function EngineeringStandardPage() {
                 citation={CITATION_BIBTEX}
                 versions={VERSION_HISTORY}
                 evidence={[
-                  { label: "Conformance level", value: "L4-deployed" },
+                  { label: "Conformance level", value: "L4-tested" },
+                  { label: "Evidence profile", value: "smoke" },
                   { label: "Cases", value: "28 / 28 passing" },
                   { label: "HTTP probes", value: "10 / 10 passing" },
                   { label: "Registry", value: "conformance.json" },

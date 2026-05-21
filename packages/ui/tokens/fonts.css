@@ -1,0 +1,12 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   HKI PLATFORM — FONT FACES
+   Editorial + UI stack used by the signature design layer.
+
+   Inter            — UI body, controls, data (already loaded by typography.css;
+                      re-imported here so apps that only pull tokens still get it)
+   Plus Jakarta Sans — display / hero / numbered sections (geometric, distinctive)
+   Instrument Serif  — editorial accents, italic pull-quotes, masthead serifs
+   JetBrains Mono   — code, IDs, hashes, telemetry
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap");

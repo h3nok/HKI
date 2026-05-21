@@ -208,6 +208,7 @@ function resolvePageFromPath(pathname: string): AdminPage {
 
 export default function AdminLayout() {
   const { role } = usePermissions();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   usePageMeta("Control Plane — Hermetic", "/favicon.svg");
 
   const isAdmin = role === "admin";
@@ -236,6 +237,8 @@ export default function AdminLayout() {
 
   return (
     <SidebarProvider
+      open={sidebarOpen}
+      onOpenChange={setSidebarOpen}
       style={
         {
           "--sidebar-width": "18.5rem",

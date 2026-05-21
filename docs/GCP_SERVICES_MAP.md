@@ -7,7 +7,9 @@
 
 ## TL;DR — Where Things Stand
 
-The platform is already significantly GCP-native. Several components you might assume are self-managed are actually on managed services. The gaps are: Neo4j (self-managed on GKE), and several Vertex AI services that are now unlocked since you enabled the AI Platform API.
+The platform is already significantly GCP-native. Several components you might assume are self-managed are actually on managed services. The gaps are: Neo4j (self-managed on GKE), several Vertex AI services that are now unlocked since you enabled the AI Platform API, and managed-service HKI evidence for Agent Platform Runtime, Agent Gateway, Agent Registry, managed RAG/search/eval, and Cloud Audit Logs.
+
+For the HKI standard posture, see [docs/HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md](HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md): ADK + Gemini Enterprise Agent Platform should be the recommended Google path, while HKI remains the portable isolation contract and evidence layer.
 
 ---
 
@@ -15,23 +17,23 @@ The platform is already significantly GCP-native. Several components you might a
 
 You're further along than the architecture doc implies. These are already running on managed GCP services in production:
 
-| Component | GCP Service | Evidence |
-|---|---|---|
-| **BFF database (MySQL)** | **Cloud SQL for MySQL** | `cloud-sql-proxy` sidecar in `agentic/k8s/deployment.yaml`; instance `p-642-cilab-demo:us-west1:agentic-db` |
-| **Vector store (PostgreSQL + pgvector)** | **AlloyDB** | PSC endpoint `10.1.0.6` (knowledge-api-db-psc-endpoint) — noted in `services/knowledge-api/k8s/deployment.yaml` |
-| **Cache / memory / job state** | **Memorystore for Redis** | `REDIS_URL` patched from Terraform outputs at deploy time (`deploy-k8s.sh`) |
-| **Container images** | **Artifact Registry** | `us-west1-docker.pkg.dev/p-642-cilab-infrastructure/cilab/` |
-| **CI/CD** | **Cloud Build** | `cloudbuild.yaml` in every service |
-| **Event queue** | **Cloud Pub/Sub** | Ingestion pipeline pub/sub emulated locally; real Pub/Sub in prod |
-| **Document storage** | **Cloud Storage** | `gs://hki-knowledge-docs` |
-| **Analytics warehouse** | **BigQuery** | Analytics service uses BigQuery in prod |
-| **LLM (Gemini)** | **Vertex AI Model Garden** | LiteLLM routes `gemini-2.0-flash` + `text-embedding-004` → Vertex AI; project `p-642-cilab-infrastructure` |
-| **Secret management** | **Secret Manager** | External-secrets-operator pattern; all service secrets annotated in deployment YAMLs |
-| **HTTPS ingress + TLS** | **Cloud Load Balancing + Google-managed cert** | `agentic/k8s/ingress.yaml`; cert for `agentic.cilabs.np.hki.com` |
-| **WAF** | **Cloud Armor** | `BackendConfig` in ingress references `agentic-waf` security policy — **needs the `gcloud` commands run to activate** |
-| **LLM observability** | **Langfuse Cloud** | `VITE_LANGFUSE_URL: https://cloud.langfuse.com` in production configmap |
-| **PII/DLP** | **Cloud DLP** | Configured in `services/litellm-gateway/config.yaml` `dlp_guardrail_config` — **callbacks disabled, needs one line to activate** |
-| **Compute** | **GKE Standard** | `namespace: platform`; multi-zone topology spread on all deployments |
+| Component                                | GCP Service                                    | Evidence                                                                                                                         |
+| ---------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **BFF database (MySQL)**                 | **Cloud SQL for MySQL**                        | `cloud-sql-proxy` sidecar in `agentic/k8s/deployment.yaml`; instance `p-642-cilab-demo:us-west1:agentic-db`                      |
+| **Vector store (PostgreSQL + pgvector)** | **AlloyDB**                                    | PSC endpoint `10.1.0.6` (knowledge-api-db-psc-endpoint) — noted in `services/knowledge-api/k8s/deployment.yaml`                  |
+| **Cache / memory / job state**           | **Memorystore for Redis**                      | `REDIS_URL` patched from Terraform outputs at deploy time (`deploy-k8s.sh`)                                                      |
+| **Container images**                     | **Artifact Registry**                          | `us-west1-docker.pkg.dev/p-642-cilab-infrastructure/cilab/`                                                                      |
+| **CI/CD**                                | **Cloud Build**                                | `cloudbuild.yaml` in every service                                                                                               |
+| **Event queue**                          | **Cloud Pub/Sub**                              | Ingestion pipeline pub/sub emulated locally; real Pub/Sub in prod                                                                |
+| **Document storage**                     | **Cloud Storage**                              | `gs://hki-knowledge-docs`                                                                                                        |
+| **Analytics warehouse**                  | **BigQuery**                                   | Analytics service uses BigQuery in prod                                                                                          |
+| **LLM (Gemini)**                         | **Vertex AI Model Garden**                     | LiteLLM routes `gemini-2.0-flash` + `text-embedding-004` → Vertex AI; project `p-642-cilab-infrastructure`                       |
+| **Secret management**                    | **Secret Manager**                             | External-secrets-operator pattern; all service secrets annotated in deployment YAMLs                                             |
+| **HTTPS ingress + TLS**                  | **Cloud Load Balancing + Google-managed cert** | `agentic/k8s/ingress.yaml`; cert for `agentic.cilabs.np.hki.com`                                                                 |
+| **WAF**                                  | **Cloud Armor**                                | `BackendConfig` in ingress references `agentic-waf` security policy — **needs the `gcloud` commands run to activate**            |
+| **LLM observability**                    | **Langfuse Cloud**                             | `VITE_LANGFUSE_URL: https://cloud.langfuse.com` in production configmap                                                          |
+| **PII/DLP**                              | **Cloud DLP**                                  | Configured in `services/litellm-gateway/config.yaml` `dlp_guardrail_config` — **callbacks disabled, needs one line to activate** |
+| **Compute**                              | **GKE Standard**                               | `namespace: platform`; multi-zone topology spread on all deployments                                                             |
 
 ---
 
@@ -70,6 +72,8 @@ remote_app = reasoning_engines.ReasoningEngine.create(
 
 **What changes**: Orchestrator moves off GKE entirely. BFF calls Agent Engine's REST API instead of `http://orchestrator:9501`.
 
+**HKI requirement**: do not replace Agent Platform Runtime, Sessions, Memory Bank, Agent Identity, Agent Gateway, Agent Registry, or Cloud Audit Logs. Instead, carry the signed HKI envelope through the ADK run/session/tool context, bind cache/artifact/audit decisions to `active_domain`, and emit evidence refs that correlate HKI decisions with managed runtime resources, traces, and audit logs. Track this in [docs/HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md](HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md).
+
 ### 2B. Vertex AI RAG Engine — HIGH PRIORITY
 
 You have a custom RAG implementation split across knowledge-api (retrieval) and ingestion-pipeline (chunking/embedding). Vertex AI RAG Engine is a managed service that handles:
@@ -101,6 +105,7 @@ result = rag.retrieval_query(
 ### 2C. Vertex AI Vector Search (Matching Engine)
 
 For scale beyond AlloyDB pgvector (billion+ vectors, <10ms ANN at scale). Your current AlloyDB pgvector is excellent for most enterprise workloads. Upgrade to Vector Search when:
+
 - Collection exceeds ~10M vectors
 - Latency target under 10ms at high QPS
 
@@ -351,36 +356,37 @@ All existing K8s manifests (Deployment, Service, HPA, PDB) work unchanged on Aut
 
 ## 6. Full Services Map (Current + Recommended)
 
-| Platform Component | Current GCP Service | Recommended Next Step |
-|---|---|---|
-| **BFF database** | Cloud SQL for MySQL ✅ | — (already managed) |
-| **Vector store** | AlloyDB via PSC ✅ | Enable `google_ml_integration` for inline Vertex AI embeddings |
-| **Cache / memory** | Memorystore for Redis ✅ | — (already managed) |
-| **CI/CD build** | Cloud Build ✅ | Add Cloud Deploy for progressive delivery |
-| **Container registry** | Artifact Registry ✅ | — |
-| **Event queue** | Cloud Pub/Sub ✅ | — |
-| **Document storage** | Cloud Storage ✅ | — |
-| **Analytics** | BigQuery ✅ | Add BigQuery ML for in-DB model scoring |
-| **LLM routing** | Vertex AI via LiteLLM ✅ | Add Gemini 2.5 Flash/Pro to LiteLLM config |
-| **HTTPS ingress** | Cloud Load Balancing + managed cert ✅ | — |
-| **WAF** | Cloud Armor (configured, not active) ⚠️ | Run `gcloud` commands to create security policy |
-| **PII protection** | Cloud DLP (configured, not active) ⚠️ | Enable callbacks in LiteLLM config |
-| **Secrets** | Secret Manager ✅ | Wire Workload Identity to remove `SERVICE_AUTH_SECRET` |
-| **LLM observability** | Langfuse Cloud ✅ | Add Cloud Trace exporter alongside Langfuse |
-| **Metrics** | Prometheus annotations ✅ (scraping unclear) | Enable Managed Service for Prometheus on GKE |
-| **Agent runtime** | Self-managed FastAPI on GKE | **Migrate to Vertex AI Agent Engine** |
-| **RAG retrieval** | Custom knowledge-api + AlloyDB | Consider Vertex AI RAG Engine for simpler managed path |
-| **LLM evaluation** | Custom RAGAS/LLM Judge | **Vertex AI Evaluation Service** |
-| **Knowledge graph** | Neo4j self-managed on GKE ❌ | **Migrate to Spanner Graph** |
-| **Ingestion workers** | Long-running FastAPI pod | **Migrate worker to Cloud Run Jobs** |
-| **Cluster** | GKE Standard | Consider GKE Autopilot (drop-in, less ops) |
-| **Delivery** | Cloud Build only | Add Cloud Deploy canary pipeline |
+| Platform Component     | Current GCP Service                          | Recommended Next Step                                          |
+| ---------------------- | -------------------------------------------- | -------------------------------------------------------------- |
+| **BFF database**       | Cloud SQL for MySQL ✅                       | — (already managed)                                            |
+| **Vector store**       | AlloyDB via PSC ✅                           | Enable `google_ml_integration` for inline Vertex AI embeddings |
+| **Cache / memory**     | Memorystore for Redis ✅                     | — (already managed)                                            |
+| **CI/CD build**        | Cloud Build ✅                               | Add Cloud Deploy for progressive delivery                      |
+| **Container registry** | Artifact Registry ✅                         | —                                                              |
+| **Event queue**        | Cloud Pub/Sub ✅                             | —                                                              |
+| **Document storage**   | Cloud Storage ✅                             | —                                                              |
+| **Analytics**          | BigQuery ✅                                  | Add BigQuery ML for in-DB model scoring                        |
+| **LLM routing**        | Vertex AI via LiteLLM ✅                     | Add Gemini 2.5 Flash/Pro to LiteLLM config                     |
+| **HTTPS ingress**      | Cloud Load Balancing + managed cert ✅       | —                                                              |
+| **WAF**                | Cloud Armor (configured, not active) ⚠️      | Run `gcloud` commands to create security policy                |
+| **PII protection**     | Cloud DLP (configured, not active) ⚠️        | Enable callbacks in LiteLLM config                             |
+| **Secrets**            | Secret Manager ✅                            | Wire Workload Identity to remove `SERVICE_AUTH_SECRET`         |
+| **LLM observability**  | Langfuse Cloud ✅                            | Add Cloud Trace exporter alongside Langfuse                    |
+| **Metrics**            | Prometheus annotations ✅ (scraping unclear) | Enable Managed Service for Prometheus on GKE                   |
+| **Agent runtime**      | Self-managed FastAPI on GKE                  | **Migrate to Vertex AI Agent Engine**                          |
+| **RAG retrieval**      | Custom knowledge-api + AlloyDB               | Consider Vertex AI RAG Engine for simpler managed path         |
+| **LLM evaluation**     | Custom RAGAS/LLM Judge                       | **Vertex AI Evaluation Service**                               |
+| **Knowledge graph**    | Neo4j self-managed on GKE ❌                 | **Migrate to Spanner Graph**                                   |
+| **Ingestion workers**  | Long-running FastAPI pod                     | **Migrate worker to Cloud Run Jobs**                           |
+| **Cluster**            | GKE Standard                                 | Consider GKE Autopilot (drop-in, less ops)                     |
+| **Delivery**           | Cloud Build only                             | Add Cloud Deploy canary pipeline                               |
 
 ---
 
 ## 7. Priority Order (What to Do First)
 
 ### Immediate (no code change, configuration only)
+
 1. **Activate Cloud Armor WAF** — `gcloud` commands already documented in `ingress.yaml`
 2. **Enable Cloud DLP callbacks** — one line in `services/litellm-gateway/config.yaml`
 3. **Add Gemini 2.5 Flash/Pro** — two entries in `services/litellm-gateway/config.yaml`
@@ -388,21 +394,24 @@ All existing K8s manifests (Deployment, Service, HPA, PDB) work unchanged on Aut
 5. **Enable AlloyDB AI** — `CREATE EXTENSION google_ml_integration` on the AlloyDB instance
 
 ### Short-term (days of work, high ROI)
+
 6. **Vertex AI Evaluation** — replace `llm_judge.py` with the managed evaluation SDK
 7. **Cloud Trace exporter** — add to `shared/shared/tracing.py` (5 lines of code)
 8. **Cloud Deploy pipeline** — add `clouddeploy.yaml` to each service; point Cloud Build at it
 
 ### Medium-term (architectural, weeks)
+
 9. **Spanner Graph** — rewrite `neo4j_graph.py` as `spanner_graph.py`
 10. **Cloud Run Jobs** for ingestion worker — extract `src/worker.py` from the pod
 11. **Workload Identity** — remove `SERVICE_AUTH_SECRET` from all services
 12. **Vertex AI Agent Engine** — redeploy orchestrator as Agent Engine app
 
 ### Longer-term (evaluate based on scale)
+
 13. **GKE Autopilot migration** — when node management overhead becomes real
 14. **Vertex AI RAG Engine** — evaluate against custom stack quality metrics
 15. **Vertex AI Vector Search** — only when AlloyDB pgvector hits scale limits
 
 ---
 
-*Update this document when services are migrated. Track activated vs planned in the Priority Order section.*
+_Update this document when services are migrated. Track activated vs planned in the Priority Order section._

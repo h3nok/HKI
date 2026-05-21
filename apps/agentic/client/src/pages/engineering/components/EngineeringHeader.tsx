@@ -10,10 +10,7 @@ import {
   HKI_CUSTODY_PROBLEM_ROUTE,
   HKI_STANDARD_ROUTE,
 } from "@/pages/engineering/constants";
-import {
-  ARCHITECTURE_COLORS,
-  architectureThemeVars,
-} from "@/pages/engineering/components/architecture/planes";
+import { architectureThemeVars } from "@/pages/engineering/components/architecture/planes";
 
 const NAV_ITEMS = [
   { label: "Hub", href: ENGINEERING_HUB_ROUTE },
@@ -21,9 +18,6 @@ const NAV_ITEMS = [
   { label: "Standard", href: HKI_STANDARD_ROUTE },
   { label: "Architecture", href: HKI_ARCHITECTURE_ROUTE },
 ] as const;
-
-const SURFACE = ARCHITECTURE_COLORS.surface;
-const STATUS = ARCHITECTURE_COLORS.status;
 
 function isActiveRoute(current: string, href: string) {
   return current === href;
@@ -43,14 +37,8 @@ export function EngineeringHeader({ className }: { className?: string }) {
 
   return (
     <header
-      className={cn("sticky top-0 z-50 border-b backdrop-blur-sm", className)}
-      style={
-        {
-          ...themeVars,
-          background: SURFACE.panel,
-          borderColor: SURFACE.border,
-        } as CSSProperties
-      }
+      className={cn("engineering-topbar sticky top-0 z-50 border-b", className)}
+      style={themeVars as CSSProperties}
     >
       <div className="mx-auto grid h-14 w-full max-w-7xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-5 sm:px-8">
         <div className="flex min-w-0 items-center gap-3 justify-self-start">
@@ -65,70 +53,42 @@ export function EngineeringHeader({ className }: { className?: string }) {
           >
             <HkiMark size={22} variant="color" />
             <span className="hidden min-w-0 items-baseline gap-2 sm:flex">
-              <span
-                className="text-sm font-bold tracking-tight"
-                style={{ color: SURFACE.text }}
-              >
+              <span className="text-sm font-bold tracking-tight text-foreground">
                 HKI Engineering
               </span>
-              <span
-                className="hidden text-[11px] lg:inline"
-                style={{ color: SURFACE.textSubtle }}
-              >
+              <span className="hidden text-[11px] text-muted-foreground lg:inline">
                 AI Work Index
               </span>
             </span>
           </a>
-          <span
-            aria-hidden
-            className="hidden h-4 w-px md:block"
-            style={{ background: SURFACE.border }}
-          />
+          <span aria-hidden className="hidden h-4 w-px bg-border/70 md:block" />
           <a
             href="/"
             onClick={event => {
               event.preventDefault();
               navigate("/");
             }}
-            className="hidden text-[12px] font-medium transition-opacity hover:opacity-80 md:inline"
-            style={{ color: SURFACE.textMuted }}
+            className="hidden text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground md:inline"
           >
             ← Landing
           </a>
         </div>
 
-        <nav
-          aria-label="Engineering sections"
-          className="justify-self-center rounded-xl border p-1 shadow-sm backdrop-blur"
-          style={{
-            background: SURFACE.panelRaised,
-            borderColor: SURFACE.border,
-          }}
-        >
-          <div className="flex items-center justify-center gap-0.5">
+        <nav aria-label="Engineering sections" className="justify-self-center">
+          <div className="engineering-segmented">
             {NAV_ITEMS.map(item => {
               const active = isActiveRoute(location, item.href);
               return (
                 <a
                   key={item.href}
                   href={item.href}
+                  data-active={active}
                   aria-current={active ? "page" : undefined}
                   onClick={event => {
                     event.preventDefault();
                     navigate(item.href);
                   }}
-                  className={cn(
-                    "relative rounded-lg border px-3.5 py-1.5 text-[12px] font-semibold outline-none transition-all duration-150 hover:opacity-85 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-[13px]",
-                    active && "shadow-sm"
-                  )}
-                  style={{
-                    background: active ? STATUS.focus : SURFACE.panelRaised,
-                    borderColor: active ? STATUS.focus : SURFACE.border,
-                    color: active ? SURFACE.panel : SURFACE.textMuted,
-                    boxShadow: active
-                      ? `0 10px 24px -18px ${STATUS.focus}`
-                      : undefined,
-                  }}
+                  className="engineering-tab outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   {item.label}
                 </a>
@@ -141,12 +101,7 @@ export function EngineeringHeader({ className }: { className?: string }) {
           <button
             type="button"
             onClick={toggleTheme}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md border transition-opacity hover:opacity-80"
-            style={{
-              background: SURFACE.panelRaised,
-              borderColor: SURFACE.border,
-              color: SURFACE.textMuted,
-            }}
+            className="engineering-icon-button outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
           >
             {theme === "light" ? (

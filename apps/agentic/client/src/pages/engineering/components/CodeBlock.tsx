@@ -150,7 +150,7 @@ export function CodeBlock({ code, lang, filename, className }: CodeBlockProps) {
   return (
     <div
       className={cn(
-        "group hki-code-block relative my-8 overflow-hidden rounded-xl",
+        "group hki-code-block relative my-8 overflow-hidden rounded-lg",
         "border border-zinc-800 bg-[#24292e] dark:bg-[#22272e]",
         "shadow-[0_4px_24px_rgba(0,0,0,0.18)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)]",
         className

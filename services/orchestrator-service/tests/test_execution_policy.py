@@ -101,9 +101,16 @@ class TestExecutionPolicy:
         )
 
         assert "## Platform Constitution" in prompt
+        assert "## HKI Standard Expertise" in prompt
         assert "## Domain Persona" in prompt
         assert "## Tools" in prompt
         assert "## Runtime Policy" in prompt
+        assert "answer as an HKI standard expert" in prompt
+        assert "HkiEnvelope" in prompt
+        assert "same_domain/sameHkiDomain" in prompt
+        assert "derive_hki_cache_key/deriveHkiCacheKey" in prompt
+        assert "reject_conflicting_scope_argument" in prompt
+        assert "For HKI standard, conformance, maturity, audit, adoption" in prompt
         assert "You are the Pharmacy operations assistant." in prompt
         assert "Active scope: pharmacy" in prompt
         assert (
@@ -121,6 +128,26 @@ class TestExecutionPolicy:
         assert "search those exact identifiers first" in prompt
         assert prompt_stack["summary"]["domain_prompt_source"] == "stream_override"
         assert prompt_stack["summary"]["enabled_tool_count"] == 2
+
+        hki_section = next(
+            section
+            for section in prompt_stack["sections"]
+            if section["key"] == "hki_standard_expertise"
+        )
+        assert hki_section["source"] == "platform_default"
+
+    def test_hki_requests_plan_to_use_knowledge_grounding(self) -> None:
+        agent = src.domain.agent.AdkAgent()
+
+        plan: src.domain.agent.ExecutionPlanState = agent._build_execution_plan(
+            "How do we audit Gemini Enterprise against HKI conformance?",
+            ["search_knowledge"],
+        )
+
+        assert [step.tool_name for step in plan.steps] == [
+            "search_knowledge",
+            "compose_response",
+        ]
 
     def test_conversational_plan_skips_default_knowledge_step(self) -> None:
         agent = src.domain.agent.AdkAgent()

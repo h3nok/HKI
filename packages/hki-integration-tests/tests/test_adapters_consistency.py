@@ -46,7 +46,7 @@ VALID_PAYLOAD: dict[str, typing.Any] = {
 
 @pytest.fixture()
 def envelope() -> hki_runtime.HkiEnvelope:
-    res = hki_runtime.validate_envelope(VALID_PAYLOAD, require_signature=True)
+    res: hki_runtime.HkiValidationResult = hki_runtime.validate_envelope(VALID_PAYLOAD, require_signature=True)
     assert res.envelope is not None
     return res.envelope
 
@@ -222,14 +222,14 @@ def test_all_tool_wrappers_reject_unauthorized_target_domain(
 
 
 def _validated(active: str) -> hki_runtime.HkiEnvelope:
-    res = hki_runtime.validate_envelope(_payload_with(active), require_signature=True)
+    res: hki_runtime.HkiValidationResult = hki_runtime.validate_envelope(_payload_with(active), require_signature=True)
     assert res.envelope is not None
     return res.envelope
 
 
 def test_cache_keys_are_distinct_across_domains_for_every_adapter() -> None:
-    iris = _validated("iris")
-    pulse = _validated("pulse")
+    iris: hki_runtime.HkiEnvelope = _validated("iris")
+    pulse: hki_runtime.HkiEnvelope = _validated("pulse")
     cache_keys: list[typing.Callable[..., str]] = [
         hki_langchain.hki_cache_key,
         hki_llamaindex.hki_cache_key,

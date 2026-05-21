@@ -899,11 +899,10 @@ function DiagramInner() {
       )}
       <div
         className={cn(
-          "overflow-hidden rounded-xl border shadow-surface",
+          "engineering-panel overflow-hidden",
           expanded && "fixed inset-4 z-60 flex flex-col shadow-2xl"
         )}
         style={{
-          background: SURFACE.panel,
           borderColor: SURFACE.border,
         }}
       >

@@ -22,6 +22,9 @@ import os
 import typing
 import uuid
 
+from .domain.llm_judge import GeminiJudge
+from .domain.evaluation import CaseResult
+from .domain.evaluation import CaseResult
 import mcp.server.fastmcp as fastmcp
 import pydantic
 
@@ -31,6 +34,12 @@ import src.core.config
 import src.domain.chunking
 import src.domain.context_shaping
 import src.domain.models
+
+from .adapters.alloydb_store import AlloyDBVectorStore
+from .adapters.neo4j_graph import Neo4jKnowledgeGraph
+from .domain.entity_extraction import EntityExtractor, ExtractionResult
+from .domain.evaluation import EvaluationReport
+from .domain.taxonomy import TaxonomyNode, ValidationResult
 
 # Configure logging
 logging.basicConfig(
@@ -150,7 +159,7 @@ async def initialize_services() -> None:
 
     # Initialize vector store
     if src.core.config.settings.ALLOYDB_URL and alloydb_vector_store_cls is not None:
-        vector_store = alloydb_vector_store_cls()
+        vector_store: AlloyDBVectorStore = alloydb_vector_store_cls()
         await vector_store.connect(src.core.config.settings.ALLOYDB_URL)
         logger.info(
             "Using AlloyDB vector store",
@@ -164,24 +173,24 @@ async def initialize_services() -> None:
 
     # Initialize Neo4j knowledge graph (optional)
     if src.core.config.settings.NEO4J_URI and neo4j_knowledge_graph_cls is not None:
-        graph = neo4j_knowledge_graph_cls()
+        graph: Neo4jKnowledgeGraph = neo4j_knowledge_graph_cls()
         await graph.connect(
             uri=src.core.config.settings.NEO4J_URI,
             password=src.core.config.settings.NEO4J_PASSWORD,
             username=src.core.config.settings.NEO4J_USERNAME,
             database=src.core.config.settings.NEO4J_DATABASE,
         )
-        _graph = graph
+        _graph= graph
         logger.info("Neo4j knowledge graph connected")
 
     # Initialize entity extractor (optional)
     if src.core.config.settings.ENTITY_EXTRACTION_ENABLED and entity_extractor_cls is not None:
-        extractor = entity_extractor_cls(
+        extractor: EntityExtractor = entity_extractor_cls(
             llm_url=src.core.config.settings.EMBEDDING_GATEWAY_URL,
             llm_api_key=src.core.config.settings.EMBEDDING_API_KEY,
             model=src.core.config.settings.ENTITY_EXTRACTION_MODEL,
         )
-        _entity_extractor = extractor
+        _entity_extractor= extractor
         logger.info("Entity extractor initialized")
 
     # Initialize taxonomy store
@@ -197,13 +206,13 @@ async def initialize_services() -> None:
         llm_api_key=src.core.config.settings.EMBEDDING_API_KEY,
         model=src.core.config.settings.ENTITY_EXTRACTION_MODEL,
     )
-    _llm_judge = judge
+    _llm_judge= judge
     logger.info("LLM Judge initialized for evaluation scoring")
 
     # Track if using local dev embedder
     from src.adapters.local_embedder import LocalDevEmbedder
 
-    _using_local_embedder = isinstance(embedding_client, LocalDevEmbedder)
+    _using_local_embedder= isinstance(embedding_client, LocalDevEmbedder)
 
     logger.info("Knowledge Platform MCP Server initialized successfully")
 
@@ -297,7 +306,7 @@ async def search_knowledge(input: SearchInput) -> SearchOutput:
     try:
         mode = src.domain.models.SearchMode(input.mode.lower())
     except ValueError:
-        mode = src.domain.models.SearchMode.HYBRID
+        mode: src.domain.models.SearchMode = src.domain.models.SearchMode.HYBRID
 
     # Parse document types
     doc_types = []
@@ -345,7 +354,7 @@ async def search_knowledge(input: SearchInput) -> SearchOutput:
             search_query.mode = src.domain.models.SearchMode.KEYWORD
 
     # Execute search
-    result = await _vector_store.search(search_query, query_embedding)
+    result: src.domain.models.SearchResponse = await _vector_store.search(search_query, query_embedding)
 
     # Build output
     search_results: list[SearchResult] = [
@@ -365,7 +374,7 @@ async def search_knowledge(input: SearchInput) -> SearchOutput:
     shaped_text = None
     if input.shape_context and result.results and query_embedding:
         shaper = src.domain.context_shaping.ContextShaper()
-        scored = [
+        scored: list[ScoredChunk] = [
             src.domain.context_shaping.ScoredChunk(
                 chunk_id=r.chunk_id,
                 document_id=r.document_id,
@@ -378,13 +387,13 @@ async def search_knowledge(input: SearchInput) -> SearchOutput:
             )
             for r in result.results
         ]
-        chunk_embs = [query_embedding] * len(scored)
+        chunk_embs: list[list[float]] = [query_embedding] * len(scored)
         cfg = src.domain.context_shaping.ShapingConfig(
             max_tokens=input.shaping_max_tokens,
             format="numbered",
         )
-        shaped = shaper.shape(scored, query_embedding, chunk_embs, cfg)
-        shaped_text = shaped.text
+        shaped: src.domain.context_shaping.ShapedContext = shaper.shape(scored, query_embedding, chunk_embs, cfg)
+        shaped_text: str = shaped.text
 
     logger.info(
         "Search completed",
@@ -467,11 +476,11 @@ async def ingest_document(input: IngestInput) -> IngestOutput:
     try:
         doc_type = src.domain.models.DocumentType(input.document_type.lower())
     except ValueError:
-        doc_type = src.domain.models.DocumentType.GENERAL
+        doc_type: src.domain.models.DocumentType = src.domain.models.DocumentType.GENERAL
     try:
         classification = src.domain.models.DocumentClassification(input.classification.lower())
     except ValueError:
-        classification = src.domain.models.DocumentClassification.INTERNAL
+        classification: src.domain.models.DocumentClassification = src.domain.models.DocumentClassification.INTERNAL
 
     # Create document
     doc_id = str(uuid.uuid4())
@@ -495,7 +504,7 @@ async def ingest_document(input: IngestInput) -> IngestOutput:
     )
 
     # Chunk the document
-    chunks = _chunker.chunk(
+    chunks: list[Chunk] = _chunker.chunk(
         document_id=doc_id,
         text=input.content,
         metadata={
@@ -515,8 +524,8 @@ async def ingest_document(input: IngestInput) -> IngestOutput:
 
     # Generate embeddings
     try:
-        chunk_texts = [c.content for c in chunks]
-        embeddings = await _embedding_client.embed(chunk_texts)
+        chunk_texts: list[str] = [c.content for c in chunks]
+        embeddings: list[list[float]] = await _embedding_client.embed(chunk_texts)
         for chunk, embedding in zip(chunks, embeddings, strict=False):
             chunk.embedding = embedding
     except src.adapters.embedding_client.EmbeddingError as exc:
@@ -539,9 +548,9 @@ async def ingest_document(input: IngestInput) -> IngestOutput:
     if _graph and _entity_extractor:
         try:
             for chunk in chunks:
-                result = await _entity_extractor.extract(chunk.content)
+                result: ExtractionResult = await _entity_extractor.extract(chunk.content)
                 if result.entities:
-                    stats = await _graph.upsert_entities(
+                    stats: dict[str, int] = await _graph.upsert_entities(
                         org_id=input.org_id,
                         entities=result.entities,
                         relationships=result.relationships,
@@ -550,7 +559,7 @@ async def ingest_document(input: IngestInput) -> IngestOutput:
                     )
                     entity_count += stats.get("entities", 0)
             # Link sequential chunks
-            chunk_ids = [c.id for c in chunks]
+            chunk_ids: list[str] = [c.id for c in chunks]
             await _graph.link_sequential_chunks(input.org_id, chunk_ids)
         except Exception as exc:
             logger.warning(
@@ -710,7 +719,7 @@ async def get_document(input: GetDocumentInput) -> DocumentDetail:
         logger.error("Get document failed: vector store not initialized")
         raise RuntimeError("Document service is temporarily unavailable")
 
-    doc = await _vector_store.get_document(
+    doc: src.domain.models.Document | None = await _vector_store.get_document(
         input.document_id,
         org_id=input.org_id,
         allowed_streams=_normalize_stream_scopes(input.value_streams),
@@ -776,7 +785,7 @@ async def delete_document(input: DeleteDocumentInput) -> DeleteDocumentOutput:
         logger.error("Delete document failed: vector store not initialized")
         raise RuntimeError("Document service is temporarily unavailable")
 
-    deleted = await _vector_store.delete_document(
+    deleted: bool = await _vector_store.delete_document(
         input.document_id,
         org_id=input.org_id,
         allowed_streams=_normalize_stream_scopes(input.value_streams),
@@ -872,7 +881,7 @@ async def discover_graph_neighbors(input: GraphNeighborsInput) -> GraphNeighbors
         logger.error("Graph discovery failed: vector store not initialized")
         raise RuntimeError("Graph discovery service is not available")
 
-    result = await _vector_store.get_neighbors(
+    result: src.domain.models.GraphNeighbors = await _vector_store.get_neighbors(
         chunk_id=input.chunk_id,
         max_depth=input.max_depth,
         org_id=input.org_id,
@@ -957,7 +966,7 @@ async def get_stats(input: StatsInput) -> StatsOutput:
             allowed_streams=_normalize_stream_scopes(input.value_streams),
         )
     else:
-        stats = _vector_store.stats(
+        stats: dict[str, Any] = _vector_store.stats(
             org_id=input.org_id,
             allowed_streams=_normalize_stream_scopes(input.value_streams),
         )
@@ -1020,7 +1029,7 @@ async def create_taxonomy_node(input: CreateTaxonomyNodeInput) -> TaxonomyNodeOu
     from src.domain.taxonomy import TaxonomyTree
 
     tree = TaxonomyTree(store=_taxonomy_store, org_id=input.org_id)
-    node = await tree.create_node(
+    node: TaxonomyNode = await tree.create_node(
         label=input.label,
         parent_id=input.parent_id,
         description=input.description,
@@ -1071,7 +1080,7 @@ async def list_taxonomy_roots(input: ListTaxonomyRootsInput) -> list[TaxonomyNod
     from src.domain.taxonomy import TaxonomyTree
 
     tree = TaxonomyTree(store=_taxonomy_store, org_id=input.org_id)
-    nodes = await tree.get_roots()
+    nodes: list[TaxonomyNode] = await tree.get_roots()
 
     return [
         TaxonomyNodeOutput(
@@ -1123,7 +1132,7 @@ async def validate_tags(input: ValidateTagsInput) -> ValidationOutput:
     from src.domain.taxonomy import TaxonomyTree
 
     tree = TaxonomyTree(store=_taxonomy_store, org_id=input.org_id)
-    result = await tree.validate_tags(input.tags)
+    result: ValidationResult = await tree.validate_tags(input.tags)
 
     return ValidationOutput(
         valid=result.valid,
@@ -1207,7 +1216,7 @@ async def evaluate_retrieval(input: EvaluateSuiteInput) -> EvaluationOutput:
         raise ValueError("Evaluation cases are required")
 
     # Convert input cases to domain models
-    cases = [
+    cases: list[EvaluationCase] = [
         EvaluationCase(
             id=c.id,
             query=c.query,
@@ -1233,7 +1242,7 @@ async def evaluate_retrieval(input: EvaluateSuiteInput) -> EvaluationOutput:
         },
     )
 
-    report = await evaluator.evaluate(cases, suite_name=input.suite_name)
+    report: EvaluationReport = await evaluator.evaluate(cases, suite_name=input.suite_name)
 
     # Convert to output format
     case_results: list[EvaluationCaseResult] = [
@@ -1328,7 +1337,7 @@ async def auto_evaluate(input: AutoEvaluateInput) -> EvaluationOutput:
     for idx, query in enumerate(input.queries):
         # Search the knowledge base
         try:
-            query_embedding = await _embedding_client.embed_single(query)
+            query_embedding: list[float] = await _embedding_client.embed_single(query)
             search_query = src.domain.models.SearchQuery(
                 query=query,
                 org_id=input.org_id,
@@ -1343,8 +1352,8 @@ async def auto_evaluate(input: AutoEvaluateInput) -> EvaluationOutput:
                 include_content=True,
             )
 
-            result = await _vector_store.search(search_query, query_embedding)
-            contexts = [r.content for r in result.results][: input.top_k]
+            result: src.domain.models.SearchResponse = await _vector_store.search(search_query, query_embedding)
+            contexts: list[str] = [r.content for r in result.results][: input.top_k]
         except Exception as exc:
             logger.warning(
                 "Auto-eval search failed",
@@ -1379,7 +1388,7 @@ async def auto_evaluate(input: AutoEvaluateInput) -> EvaluationOutput:
         },
     )
 
-    report = await evaluator.evaluate(eval_cases, suite_name=input.suite_name)
+    report: EvaluationReport = await evaluator.evaluate(eval_cases, suite_name=input.suite_name)
 
     # Convert to output format
     case_results: list[EvaluationCaseResult] = [

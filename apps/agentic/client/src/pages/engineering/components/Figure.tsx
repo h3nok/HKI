@@ -17,9 +17,7 @@ export function Figure({
   const label = number !== undefined ? `Fig. ${number}` : null;
   return (
     <figure className={cn("my-8 mx-auto w-full max-w-220", className)}>
-      <div className="overflow-hidden rounded-lg border border-border">
-        {children}
-      </div>
+      <div className="engineering-panel overflow-hidden">{children}</div>
       {(label || caption || notice) && (
         <figcaption className="mt-3 text-sm leading-6 text-muted-foreground">
           {(label || caption) && (

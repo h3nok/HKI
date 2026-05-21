@@ -10,23 +10,38 @@
  */
 
 import { SignJWT } from "jose";
+import { mintEnvelope } from "@hki/sdk/client";
+import { signEnvelope, type HkiEnvelope } from "@hki/runtime";
 import type { User } from "../../drizzle/schema";
 import { isKbHermeticIsolationEnabled } from "../_core/env";
-import { resolveRuntimeScope } from "../_core/hki-scope";
+import {
+  isForbiddenRuntimeScope,
+  resolveRuntimeScope,
+} from "../_core/hki-scope";
 
 const REQUEST_JWT_TTL_SECONDS = 30;
 const ISSUER = "agentic-bff";
 const AUDIENCE = "internal-services";
 
 /** Prefers SERVICE_AUTH_SECRET; falls back to JWT_SECRET for local dev. */
-function getSigningKey(): Uint8Array {
+function getSigningSecret(): string {
   const secret = process.env.SERVICE_AUTH_SECRET || process.env.JWT_SECRET;
   if (!secret) {
     throw new Error(
       "[Auth] Neither SERVICE_AUTH_SECRET nor JWT_SECRET is configured"
     );
   }
+  return secret;
+}
+
+/** Prefers SERVICE_AUTH_SECRET; falls back to JWT_SECRET for local dev. */
+function getSigningKey(): Uint8Array {
+  const secret = getSigningSecret();
   return new TextEncoder().encode(secret);
+}
+
+function getHkiSigningSecret(): string {
+  return process.env.HKI_SIGNING_SECRET || getSigningSecret();
 }
 
 export interface RequestJwtPayload {
@@ -70,6 +85,7 @@ export interface HkiRequestEnvelope {
 export interface SignedRequestJwt {
   token: string;
   envelope: HkiRequestEnvelope;
+  hkiEnvelope?: HkiEnvelope;
 }
 
 function normalizePrincipalToken(value: string): string {
@@ -167,6 +183,36 @@ function buildHkiRequestEnvelope(
   };
 }
 
+function buildStandardHkiEnvelope(
+  claims: RequestJwtPayload,
+  issuedAtSeconds: number
+): HkiEnvelope | undefined {
+  if (
+    isForbiddenRuntimeScope(claims.scope) ||
+    claims.scopes.some(scope => isForbiddenRuntimeScope(scope))
+  ) {
+    return undefined;
+  }
+
+  const unsignedEnvelope = mintEnvelope({
+    org_id: claims.org_id,
+    subject_id: claims.sub,
+    active_domain: claims.scope,
+    authorized_domains: claims.scopes,
+    purpose: "chat",
+    risk_tier: "read-only",
+    policy_pack_id: process.env.HKI_POLICY_PACK_ID || "hki-reference-platform",
+    issuer: ISSUER,
+    issued_at: issuedAtSeconds,
+    ttl: REQUEST_JWT_TTL_SECONDS,
+  });
+
+  return {
+    ...unsignedEnvelope,
+    signature: signEnvelope(unsignedEnvelope, getHkiSigningSecret()),
+  };
+}
+
 /** Mint a short-lived request JWT plus sanitized envelope metadata. */
 export async function signRequestJwtWithEnvelope(
   user: User,
@@ -186,6 +232,7 @@ export async function signRequestJwtWithEnvelope(
   return {
     token,
     envelope: buildHkiRequestEnvelope(claims, now),
+    hkiEnvelope: buildStandardHkiEnvelope(claims, now),
   };
 }
 

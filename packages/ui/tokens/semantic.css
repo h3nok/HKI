@@ -224,6 +224,62 @@
   --focus-ring: 0 0 0 2px var(--ring-offset), 0 0 0 4px var(--ring);
   --selection-bg: var(--color-brand-iris-100);
   --selection-text: var(--color-brand-iris-900);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §17 HKI PLANES — Runtime / Publication / Admin
+     The signature visual story of the spec. Three planes, three hues.
+       Runtime     → Iris (deep teal)   — operational, live, low-latency
+       Publication → Violet             — curated, signed, cross-domain release
+       Admin       → Coral              — control, override, audit, break-glass
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --plane-runtime: var(--color-brand-iris-600);
+  --plane-runtime-fg: var(--color-neutral-0);
+  --plane-runtime-muted: var(--color-brand-iris-50);
+  --plane-runtime-border: var(--color-brand-iris-200);
+
+  --plane-publication: var(--color-brand-violet-600);
+  --plane-publication-fg: var(--color-neutral-0);
+  --plane-publication-muted: var(--color-brand-violet-50);
+  --plane-publication-border: var(--color-brand-violet-200);
+
+  --plane-admin: var(--color-brand-coral-600);
+  --plane-admin-fg: var(--color-neutral-0);
+  --plane-admin-muted: var(--color-brand-coral-50);
+  --plane-admin-border: var(--color-brand-coral-200);
+
+  /* Contextual plane token — defaults to runtime (primary). Subtrees can
+     override via .plane-runtime / .plane-publication / .plane-admin to retint
+     brand-detail tokens (hairline-brand, shadow-stamped drop, focus glow)
+     without rewriting any rules. */
+  --plane-current: var(--primary);
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     §18 HAIRLINE / PRECISION SURFACES — industrial 1px detailing
+     All values derive from tokens — no raw hex, no raw white. The brand-tinted
+     ones reference --plane-current so a subtree can switch planes cleanly.
+     ═══════════════════════════════════════════════════════════════════════════ */
+  --hairline: color-mix(in srgb, var(--foreground) 12%, transparent);
+  --hairline-strong: color-mix(in srgb, var(--foreground) 22%, transparent);
+  --hairline-brand: color-mix(in srgb, var(--plane-current) 32%, transparent);
+
+  --inset-highlight: inset 0 1px 0
+    color-mix(in srgb, var(--color-neutral-0) 70%, transparent);
+  --inset-highlight-strong: inset 0 1px 0
+    color-mix(in srgb, var(--color-neutral-0) 90%, transparent);
+
+  --shadow-precision:
+    0 1px 0 var(--hairline),
+    0 1px 2px color-mix(in srgb, var(--foreground) 8%, transparent),
+    0 8px 24px -16px color-mix(in srgb, var(--foreground) 22%, transparent);
+  --shadow-stamped:
+    var(--inset-highlight), 0 1px 0 var(--hairline),
+    0 12px 30px -22px color-mix(in srgb, var(--foreground) 28%, transparent),
+    0 28px 60px -44px color-mix(in srgb, var(--plane-current) 24%, transparent);
+
+  /* Signature focus ring — hairline + plane-current glow, not a fat browser ring. */
+  --focus-ring-signature:
+    0 0 0 1px var(--ring-offset), 0 0 0 2px var(--plane-current),
+    0 0 0 6px color-mix(in srgb, var(--plane-current) 18%, transparent);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -374,6 +430,78 @@
   /* §16 Focus & Selection */
   --selection-bg: rgb(14 124 123 / 0.3);
   --selection-text: var(--color-brand-iris-100);
+
+  /* §17 Planes — lighter ramps for dark surfaces */
+  --plane-runtime: var(--color-brand-iris-400);
+  --plane-runtime-fg: var(--color-neutral-950);
+  --plane-runtime-muted: color-mix(
+    in srgb,
+    var(--color-brand-iris-500) 18%,
+    transparent
+  );
+  --plane-runtime-border: color-mix(
+    in srgb,
+    var(--color-brand-iris-400) 32%,
+    transparent
+  );
+
+  --plane-publication: var(--color-brand-violet-300);
+  --plane-publication-fg: var(--color-neutral-950);
+  --plane-publication-muted: color-mix(
+    in srgb,
+    var(--color-brand-violet-500) 18%,
+    transparent
+  );
+  --plane-publication-border: color-mix(
+    in srgb,
+    var(--color-brand-violet-300) 30%,
+    transparent
+  );
+
+  --plane-admin: var(--color-brand-coral-300);
+  --plane-admin-fg: var(--color-neutral-950);
+  --plane-admin-muted: color-mix(
+    in srgb,
+    var(--color-brand-coral-500) 16%,
+    transparent
+  );
+  --plane-admin-border: color-mix(
+    in srgb,
+    var(--color-brand-coral-300) 30%,
+    transparent
+  );
+
+  /* Contextual plane token (dark) — same default, retintable by subtree. */
+  --plane-current: var(--primary);
+
+  /* §18 Hairlines + precision shadows (dark) — token-derived only. */
+  --hairline: color-mix(in srgb, var(--color-neutral-0) 8%, transparent);
+  --hairline-strong: color-mix(
+    in srgb,
+    var(--color-neutral-0) 16%,
+    transparent
+  );
+  --hairline-brand: color-mix(in srgb, var(--plane-current) 30%, transparent);
+
+  --inset-highlight: inset 0 1px 0
+    color-mix(in srgb, var(--color-neutral-0) 6%, transparent);
+  --inset-highlight-strong: inset 0 1px 0
+    color-mix(in srgb, var(--color-neutral-0) 10%, transparent);
+
+  --shadow-precision:
+    0 1px 0 var(--hairline),
+    0 1px 2px color-mix(in srgb, var(--color-neutral-950) 40%, transparent),
+    0 10px 30px -18px
+      color-mix(in srgb, var(--color-neutral-950) 55%, transparent);
+  --shadow-stamped:
+    var(--inset-highlight), 0 1px 0 var(--hairline),
+    0 14px 36px -22px
+      color-mix(in srgb, var(--color-neutral-950) 65%, transparent),
+    0 32px 64px -44px color-mix(in srgb, var(--plane-current) 30%, transparent);
+
+  --focus-ring-signature:
+    0 0 0 1px var(--ring-offset), 0 0 0 2px var(--plane-current),
+    0 0 0 6px color-mix(in srgb, var(--plane-current) 28%, transparent);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════

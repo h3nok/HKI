@@ -13,6 +13,9 @@ alongside (and reconciles) the following companion documents:
   reference platform.
 - [docs/HKI_CONFORMANCE.md](HKI_CONFORMANCE.md) — definition of conformance
   Levels 0–5 and the evidence required at each level.
+- [docs/HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md](HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md) —
+  ADK-first managed-services plan for Gemini Enterprise Agent Platform, Agent
+  Identity, Agent Registry, Agent Gateway, managed RAG/search/eval, and audit evidence.
 - [docs/HKI_PUBLIC_READINESS_PLAN.md](HKI_PUBLIC_READINESS_PLAN.md) — earlier
   5-phase public-rollout plan; this roadmap supersedes its sequencing.
 - [docs/HKI_SECURITY_MAPPING.md](HKI_SECURITY_MAPPING.md) — mapping to MCP, A2A,
@@ -36,6 +39,16 @@ The standard is the product. The reference platform exists to make the standard
 credible. They have different audiences, different release cadences, and
 eventually different repositories. Confusing the two is the single largest
 failure mode of this project.
+
+### ADK-first managed-services posture
+
+For Google Cloud adopters, HKI should be **ADK-first, not ADK-only**. ADK and
+Gemini Enterprise Agent Platform should provide the agent runtime, managed
+sessions, memory, Agent Identity, Agent Gateway, Agent Registry, managed
+RAG/search/eval, traces, metrics, and Cloud Audit Logs. HKI should provide the
+portable isolation contract and conformance evidence that proves those managed
+services preserved one active domain per runtime operation. The detailed plan is
+tracked in [docs/HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md](HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md).
 
 ### The contract, in one paragraph
 
@@ -72,20 +85,21 @@ If a system cannot be tested against that paragraph, it is not HKI.
 
 ### 1.2 What is missing or weak
 
-| Gap                                                           | Severity           | Tracked in                    |
-| ------------------------------------------------------------- | ------------------ | ----------------------------- |
-| ~~FastAPI middleware for `hki-runtime` (Python)~~             | ~~High~~           | ~~Track 1 / M2~~ — ✅ Done    |
-| ~~Python conformance kit (only TS today)~~                    | ~~High~~           | ~~Track 1 / M2~~ — ✅ Done    |
-| ~~Threat catalog with runnable attacks~~                      | ~~High~~           | ~~Track 2 / M5~~ — ✅ Done    |
-| ~~Black-box HTTP-level conformance probe (`hki probe`)~~      | ~~High~~           | ~~Track 2 / M7~~ — ✅ Done    |
-| Adapter ecosystem (LiteLLM, LangChain, vector stores)         | High               | Track 3 / M5                  |
-| Non-GCP cloud reference (AWS, Azure)                          | Medium             | Track 3 / M6                  |
-| ~~`@hki/sdk` is too thin (3 files) to be a real front door~~  | ~~Medium~~         | ~~Track 1~~ — ✅ Done (M3/M4) |
-| `@hki/ui` carries 612 token-audit findings                    | Medium             | Track 4                       |
-| BFF doc says PostgreSQL, code uses MySQL                      | Low                | Track 4                       |
-| `services/` directory exists but is empty                     | Low                | Track 4                       |
-| Spec packages live in same repo as enterprise reference app   | High (positioning) | Track 4 / M1                  |
-| No external design partners; no third-party conformance claim | High (credibility) | Track 5                       |
+| Gap                                                           | Severity           | Tracked in                                                                            |
+| ------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------- |
+| ~~FastAPI middleware for `hki-runtime` (Python)~~             | ~~High~~           | ~~Track 1 / M2~~ — ✅ Done                                                            |
+| ~~Python conformance kit (only TS today)~~                    | ~~High~~           | ~~Track 1 / M2~~ — ✅ Done                                                            |
+| ~~Threat catalog with runnable attacks~~                      | ~~High~~           | ~~Track 2 / M5~~ — ✅ Done                                                            |
+| ~~Black-box HTTP-level conformance probe (`hki probe`)~~      | ~~High~~           | ~~Track 2 / M7~~ — ✅ Done                                                            |
+| Adapter ecosystem (LiteLLM, LangChain, vector stores)         | High               | Track 3 / M5                                                                          |
+| ADK + Gemini Enterprise Agent Platform managed evidence path  | High               | [docs/HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md](HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md) |
+| Non-GCP cloud reference (AWS, Azure)                          | Medium             | Track 3 / M6                                                                          |
+| ~~`@hki/sdk` is too thin (3 files) to be a real front door~~  | ~~Medium~~         | ~~Track 1~~ — ✅ Done (M3/M4)                                                         |
+| `@hki/ui` carries 612 token-audit findings                    | Medium             | Track 4                                                                               |
+| BFF doc says PostgreSQL, code uses MySQL                      | Low                | Track 4                                                                               |
+| `services/` directory exists but is empty                     | Low                | Track 4                                                                               |
+| Spec packages live in same repo as enterprise reference app   | High (positioning) | Track 4 / M1                                                                          |
+| No external design partners; no third-party conformance claim | High (credibility) | Track 5                                                                               |
 
 ---
 

@@ -144,43 +144,23 @@ export const k = {
     "focus:outline-none focus:ring-2 focus:ring-primary/30",
   ].join(" "),
 
-  // ── Card / Panel ──
-  card: ["rounded-2xl", "kb-surface-card text-card-foreground"].join(" "),
-  sectionSurface: [
-    "rounded-[24px]",
-    "kb-surface-section text-card-foreground",
-  ].join(" "),
-  surfaceRaised: [
-    "rounded-[24px]",
-    "bg-card text-card-foreground",
-    "border border-black/10 dark:border-primary/12",
-    "shadow-sm",
-    "dark:bg-card",
-    "dark:shadow-[0_8px_16px_-12px_rgba(0,0,0,0.3)]",
-  ].join(" "),
-  surfaceTinted: [
-    "rounded-[24px]",
-    "bg-card text-card-foreground",
-    "border border-black/10 dark:border-primary/12",
-    "shadow-sm",
-    "dark:bg-card",
-    "dark:shadow-[0_8px_16px_-12px_rgba(0,0,0,0.3)]",
-  ].join(" "),
-  surfaceSubtle: [
-    "rounded-[22px]",
-    "kb-surface-section text-card-foreground",
-  ].join(" "),
-  utilityPill: [
-    "rounded-2xl",
-    "border border-black/10 text-card-foreground",
-    "bg-card",
-    "shadow-[0_1px_2px_rgba(0,0,0,0.06)]",
-    "dark:bg-card dark:border-primary/8",
-  ].join(" "),
-  cardHeader: "px-5 py-3 border-b border-border/50 dark:border-white/[0.06]",
+  // ── Card / Panel — powered by @hki/ui primitives (surface-stamped /
+  //    surface-precision in tokens/signature.css). The page should wrap its
+  //    root in `k.ground` which adds `plane-publication`, so brand-tinted
+  //    detail tokens (hairline-brand, shadow drop, focus glow) retint to
+  //    violet automatically. No hardcoded colors, no app-level shims.
+  card: ["surface-stamped text-card-foreground"].join(" "),
+  sectionSurface: ["surface-precision text-card-foreground"].join(" "),
+  surfaceRaised: ["surface-stamped text-card-foreground"].join(" "),
+  surfaceTinted: ["surface-stamped text-card-foreground"].join(" "),
+  surfaceSubtle: ["surface-precision text-card-foreground"].join(" "),
+  utilityPill: ["rounded-2xl", "surface-precision text-card-foreground"].join(
+    " "
+  ),
+  cardHeader: "px-5 py-3 border-b border-border/50",
 
-  /** Elevated card — same shadow as k.card for consistency across all pages */
-  cardShadow: ["rounded-2xl", "kb-surface-card text-card-foreground"].join(" "),
+  /** Elevated card — alias of k.card for back-compat. */
+  cardShadow: ["surface-stamped text-card-foreground"].join(" "),
 
   // ── Typography — 3-level hierarchy (NO sub-12px sizes) ──
   /** Display — page titles, hero text. 18px / semibold / tight tracking */
@@ -199,11 +179,13 @@ export const k = {
   /** Mono — code, IDs, numbers. 12px / tabular */
   mono: "text-xs font-mono tabular-nums text-muted-foreground",
 
-  // ── Inset surface — recessed section inside a card ──
-  inset: ["rounded-xl", "kb-surface-inset"].join(" "),
+  // ── Inset surface — recessed section inside a card (primitive) ──
+  inset: ["surface-precision"].join(" "),
 
-  /** Ground — the recessed content canvas behind cards */
-  ground: "kb-surface-ground",
+  /** Ground — page canvas. Sets plane context to `publication` so all
+   *  brand-tinted detail tokens inside (focus rings, hairline-brand,
+   *  shadow-stamped drop) automatically retint to violet. */
+  ground: "bg-background plane-publication",
 
   // ── Pill / badge (legacy — prefer <Badge> from @hki/ui) ──
   pill: [
@@ -224,7 +206,6 @@ export const k = {
     DUOTONE_SURFACE_ACTIVE,
     "text-foreground",
     "ring-1 ring-primary/15",
-    "shadow-[0_12px_22px_-18px_rgba(14,124,123,0.24)]",
   ].join(" "),
   sidebarNavIdle: [
     "text-muted-foreground",
@@ -265,8 +246,8 @@ export const k = {
     "before:rounded-full before:bg-gradient-to-b before:from-primary before:to-primary/45",
   ].join(" "),
 
-  // ── Lift — restrained depth for focused/active elements ──
-  glow: "shadow-[0_12px_24px_-20px_rgba(14,124,123,0.22)] dark:shadow-[0_16px_28px_-24px_rgba(61,203,198,0.28)]",
+  // ── Lift — restrained depth (token-derived, plane-aware via --plane-current) ──
+  glow: "shadow-[var(--shadow-precision)]",
 } as const;
 
 // ── Pipeline polling config ──────────────────────────────────────────────────

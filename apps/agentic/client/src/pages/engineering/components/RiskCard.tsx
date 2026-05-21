@@ -49,7 +49,7 @@ export function RiskCard({
   return (
     <article
       id={`risk-${scenario.id}`}
-      className="scroll-mt-28 rounded-lg border border-border bg-card shadow-surface p-5 sm:p-6"
+      className="engineering-panel scroll-mt-28 p-5 sm:p-6"
     >
       <header className="flex items-start gap-4">
         <span

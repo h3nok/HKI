@@ -22,7 +22,8 @@ import uuid
 import google.adk.runners
 import google.adk.sessions
 import google.genai
-from google.genai.types import FunctionCall, FunctionResponse
+import hki_runtime
+import google.genai.types
 
 import src.adapters.cache
 import src.core.config
@@ -225,6 +226,7 @@ class ToolRunContext:
     conversation_id: str
     scope: str
     scopes: list[str]
+    hki_envelope: hki_runtime.HkiEnvelope | None
     policy: src.domain.models.ExecutionPolicy
     enabled_tools: list[str]
     executed_tool_calls: int = 0
@@ -253,7 +255,7 @@ def _normalize_guardrail_report(
 ) -> dict[str, typing.Any]:
     if not violations:
         return {"valid": True, "error": ""}
-    first_error = next(
+    first_error: str = next(
         (v.message for v in violations if v.severity == "error"),
         violations[0].message,
     )
@@ -514,13 +516,13 @@ class AdkAgent:
         memory_manager: src.domain.memory.MemoryManager | None = None,
         cache: src.adapters.cache.TieredCache | None = None,
     ) -> None:
-        self.memory = memory_manager
-        self.cache = cache
+        self.memory: src.domain.memory.MemoryManager | None = memory_manager
+        self.cache: src.adapters.cache.TieredCache | None = cache
         self._session_service = google.adk.sessions.InMemorySessionService()
-        self._tool_catalog = src.domain.tools.get_tool_catalog()
+        self._tool_catalog: dict[str, ToolSpec] = src.domain.tools.get_tool_catalog()
 
     @property
-    def tools(self):
+    def tools(self) -> list[Any]:
         """Expose base tool callables for the /tools listing endpoint."""
         return [spec.func for spec in self._tool_catalog.values()]
 
@@ -630,7 +632,7 @@ class AdkAgent:
         stream_config: src.domain.models.StreamConfig | None,
         policy: src.domain.models.ExecutionPolicy,
     ) -> list[str]:
-        enabled = (
+        enabled: list[str] = (
             list(stream_config.enabled_tools)
             if stream_config and stream_config.enabled_tools
             else list(self._tool_catalog.keys())
@@ -650,20 +652,20 @@ class AdkAgent:
         if policy.model:
             return policy.model, policy.model_tier, "stream policy selected explicit model"
 
-        tier = policy.model_tier
+        tier: src.domain.models.ModelTier = policy.model_tier
         if tier == src.domain.models.ModelTier.AUTO:
-            tier = (
+            tier: src.domain.models.ModelTier = (
                 src.domain.models.ModelTier.SMART
                 if _is_complex_request(message)
                 else src.domain.models.ModelTier.FAST
             )
 
-        model_map = {
+        model_map: dict[ModelTier, str] = {
             src.domain.models.ModelTier.FAST: src.core.config.settings.AGENT_MODEL_FAST,
             src.domain.models.ModelTier.SMART: src.core.config.settings.AGENT_MODEL_SMART,
             src.domain.models.ModelTier.THINKING: src.core.config.settings.AGENT_MODEL_THINKING,
         }
-        model_name = model_map.get(tier, src.core.config.settings.AGENT_MODEL)
+        model_name: str = model_map.get(tier, src.core.config.settings.AGENT_MODEL)
         reason: str = (
             "complex request escalated to higher-tier model"
             if tier in {src.domain.models.ModelTier.SMART, src.domain.models.ModelTier.THINKING}
@@ -676,7 +678,7 @@ class AdkAgent:
         primary_model: str,
         model_tier: src.domain.models.ModelTier,
     ) -> list[str]:
-        candidate_map = {
+        candidate_map: dict[ModelTier, list[str]] = {
             src.domain.models.ModelTier.FAST: [
                 primary_model,
                 src.core.config.settings.AGENT_MODEL,
@@ -696,7 +698,7 @@ class AdkAgent:
                 src.core.config.settings.AGENT_MODEL_FAST,
             ],
         }
-        ordered = candidate_map.get(
+        ordered: list[str] = candidate_map.get(
             model_tier, [primary_model, src.core.config.settings.AGENT_MODEL]
         )
         unique_candidates: list[str] = []
@@ -729,10 +731,10 @@ class AdkAgent:
         working_memory = None
         working_memory_count = 0
         if context and context.total_memories > 0:
-            working_memory = context.to_prompt_section().strip()
-            working_memory_count = context.total_memories
+            working_memory: str = context.to_prompt_section().strip()
+            working_memory_count: int = context.total_memories
 
-        prompt_stack = src.domain.adk_agent.build_prompt_stack(
+        prompt_stack: dict[str, Any] = src.domain.adk_agent.build_prompt_stack(
             domain_prompt=base_prompt,
             enabled_tools=enabled_tools,
             scope=scope,
@@ -789,7 +791,19 @@ class AdkAgent:
                 )
 
         if any(
-            token in lowered for token in ("policy", "sop", "procedure", "knowledge", "document")
+            token in lowered
+            for token in (
+                "policy",
+                "sop",
+                "procedure",
+                "knowledge",
+                "document",
+                "hki",
+                "hermetic knowledge isolation",
+                "hkienvelope",
+                "conformance",
+                "auditability",
+            )
         ):
             maybe_add("search_knowledge", "Retrieve supporting internal knowledge")
         if any(token in lowered for token in ("inventory", "stock", "availability")):
@@ -862,7 +876,7 @@ class AdkAgent:
 
     def _build_tool_wrappers(self, context: ToolRunContext) -> dict[str, typing.Any]:
         wrappers: dict[str, typing.Any] = {}
-        tool_specs = src.domain.tools.get_tool_catalog(context.enabled_tools)
+        tool_specs: dict[str, ToolSpec] = src.domain.tools.get_tool_catalog(context.enabled_tools)
 
         for tool_name, spec in tool_specs.items():
             tool_func = spec.func
@@ -876,7 +890,7 @@ class AdkAgent:
             ) -> dict[str, typing.Any]:
                 context.executed_tool_calls += 1
                 max_tool_calls = context.policy.budgets.max_tool_calls
-                tool_meta = {
+                tool_meta: dict[str, str] = {
                     "tool": _tool_name,
                     "risk_level": _spec.risk_level.value,
                 }
@@ -920,6 +934,7 @@ class AdkAgent:
                     _tool_func,
                     kwargs,
                     cache=self.cache,
+                    hki_envelope=context.hki_envelope,
                     retrieval_strategy=context.policy.retrieval_strategy,
                 )
                 payload = dict(result) if isinstance(result, dict) else {"value": result}
@@ -984,13 +999,14 @@ class AdkAgent:
         user_id: str | None = None,
         org_id: str = "default",
         scopes: list[str] | None = None,
+        hki_envelope: hki_runtime.HkiEnvelope | None = None,
     ):
         """
         Execute a chat turn using ADK Runner, yielding SSE-compatible dicts.
         """
         effective_user_id: str = user_id or session_id
         effective_scopes: list[str] = scopes or [scope]
-        policy = self._build_execution_policy(stream_config)
+        policy: src.domain.models.ExecutionPolicy = self._build_execution_policy(stream_config)
         enabled_tools: list[str] = self._resolve_enabled_tools(stream_config, policy)
         conversational_response: str | None = _build_conversational_fast_path_response(message)
 
@@ -1075,7 +1091,7 @@ class AdkAgent:
             },
         )
 
-        context = (
+        context: src.domain.memory.MemoryContext | None = (
             await self.memory.recall_all(
                 user_id=effective_user_id,
                 conversation_id=session_id,
@@ -1165,6 +1181,7 @@ class AdkAgent:
             conversation_id=session_id,
             scope=scope,
             scopes=effective_scopes,
+            hki_envelope=hki_envelope,
             policy=policy,
             enabled_tools=enabled_tools,
         )
@@ -1231,7 +1248,7 @@ class AdkAgent:
 
                         for part in event.content.parts:
                             if hasattr(part, "function_call") and part.function_call:
-                                fc: FunctionCall = part.function_call
+                                fc: google.genai.types.FunctionCall = part.function_call
                                 tool_name: str | None = fc.name
                                 tool_args: dict[str, typing.Any] = dict(fc.args) if fc.args else {}
                                 tool_call_id: str = f"adk-{tool_name}-{uuid.uuid4().hex[:8]}"
@@ -1280,7 +1297,7 @@ class AdkAgent:
                                 step_counter += 1
 
                             elif hasattr(part, "function_response") and part.function_response:
-                                fr: FunctionResponse = part.function_response
+                                fr: google.genai.types.FunctionResponse = part.function_response
                                 tool_name: str | None = fr.name
                                 raw_output: dict[str, typing.Any] = (
                                     dict(fr.response) if fr.response else {}
@@ -1815,7 +1832,7 @@ class AdkAgent:
                 return
 
             failure_kind, failure_detail = _classify_model_failure(e)
-            failure_message = _platform_failure_message(failure_kind)
+            failure_message: str = _platform_failure_message(failure_kind)
             yield {
                 "type": "tool_result",
                 "step": step_counter,

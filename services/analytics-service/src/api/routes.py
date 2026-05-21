@@ -75,7 +75,7 @@ def _validation_issues(
 ) -> list[dict[str, str]]:
     return [
         {"code": issue.code, "field": issue.field, "message": issue.message}
-        for issue: hki_runtime.HkiValidationIssue in issues
+        for issue in issues
     ]
 
 
@@ -194,7 +194,7 @@ async def ingest_event(
     try:
         decoded: str = base64.b64decode(raw_data).decode("utf-8")
         raw_event = json.loads(decoded)
-    except Exception as exc: Exception:
+    except Exception as exc:
         logger.warning("Failed to decode Pub/Sub message", extra={"error": str(exc)})
         return {"status": "error", "reason": "failed to decode Pub/Sub message"}
 
@@ -259,7 +259,7 @@ async def recent_events(
         normalized_decision: str = decision.strip().lower()
         events = [
             event
-            for event: src.adapters.database.AgentEvent in events
+            for event in events
             if str(
                 (event.payload.get("decision") or {}).get("outcome")
                 if isinstance(event.payload.get("decision"), dict)
@@ -279,7 +279,7 @@ async def recent_events(
                 "ingested_at": e.ingested_at,
                 "payload": e.payload,
             }
-            for e: src.adapters.database.AgentEvent in events
+            for e in events
         ],
         "total": len(events),
     }
@@ -363,14 +363,14 @@ async def token_usage(
     )
 
     usage_events: list[src.domain.entities.AgentEvent] = [
-        e for e: src.adapters.database.AgentEvent in events
+        e for e in events
         if e.event_type in ("llm.usage", "embedding.usage")
         and (org_id is None or e.org_id == org_id)
     ]
 
     if stream_id:
         usage_events: list[src.domain.entities.AgentEvent] = [
-            e for e: src.adapters.database.AgentEvent in usage_events
+            e for e in usage_events
             if e.payload.get("stream_id") == stream_id
         ]
 
@@ -379,7 +379,7 @@ async def token_usage(
     total_output = 0
     total_embedding = 0
 
-    for e: src.adapters.database.AgentEvent in usage_events:
+    for e in usage_events:
         p: dict[str, typing.Any] = e.payload
         model = p.get("model", "unknown")
         if model not in by_model:

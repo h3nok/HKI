@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import types
-from typing import Any
+import typing
+
+from hki_runtime import HkiEnvelope
+
+from hki_runtime import HkiValidationResult
 
 import pytest
 
@@ -99,12 +103,12 @@ def test_callback_retriever_end_blocks_unlabeled_and_cross_domain() -> None:
 
 class _FakeRetriever:
     def __init__(self, docs) -> None:
-        self._docs: Any = docs
+        self._docs: typing.Any = docs
 
-    def invoke(self, query, config=None) -> Any:
+    def invoke(self, query, config=None) -> typing.Any:
         return self._docs
 
-    async def ainvoke(self, query, config=None) -> Any:
+    async def ainvoke(self, query, config=None) -> typing.Any:
         return self._docs
 
 
@@ -115,7 +119,7 @@ def test_hki_retriever_filters_to_active_domain() -> None:
         _doc({"id": "x"}, "unlabeled"),
     ]
     retriever = hki_langchain.HkiRetriever(_FakeRetriever(docs))
-    out: list[Any] = retriever.invoke("q", config={"metadata": {"hki_envelope": VALID}})
+    out: list[typing.Any] = retriever.invoke("q", config={"metadata": {"hki_envelope": VALID}})
     assert [d.metadata["id"] for d in out] == ["i1"]
 
 
@@ -133,10 +137,10 @@ def test_cache_key_segregates_by_domain() -> None:
     assert a != b
 
 
-def _validated(domain: str):
+def _validated(domain: str) -> HkiEnvelope:
     from hki_runtime import validate_envelope
 
     payload = {**VALID, "active_domain": domain, "authorized_domains": [domain]}
-    res = validate_envelope(payload, require_signature=True)
+    res: HkiValidationResult = validate_envelope(payload, require_signature=True)
     assert res.envelope is not None
     return res.envelope

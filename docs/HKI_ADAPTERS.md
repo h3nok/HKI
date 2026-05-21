@@ -1,5 +1,11 @@
 # HKI Adapters — Reference Index
 
+For Google Cloud adopters, HKI is **ADK-first, not ADK-only**. The ADK adapter is
+the recommended path for Gemini Enterprise Agent Platform managed runtimes, while
+the other adapters keep HKI portable across common agent and retrieval stacks.
+See [docs/HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md](HKI_ADK_FIRST_MANAGED_SERVICES_PLAN.md)
+for the managed-services roadmap.
+
 The HKI reference implementation ships **six** framework adapters. Every
 adapter is duck-typed (no hard dep on its framework — frameworks are
 optional extras), MIT-licensed, and shares the same denial-code shape:
@@ -7,10 +13,10 @@ optional extras), MIT-licensed, and shares the same denial-code shape:
 
 | Package                                      | Framework             | Surface                                                                              | Tests | Status |
 | -------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------ | ----- | ------ |
+| [hki-adk](../packages/hki-adk)               | Google ADK            | `HkiToolGuard`, `HkiBeforeAgentCallback`, `HkiBeforeToolCallback`, `HkiSessionGuard` | 11    | M15    |
 | [hki-litellm](../packages/hki-litellm)       | LiteLLM gateway       | `pre_call`, `post_call`, `HkiLiteLLMCallback`                                        | 7     | M10    |
 | [hki-langchain](../packages/hki-langchain)   | LangChain / LangGraph | `HkiCallbackHandler`, `HkiRetriever`, `hki_cache_key`                                | 9     | M11    |
 | [hki-llamaindex](../packages/hki-llamaindex) | LlamaIndex            | `HkiCallbackHandler`, `HkiRetriever`, `HkiQueryEngine`, `hki_cache_key`              | 11    | M14    |
-| [hki-adk](../packages/hki-adk)               | Google ADK            | `HkiToolGuard`, `HkiBeforeAgentCallback`, `HkiBeforeToolCallback`, `HkiSessionGuard` | 11    | M15    |
 | [hki-autogen](../packages/hki-autogen)       | Microsoft AutoGen     | `HkiMessageGuard`, `HkiToolWrapper`, `HkiAgentMixin`, `hki_cache_key`                | 12    | M16    |
 | [hki-crewai](../packages/hki-crewai)         | CrewAI                | `HkiTaskGuard`, `HkiToolWrapper`, `HkiCrewGuard`, `hki_cache_key`                    | 12    | M17    |
 

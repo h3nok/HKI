@@ -23,11 +23,17 @@ const buttonVariants = cva(
           "text-muted-foreground hover:text-primary hover:bg-primary/8",
         link: "text-primary underline-offset-4 hover:underline",
         brand: "bg-primary text-primary-foreground hover:bg-primary/90",
+        // Signature precision — hairline border + inset highlight + signature
+        // focus ring. The "industrial" button look used across editorial
+        // surfaces (engineering pages, hero CTAs, evidence cards).
+        precision:
+          "bg-card text-foreground border border-[var(--hairline-strong)] shadow-[var(--inset-highlight)] hover:border-[var(--hairline-brand)] hover:text-primary focus-visible:ring-0 focus-visible:shadow-[var(--focus-ring-signature)]",
       },
       size: {
         default: "h-9 px-3.5 has-[>svg]:px-3",
         sm: "h-7 rounded gap-1.5 px-2.5 text-xs has-[>svg]:px-2",
         lg: "h-10 px-5 has-[>svg]:px-4",
+        xl: "h-12 rounded-lg px-7 text-[0.95rem] tracking-[-0.005em] has-[>svg]:px-6",
         icon: "size-9",
         "icon-sm": "size-8",
         "icon-lg": "size-10",
@@ -37,7 +43,7 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  },
+  }
 );
 
 export interface ButtonProps
@@ -57,7 +63,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       />
     );
-  },
+  }
 );
 Button.displayName = "Button";
 

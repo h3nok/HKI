@@ -5,10 +5,7 @@ import { HkiMark, cn } from "@hki/ui";
 
 import { ENGINEERING_HUB_ROUTE } from "@/pages/engineering/constants";
 import { useTheme } from "@/contexts/ThemeContext";
-import {
-  ARCHITECTURE_COLORS,
-  architectureThemeVars,
-} from "@/pages/engineering/components/architecture/planes";
+import { architectureThemeVars } from "@/pages/engineering/components/architecture/planes";
 import { EngineeringHeader } from "./EngineeringHeader";
 
 /**
@@ -56,18 +53,10 @@ export function EngineeringShell({
   return (
     <div
       className={cn(
-        "flex flex-col",
-        !fullViewport && "bg-background",
+        "engineering-canvas flex flex-col",
         fullViewport ? "h-screen overflow-hidden" : "min-h-screen"
       )}
-      style={
-        fullViewport
-          ? ({
-              ...themeVars,
-              background: ARCHITECTURE_COLORS.surface.page,
-            } as CSSProperties)
-          : (themeVars as CSSProperties)
-      }
+      style={themeVars as CSSProperties}
     >
       <EngineeringHeader />
 
@@ -85,14 +74,8 @@ export function EngineeringShell({
       </main>
 
       {!fullViewport && (
-        <footer
-          className="border-t"
-          style={{ borderColor: ARCHITECTURE_COLORS.surface.border }}
-        >
-          <div
-            className="mx-auto flex min-h-12 w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs sm:px-8"
-            style={{ color: ARCHITECTURE_COLORS.surface.textMuted }}
-          >
+        <footer className="engineering-footer">
+          <div className="mx-auto flex min-h-12 w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs sm:px-8">
             {footerLeft ?? (
               <div className="flex items-center gap-2">
                 <HkiMark size={14} variant="color" />
@@ -107,7 +90,6 @@ export function EngineeringShell({
                   navigate(ENGINEERING_HUB_ROUTE);
                 }}
                 className="inline-flex items-center gap-1.5 font-medium outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                style={{ color: ARCHITECTURE_COLORS.surface.textMuted }}
               >
                 Back to hub
                 <ArrowRight className="h-3 w-3" />

@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { serializeEnvelope } from "@hki/sdk/client";
+import type { HkiEnvelope } from "@hki/runtime";
 import { router, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
 import {
@@ -319,7 +321,8 @@ async function callOrchestrator(
     scope?: string;
     scopes?: string[];
   },
-  authToken?: string
+  authToken?: string,
+  hkiEnvelope?: HkiEnvelope
 ): Promise<OrchestratorResponse> {
   const idToken = await getGoogleIdToken(ORCHESTRATOR_URL);
   const headers: Record<string, string> = {
@@ -330,6 +333,9 @@ async function callOrchestrator(
   }
   if (authToken) {
     headers["X-Service-Auth"] = `Bearer ${authToken}`;
+  }
+  if (hkiEnvelope) {
+    headers["X-HKI-Envelope"] = serializeEnvelope(hkiEnvelope);
   }
 
   const response = await fetch(`${ORCHESTRATOR_URL}/v1/chat`, {
@@ -361,7 +367,8 @@ async function* callOrchestratorStream(
     scope?: string;
     scopes?: string[];
   },
-  authToken?: string
+  authToken?: string,
+  hkiEnvelope?: HkiEnvelope
 ): AsyncGenerator<OrchestratorTraceEvent> {
   const idToken = await getGoogleIdToken(ORCHESTRATOR_URL);
   const headers: Record<string, string> = {
@@ -372,6 +379,9 @@ async function* callOrchestratorStream(
   }
   if (authToken) {
     headers["X-Service-Auth"] = `Bearer ${authToken}`;
+  }
+  if (hkiEnvelope) {
+    headers["X-HKI-Envelope"] = serializeEnvelope(hkiEnvelope);
   }
 
   const response = await fetch(`${ORCHESTRATOR_URL}/v1/chat/stream`, {
@@ -1134,7 +1144,11 @@ async function processConversationMessageStream({
     history.reverse();
 
     const downstreamScope = getDownstreamRuntimeScope(activeScope);
-    const { token: authToken, envelope } = await signRequestJwtWithEnvelope(
+    const {
+      token: authToken,
+      envelope,
+      hkiEnvelope,
+    } = await signRequestJwtWithEnvelope(
       user,
       downstreamScope,
       downstreamScopes
@@ -1171,7 +1185,8 @@ async function processConversationMessageStream({
 
     for await (const event of callOrchestratorStream(
       streamPayload,
-      authToken
+      authToken,
+      hkiEnvelope
     )) {
       traceEvents.push(event);
 
@@ -1904,12 +1919,15 @@ export const chatRouter = router({
 
         try {
           const downstreamScope = getDownstreamRuntimeScope(activeScope);
-          const { token: devAuthToken, envelope } =
-            await signRequestJwtWithEnvelope(
-              ctx.user,
-              downstreamScope,
-              downstreamScopes
-            );
+          const {
+            token: devAuthToken,
+            envelope,
+            hkiEnvelope,
+          } = await signRequestJwtWithEnvelope(
+            ctx.user,
+            downstreamScope,
+            downstreamScopes
+          );
           broadcastTraceEvent(
             input.conversationId,
             buildHkiEnvelopeTraceEvent(envelope)
@@ -1931,7 +1949,8 @@ export const chatRouter = router({
 
           for await (const event of callOrchestratorStream(
             streamPayload,
-            devAuthToken
+            devAuthToken,
+            hkiEnvelope
           )) {
             if (
               event.type === "final_response_chunk" ||

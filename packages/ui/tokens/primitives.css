@@ -51,8 +51,8 @@
 
   /* HKI Coral — Warm vermillion. Threat signals, violations, energetic accents.
      Pairs with Iris as its warm counterpart — teal/coral is a classic high-contrast pair. */
-  --color-brand-coral-25:  #fff5f2;
-  --color-brand-coral-50:  #ffebe4;
+  --color-brand-coral-25: #fff5f2;
+  --color-brand-coral-50: #ffebe4;
   --color-brand-coral-100: #ffc9b5;
   --color-brand-coral-200: #ff9d7d;
   --color-brand-coral-300: #f77a55;
@@ -66,8 +66,8 @@
 
   /* HKI Violet — Rich purple. Domain accents, pharma-tier, publication plane.
      Triadic partner to Iris — sits ~120° away on the wheel, no hue clash. */
-  --color-brand-violet-25:  #faf5ff;
-  --color-brand-violet-50:  #f3e8ff;
+  --color-brand-violet-25: #faf5ff;
+  --color-brand-violet-50: #f3e8ff;
   --color-brand-violet-100: #e9d4ff;
   --color-brand-violet-200: #d3a8ff;
   --color-brand-violet-300: #bc78f9;
@@ -171,16 +171,16 @@
      - Print reproduction
      - Dark/light mode contrast
      ═══════════════════════════════════════════════════════════════════════════ */
-  --color-data-1: var(--color-brand-iris-500);   /* HKI Iris — teal */
+  --color-data-1: var(--color-brand-iris-500); /* HKI Iris — teal */
   --color-data-2: var(--color-brand-violet-400); /* HKI Violet — purple */
-  --color-data-3: var(--color-success-500);      /* Emerald green */
-  --color-data-4: var(--color-warning-400);      /* Amber */
-  --color-data-5: var(--color-brand-coral-500);  /* HKI Coral — vermillion */
-  --color-data-6: var(--color-info-400);         /* Sky blue */
+  --color-data-3: var(--color-success-500); /* Emerald green */
+  --color-data-4: var(--color-warning-400); /* Amber */
+  --color-data-5: var(--color-brand-coral-500); /* HKI Coral — vermillion */
+  --color-data-6: var(--color-info-400); /* Sky blue */
   --color-data-7: var(--color-brand-violet-600); /* Deep violet */
-  --color-data-8: var(--color-brand-coral-300);  /* Coral light */
-  --color-data-9: var(--color-brand-iris-300);   /* Iris light */
-  --color-data-10: var(--color-brand-iris-600);  /* Iris deep */
+  --color-data-8: var(--color-brand-coral-300); /* Coral light */
+  --color-data-9: var(--color-brand-iris-300); /* Iris light */
+  --color-data-10: var(--color-brand-iris-600); /* Iris deep */
 
   /* ═══════════════════════════════════════════════════════════════════════════
      §5 SPACING SCALE — 4px Base Unit
@@ -245,9 +245,16 @@
   /* Font Stacks */
   --font-sans:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: "Georgia", "Times New Roman", serif;
+  --font-serif:
+    "Instrument Serif", "Iowan Old Style", "Georgia", "Times New Roman", serif;
   --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", "Consolas", monospace;
-  --font-display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Display — Plus Jakarta Sans is the canonical HKI display face.
+     Geometric, slightly humanist, distinctive at large sizes. */
+  --font-display:
+    "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Editorial — Instrument Serif for italic pull-quotes, mastheads, callouts. */
+  --font-editorial:
+    "Instrument Serif", "Iowan Old Style", "Georgia", "Times New Roman", serif;
 
   /* Font Sizes — Modular scale (1.25 ratio) */
   --text-2xs: 0.625rem; /* 10px */

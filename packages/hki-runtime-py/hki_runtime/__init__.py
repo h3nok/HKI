@@ -208,7 +208,7 @@ def validate_envelope(
     record: dict[str, Any] = _record(envelope)
     issues: list[HkiValidationIssue] = []
 
-    for field: str in _REQUIRED_STRING_FIELDS:
+    for field in _REQUIRED_STRING_FIELDS:
         val: typing.Any | None = record.get(field)
         if not normalize_domain(val):
             issues.append(
@@ -288,7 +288,7 @@ def validate_envelope(
             )
         )
 
-    if any(is_forbidden_runtime_domain(domain) for domain: str in authorized_domains):
+    if any(is_forbidden_runtime_domain(domain) for domain in authorized_domains):
         issues.append(
             HkiValidationIssue(
                 code="invalid-domain",
@@ -300,7 +300,7 @@ def validate_envelope(
     if (
         active_domain
         and authorized_domains
-        and not any(same_domain(domain, active_domain) for domain: str in authorized_domains)
+        and not any(same_domain(domain, active_domain) for domain in authorized_domains)
     ):
         issues.append(
             HkiValidationIssue(
@@ -442,7 +442,7 @@ def evaluate_gateway_target(
             target=gateway_target,
         )
 
-    if any(is_forbidden_runtime_domain(domain) for domain: str in gateway_target.published_domains):
+    if any(is_forbidden_runtime_domain(domain) for domain in gateway_target.published_domains):
         return HkiGatewayDecision(
             allowed=False,
             reason="target published_domains include global or wildcard scope",
@@ -451,7 +451,7 @@ def evaluate_gateway_target(
 
     is_direct_domain_match: bool = same_domain(env.active_domain, gateway_target.domain)
     is_published_into_domain: bool = any(
-        same_domain(domain, env.active_domain) for domain: str in gateway_target.published_domains
+        same_domain(domain, env.active_domain) for domain in gateway_target.published_domains
     )
 
     if not is_direct_domain_match and not is_published_into_domain:
@@ -475,13 +475,13 @@ def reject_conflicting_scope_argument(
     env: HkiEnvelope = _coerce_envelope(envelope)
     candidates = ("scope", "domain", "active_domain", "activeDomain", "stream", "stream_id")
 
-    for key: str in candidates:
+    for key in candidates:
         if key not in args:
             continue
         values: list[str] | None = _normalize_scope_argument_values(args.get(key))
         if values is None:
             return f"{key} is ambiguous and cannot override signed HKI active_domain"
-        if any(not same_domain(value, env.active_domain) for value: str in values):
+        if any(not same_domain(value, env.active_domain) for value in values):
             return f"{key} conflicts with signed HKI active_domain"
     return None
 
@@ -669,7 +669,7 @@ def _validate_audit_boundary(
             )
         )
 
-    if any(is_forbidden_runtime_domain(domain) for domain: str in authorized_domains):
+    if any(is_forbidden_runtime_domain(domain) for domain in authorized_domains):
         issues.append(
             HkiValidationIssue(
                 code="invalid-domain",
@@ -679,7 +679,7 @@ def _validate_audit_boundary(
         )
 
     if active_domain and authorized_domains and not any(
-        same_domain(domain, active_domain) for domain: str in authorized_domains
+        same_domain(domain, active_domain) for domain in authorized_domains
     ):
         issues.append(
             HkiValidationIssue(

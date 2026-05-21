@@ -91,7 +91,7 @@ def _payload_text(payload: dict[str, typing.Any], key: str, default: str = "") -
 
 
 def _event_session_id(payload: dict[str, typing.Any], user_id: str) -> str:
-    for key: str in ("session_id", "conversation_id", "conversationId"):
+    for key in ("session_id", "conversation_id", "conversationId"):
         candidate: str = _payload_text(payload, key)
         if candidate:
             return candidate
@@ -125,7 +125,7 @@ class BigQueryEventStore(src.adapters.database.EventStoreProtocol):
         if self._client is None:
             try:
                 from google.cloud import bigquery  # type: ignore[import-untyped]
-            except ImportError as exc: ImportError:
+            except ImportError as exc:
                 raise RuntimeError(
                     "google-cloud-bigquery is required for BigQuery backend. "
                     "Install with: pip install google-cloud-bigquery"
@@ -144,7 +144,7 @@ class BigQueryEventStore(src.adapters.database.EventStoreProtocol):
     def _fqn(self) -> str:
         """Fully-qualified table name: ``project.dataset.table``."""
         parts: list[str] = [
-            part for part: str in (self._project, self._dataset, self._table) if part
+            part for part in (self._project, self._dataset, self._table) if part
         ]
         return ".".join(parts)
 

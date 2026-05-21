@@ -7445,6 +7445,292 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   ENGINEERING UI CHROME
+   Shared by HKI landing, standard, architecture, and research-note pages.
+   Keep this layer semantic-token based so dark mode cannot drift by page.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  .engineering-canvas {
+    position: relative;
+    isolation: isolate;
+    color: var(--foreground);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 94%, var(--card) 6%) 0%,
+        var(--background) 42%,
+        color-mix(in srgb, var(--background) 96%, var(--primary) 4%) 100%
+      ),
+      var(--background);
+  }
+
+  .engineering-canvas::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(
+        color-mix(in srgb, var(--foreground) 5%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--foreground) 5%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 56px 56px;
+    mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.42), transparent 62%);
+  }
+
+  .engineering-canvas > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dark .engineering-canvas {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 88%, var(--card) 12%) 0%,
+        var(--background) 46%,
+        color-mix(in srgb, var(--background) 94%, var(--primary) 6%) 100%
+      ),
+      var(--background);
+  }
+
+  .dark .engineering-canvas::before {
+    background-image:
+      linear-gradient(
+        color-mix(in srgb, var(--foreground) 4%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--foreground) 4%, transparent) 1px,
+        transparent 1px
+      );
+    mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.34), transparent 58%);
+  }
+
+  .engineering-topbar {
+    border-color: color-mix(in srgb, var(--border) 74%, transparent) !important;
+    background: color-mix(in srgb, var(--card) 88%, transparent) !important;
+    box-shadow:
+      0 1px 0 color-mix(in srgb, var(--foreground) 7%, transparent),
+      0 18px 42px -38px color-mix(in srgb, var(--foreground) 26%, transparent);
+    backdrop-filter: blur(18px) saturate(145%);
+  }
+
+  .dark .engineering-topbar {
+    border-color: color-mix(
+      in srgb,
+      var(--foreground) 10%,
+      transparent
+    ) !important;
+    background: color-mix(in srgb, var(--card) 72%, transparent) !important;
+    box-shadow:
+      inset 0 -1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
+      0 18px 42px -38px rgb(0 0 0 / 0.82);
+  }
+
+  .engineering-segmented {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--background) 58%, var(--card) 42%);
+    padding: 0.1875rem;
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--foreground) 5%, transparent);
+  }
+
+  .dark .engineering-segmented {
+    border-color: color-mix(in srgb, var(--foreground) 10%, transparent);
+    background: color-mix(in srgb, var(--background) 68%, var(--card) 32%);
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--foreground) 4%, transparent);
+  }
+
+  .engineering-tab {
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    color: color-mix(in srgb, var(--muted-foreground) 88%, var(--foreground));
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .engineering-tab:hover {
+    border-color: color-mix(in srgb, var(--border) 88%, var(--foreground) 8%);
+    background: color-mix(in srgb, var(--muted) 56%, transparent);
+    color: var(--foreground);
+  }
+
+  .engineering-tab[data-active="true"] {
+    border-color: color-mix(in srgb, var(--primary) 42%, transparent);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: 0 10px 22px -18px
+      color-mix(in srgb, var(--primary) 76%, transparent);
+  }
+
+  .engineering-icon-button {
+    display: inline-flex;
+    height: 2rem;
+    width: 2rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--card) 82%, var(--background) 18%);
+    color: var(--muted-foreground);
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+
+  .engineering-icon-button:hover {
+    border-color: color-mix(in srgb, var(--primary) 24%, var(--border) 76%);
+    background: color-mix(in srgb, var(--card) 90%, var(--primary) 10%);
+    color: var(--foreground);
+  }
+
+  .engineering-panel {
+    border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+    border-radius: 0.5rem;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 96%, white 4%) 0%,
+        color-mix(in srgb, var(--card) 90%, var(--background) 10%) 100%
+      ),
+      var(--card);
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--foreground) 8%, transparent),
+      0 18px 42px -34px color-mix(in srgb, var(--foreground) 24%, transparent);
+  }
+
+  .dark .engineering-panel {
+    border-color: color-mix(in srgb, var(--foreground) 9%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 92%, white 8%) 0%,
+        color-mix(in srgb, var(--card) 86%, var(--background) 14%) 100%
+      ),
+      var(--card);
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--foreground) 4%, transparent);
+  }
+
+  .engineering-panel-interactive {
+    transition:
+      transform 150ms ease,
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      background-color 150ms ease;
+  }
+
+  .engineering-panel-interactive:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--primary) 22%, var(--border) 78%);
+    box-shadow:
+      0 2px 4px color-mix(in srgb, var(--foreground) 10%, transparent),
+      0 26px 54px -38px color-mix(in srgb, var(--foreground) 32%, transparent);
+  }
+
+  .dark .engineering-panel-interactive:hover {
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--foreground) 5%, transparent);
+  }
+
+  .engineering-inset {
+    border: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--background) 72%, var(--card) 28%);
+  }
+
+  .engineering-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--border) 74%);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 12%, var(--card) 88%);
+    color: var(--primary);
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--foreground) 6%, transparent);
+  }
+
+  .engineering-icon-tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--muted) 42%, var(--card) 58%);
+    color: var(--primary);
+  }
+
+  .engineering-primary-action,
+  .engineering-secondary-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    border-radius: 0.5rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition:
+      transform 150ms ease,
+      border-color 150ms ease,
+      background-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .engineering-primary-action {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: 0 16px 30px -22px
+      color-mix(in srgb, var(--primary) 78%, transparent);
+  }
+
+  .engineering-secondary-action {
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    background: color-mix(in srgb, var(--card) 84%, var(--background) 16%);
+    color: var(--foreground);
+  }
+
+  .engineering-primary-action:hover,
+  .engineering-secondary-action:hover {
+    transform: translateY(-1px);
+  }
+
+  .engineering-footer {
+    border-top: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+    background: color-mix(in srgb, var(--background) 78%, transparent);
+    color: var(--muted-foreground);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    SURFACE ELEVATION UTILITIES
    Reusable across any page that needs card/panel elevation in light mode.
    In dark mode the solid bg-card token already lifts off bg-background —
@@ -7471,5 +7757,1010 @@ body::before {
     &:is(.dark *) {
       box-shadow: none;
     }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AGENTIC SIDEBAR — SIGNATURE ELEVATION
+   Replaces ad-hoc --primary / --kb-brand-red gradient noise with disciplined
+   runtime-plane accents, hairline tokens, precision shadows, and the
+   signature focus ring established in tokens/signature.css.
+   This block is additive and intentionally overrides earlier sidebar rules
+   so the sidebar reads as part of the same industrial language as the rest
+   of the platform (StampedCard, PlaneChip, Eyebrow, DisplayHeading).
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  /* — Shell perimeter ——————————————————————————————————————— */
+  .agentic-task-sidebar {
+    border-right: 1px solid var(--hairline-strong);
+    box-shadow: var(--shadow-precision);
+  }
+
+  .agentic-task-sidebar::after {
+    background: var(--plane-runtime);
+    opacity: 0.42;
+  }
+
+  .agentic-sidebar-collapsed-rail::before {
+    background: var(--plane-runtime);
+    opacity: 0.55;
+  }
+
+  :root:not(.dark) .agentic-task-sidebar {
+    border-right-color: var(--hairline-strong) !important;
+  }
+
+  :root:not(.dark) .agentic-task-sidebar::after {
+    opacity: 0.3;
+  }
+
+  /* — Header ————————————————————————————————————————————— */
+  .agentic-sidebar-header {
+    border-bottom-color: var(--hairline);
+  }
+
+  .agentic-sidebar-header::after {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--hairline-brand) 32%,
+      var(--hairline-brand) 68%,
+      transparent 100%
+    );
+  }
+
+  .agentic-sidebar-brand-mark {
+    box-shadow:
+      var(--inset-highlight),
+      inset 0 0 0 1px var(--hairline-brand);
+  }
+
+  /* — Command rail (search + new chat + icon group) ————————————— */
+  .agentic-sidebar-command-shell,
+  .agentic-sidebar-command-group {
+    border-color: var(--hairline-strong);
+    box-shadow: var(--inset-highlight);
+  }
+
+  .agentic-sidebar-primary-action {
+    border-color: var(--plane-runtime-border);
+  }
+
+  .agentic-sidebar-primary-action::after {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, white 48%, transparent) 45%,
+      transparent 100%
+    );
+  }
+
+  /* — Unified focus ring across every interactive control ——————— */
+  .agentic-sidebar-primary-action:focus-visible,
+  .agentic-sidebar-icon-button:focus-visible,
+  .agentic-sidebar-footer-icon:focus-visible,
+  .agentic-sidebar-support-button:focus-visible,
+  .agentic-sidebar-clear-button:focus-visible,
+  .agentic-sidebar-command-icon-button:focus-visible,
+  .agentic-sidebar-brand:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-signature);
+  }
+
+  /* — Empty state glyph ————————————————————————————————— */
+  .agentic-sidebar-empty-glyph {
+    border-color: var(--hairline-strong);
+    box-shadow: var(--inset-highlight);
+  }
+
+  /* — Conversation list items ——————————————————————————————— */
+  .agentic-conversation-item::before,
+  .agentic-project-folder::before {
+    background: linear-gradient(
+      90deg,
+      var(--plane-runtime-muted) 0%,
+      transparent 100%
+    );
+  }
+
+  .agentic-conversation-item::after {
+    background: var(--plane-runtime);
+  }
+
+  .agentic-conversation-item[data-active="true"] {
+    border-color: var(--plane-runtime-border);
+    box-shadow:
+      var(--inset-highlight),
+      0 12px 22px -22px var(--plane-runtime);
+  }
+
+  .agentic-conversation-item[data-status="running"] {
+    border-color: var(--plane-runtime-border);
+  }
+
+  .agentic-conversation-status-glyph[data-status="running"] {
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 3px var(--plane-runtime-muted);
+  }
+
+  .agentic-project-folder[data-active="true"] {
+    border-color: var(--plane-runtime-border);
+  }
+
+  /* — Group headers, count badges, meta pills ————————————————— */
+  .agentic-conversation-group-header:hover {
+    background: var(--plane-runtime-muted);
+  }
+
+  .agentic-conversation-group-count {
+    border-color: var(--hairline);
+    background: var(--muted);
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .agentic-conversation-meta-pill {
+    border-color: var(--hairline);
+    background: var(--muted);
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* — Scrollbar — hairline-strong for restraint ————————————— */
+  .agentic-sidebar-scroll {
+    scrollbar-color: var(--hairline-strong) transparent;
+  }
+
+  .agentic-sidebar-scroll::-webkit-scrollbar-thumb {
+    background: var(--hairline-strong);
+    border: 0.125rem solid transparent;
+    background-clip: content-box;
+  }
+
+  /* — Footer ————————————————————————————————————————————— */
+  .agentic-sidebar-footer {
+    border-top: 1px solid var(--hairline);
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--sidebar) 92%, var(--plane-runtime-muted) 8%) 100%
+    );
+  }
+
+  .agentic-sidebar-avatar {
+    box-shadow:
+      var(--inset-highlight),
+      0 10px 18px -18px var(--plane-runtime);
+  }
+
+  /* — Date-group eyebrow — adopt signature eyebrow treatment ————— */
+  .agentic-sidebar-list [data-date-group-label] {
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────
+ * ADMIN CONTROL PLANE — SIGNATURE ELEVATION
+ *
+ * The admin plane belongs to --plane-admin (Coral). Override the legacy
+ * --primary / --secondary mixes with the disciplined token set:
+ *   hairline / hairline-strong / hairline-brand
+ *   inset-highlight / inset-highlight-strong
+ *   shadow-precision / shadow-stamped
+ *   focus-ring-signature
+ *   font-display + 0.18em tracking for eyebrows
+ *   tabular-nums for all metric values
+ *
+ * Additive @layer components — never replaces existing rules; just
+ * elevates the visible surface to read like the rest of the system.
+ * ──────────────────────────────────────────────────────────────────── */
+@layer components {
+  /* — Canvas — plane-admin tinted background, hairline grid ————— */
+  .dashboard-shell.admin-control-plane-canvas {
+    background:
+      radial-gradient(
+        60rem 28rem at 10% 12%,
+        color-mix(in srgb, var(--plane-admin) 5%, transparent) 0%,
+        transparent 72%
+      ),
+      radial-gradient(
+        42rem 22rem at 96% 18%,
+        color-mix(in srgb, var(--plane-admin) 3%, transparent) 0%,
+        transparent 74%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 96%, var(--plane-admin) 4%) 0%,
+        color-mix(in srgb, var(--background) 99%, var(--plane-admin) 1%) 100%
+      );
+  }
+
+  .dark .dashboard-shell.admin-control-plane-canvas {
+    background:
+      radial-gradient(
+        48rem 22rem at 12% 18%,
+        color-mix(in srgb, var(--plane-admin) 7%, transparent) 0%,
+        transparent 78%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--background) 92%, var(--plane-admin) 8%) 0%,
+        color-mix(in srgb, var(--background) 97%, var(--plane-admin) 3%) 100%
+      );
+  }
+
+  .dashboard-shell.admin-control-plane-canvas::before {
+    background-image:
+      linear-gradient(90deg, var(--hairline) 1px, transparent 1px),
+      linear-gradient(180deg, var(--hairline) 1px, transparent 1px);
+    background-size: 32px 32px;
+    opacity: 0.6;
+  }
+
+  /* — Hero — surface-stamped on the admin plane ————————————— */
+  .admin-surface-hero {
+    border-radius: 16px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 98%, var(--plane-admin) 2%) 0%,
+      color-mix(in srgb, var(--card) 94%, var(--plane-admin) 6%) 100%
+    );
+    box-shadow:
+      var(--inset-highlight),
+      var(--shadow-precision),
+      0 28px 60px -48px var(--plane-admin);
+  }
+
+  .admin-surface-hero::after {
+    background: radial-gradient(
+      24rem 16rem at var(--admin-pointer-x, 50%) var(--admin-pointer-y, 50%),
+      color-mix(in srgb, var(--plane-admin) 16%, transparent) 0%,
+      color-mix(in srgb, var(--plane-admin) 8%, transparent) 36%,
+      transparent 72%
+    );
+  }
+
+  .admin-surface-hero:hover {
+    box-shadow:
+      var(--inset-highlight-strong),
+      var(--shadow-stamped),
+      0 36px 80px -50px var(--plane-admin);
+  }
+
+  .dark .admin-surface-hero {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 94%, var(--plane-admin) 6%) 0%,
+      color-mix(in srgb, var(--card) 90%, var(--plane-admin) 10%) 100%
+    );
+    box-shadow:
+      var(--inset-highlight),
+      var(--shadow-precision),
+      0 28px 64px -48px
+        color-mix(in srgb, var(--plane-admin) 60%, var(--background));
+  }
+
+  /* — Surface card — quiet body, admin-plane drop ——————————— */
+  .admin-surface-card {
+    border-radius: 14px;
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--plane-admin) 4%, transparent) 0%,
+        transparent 48%,
+        color-mix(in srgb, var(--plane-admin) 3%, transparent) 100%
+      ),
+      color-mix(in srgb, var(--card) 88%, transparent) !important;
+    box-shadow:
+      var(--inset-highlight),
+      var(--shadow-precision),
+      0 22px 46px -36px color-mix(in srgb, var(--plane-admin) 28%, transparent) !important;
+  }
+
+  .admin-surface-card:hover {
+    box-shadow:
+      var(--inset-highlight-strong),
+      var(--shadow-stamped),
+      0 34px 70px -50px color-mix(in srgb, var(--plane-admin) 36%, transparent) !important;
+  }
+
+  .dark .admin-surface-card {
+    box-shadow:
+      var(--inset-highlight),
+      var(--shadow-precision),
+      0 24px 48px -40px
+        color-mix(in srgb, var(--plane-admin) 30%, var(--background)) !important;
+  }
+
+  /* — Inset / panel-primary — hairline tray ————————————————— */
+  .admin-surface-inset {
+    border-radius: 12px;
+    background: color-mix(
+      in srgb,
+      var(--muted) 70%,
+      var(--background)
+    ) !important;
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--hairline) inset !important;
+  }
+
+  .admin-panel-primary {
+    border-radius: 14px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 96%, var(--plane-admin) 4%) 0%,
+      color-mix(in srgb, var(--card) 92%, var(--plane-admin) 8%) 100%
+    );
+    box-shadow:
+      var(--inset-highlight),
+      var(--shadow-precision),
+      0 18px 32px -28px color-mix(in srgb, var(--plane-admin) 22%, transparent);
+  }
+
+  .dark .admin-panel-primary {
+    box-shadow:
+      var(--inset-highlight),
+      var(--shadow-precision),
+      0 18px 32px -28px
+        color-mix(in srgb, var(--plane-admin) 32%, var(--background));
+  }
+
+  /* — Data panel + tabs ————————————————————————————————————— */
+  .admin-data-panel {
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    box-shadow: var(--inset-highlight), var(--shadow-precision);
+  }
+
+  .admin-tab-list {
+    background: color-mix(in srgb, var(--muted) 60%, var(--background));
+    border-radius: 10px;
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--hairline) inset;
+  }
+
+  .admin-tab-trigger {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border-radius: 8px;
+    transition:
+      background-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .admin-tab-trigger:hover {
+    background: color-mix(in srgb, var(--plane-admin-muted) 50%, transparent);
+  }
+
+  .admin-tab-trigger[data-state="active"] {
+    background: var(--card);
+    color: var(--foreground);
+    box-shadow: var(--inset-highlight), var(--shadow-precision);
+  }
+
+  .admin-tab-trigger[data-state="active"]::before {
+    background: var(--plane-admin);
+    opacity: 1;
+  }
+
+  /* — Metric card — display numerals, hairline-brand bottom ————— */
+  .admin-metric-card {
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    box-shadow: var(--inset-highlight), var(--shadow-precision);
+    transition:
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+
+  .admin-metric-card::before {
+    background: var(--hairline-brand);
+    opacity: 1;
+  }
+
+  .admin-metric-card:hover {
+    box-shadow: var(--inset-highlight-strong), var(--shadow-stamped);
+    transform: translateY(-1px);
+  }
+
+  .dark .admin-metric-card {
+    background: color-mix(in srgb, var(--card) 92%, var(--plane-admin) 4%);
+  }
+
+  .admin-metric-value {
+    font-family: var(--font-display);
+    font-feature-settings:
+      "tnum" 1,
+      "ss01" 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .admin-metric-label {
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* — Section eyebrows + sidebar section labels ——————————————— */
+  .admin-section-eyebrow,
+  .admin-sidebar-section-label {
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* — Pills — plane-admin family, hairline borders ———————————— */
+  .admin-pill-primary {
+    background: color-mix(in srgb, var(--plane-admin-muted) 60%, transparent);
+    color: var(--plane-admin-fg);
+    border: 1px solid var(--plane-admin-border);
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .admin-pill-positive {
+    background: color-mix(in srgb, var(--success, #10b981) 12%, transparent);
+    color: var(--success, #10b981);
+    border: 1px solid
+      color-mix(in srgb, var(--success, #10b981) 28%, transparent);
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .admin-pill-warning {
+    background: color-mix(in srgb, var(--warning, #f59e0b) 14%, transparent);
+    color: var(--warning, #f59e0b);
+    border: 1px solid
+      color-mix(in srgb, var(--warning, #f59e0b) 32%, transparent);
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .admin-pill-critical {
+    background: color-mix(in srgb, var(--destructive) 14%, transparent);
+    color: var(--destructive);
+    border: 1px solid color-mix(in srgb, var(--destructive) 32%, transparent);
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .admin-pill-neutral {
+    background: color-mix(in srgb, var(--muted) 70%, transparent);
+    color: var(--muted-foreground);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  /* — Toolbar buttons + breadcrumb ——————————————————————————— */
+  .admin-toolbar-button {
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--hairline) inset;
+    font-family: var(--font-display);
+    font-weight: 600;
+    transition:
+      background-color 160ms ease,
+      box-shadow 160ms ease,
+      color 160ms ease;
+  }
+
+  .admin-toolbar-button:hover {
+    background: color-mix(in srgb, var(--plane-admin-muted) 40%, var(--card));
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--plane-admin-border) inset;
+    color: var(--plane-admin-fg);
+  }
+
+  .admin-toolbar-button:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-signature);
+  }
+
+  .dashboard-breadcrumb.admin-breadcrumb-bar {
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    border-radius: 10px;
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--hairline) inset;
+    font-family: var(--font-display);
+    letter-spacing: 0.01em;
+  }
+
+  /* — Governance frame (masthead + registry) ————————————————— */
+  .admin-governance-frame {
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    box-shadow: var(--inset-highlight-strong), var(--shadow-stamped);
+  }
+
+  .admin-governance-frame__masthead {
+    border-bottom: 1px solid var(--hairline);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 96%, var(--plane-admin) 4%) 0%,
+      var(--card) 100%
+    );
+  }
+
+  .admin-governance-frame__masthead::before {
+    background: var(--hairline-brand);
+    height: 2px;
+    opacity: 1;
+  }
+
+  .admin-governance-frame__seal {
+    background: color-mix(in srgb, var(--plane-admin-muted) 60%, var(--card));
+    border: 1px solid var(--plane-admin-border);
+    color: var(--plane-admin-fg);
+    box-shadow: var(--inset-highlight);
+  }
+
+  .admin-governance-frame__eyebrow,
+  .admin-governance-registry__eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .admin-governance-frame__identity h1 {
+    font-family: var(--font-editorial);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  .admin-governance-frame__identity p {
+    color: var(--muted-foreground);
+  }
+
+  .admin-governance-frame__metric {
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    box-shadow: var(--inset-highlight), var(--shadow-precision);
+  }
+
+  .admin-governance-frame__metric.is-primary,
+  .admin-governance-frame__metric.is-positive,
+  .admin-governance-frame__metric.is-warning {
+    background: color-mix(in srgb, var(--plane-admin-muted) 32%, var(--card));
+    border: 1px solid var(--plane-admin-border);
+  }
+
+  .admin-governance-frame__metric-value {
+    font-family: var(--font-display);
+    font-feature-settings:
+      "tnum" 1,
+      "ss01" 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .admin-governance-frame__metric-label {
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .admin-governance-frame__action {
+    border-radius: 10px;
+  }
+
+  .admin-governance-frame__action:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-signature);
+  }
+
+  /* — Governance registry + table ———————————————————————————— */
+  .admin-governance-registry {
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    box-shadow: var(--inset-highlight), var(--shadow-precision);
+  }
+
+  .admin-governance-registry__header {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .admin-governance-registry__header h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .admin-governance-registry__count {
+    background: color-mix(in srgb, var(--plane-admin-muted) 50%, transparent);
+    color: var(--plane-admin-fg);
+    border: 1px solid var(--plane-admin-border);
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-feature-settings: "tnum" 1;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: 0.6875rem;
+  }
+
+  .admin-governance-table thead {
+    background: color-mix(in srgb, var(--muted) 50%, transparent);
+  }
+
+  .admin-governance-table th {
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .admin-governance-table td {
+    border-bottom: 1px solid var(--hairline);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .admin-governance-table tr:hover {
+    background: color-mix(in srgb, var(--plane-admin-muted) 24%, transparent);
+  }
+
+  .admin-governance-notice {
+    background: color-mix(in srgb, var(--plane-admin-muted) 30%, var(--card));
+    border: 1px solid var(--plane-admin-border);
+    border-radius: 12px;
+    box-shadow: var(--inset-highlight);
+  }
+
+  /* — Field + select — quiet hairline trays ————————————————— */
+  .admin-field {
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--muted) 60%, var(--background));
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--hairline) inset;
+  }
+
+  .admin-field:focus-within {
+    box-shadow: var(--inset-highlight), var(--focus-ring-signature);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────
+ * KNOWLEDGE PLANE — SIGNATURE ELEVATION
+ *
+ * Knowledge / KB surfaces belong to --plane-publication (Violet).
+ * This is the third body of authority alongside runtime (Iris) and
+ * admin (Coral). Override legacy --primary / --kb-brand-red /
+ * --kb-duotone mixes with the disciplined token set:
+ *   hairline / hairline-strong / hairline-brand
+ *   inset-highlight / inset-highlight-strong
+ *   shadow-precision / shadow-stamped
+ *   focus-ring-signature
+ *   font-display eyebrows / font-editorial headings
+ *   tabular-nums on counts and metrics
+ * ──────────────────────────────────────────────────────────────────── */
+@layer components {
+  /* — Canvas — plane-publication tint, hairline grid ——————————— */
+  .dashboard-shell--knowledge::before {
+    background:
+      radial-gradient(
+        48rem 26rem at -6% -6%,
+        color-mix(in srgb, var(--plane-publication) 10%, transparent) 0%,
+        transparent 62%
+      ),
+      radial-gradient(
+        34rem 18rem at 78% -2%,
+        color-mix(in srgb, var(--plane-publication) 6%, transparent) 0%,
+        transparent 70%
+      ),
+      radial-gradient(
+        20rem 16rem at 88% 92%,
+        color-mix(in srgb, var(--plane-publication) 5%, transparent) 0%,
+        transparent 72%
+      );
+  }
+
+  .dark .dashboard-shell--knowledge::before {
+    background:
+      radial-gradient(
+        42rem 24rem at -4% -8%,
+        color-mix(in srgb, var(--plane-publication) 14%, transparent) 0%,
+        transparent 62%
+      ),
+      radial-gradient(
+        30rem 18rem at 92% -4%,
+        color-mix(in srgb, var(--plane-publication) 10%, transparent) 0%,
+        transparent 70%
+      );
+  }
+
+  /* — KB sidebar shell + brand + user card ————————————————————— */
+  .kb-sidebar-shell {
+    border-right: 1px solid var(--hairline-strong);
+    box-shadow: var(--shadow-precision);
+  }
+
+  .kb-sidebar-brand-card {
+    background: color-mix(
+      in srgb,
+      var(--card) 96%,
+      var(--plane-publication) 4%
+    );
+    border: 1px solid var(--plane-publication-border);
+    border-radius: 12px;
+    box-shadow:
+      var(--inset-highlight),
+      0 12px 22px -22px var(--plane-publication);
+  }
+
+  .kb-sidebar-user-card {
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    box-shadow: var(--inset-highlight);
+  }
+
+  /* — KB surfaces — ground / section / card / inset ——————————— */
+  .kb-surface-ground {
+    background: color-mix(
+      in srgb,
+      var(--background) 96%,
+      var(--plane-publication) 4%
+    );
+  }
+
+  .kb-surface-section {
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    box-shadow: var(--inset-highlight), var(--shadow-precision);
+  }
+
+  .kb-surface-card {
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    box-shadow:
+      var(--inset-highlight),
+      var(--shadow-precision),
+      0 22px 46px -36px
+        color-mix(in srgb, var(--plane-publication) 26%, transparent);
+    transition:
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+
+  .kb-surface-card:hover {
+    box-shadow:
+      var(--inset-highlight-strong),
+      var(--shadow-stamped),
+      0 32px 66px -50px
+        color-mix(in srgb, var(--plane-publication) 34%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .dark .kb-surface-card {
+    box-shadow:
+      var(--inset-highlight),
+      var(--shadow-precision),
+      0 24px 48px -40px
+        color-mix(in srgb, var(--plane-publication) 32%, var(--background));
+  }
+
+  .kb-surface-inset {
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--muted) 70%, var(--background));
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--hairline) inset;
+  }
+
+  /* — KB self-service shell (welcome / create / join / request) — */
+  .kb-self-service-shell {
+    background:
+      radial-gradient(
+        56rem 28rem at 8% 10%,
+        color-mix(in srgb, var(--plane-publication) 8%, transparent) 0%,
+        transparent 72%
+      ),
+      radial-gradient(
+        42rem 22rem at 92% 88%,
+        color-mix(in srgb, var(--plane-publication) 5%, transparent) 0%,
+        transparent 74%
+      ),
+      var(--background);
+  }
+
+  .kb-self-service-nav {
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    border-bottom: 1px solid var(--hairline);
+    backdrop-filter: blur(12px);
+  }
+
+  .kb-self-service-back,
+  .kb-self-service-icon-button {
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--hairline) inset;
+    font-family: var(--font-display);
+    font-weight: 600;
+    transition:
+      background-color 160ms ease,
+      box-shadow 160ms ease,
+      color 160ms ease;
+  }
+
+  .kb-self-service-back:hover,
+  .kb-self-service-icon-button:hover {
+    background: color-mix(
+      in srgb,
+      var(--plane-publication-muted) 40%,
+      var(--card)
+    );
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--plane-publication-border) inset;
+    color: var(--plane-publication-fg);
+  }
+
+  .kb-self-service-back:focus-visible,
+  .kb-self-service-icon-button:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-signature);
+  }
+
+  .kb-self-service-footer {
+    border-top: 1px solid var(--hairline);
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    font-family: var(--font-display);
+    color: var(--text-muted);
+  }
+
+  .kb-self-service-panel {
+    border-radius: 18px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 98%, var(--plane-publication) 2%) 0%,
+      color-mix(in srgb, var(--card) 94%, var(--plane-publication) 6%) 100%
+    );
+    box-shadow:
+      var(--inset-highlight-strong),
+      var(--shadow-stamped),
+      0 28px 60px -48px var(--plane-publication);
+  }
+
+  .kb-self-service-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: var(--hairline-brand);
+    border-radius: 18px 18px 0 0;
+    pointer-events: none;
+  }
+
+  .kb-self-service-inset {
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--muted) 70%, var(--background));
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--hairline) inset;
+  }
+
+  .kb-self-service-field {
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--muted) 60%, var(--background));
+    box-shadow:
+      var(--inset-highlight),
+      0 0 0 1px var(--hairline) inset;
+    font-family: var(--font-sans);
+  }
+
+  .kb-self-service-field:focus-within {
+    box-shadow: var(--inset-highlight), var(--focus-ring-signature);
+  }
+
+  .kb-self-service-chip {
+    background: color-mix(
+      in srgb,
+      var(--plane-publication-muted) 60%,
+      transparent
+    );
+    color: var(--plane-publication-fg);
+    border: 1px solid var(--plane-publication-border);
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  /* — KB status surfaces — keep semantic palette, unify chrome — */
+  .kb-status-positive-badge,
+  .kb-status-warning-badge,
+  .kb-status-critical-badge,
+  .kb-status-neutral-badge {
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  /* — KB duotone chips — fold into plane-publication ——————————— */
+  .kb-duotone-chip {
+    background: color-mix(
+      in srgb,
+      var(--plane-publication-muted) 50%,
+      transparent
+    );
+    color: var(--plane-publication-fg);
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .kb-duotone-chip-border {
+    border: 1px solid var(--plane-publication-border);
+  }
+
+  .kb-duotone-chip-hover:hover,
+  .kb-duotone-chip-reactive:hover {
+    background: color-mix(
+      in srgb,
+      var(--plane-publication-muted) 70%,
+      transparent
+    );
+    color: var(--plane-publication-fg);
+    border-color: var(--plane-publication-border);
+  }
+
+  /* — KB accent text — adopt plane-publication-fg ——————————————— */
+  .kb-duotone-accent-text,
+  .kb-brand-red-text {
+    color: var(--plane-publication-fg);
   }
 }

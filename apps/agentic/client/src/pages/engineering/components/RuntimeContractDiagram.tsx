@@ -122,12 +122,7 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
   const selected = STAGES.find(s => s.id === selectedId) ?? STAGES[0];
 
   return (
-    <div
-      className={cn(
-        "rounded-lg border border-border bg-card shadow-surface",
-        className
-      )}
-    >
+    <div className={cn("engineering-panel", className)}>
       {/* Stage rail */}
       <div className="border-b border-border p-4 sm:p-5">
         <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
@@ -151,7 +146,7 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
                   className={cn(
                     "group flex w-full flex-col items-center gap-1.5 rounded-md border p-2 text-center transition-all",
                     active
-                      ? "border-primary bg-primary/12 text-foreground shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]"
+                      ? "border-primary bg-primary/12 text-foreground ring-1 ring-primary/20"
                       : "border-border bg-card text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground"
                   )}
                 >
@@ -192,7 +187,7 @@ export function RuntimeContractDiagram({ className }: { className?: string }) {
 
       {/* Detail panel */}
       <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="rounded-md border border-border bg-muted/30 p-4">
+        <div className="engineering-inset p-4">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
             What happens
           </p>

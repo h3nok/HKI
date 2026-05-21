@@ -31,6 +31,8 @@ downstream:
 
 ```json
 {
+  "hki_version": "1.0",
+  "envelope_id": "env_01HX...",
   "org_id": "org_acme",
   "subject_id": "user_42",
   "active_domain": "payments",
@@ -40,27 +42,32 @@ downstream:
   "policy_pack_id": "policy_2026_05",
   "issued_at": 1777900000,
   "expires_at": 1777900300,
+  "issuer": "agent-gateway",
   "signature": "..."
 }
 ```
 
 Services must reject missing, expired, forged, null, ambiguous, or `global`
-runtime domains. `authorized_domains` is not a read filter; only
-`active_domain` is used for runtime visibility.
+runtime domains. They must also reject wildcard domains and unsupported HKI
+versions. `authorized_domains` is not a read filter; only `active_domain` is
+used for runtime visibility.
 
 ## Service Bar
 
-| Surface         | Minimum requirement                                                                                                             |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| BFF and gateway | Resolve exactly one active domain and sign the envelope.                                                                        |
-| Orchestrator    | Treat scope as immutable and forward it to each tool, model route, cache, memory, and retrieval call.                           |
-| Knowledge API   | Bind search, rerank, citations, graph traversal, and document reads to `(org_id, active_domain)`.                               |
-| Ingestion       | Persist active domain on jobs, source objects, documents, chunks, extracted entities, review records, eval cases, and releases. |
-| Cache           | Include `org_id`, `active_domain`, operation, policy pack, model route, and context version in keys.                            |
-| Memory          | Read and write only within `(org_id, subject_id, active_domain)`.                                                               |
-| MCP and tools   | Expose only tools and resources published into the active domain; tool arguments cannot override scope.                         |
-| Admin plane     | Use separate routes and audit semantics for cross-domain visibility. Runtime routes cannot call admin queries.                  |
-| Publication     | Create target-domain artifacts with provenance; never expose an unlabeled or wildcard shared object at runtime.                 |
+| Surface         | Minimum requirement                                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| BFF and gateway | Resolve exactly one active domain and sign the envelope.                                                                         |
+| Orchestrator    | Treat scope as immutable and forward it to each tool, model route, cache, memory, and retrieval call.                            |
+| Managed runtime | Preserve the envelope in run/session/tool context and correlate managed resource IDs with HKI evidence.                          |
+| Agent identity  | Bind platform agent identity and delegated user identity to audit evidence without allowing identity metadata to override scope. |
+| Knowledge API   | Bind search, rerank, citations, graph traversal, and document reads to `(org_id, active_domain)`.                                |
+| Ingestion       | Persist active domain on jobs, source objects, documents, chunks, extracted entities, review records, eval cases, and releases.  |
+| Cache           | Include `org_id`, `active_domain`, operation, policy pack, model route, and context version in keys.                             |
+| Memory          | Read and write only within `(org_id, subject_id, active_domain)`.                                                                |
+| MCP and tools   | Expose only tools and resources published into the active domain; tool arguments cannot override scope.                          |
+| Agent registry  | Expose target-domain metadata for agents, tools, prompts, resources, endpoints, and MCP targets.                                 |
+| Admin plane     | Use separate routes and audit semantics for cross-domain visibility. Runtime routes cannot call admin queries.                   |
+| Publication     | Create target-domain artifacts with provenance; never expose an unlabeled or wildcard shared object at runtime.                  |
 
 ## Negative Tests
 
@@ -70,12 +77,18 @@ Each service that touches runtime data should have black-box tests for:
 - expired envelope
 - forged envelope
 - `global` active domain
-- body or query scope overriding the signed envelope
+- wildcard active domain
+- unsupported HKI version
+- `global` or wildcard authorized domain
+- body, query, prompt, or tool scope overriding the signed envelope, including
+  aliases such as `domain`, `scope`, and `stream_id`
 - cross-domain retrieval
 - cross-domain cache reuse
 - cross-domain graph traversal
 - unscoped ingestion job
 - MCP tool outside the active domain
+- tool output introducing a different-domain artifact
+- A2A child envelope broader than the parent envelope
 - runtime route invoking an admin-plane query
 
 ## Conformance Kit
@@ -136,6 +149,9 @@ A public HKI release should include:
 - publication workflow evidence for shared content
 - admin-plane route inventory
 - UI token audit output for public pages
+- managed-service evidence when a claim depends on ADK, Gemini Enterprise Agent
+  Platform, Agent Identity, Agent Gateway, Agent Registry, managed RAG/search,
+  managed evaluation, Cloud Trace, or Cloud Audit Logs
 
 ## Evidence Manifest
 
@@ -149,6 +165,7 @@ Key fields:
 | ---------------------------------------- | -------------------------------------------------------------------- |
 | `level`                                  | Canonical HKI level, for example `L4-tested`.                        |
 | `evidenceProfile`                        | Proof location: `smoke`, `live`, or `release`.                       |
+| `managedEvidence`                        | Optional ADK/Gemini managed-service evidence summary and coverage.   |
 | `commandManifest`                        | Commands or evidence sources that support the claim.                 |
 | `componentHashes`                        | Stable hashes for conformance results, audits, packages, and probes. |
 | `releaseReadiness.strictReleaseEligible` | Whether the artifact satisfies the stricter public-release gate.     |
@@ -175,6 +192,15 @@ pnpm audit:hki-ast
 pnpm audit:hki-ast-ts
 pnpm probe:smoke
 pnpm registry:build
+```
+
+To attach ADK/Gemini managed-service evidence, pass an evidence file to the
+registry builder. The sample below is structural only; release claims require
+live or release evidence from managed services.
+
+```bash
+node scripts/build-conformance-registry.mjs \
+  --managed-evidence=examples/agent-platform-hki/managed-evidence.sample.json
 ```
 
 For a release candidate, run the registry builder from a clean commit with live

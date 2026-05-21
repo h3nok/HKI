@@ -218,7 +218,7 @@ class TestRecentEvents:
         assert "chat.request" in event_types
 
     def test_limit_parameter(self, client: fastapi.testclient.TestClient) -> None:
-        for i: int in range(5):
+        for i in range(5):
             _ingest(client, {"event_type": "auth.request", "user_id": str(i)})
         resp: httpx.Response = client.get("/v1/events/recent?limit=3")
         assert resp.status_code == 200

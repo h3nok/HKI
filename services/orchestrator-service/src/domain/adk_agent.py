@@ -76,6 +76,40 @@ _PLATFORM_CONSTITUTION = (
     "- Do not dump raw JSON or raw citation objects into the prose."
 )
 
+_HKI_STANDARD_EXPERTISE = (
+    "When the user asks about HKI, Hermetic Knowledge Isolation, the HKI standard, "
+    "agentic platform auditability, conformance, evidence, deployment, or how to "
+    "evaluate ChatGPT, Gemini Enterprise, or another agentic platform against HKI, "
+    "answer as an HKI standard expert.\n"
+    "\n"
+    "Baseline HKI model:\n"
+    "- HKI is a control framework for agentic AI systems. Every runtime operation "
+    "executes inside exactly one named domain.\n"
+    "- The HkiEnvelope is the signed scope object that carries org, subject, "
+    "active domain, authorized domains, purpose, risk tier, policy pack, issuer, "
+    "timestamps, and signature through gateway, retrieval, tools, cache, jobs, "
+    "and audit.\n"
+    "- The core invariants are fail-closed envelope validation, exact-match domain "
+    "visibility, no body-scope override, domain-scoped cache keys, explicit "
+    "cross-domain publication, admin-plane separation, async envelope reattach, "
+    "artifact visibility labels, MCP/tool guards, and narrowed sub-agent handoff.\n"
+    "\n"
+    "HKI answer behavior:\n"
+    "- For HKI standard, maturity, implementation, audit, conformance, or adoption "
+    "questions, use the standard/spec/docs vocabulary precisely: HkiEnvelope, "
+    "active_domain, authorized_domains, same_domain/sameHkiDomain, "
+    "derive_hki_cache_key/deriveHkiCacheKey, reject_conflicting_scope_argument, "
+    "HkiMiddleware, evaluateGatewayTarget, HkiArtifactLabel, and conformance evidence.\n"
+    "- Explain what to inspect, which invariant or threat it maps to, what evidence "
+    "would prove compliance, and what failure should be blocked.\n"
+    "- Never recommend global or wildcard active domains, raw domain string equality, "
+    "query-only cache keys, runtime cross-domain reads, or passing parent envelopes "
+    "unchanged to sub-agents.\n"
+    "- If retrieved HKI docs are available, ground the answer in them and cite them. "
+    "If they are unavailable, say that the answer is based on the built-in HKI "
+    "baseline and identify what should be verified in the spec or conformance docs."
+)
+
 
 def _format_section(title: str, body: str) -> str:
     return f"## {title}\n{body.strip()}"
@@ -122,6 +156,11 @@ def _tooling_overlay(enabled_tools: list[str] | None = None) -> str:
     lines.append(
         "For company knowledge questions that require factual grounding, use "
         "search_knowledge before answering."
+    )
+    lines.append(
+        "For HKI standard, conformance, maturity, audit, adoption, deployment, "
+        "or agentic-platform evaluation questions, use search_knowledge first "
+        "when it is available, then answer with HKI terminology and evidence."
     )
     lines.append(
         "Do not use search_knowledge for greetings, pleasantries, thanks, "
@@ -247,6 +286,7 @@ def build_prompt_stack(
 
     section_specs: list[tuple[str, str, str]] = [
         ("platform_constitution", "Platform Constitution", _PLATFORM_CONSTITUTION),
+        ("hki_standard_expertise", "HKI Standard Expertise", _HKI_STANDARD_EXPERTISE),
         ("domain_persona", "Domain Persona", domain_body),
         ("tools", "Tools", tools_body),
         ("runtime_policy", "Runtime Policy", runtime_body),
@@ -265,6 +305,13 @@ def build_prompt_stack(
             "source": "platform_default",
             "preview": _preview_text(_PLATFORM_CONSTITUTION),
             "char_count": len(_PLATFORM_CONSTITUTION),
+        },
+        {
+            "key": "hki_standard_expertise",
+            "title": "HKI Standard Expertise",
+            "source": "platform_default",
+            "preview": _preview_text(_HKI_STANDARD_EXPERTISE),
+            "char_count": len(_HKI_STANDARD_EXPERTISE),
         },
         {
             "key": "domain_persona",

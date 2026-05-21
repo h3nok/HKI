@@ -1,0 +1,120 @@
+{
+  "$schema": "https://hki.dev/schemas/managed-service-evidence/v1.json",
+  "schemaVersion": "1.0",
+  "profile": "sample",
+  "generated_at": "2026-05-21T00:00:00.000Z",
+  "services": [
+    {
+      "id": "agent-platform-runtime",
+      "provider": "google-cloud",
+      "capability": "agent-runtime",
+      "resource": "//aiplatform.googleapis.com/projects/example/locations/us-central1/reasoningEngines/example-agent",
+      "status": "pass",
+      "evidence_refs": {
+        "hki_envelope_id": "env_sample_runtime",
+        "trace_id": "trace_sample_runtime",
+        "cloud_audit_insert_id": "audit_sample_runtime"
+      },
+      "probes": [
+        {
+          "id": "runtime.rejects-missing-envelope",
+          "status": "pass",
+          "capability": "agent-runtime"
+        }
+      ]
+    },
+    {
+      "id": "agent-platform-sessions-memory-bank",
+      "provider": "google-cloud",
+      "capability": "sessions-memory",
+      "resource": "//aiplatform.googleapis.com/projects/example/locations/us-central1/memoryStores/example-memory",
+      "status": "pass",
+      "probes": [
+        {
+          "id": "memory.binds-active-domain",
+          "status": "pass",
+          "capability": "sessions-memory"
+        }
+      ]
+    },
+    {
+      "id": "agent-identity",
+      "provider": "google-cloud",
+      "capability": "agent-identity",
+      "resource": "spiffe://example.com/ns/agents/sa/retail-agent",
+      "status": "pass",
+      "evidence_refs": {
+        "agent_identity": "spiffe://example.com/ns/agents/sa/retail-agent",
+        "subject_id": "user:sample"
+      }
+    },
+    {
+      "id": "agent-gateway",
+      "provider": "google-cloud",
+      "capability": "agent-gateway",
+      "resource": "//apigateway.googleapis.com/projects/example/locations/global/gateways/example-agent-gateway",
+      "status": "pass",
+      "probes": [
+        {
+          "id": "gateway.rejects-cross-domain-target",
+          "status": "pass",
+          "capability": "agent-gateway"
+        }
+      ]
+    },
+    {
+      "id": "agent-registry",
+      "provider": "google-cloud",
+      "capability": "agent-registry",
+      "resource": "//agentregistry.googleapis.com/projects/example/locations/us-central1/agents/retail-agent",
+      "status": "pass",
+      "probes": [
+        {
+          "id": "registry.exposes-domain-target-metadata",
+          "status": "pass",
+          "capability": "agent-registry"
+        }
+      ]
+    },
+    {
+      "id": "rag-engine-vector-search",
+      "provider": "google-cloud",
+      "capability": "rag-search",
+      "resource": "//aiplatform.googleapis.com/projects/example/locations/us-central1/ragCorpora/example-corpus",
+      "status": "pass",
+      "probes": [
+        {
+          "id": "rag.preserves-artifact-domain-labels",
+          "status": "pass",
+          "capability": "rag-search"
+        }
+      ]
+    },
+    {
+      "id": "evaluation-service",
+      "provider": "google-cloud",
+      "capability": "evaluation",
+      "resource": "//aiplatform.googleapis.com/projects/example/locations/us-central1/evaluationRuns/example-run",
+      "status": "pass",
+      "probes": [
+        {
+          "id": "eval.carries-domain-labeled-dataset",
+          "status": "pass",
+          "capability": "evaluation"
+        }
+      ]
+    },
+    {
+      "id": "cloud-logging-trace-audit",
+      "provider": "google-cloud",
+      "capability": "observability",
+      "resource": "//logging.googleapis.com/projects/example/logs/cloudaudit.googleapis.com%2Factivity",
+      "status": "pass",
+      "evidence_refs": {
+        "trace_id": "trace_sample_observability",
+        "cloud_log_name": "projects/example/logs/cloudaudit.googleapis.com%2Factivity",
+        "cloud_audit_insert_id": "audit_sample_observability"
+      }
+    }
+  ]
+}

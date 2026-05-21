@@ -13,10 +13,12 @@ Covers:
 from __future__ import annotations
 
 import json
+import time
 import typing
 import unittest.mock
 
 import fastapi.testclient
+import hki_runtime
 
 import src.api.app
 
@@ -38,7 +40,7 @@ def _make_mock_agent(
         agent.chat_stream_calls.append(
             {"session_id": session_id, "message": message, **kwargs}
         )
-        for c: dict[str, Any] | str in chunks:
+        for c in chunks:
             yield c
 
     agent.chat_stream = _fake_stream
@@ -68,6 +70,33 @@ def _chat_payload(
     return {"message": message, "conversation_id": conversation_id}
 
 
+def _hki_envelope_header(
+    *,
+    active_domain: str = "pharmacy",
+    authorized_domains: list[str] | None = None,
+    subject_id: str = "0",
+    org_id: str = "default",
+    secret: str = "unit-test-hki-secret",
+) -> str:
+    now = int(time.time())
+    envelope = {
+        "hki_version": "1.0",
+        "envelope_id": f"env-test-{active_domain}",
+        "org_id": org_id,
+        "subject_id": subject_id,
+        "active_domain": active_domain,
+        "authorized_domains": authorized_domains or [active_domain],
+        "purpose": "chat",
+        "risk_tier": "read-only",
+        "policy_pack_id": "policy-test",
+        "issued_at": now - 1,
+        "expires_at": now + 300,
+        "issuer": "agentic-bff",
+    }
+    envelope["signature"] = hki_runtime.sign_envelope(envelope, secret)
+    return json.dumps(envelope)
+
+
 # ═════════════════════════════════════════════════════════════════════════════
 # Health Endpoints
 # ═════════════════════════════════════════════════════════════════════════════
@@ -85,7 +114,7 @@ class TestHealthEndpoints:
 
     def test_readiness_returns_200(self, client) -> None:
         """Readiness probe — regardless of upstream status it should not 5xx."""
-        with unittest.mock.patch("src.api.app._get_probe_client") as mock_probe: unittest.mock.MagicMock | unittest.mock.AsyncMock:
+        with unittest.mock.patch("src.api.app._get_probe_client") as mock_probe:
             mock_http = unittest.mock.AsyncMock()
             mock_resp = unittest.mock.MagicMock(status_code=200)
             mock_http.get = unittest.mock.AsyncMock(return_value=mock_resp)
@@ -99,7 +128,7 @@ class TestHealthEndpoints:
 
     def test_readiness_alias(self, client) -> None:
         """GET /health/ready is an alias for /ready."""
-        with unittest.mock.patch("src.api.app._get_probe_client") as mock_probe: unittest.mock.MagicMock | unittest.mock.AsyncMock:
+        with unittest.mock.patch("src.api.app._get_probe_client") as mock_probe:
             mock_http = unittest.mock.AsyncMock()
             mock_resp = unittest.mock.MagicMock(status_code=200)
             mock_http.get = unittest.mock.AsyncMock(return_value=mock_resp)
@@ -113,8 +142,8 @@ class TestHealthEndpoints:
     def test_readiness_degraded_when_llm_down(self, client) -> None:
         """If LLM gateway check fails, readiness should report degraded."""
         with (
-            unittest.mock.patch("src.api.app.settings") as mock_settings: unittest.mock.MagicMock | unittest.mock.AsyncMock,
-            unittest.mock.patch("src.api.app._get_probe_client") as mock_probe: unittest.mock.MagicMock | unittest.mock.AsyncMock,
+            unittest.mock.patch("src.api.app.settings") as mock_settings,
+            unittest.mock.patch("src.api.app._get_probe_client") as mock_probe,
         ):
             mock_settings.LLM_GATEWAY_URL = "http://fake-gateway:4000/v1"
             mock_settings.KNOWLEDGE_API_URL = "http://localhost:9509"
@@ -287,6 +316,67 @@ class TestChatEndpoint:
         assert agent.chat_stream_calls[-1]["scope"] == "pharmacy"
         assert agent.chat_stream_calls[-1]["scopes"] == ["pharmacy"]
 
+    def test_standard_hki_envelope_drives_agent_scope(self) -> None:
+        """When present, the standard HKI envelope is the runtime scope source."""
+        agent: unittest.mock.MagicMock = _make_mock_agent(
+            chunks=[{"type": "final_response_chunk", "content": "ok"}],
+        )
+        client = _inject_agent(agent)
+
+        with unittest.mock.patch.dict(
+            "os.environ",
+            {
+                "AUTH_ENABLED": "false",
+                "HKI_DEV_RUNTIME_SCOPE": "pharmacy",
+                "HKI_SIGNING_SECRET": "unit-test-hki-secret",
+            },
+            clear=False,
+        ):
+            resp = client.post(
+                "/v1/chat",
+                json={
+                    **_chat_payload(),
+                    "user_id": "body-user",
+                    "org_id": "body-org",
+                    "scope": "pharmacy",
+                },
+                headers={"X-HKI-Envelope": _hki_envelope_header()},
+            )
+
+        assert resp.status_code == 200
+        call = agent.chat_stream_calls[-1]
+        assert call["user_id"] == "0"
+        assert call["org_id"] == "default"
+        assert call["scope"] == "pharmacy"
+        assert call["scopes"] == ["pharmacy"]
+        assert call["hki_envelope"].active_domain == "pharmacy"
+
+    def test_standard_hki_envelope_rejects_body_scope_override(self) -> None:
+        """A body scope that conflicts with X-HKI-Envelope fails closed."""
+        agent: unittest.mock.MagicMock = _make_mock_agent(
+            chunks=[{"type": "final_response_chunk", "content": "ok"}],
+        )
+        client = _inject_agent(agent)
+
+        with unittest.mock.patch.dict(
+            "os.environ",
+            {
+                "AUTH_ENABLED": "false",
+                "HKI_DEV_RUNTIME_SCOPE": "pharmacy",
+                "HKI_SIGNING_SECRET": "unit-test-hki-secret",
+            },
+            clear=False,
+        ):
+            resp = client.post(
+                "/v1/chat",
+                json={**_chat_payload(), "scope": "surgery"},
+                headers={"X-HKI-Envelope": _hki_envelope_header()},
+            )
+
+        assert resp.status_code == 403
+        assert resp.json()["error"] == "scope-override"
+        assert agent.chat_stream_calls == []
+
     def test_chat_emits_native_hki_audit_event(self) -> None:
         agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[{"type": "final_response_chunk", "content": "Hello!"}],
@@ -346,7 +436,7 @@ class TestChatStreamEndpoint:
     def _parse_sse(text: str) -> list[dict | str]:
         """Parse SSE text into a list of JSON objects or raw strings."""
         events: list[dict | str] = []
-        for line: str in text.strip().splitlines():
+        for line in text.strip().splitlines():
             if line.startswith("data: "):
                 payload: str = line[len("data: ") :]
                 if payload == "[DONE]":
@@ -588,7 +678,7 @@ class TestGuardrailsInRoutes:
     @staticmethod
     def _parse_sse(text: str) -> list[dict | str]:
         events: list[dict | str] = []
-        for line: str in text.strip().splitlines():
+        for line in text.strip().splitlines():
             if line.startswith("data: "):
                 payload: str = line[len("data: ") :]
                 if payload == "[DONE]":

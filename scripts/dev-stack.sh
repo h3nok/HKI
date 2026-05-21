@@ -254,7 +254,19 @@ preflight_python_service() {
   )
 }
 
+repair_formatter_mangling() {
+  local fixer="${ROOT_DIR}/scripts/fix-formatter-mangling.py"
+  if [[ -f "${fixer}" ]]; then
+    info "Repairing formatter-mangled Python syntax..."
+    (
+      cd "${ROOT_DIR}"
+      python3 "${fixer}"
+    )
+  fi
+}
+
 preflight_services() {
+  repair_formatter_mangling
   local name
   for name in "$@"; do
     preflight_python_service "${name}"

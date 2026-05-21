@@ -15,7 +15,7 @@
  * publish their own `conformance.json` against the HKI registry.
  *
  * Usage:
- *   node scripts/build-conformance-registry.mjs [--out=conformance.json]
+ *   node scripts/build-conformance-registry.mjs [--out=conformance.json] [--managed-evidence=<path>]
  */
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -30,6 +30,21 @@ const args = process.argv.slice(2);
 const outArg = args.find(a => a.startsWith("--out="));
 const outPath = outArg ? outArg.slice("--out=".length) : "conformance.json";
 const strictRelease = args.includes("--strict-release");
+const managedEvidenceArg = args.find(a => a.startsWith("--managed-evidence="));
+const managedEvidencePath = managedEvidenceArg
+  ? managedEvidenceArg.slice("--managed-evidence=".length)
+  : "artifacts/hki/managed-evidence.json";
+
+const MANAGED_SERVICE_CAPABILITIES = [
+  "agent-runtime",
+  "sessions-memory",
+  "agent-identity",
+  "agent-gateway",
+  "agent-registry",
+  "rag-search",
+  "evaluation",
+  "observability",
+];
 
 function git(cmd, fallback = "") {
   try {
@@ -130,6 +145,179 @@ function loadProbeEvidence() {
   }
 }
 
+function loadManagedEvidence() {
+  const evidencePath = path.isAbsolute(managedEvidencePath)
+    ? managedEvidencePath
+    : path.join(root, managedEvidencePath);
+  if (!fs.existsSync(evidencePath)) return emptyManagedEvidence();
+
+  const text = fs.readFileSync(evidencePath, "utf8");
+  let raw;
+  try {
+    raw = JSON.parse(text);
+  } catch (err) {
+    throw new Error(
+      `Unable to parse managed evidence ${managedEvidencePath}: ${err.message ?? String(err)}`
+    );
+  }
+
+  return summarizeManagedEvidence(raw, {
+    path: managedEvidencePath,
+    sha256: sha256Text(text),
+    generatedAt: raw?.generated_at ?? raw?.generatedAt ?? null,
+  });
+}
+
+function emptyManagedEvidence() {
+  return {
+    schemaVersion: "1.0",
+    profile: "none",
+    source: null,
+    services: [],
+    coverage: {
+      services: statusCounts([]),
+      probes: statusCounts([]),
+      byCapability: {},
+    },
+    missingCapabilities: MANAGED_SERVICE_CAPABILITIES,
+  };
+}
+
+function summarizeManagedEvidence(raw, source) {
+  const services = managedServices(raw).map(summarizeManagedService);
+  const probes = services.flatMap(service => service.probes);
+  const coveredCapabilities = new Set(
+    services
+      .filter(
+        service =>
+          service.status === "pass" ||
+          service.probes.some(probe => probe.status === "pass")
+      )
+      .map(service => service.capability)
+      .filter(Boolean)
+  );
+
+  return {
+    schemaVersion: String(raw?.schemaVersion ?? raw?.schema_version ?? "1.0"),
+    profile: String(raw?.profile ?? raw?.evidence_profile ?? "live"),
+    source,
+    services,
+    coverage: {
+      services: statusCounts(services),
+      probes: statusCounts(probes),
+      byCapability: countByCapability(services),
+    },
+    missingCapabilities: MANAGED_SERVICE_CAPABILITIES.filter(
+      capability => !coveredCapabilities.has(capability)
+    ),
+  };
+}
+
+function managedServices(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.services)) return raw.services;
+  if (Array.isArray(raw?.managedServices)) return raw.managedServices;
+  if (Array.isArray(raw?.managed_services)) return raw.managed_services;
+  return [];
+}
+
+function summarizeManagedService(service) {
+  const probes = managedProbes(service).map(summarizeManagedProbe);
+  const status = normalizeManagedStatus(service?.status ?? service?.result);
+  return {
+    id: String(
+      service?.id ?? service?.name ?? service?.capability ?? "unknown"
+    ),
+    provider: service?.provider ? String(service.provider) : null,
+    capability: service?.capability ? String(service.capability) : null,
+    status: status === "unknown" ? deriveManagedStatus(probes) : status,
+    resource:
+      service?.resource ??
+      service?.resourceName ??
+      service?.resource_name ??
+      null,
+    evidenceRefs: managedEvidenceRefs(service),
+    probes,
+  };
+}
+
+function managedProbes(service) {
+  if (Array.isArray(service?.probes)) return service.probes;
+  if (Array.isArray(service?.checks)) return service.checks;
+  return [];
+}
+
+function summarizeManagedProbe(probe) {
+  return {
+    id: String(probe?.id ?? probe?.name ?? "unknown"),
+    status: normalizeManagedStatus(probe?.status ?? probe?.result),
+    capability: probe?.capability ? String(probe.capability) : null,
+    resource:
+      probe?.resource ?? probe?.resourceName ?? probe?.resource_name ?? null,
+    evidenceRefs: managedEvidenceRefs(probe),
+  };
+}
+
+function managedEvidenceRefs(value) {
+  const refs = value?.evidenceRefs ?? value?.evidence_refs ?? null;
+  return refs && typeof refs === "object" && !Array.isArray(refs) ? refs : null;
+}
+
+function normalizeManagedStatus(value) {
+  if (value === true) return "pass";
+  if (value === false) return "fail";
+  const status = String(value ?? "unknown").toLowerCase();
+  if (["pass", "passed", "ok", "success"].includes(status)) return "pass";
+  if (["fail", "failed", "error"].includes(status)) return "fail";
+  if (["missing", "absent", "skipped"].includes(status)) return "missing";
+  return "unknown";
+}
+
+function deriveManagedStatus(probes) {
+  if (probes.some(probe => probe.status === "fail")) return "fail";
+  if (probes.length > 0 && probes.every(probe => probe.status === "pass"))
+    return "pass";
+  if (probes.some(probe => probe.status === "missing")) return "missing";
+  return "unknown";
+}
+
+function statusCounts(items) {
+  const counts = {
+    total: items.length,
+    passed: 0,
+    failed: 0,
+    missing: 0,
+    unknown: 0,
+  };
+  for (const item of items) {
+    if (item.status === "pass") counts.passed += 1;
+    else if (item.status === "fail") counts.failed += 1;
+    else if (item.status === "missing") counts.missing += 1;
+    else counts.unknown += 1;
+  }
+  return counts;
+}
+
+function countByCapability(services) {
+  const counts = {};
+  for (const service of services) {
+    const capability = service.capability ?? "unknown";
+    counts[capability] ??= {
+      total: 0,
+      passed: 0,
+      failed: 0,
+      missing: 0,
+      unknown: 0,
+    };
+    counts[capability].total += 1;
+    if (service.status === "pass") counts[capability].passed += 1;
+    else if (service.status === "fail") counts[capability].failed += 1;
+    else if (service.status === "missing") counts[capability].missing += 1;
+    else counts[capability].unknown += 1;
+  }
+  return counts;
+}
+
 function runAstAuditTs() {
   try {
     const out = exec("node scripts/hki-ast-audit-ts.mjs --json");
@@ -146,6 +334,7 @@ const threats = listThreats();
 const ast = runAstAudit();
 const astTs = runAstAuditTs();
 const httpProbe = loadProbeEvidence();
+const managedEvidence = loadManagedEvidence();
 const implementation = {
   name: "hki-reference",
   repository: git("config --get remote.origin.url", "local"),
@@ -225,6 +414,7 @@ const registry = {
     ids: threats,
   },
   httpProbe: httpProbe,
+  managedEvidence,
   evidenceProfile,
   releaseEvidence: buildReleaseEvidence({
     conformance,
@@ -237,6 +427,7 @@ const registry = {
     packages,
     level,
     evidenceProfile,
+    managedEvidence,
   }),
   level,
 };
@@ -279,6 +470,7 @@ function buildReleaseEvidence({
   packages,
   level,
   evidenceProfile,
+  managedEvidence,
 }) {
   const commandManifest = [
     {
@@ -366,6 +558,20 @@ function buildReleaseEvidence({
           }
         : null,
     },
+    {
+      id: "managed-service-evidence",
+      command: managedEvidence.source?.path
+        ? `node scripts/build-conformance-registry.mjs --managed-evidence=${managedEvidence.source.path}`
+        : "node scripts/build-conformance-registry.mjs --managed-evidence=<file>",
+      status: managedEvidenceStatus(managedEvidence),
+      summary: {
+        profile: managedEvidence.profile,
+        source: managedEvidence.source,
+        services: managedEvidence.coverage.services,
+        probes: managedEvidence.coverage.probes,
+        missingCapabilities: managedEvidence.missingCapabilities,
+      },
+    },
   ];
 
   const releaseReadiness = deriveReleaseReadiness({
@@ -377,6 +583,7 @@ function buildReleaseEvidence({
     astTs,
     httpProbe,
     evidenceProfile,
+    managedEvidence,
   });
 
   const manifest = {
@@ -391,6 +598,8 @@ function buildReleaseEvidence({
       threatCatalog: sha256Json(threats),
       packageVersions: sha256Json(packages),
       probeBundle: httpProbe?.bundle_hash ?? null,
+      managedEvidence:
+        managedEvidence.source?.sha256 ?? sha256Json(managedEvidence),
     },
     verification: {
       schema: "packages/hki-conformance/schemas/conformance-registry-v1.json",
@@ -402,6 +611,11 @@ function buildReleaseEvidence({
         evidenceProfile === "live"
           ? "hki-probe <live-url>"
           : "pnpm probe:smoke",
+        ...(managedEvidence.profile === "none"
+          ? []
+          : [
+              `node scripts/build-conformance-registry.mjs --managed-evidence=${managedEvidence.source?.path ?? "<file>"}`,
+            ]),
         "pnpm registry:build",
       ],
       strictReleaseCommand:
@@ -425,6 +639,7 @@ function deriveReleaseReadiness({
   astTs,
   httpProbe,
   evidenceProfile,
+  managedEvidence,
 }) {
   const blockers = [];
   const warnings = [];
@@ -472,11 +687,45 @@ function deriveReleaseReadiness({
         "Strict release evidence requires live or release evidence, not local smoke evidence.",
     });
   }
+  if ((managedEvidence?.coverage?.services?.failed ?? 0) > 0) {
+    blockers.push({
+      id: "managed-service-evidence-failed",
+      message: "Attached managed service evidence contains failing services.",
+    });
+  }
+  if ((managedEvidence?.coverage?.probes?.failed ?? 0) > 0) {
+    blockers.push({
+      id: "managed-service-probes-failed",
+      message: "Attached managed service evidence contains failing probes.",
+    });
+  }
   if ((ast?.advisory_count ?? 0) > 0 || (astTs?.advisory_count ?? 0) > 0) {
     warnings.push({
       id: "advisory-audit-findings",
       message:
         "Advisory audit findings remain; confirm they are documented or intentionally accepted.",
+    });
+  }
+  if (managedEvidence?.profile === "none") {
+    warnings.push({
+      id: "missing-managed-service-evidence",
+      message:
+        "Managed ADK/Gemini service evidence is not attached; managed platform coverage is unproven.",
+    });
+  } else if (managedEvidence?.profile === "sample") {
+    warnings.push({
+      id: "sample-managed-service-evidence",
+      message:
+        "Managed service evidence is sample-only and must be replaced with live or release evidence before public claims.",
+    });
+  }
+  if (
+    managedEvidence?.profile !== "none" &&
+    (managedEvidence?.missingCapabilities?.length ?? 0) > 0
+  ) {
+    warnings.push({
+      id: "incomplete-managed-service-coverage",
+      message: `Managed evidence is missing capabilities: ${managedEvidence.missingCapabilities.join(", ")}.`,
     });
   }
 
@@ -492,6 +741,27 @@ function sha256Json(value) {
   return createHash("sha256")
     .update(JSON.stringify(value ?? null), "utf8")
     .digest("hex");
+}
+
+function sha256Text(value) {
+  return createHash("sha256").update(value, "utf8").digest("hex");
+}
+
+function managedEvidenceStatus(managedEvidence) {
+  if (!managedEvidence || managedEvidence.profile === "none") return "missing";
+  if (
+    managedEvidence.coverage.services.failed > 0 ||
+    managedEvidence.coverage.probes.failed > 0
+  ) {
+    return "fail";
+  }
+  if (
+    managedEvidence.coverage.services.passed > 0 ||
+    managedEvidence.coverage.probes.passed > 0
+  ) {
+    return managedEvidence.profile === "sample" ? "sample" : "pass";
+  }
+  return "present";
 }
 
 function deriveProbeEvidenceProfile(raw) {

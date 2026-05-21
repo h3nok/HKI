@@ -55,7 +55,7 @@ def test_validate_envelope_rejects_required_failures() -> None:
     for payload, expected_code in cases:
         result: hki.HkiValidationResult = hki.validate_envelope(payload, now=1100, require_signature=True)
         assert not result.ok
-        assert expected_code in {issue.code for issue: hki.HkiValidationIssue in result.issues}
+        assert expected_code in {issue.code for issue in result.issues}
 
 
 def test_artifact_visibility_is_exact_org_and_domain() -> None:
@@ -235,7 +235,7 @@ def test_validate_audit_event_accepts_native_runtime_event() -> None:
 
 
 def test_validate_audit_event_rejects_forbidden_boundaries() -> None:
-    for forbidden_domain: str in ("global", "*"):
+    for forbidden_domain in ("global", "*"):
         result: hki.HkiAuditEventValidationResult = hki.validate_audit_event(
             _audit_event(
                 {
@@ -249,7 +249,7 @@ def test_validate_audit_event_rejects_forbidden_boundaries() -> None:
         )
 
         assert not result.ok
-        assert "invalid-domain" in {issue.code for issue: hki.HkiValidationIssue in result.issues}
+        assert "invalid-domain" in {issue.code for issue in result.issues}
 
 
 def test_validate_audit_event_rejects_runtime_target_domain_mismatch() -> None:
@@ -260,5 +260,5 @@ def test_validate_audit_event_rejects_runtime_target_domain_mismatch() -> None:
     assert not result.ok
     assert any(
         issue.code == "unauthorized-domain" and issue.field == "operation.target_domain"
-        for issue: hki.HkiValidationIssue in result.issues
+        for issue in result.issues
     )

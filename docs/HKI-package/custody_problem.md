@@ -361,7 +361,7 @@ For HKI, those artifacts live in the standard, runtime packages, conformance har
   author = {Ghebrechristos, Henok},
   year   = {2026},
   type   = {HKI Research Note},
-  url    = {https://github.com/innovationlab/Hki}
+  url    = {https://github.com/h3nok/HKI}
 }
 ```
 

@@ -16,7 +16,7 @@ export function DocumentOutline({
 
   return (
     <aside className={cn("hidden xl:block", className)}>
-      <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-3">
+      <div className="engineering-panel sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto p-3">
         <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
           Contents
         </p>

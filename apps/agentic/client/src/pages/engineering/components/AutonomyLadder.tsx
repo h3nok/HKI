@@ -72,10 +72,7 @@ export function AutonomyLadder({
 }) {
   return (
     <div
-      className={cn(
-        "overflow-hidden rounded-lg border border-border",
-        className
-      )}
+      className={cn("engineering-panel overflow-hidden", className)}
       role="table"
       aria-label="Autonomy ladder: stage, capability, isolation requirement"
     >

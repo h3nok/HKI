@@ -9,10 +9,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import typing
 
 import fastapi
 import fastapi.responses
+import hki_runtime
+import hki_runtime.fastapi
 import pydantic
 
 import src.adapters.analytics_client
@@ -73,11 +76,107 @@ def _message_hash(message: str) -> str:
     return "sha256:" + hashlib.sha256(message.encode()).hexdigest()
 
 
+def _get_hki_signing_secret() -> str | None:
+    return (
+        os.environ.get("HKI_SIGNING_SECRET")
+        or os.environ.get("SERVICE_AUTH_SECRET")
+        or os.environ.get("JWT_SECRET")
+        or None
+    )
+
+
+def _hki_reject_status(issues: tuple[hki_runtime.HkiValidationIssue, ...]) -> int:
+    return (
+        fastapi.status.HTTP_403_FORBIDDEN
+        if any(issue.code in {"invalid-domain", "unauthorized-domain"} for issue in issues)
+        else fastapi.status.HTTP_401_UNAUTHORIZED
+    )
+
+
+def _resolve_hki_envelope(
+    request: fastapi.Request,
+    identity: src.core.auth.RequestIdentity,
+) -> hki_runtime.HkiEnvelope | None:
+    header_value = request.headers.get(hki_runtime.fastapi.DEFAULT_HEADER)
+    if not header_value:
+        return None
+
+    try:
+        payload: dict[str, Any] = hki_runtime.fastapi.decode_envelope_header(header_value)
+    except hki_runtime.fastapi.HkiEnvelopeError as exc:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
+            detail=exc.message,
+        ) from exc
+
+    validation: hki_runtime.HkiValidationResult = hki_runtime.validate_envelope(
+        payload,
+        require_signature=True,
+        signing_secret=_get_hki_signing_secret(),
+    )
+    if not validation.ok or validation.envelope is None:
+        raise fastapi.HTTPException(
+            status_code=_hki_reject_status(validation.issues),
+            detail={
+                "error": "envelope-invalid",
+                "issues": [issue.__dict__ for issue in validation.issues],
+            },
+        )
+
+    envelope: hki_runtime.HkiEnvelope = validation.envelope
+    if (
+        not hki_runtime.same_domain(envelope.active_domain, identity.scope)
+        or envelope.org_id != identity.org_id
+        or envelope.subject_id != identity.user_id
+    ):
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_403_FORBIDDEN,
+            detail="HKI envelope does not match authenticated request identity",
+        )
+
+    return envelope
+
+
+def _reject_body_scope_override(
+    envelope: hki_runtime.HkiEnvelope | None,
+    body: pydantic.BaseModel,
+) -> fastapi.responses.JSONResponse | None:
+    if envelope is None:
+        return None
+    scope_error: str | None = hki_runtime.reject_conflicting_scope_argument(
+        envelope,
+        body.model_dump(exclude_none=True),
+    )
+    if not scope_error:
+        return None
+    return fastapi.responses.JSONResponse(
+        status_code=fastapi.status.HTTP_403_FORBIDDEN,
+        content={"error": "scope-override", "message": scope_error},
+    )
+
+
+def _effective_subject_id(
+    body: ChatRequest,
+    identity: src.core.auth.RequestIdentity,
+    envelope: hki_runtime.HkiEnvelope | None,
+) -> str:
+    return envelope.subject_id if envelope else body.user_id or identity.user_id
+
+
+def _effective_org_id(
+    body: ChatRequest,
+    identity: src.core.auth.RequestIdentity,
+    envelope: hki_runtime.HkiEnvelope | None,
+) -> str:
+    return envelope.org_id if envelope else body.org_id or identity.org_id
+
+
 def _emit_chat_audit_event(
     request: fastapi.Request,
     *,
     body: ChatRequest,
     identity: src.core.auth.RequestIdentity,
+    hki_envelope: hki_runtime.HkiEnvelope | None = None,
     effective_user_id: str,
     decision_outcome: str,
     decision_reason: str,
@@ -90,12 +189,16 @@ def _emit_chat_audit_event(
     if analytics is None:
         return
 
-    active_domain = identity.scope
-    authorized_domains = list(identity.scopes or [identity.scope])
+    active_domain = hki_envelope.active_domain if hki_envelope else identity.scope
+    authorized_domains = (
+        list(hki_envelope.authorized_domains)
+        if hki_envelope
+        else list(identity.scopes or [identity.scope])
+    )
     response_metadata = response_metadata or {}
     analytics.fire_audit_event(
         operation_type="agent.chat",
-        org_id=body.org_id or identity.org_id,
+        org_id=hki_envelope.org_id if hki_envelope else body.org_id or identity.org_id,
         subject_id=effective_user_id,
         active_domain=active_domain,
         authorized_domains=authorized_domains,
@@ -105,6 +208,8 @@ def _emit_chat_audit_event(
         decision_outcome=decision_outcome,
         decision_reason=decision_reason,
         actor_role=identity.role,
+        policy_pack_id=hki_envelope.policy_pack_id if hki_envelope else "",
+        risk_tier=str(hki_envelope.risk_tier) if hki_envelope else "",
         evidence={
             "conversation_id": body.conversation_id,
             "message_hash": _message_hash(body.message),
@@ -145,7 +250,7 @@ async def _run_completion(
     body: CompletionRequest,
 ) -> dict[str, typing.Any]:
     response: src.adapters.llm_client.LLMResponse = await client.chat(
-        messages=[message.model_dump() for message: CompletionMessage in body.messages],
+        messages=[message.model_dump() for message in body.messages],
         model=body.model,
         temperature=body.temperature,
         max_tokens=body.max_tokens,
@@ -175,7 +280,13 @@ async def chat_stream(
     Process a user message with SSE streaming back to the BFF.
     Stream structure mimics the expected format of the frontend.
     """
-    effective_user_id = body.user_id or identity.user_id
+    hki_envelope: hki_runtime.HkiEnvelope | None = _resolve_hki_envelope(request, identity)
+    scope_override_response = _reject_body_scope_override(hki_envelope, body)
+    if scope_override_response is not None:
+        return scope_override_response
+
+    effective_user_id: str = _effective_subject_id(body, identity, hki_envelope)
+    effective_org_id: str = _effective_org_id(body, identity, hki_envelope)
 
     # ── Input Guardrails (blocking — reject before reaching the LLM) ─────
     input_report: src.domain.models.GuardrailsReport = src.domain.guardrails.check_input(body.message, effective_user_id)
@@ -184,6 +295,7 @@ async def chat_stream(
             request,
             body=body,
             identity=identity,
+            hki_envelope=hki_envelope,
             effective_user_id=effective_user_id,
             decision_outcome="deny",
             decision_reason="input_guardrail_violation",
@@ -195,7 +307,7 @@ async def chat_stream(
                 "error": "input_guardrail_violation",
                 "violations": [
                     {"rule": v.rule, "message": v.message, "severity": v.severity}
-                    for v: src.domain.models.GuardrailViolation in input_report.input_violations
+                    for v in input_report.input_violations
                 ],
                 "score": input_report.score,
             },
@@ -224,10 +336,11 @@ async def chat_stream(
         async for chunk in agent.chat_stream(
             session_id=body.conversation_id,
             user_id=effective_user_id,
-            org_id=body.org_id or "default",
+            org_id=effective_org_id,
             message=body.message,
-            scope=identity.scope,
-            scopes=identity.scopes,
+            scope=hki_envelope.active_domain if hki_envelope else identity.scope,
+            scopes=list(hki_envelope.authorized_domains) if hki_envelope else identity.scopes,
+            hki_envelope=hki_envelope,
             stream_config=body.stream_config,
         ):
             if isinstance(chunk, dict):
@@ -262,7 +375,7 @@ async def chat_stream(
                     "report": _report_payload(output_report),
                     "violations": [
                         {"rule": v.rule, "message": v.message, "severity": v.severity}
-                        for v: src.domain.models.GuardrailViolation in output_report.output_violations
+                        for v in output_report.output_violations
                     ],
                 },
             }
@@ -271,6 +384,7 @@ async def chat_stream(
                 request,
                 body=body,
                 identity=identity,
+                hki_envelope=hki_envelope,
                 effective_user_id=effective_user_id,
                 decision_outcome="allow" if output_report.passed else "escalate",
                 decision_reason="completed" if output_report.passed else "output_guardrail_flagged",
@@ -309,7 +423,13 @@ async def chat(
     """
     Synchronous fallback endpoint that accumulates the stream before returning.
     """
-    effective_user_id = body.user_id or identity.user_id
+    hki_envelope: hki_runtime.HkiEnvelope | None = _resolve_hki_envelope(request, identity)
+    scope_override_response = _reject_body_scope_override(hki_envelope, body)
+    if scope_override_response is not None:
+        return scope_override_response
+
+    effective_user_id: str = _effective_subject_id(body, identity, hki_envelope)
+    effective_org_id: str = _effective_org_id(body, identity, hki_envelope)
 
     # ── Input Guardrails (blocking) ──────────────────────────────────────
     input_report: src.domain.models.GuardrailsReport = src.domain.guardrails.check_input(body.message, effective_user_id)
@@ -318,6 +438,7 @@ async def chat(
             request,
             body=body,
             identity=identity,
+            hki_envelope=hki_envelope,
             effective_user_id=effective_user_id,
             decision_outcome="deny",
             decision_reason="input_guardrail_violation",
@@ -329,7 +450,7 @@ async def chat(
                 "error": "input_guardrail_violation",
                 "violations": [
                     {"rule": v.rule, "message": v.message, "severity": v.severity}
-                    for v: src.domain.models.GuardrailViolation in input_report.input_violations
+                    for v in input_report.input_violations
                 ],
                 "score": input_report.score,
             },
@@ -346,10 +467,11 @@ async def chat(
     async for chunk in agent.chat_stream(
         session_id=body.conversation_id,
         user_id=effective_user_id,
-        org_id=body.org_id or "default",
+        org_id=effective_org_id,
         message=body.message,
-        scope=identity.scope,
-        scopes=identity.scopes,
+        scope=hki_envelope.active_domain if hki_envelope else identity.scope,
+        scopes=list(hki_envelope.authorized_domains) if hki_envelope else identity.scopes,
+        hki_envelope=hki_envelope,
         stream_config=body.stream_config,
     ):
         if isinstance(chunk, dict):
@@ -394,6 +516,7 @@ async def chat(
         request,
         body=body,
         identity=identity,
+        hki_envelope=hki_envelope,
         effective_user_id=effective_user_id,
         decision_outcome="allow" if combined_guardrails.passed else "escalate",
         decision_reason="completed" if combined_guardrails.passed else "output_guardrail_flagged",
@@ -430,7 +553,7 @@ async def llm_complete(
     primary = src.adapters.llm_client.LLMClient(api_key=body.api_key, model=body.model)
     try:
         return await _run_completion(primary, body)
-    except Exception as exc: Exception:
+    except Exception as exc:
         if (
             not body.fallback_to_vertex_direct
             or getattr(primary, "_vertex_direct", False)
@@ -451,7 +574,7 @@ async def llm_complete(
         result: dict[str, Any] = await _run_completion(fallback, body)
         result["fallback_used"] = True
         return result
-    except Exception as exc: Exception:
+    except Exception as exc:
         return fastapi.responses.JSONResponse(
             status_code=502,
             content={

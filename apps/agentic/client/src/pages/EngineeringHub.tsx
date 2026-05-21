@@ -3,23 +3,16 @@ import { useLocation } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   ArrowRight,
-  BookOpen,
-  Bot,
   CheckCircle2,
   ClipboardCheck,
   Cpu,
-  Database,
   ExternalLink,
   FileText,
   GitBranch,
-  LockKeyhole,
-  MessageSquare,
   Network,
   Package,
   Radar,
-  Search,
   ShieldCheck,
-  Wrench,
 } from "lucide-react";
 import { HkiMark, cn } from "@hki/ui";
 import {
@@ -32,21 +25,11 @@ import { EngineeringHeader } from "@/pages/engineering/components/EngineeringHea
 import { HeroArt } from "@/pages/engineering/components/HeroArt";
 import conformanceRegistry from "../../../../../conformance.json";
 
-type Tone = "primary" | "success" | "neutral";
-
 type ConformanceRegistry = {
   generatedAt?: string;
   implementation?: { branch?: string; commit?: string };
   packages?: Record<string, string>;
   conformance?: { passed?: number; total?: number; overallPassed?: boolean };
-};
-
-type StoryFrame = {
-  label: string;
-  title: string;
-  detail: string;
-  icon: ComponentType<{ className?: string }>;
-  tone: Tone;
 };
 
 type HubCard = {
@@ -57,7 +40,7 @@ type HubCard = {
   href: string;
   icon: ComponentType<{ className?: string }>;
   meta?: string;
-  primary?: boolean;
+  featured?: boolean;
 };
 
 const REGISTRY = conformanceRegistry as ConformanceRegistry;
@@ -76,37 +59,19 @@ const EVIDENCE = {
     : "Local",
 };
 
-const STORY_FRAMES: readonly StoryFrame[] = [
+const PROOF_POINTS = [
   {
-    label: "1 · Sovereignty gap",
-    title: "Training opt-out is not sovereignty",
-    detail:
-      "Data sovereignty requires usage control over inference-time context.",
-    icon: BookOpen,
-    tone: "neutral",
+    label: "One domain",
+    detail: "Scope is signed once at the edge.",
   },
   {
-    label: "2 · Agentic shift",
-    title: "Runtime assembles context",
-    detail: "Retrieval, memory, tools, and policy shape the answer.",
-    icon: Bot,
-    tone: "primary",
+    label: "No fallback",
+    detail: "Missing scope fails closed.",
   },
   {
-    label: "3 · HKI boundary",
-    title: "One signed domain scope",
-    detail: "Every runtime operation carries the same custody envelope.",
-    icon: ShieldCheck,
-    tone: "success",
+    label: "Auditable path",
+    detail: "Every step carries the envelope.",
   },
-] as const;
-
-const RUNTIME_PARTS = [
-  { label: "Prompt", icon: MessageSquare },
-  { label: "Retrieval", icon: Search },
-  { label: "Memory", icon: Database },
-  { label: "Tools", icon: Wrench },
-  { label: "Policy", icon: LockKeyhole },
 ] as const;
 
 const HUB_CARDS: readonly HubCard[] = [
@@ -114,18 +79,17 @@ const HUB_CARDS: readonly HubCard[] = [
     eyebrow: "Read first",
     title: "The Custody Problem",
     detail:
-      "The research note behind HKI: authority, derived artifacts, and runtime custody.",
+      "Why agent security needs runtime custody, not just access control.",
     action: "Read note",
     href: HKI_CUSTODY_PROBLEM_ROUTE,
     icon: FileText,
     meta: "Primer",
-    primary: true,
+    featured: true,
   },
   {
     eyebrow: "Contract",
     title: "HKI Standard",
-    detail:
-      "The rules: one active domain, signed envelopes, exact visibility, explicit publication.",
+    detail: "The six invariants and the conformance surface.",
     action: "Read standard",
     href: HKI_STANDARD_ROUTE,
     icon: ShieldCheck,
@@ -134,8 +98,7 @@ const HUB_CARDS: readonly HubCard[] = [
   {
     eyebrow: "Inspect",
     title: "Reference Architecture",
-    detail:
-      "A workspace for runtime, publication, admin, and MCP enforcement paths.",
+    detail: "Runtime, publication, and admin planes in one workspace.",
     action: "Open diagram",
     href: HKI_ARCHITECTURE_ROUTE,
     icon: Network,
@@ -144,8 +107,7 @@ const HUB_CARDS: readonly HubCard[] = [
   {
     eyebrow: "Prove",
     title: "Conformance Evidence",
-    detail:
-      "Adapter cases, probes, and release evidence for falsifiable boundary checks.",
+    detail: "Adapter cases, probes, and release evidence.",
     action: "Inspect gates",
     href: "/admin",
     icon: ClipboardCheck,
@@ -164,135 +126,22 @@ const QUICK_STATS = [
   { label: "Evidence", value: EVIDENCE.generatedAt, icon: Radar },
 ] as const;
 
-function toneClass(tone: Tone) {
-  return {
-    primary: "border-primary/25 bg-primary/9 text-primary",
-    success: "border-success/30 bg-success/10 text-success",
-    neutral: "border-border bg-muted/50 text-muted-foreground",
-  }[tone];
-}
-
-function toneBarClass(tone: Tone) {
-  return {
-    primary: "bg-linear-to-r from-primary/60 via-primary/30 to-transparent",
-    success: "bg-linear-to-r from-success/60 via-success/30 to-transparent",
-    neutral: "bg-linear-to-r from-border to-transparent",
-  }[tone];
-}
-
 function isClientRoute(href: string) {
   return href.startsWith("/") && !href.startsWith("http");
 }
 
-function StoryFrameCard({ frame }: { frame: StoryFrame }) {
-  const Icon = frame.icon;
-  return (
-    <article className="relative overflow-hidden rounded-xl border border-border bg-card shadow-surface p-5">
-      <div
-        className={cn(
-          "absolute inset-x-0 top-0 h-0.5",
-          toneBarClass(frame.tone)
-        )}
-      />
-      <div className="flex items-center justify-between gap-3 pt-1">
-        <span
-          className={cn(
-            "inline-flex h-9 w-9 items-center justify-center rounded-lg border",
-            toneClass(frame.tone)
-          )}
-        >
-          <Icon className="h-4 w-4" />
-        </span>
-        <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-muted-foreground">
-          {frame.label}
-        </span>
-      </div>
-      <h3 className="mt-5 text-base font-bold tracking-tight text-foreground">
-        {frame.title}
-      </h3>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        {frame.detail}
-      </p>
-    </article>
-  );
-}
-
-function RuntimeMap() {
-  return (
-    <section className="overflow-hidden rounded-xl border border-border bg-card shadow-surface">
-      <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-            Context custody
-          </p>
-          <h2 className="mt-1 text-base font-bold tracking-tight text-foreground">
-            The model is not the boundary. The runtime is.
-          </h2>
-        </div>
-        <span className="shrink-0 rounded-full border border-primary/20 bg-muted/50 px-3 py-1 font-mono text-[10px] font-semibold text-primary">
-          HkiEnvelope
-        </span>
-      </div>
-
-      <div className="p-5">
-        <div className="flex items-stretch gap-3">
-          <div className="flex shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted/40 px-4 py-4">
-            <MessageSquare className="h-5 w-5 text-muted-foreground" />
-            <p className="text-[11px] font-semibold text-foreground">Request</p>
-          </div>
-
-          <div className="flex flex-1 items-center justify-center">
-            <ArrowRight className="h-4 w-4 shrink-0 text-primary/40" />
-          </div>
-
-          <div className="flex flex-1 flex-col gap-3 rounded-xl border border-primary/20 bg-primary/7 p-3">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
-                Agent runtime
-              </span>
-              <span className="font-mono text-[9px] text-muted-foreground">
-                active_domain locked
-              </span>
-            </div>
-            <div className="grid grid-cols-5 gap-1.5">
-              {RUNTIME_PARTS.map(part => {
-                const Icon = part.icon;
-                return (
-                  <div
-                    key={part.label}
-                    className="flex flex-col items-center gap-1.5 rounded-lg border border-border bg-card py-2.5"
-                  >
-                    <Icon className="h-3.5 w-3.5 text-primary/70" />
-                    <p className="text-[10px] font-medium text-foreground">
-                      {part.label}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex flex-1 items-center justify-center">
-            <ArrowRight className="h-4 w-4 shrink-0 text-primary/40" />
-          </div>
-
-          <div className="flex shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-success/30 bg-success/9 px-4 py-4">
-            <ShieldCheck className="h-5 w-5 text-success" />
-            <p className="text-[11px] font-semibold text-foreground">Scoped</p>
-            <p className="text-[10px] text-muted-foreground">answer</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function HeroEvidencePanel() {
   return (
-    <aside className="relative overflow-hidden rounded-xl border border-border bg-card shadow-surface">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,hsl(var(--primary)/0.12),transparent_58%)]" />
-      <div className="relative min-h-90 p-4 sm:p-6 lg:min-h-130">
-        <HeroArt className="h-full min-h-80 w-full lg:min-h-117.5" />
+    <aside className="engineering-panel relative overflow-hidden">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, transparent), transparent 48%)",
+        }}
+      />
+      <div className="relative min-h-82 p-4 sm:p-6 lg:min-h-112">
+        <HeroArt className="h-full min-h-74 w-full lg:min-h-100" />
       </div>
       <div className="relative grid grid-cols-2 border-t border-border bg-background/55 md:grid-cols-4">
         {QUICK_STATS.map(stat => {
@@ -335,43 +184,17 @@ function HubCardLink({
       }
     : undefined;
 
-  if (card.primary) {
-    return (
-      <a
-        href={card.href}
-        onClick={handleClick}
-        className="group flex items-center gap-6 rounded-xl border border-primary/30 bg-linear-to-br from-primary/13 to-primary/7 p-6 shadow-surface outline-none transition-all hover:-translate-y-0.5 hover:shadow-surface-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-      >
-        <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-card text-primary shadow-sm">
-          <Icon className="h-6 w-6" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-            {card.eyebrow}
-          </p>
-          <h3 className="mt-1 text-xl font-bold tracking-tight text-foreground">
-            {card.title}
-          </h3>
-          <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
-            {card.detail}
-          </p>
-        </div>
-        <span className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-primary">
-          {card.action}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-        </span>
-      </a>
-    );
-  }
-
   return (
     <a
       href={card.href}
       onClick={handleClick}
-      className="group flex flex-col rounded-xl border border-border bg-card shadow-surface p-5 outline-none transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-surface-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className={cn(
+        "engineering-panel engineering-panel-interactive group flex flex-col p-5 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        card.featured && "border-primary/30 bg-primary/7"
+      )}
     >
       <div className="flex items-start justify-between gap-3">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-muted/50 text-primary">
+        <span className="engineering-icon-tile h-9 w-9">
           <Icon className="h-4 w-4" />
         </span>
         {card.meta && (
@@ -409,35 +232,34 @@ export default function EngineeringHub() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="engineering-canvas flex min-h-screen flex-col">
       <EngineeringHeader />
 
       <main className="flex-1 py-8 sm:py-10">
         <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
-          <section className="grid gap-9 lg:min-h-155 lg:grid-cols-[minmax(0,0.88fr)_minmax(460px,1.12fr)] lg:items-center">
+          <section className="grid gap-9 lg:min-h-138 lg:grid-cols-[minmax(0,0.92fr)_minmax(420px,0.9fr)] lg:items-center">
             <div className="min-w-0 lg:pr-2">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/12 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+              <div className="engineering-chip px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em]">
                 <Cpu className="h-3 w-3" />
-                Engineering work index
+                Hermetic Knowledge Isolation
               </div>
-              <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-[1.02] tracking-tight text-foreground sm:text-5xl xl:text-[64px]">
-                The runtime is the security boundary.
+              <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.02] tracking-tight text-foreground sm:text-5xl xl:text-[64px]">
+                Keep every agent in bounds.
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
-                HKI gives every agentic execution one signed domain and then
-                makes retrieval, memory, tools, cache, jobs, audit, and response
-                generation prove they stayed inside it.
+              <p className="mt-5 max-w-xl text-base leading-8 text-muted-foreground sm:text-lg">
+                One signed domain follows the request through retrieval, tools,
+                memory, jobs, and audit.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
-                  href={HKI_CUSTODY_PROBLEM_ROUTE}
+                  href={HKI_STANDARD_ROUTE}
                   onClick={event => {
                     event.preventDefault();
-                    navigate(HKI_CUSTODY_PROBLEM_ROUTE);
+                    navigate(HKI_STANDARD_ROUTE);
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 outline-none transition-all hover:-translate-y-px hover:shadow-md hover:shadow-primary/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="engineering-primary-action outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
-                  Start with the problem
+                  Read the standard
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
@@ -446,79 +268,53 @@ export default function EngineeringHub() {
                     event.preventDefault();
                     navigate(HKI_ARCHITECTURE_ROUTE);
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground outline-none transition-all hover:-translate-y-px hover:shadow-surface focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="engineering-secondary-action outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   View architecture
                   <Network className="h-4 w-4" />
                 </a>
               </div>
 
-              <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
-                {STORY_FRAMES.map(frame => {
-                  const Icon = frame.icon;
-                  return (
-                    <div
-                      key={frame.label}
-                      className="border-l border-border pl-3"
-                    >
-                      <Icon className="h-4 w-4 text-primary" />
-                      <p className="mt-2 text-xs font-bold text-foreground">
-                        {frame.title}
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        {frame.detail}
-                      </p>
-                    </div>
-                  );
-                })}
+              <div className="mt-8 grid max-w-2xl gap-2 sm:grid-cols-3">
+                {PROOF_POINTS.map(point => (
+                  <div key={point.label} className="engineering-inset p-3">
+                    <p className="text-xs font-bold text-foreground">
+                      {point.label}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      {point.detail}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
 
             <HeroEvidencePanel />
           </section>
 
-          <div className="mt-10">
-            <RuntimeMap />
-          </div>
-
-          <section className="mt-8 grid gap-3 lg:grid-cols-3">
-            {STORY_FRAMES.map(frame => (
-              <StoryFrameCard key={frame.label} frame={frame} />
-            ))}
-          </section>
-
-          <section className="mt-10 border-t border-border pt-8">
+          <section className="mt-10 border-t border-border/80 pt-8">
             <div className="mb-5 flex flex-col gap-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-                Choose your next step
+                Start here
               </p>
               <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                Four doors. One learning path.
+                Learn the boundary, then inspect the system.
               </h2>
             </div>
-            <div className="space-y-3">
-              {HUB_CARDS.filter(c => c.primary).map(card => (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {HUB_CARDS.map(card => (
                 <HubCardLink
                   key={card.title}
                   card={card}
                   onNavigate={navigate}
                 />
               ))}
-              <div className="grid gap-3 md:grid-cols-3">
-                {HUB_CARDS.filter(c => !c.primary).map(card => (
-                  <HubCardLink
-                    key={card.title}
-                    card={card}
-                    onNavigate={navigate}
-                  />
-                ))}
-              </div>
             </div>
           </section>
         </div>
       </main>
 
-      <footer className="border-t border-border">
+      <footer className="engineering-footer">
         <div className="mx-auto flex min-h-12 w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs text-muted-foreground sm:px-8">
           <div className="flex items-center gap-2">
             <HkiMark size={14} variant="color" />

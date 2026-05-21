@@ -3,6 +3,10 @@ from __future__ import annotations
 import types
 import typing
 
+from hki_runtime import HkiEnvelope
+
+from hki_runtime import HkiValidationResult
+
 import pytest
 
 import hki_llamaindex
@@ -137,10 +141,10 @@ def test_cache_key_segregates_by_domain() -> None:
     assert a != b
 
 
-def _validated(domain: str):
+def _validated(domain: str) -> HkiEnvelope:
     from hki_runtime import validate_envelope
 
     payload = {**VALID, "active_domain": domain, "authorized_domains": [domain]}
-    res = validate_envelope(payload, require_signature=True)
+    res: HkiValidationResult = validate_envelope(payload, require_signature=True)
     assert res.envelope is not None
     return res.envelope

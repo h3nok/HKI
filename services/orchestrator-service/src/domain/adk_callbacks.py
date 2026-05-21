@@ -19,6 +19,9 @@ import inspect
 import time
 import typing
 
+import hki_runtime
+from .corrective_rag import RetrievalQuality
+from .corrective_rag import RetrievalQuality
 import httpx
 
 import src.adapters.cache
@@ -52,6 +55,7 @@ async def execute_tool_with_hooks(
     arguments: dict[str, typing.Any],
     *,
     cache: src.adapters.cache.TieredCache | None = None,
+    hki_envelope: hki_runtime.HkiEnvelope | None = None,
     retrieval_strategy: str = "hybrid",
 ) -> tuple[typing.Any, float, bool]:
     """
@@ -60,11 +64,22 @@ async def execute_tool_with_hooks(
     Returns:
         (result, duration_ms, cache_hit)
     """
-    cache_key = src.adapters.cache.make_cache_key(tool=tool_name, **arguments)
+    cache_key: str = (
+        hki_runtime.derive_hki_cache_key(
+            {
+                "envelope": hki_envelope,
+                "operation": f"tool.{tool_name}",
+                "input": arguments,
+                "extra": {"retrieval_strategy": retrieval_strategy},
+            }
+        )
+        if hki_envelope
+        else src.adapters.cache.make_cache_key(tool=tool_name, **arguments)
+    )
     use_cache: bool = cache is not None and _is_tool_cacheable(tool_name)
 
     if use_cache:
-        cached = await cache.get("tool", cache_key)
+        cached: typing.Any | None = await cache.get("tool", cache_key)
         if cached is not None:
             logger.info("Tool cache hit", extra={"tool": tool_name, "cache_key": cache_key[:8]})
             return cached, 0.0, True
@@ -153,7 +168,7 @@ async def _apply_corrective_rag(
     # Below this we don't trust heuristic scoring alone, so we pay for Gemini eval.
     scores: list[float] = [float(result.get("score", 0.0)) for result in raw_results]
     max_score: float = max(scores, default=0.0)
-    fast_path_threshold = src.core.config.settings.CORRECTIVE_RAG_MIN_RELEVANCE + 0.3
+    fast_path_threshold: float = src.core.config.settings.CORRECTIVE_RAG_MIN_RELEVANCE + 0.3
 
     if max_score >= fast_path_threshold:
         search_result["rag_quality"] = {
@@ -183,15 +198,15 @@ async def _apply_corrective_rag(
 
     llm = LLMClient(model=src.core.config.settings.LLM_MODEL_FAST)
     try:
-        quality = await evaluate_retrieval(llm, query, chunks)
+        quality: RetrievalQuality = await evaluate_retrieval(llm, query, chunks)
         search_result["rag_quality"] = quality.model_dump()
 
         if not quality.is_sufficient and src.core.config.settings.CORRECTIVE_RAG_MAX_RETRIES > 0:
-            rewritten = await rewrite_query(llm, query)
+            rewritten: str | None = await rewrite_query(llm, query)
             if rewritten:
                 logger.info(f"Corrective RAG: retrying with rewritten query: {rewritten!r}")
-                retry_result = await search_knowledge(rewritten)
-                retry_shaped = retry_result.get("context")
+                retry_result: dict[str, Any] = await search_knowledge(rewritten)
+                retry_shaped: typing.Any | None = retry_result.get("context")
                 retry_raw = retry_result.get("results", [])
                 if retry_shaped:
                     retry_chunks = [
@@ -201,11 +216,11 @@ async def _apply_corrective_rag(
                         }
                     ]
                 else:
-                    retry_chunks = [
+                    retry_chunks: list[dict[str, Any]] = [
                         {"content": r.get("content", ""), "score": r.get("score", 0.0)}
                         for r in retry_raw
                     ]
-                retry_quality = await evaluate_retrieval(llm, rewritten, retry_chunks)
+                retry_quality: RetrievalQuality = await evaluate_retrieval(llm, rewritten, retry_chunks)
                 if retry_quality.max_relevance > quality.max_relevance:
                     retry_result["rag_quality"] = retry_quality.model_dump()
                     retry_result["rewritten_query"] = rewritten
@@ -214,7 +229,7 @@ async def _apply_corrective_rag(
         # ── Gap reporting ─────────────────────────────────────────────────────
         # Both original and retry searches failed — persist the gap so curators
         # can see which queries the knowledge base cannot answer.
-        gap_desc = quality.gap_description
+        gap_desc: str | None = quality.gap_description
         if not quality.is_sufficient and gap_desc:
             asyncio.create_task(_report_gap(query=query, gap_description=gap_desc))
 

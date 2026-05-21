@@ -1,11 +1,13 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { jwtVerify } from "jose";
+import { validateEnvelope, verifyEnvelopeSignature } from "@hki/runtime";
 
 import type { User } from "../../drizzle/schema";
 import { signRequestJwt, signRequestJwtWithEnvelope } from "./sign-request-jwt";
 
 const ORIGINAL_SERVICE_AUTH_SECRET = process.env.SERVICE_AUTH_SECRET;
 const ORIGINAL_JWT_SECRET = process.env.JWT_SECRET;
+const ORIGINAL_HKI_SIGNING_SECRET = process.env.HKI_SIGNING_SECRET;
 const ORIGINAL_KB_HERMETIC_ISOLATION = process.env.KB_HERMETIC_ISOLATION;
 
 function makeUser(overrides: Partial<User> = {}): User {
@@ -39,6 +41,12 @@ afterEach(() => {
     delete process.env.JWT_SECRET;
   } else {
     process.env.JWT_SECRET = ORIGINAL_JWT_SECRET;
+  }
+
+  if (ORIGINAL_HKI_SIGNING_SECRET === undefined) {
+    delete process.env.HKI_SIGNING_SECRET;
+  } else {
+    process.env.HKI_SIGNING_SECRET = ORIGINAL_HKI_SIGNING_SECRET;
   }
 
   if (ORIGINAL_KB_HERMETIC_ISOLATION === undefined) {
@@ -99,6 +107,37 @@ describe("signRequestJwt", () => {
     });
     expect(envelope.token_material).toBe("redacted");
     expect(JSON.stringify(envelope)).not.toContain(token);
+  });
+
+  it("mints a signed standard HKI envelope for valid runtime scopes", async () => {
+    process.env.SERVICE_AUTH_SECRET = "unit-test-service-secret";
+    process.env.HKI_SIGNING_SECRET = "unit-test-hki-secret";
+    delete process.env.JWT_SECRET;
+    process.env.KB_HERMETIC_ISOLATION = "true";
+
+    const { hkiEnvelope } = await signRequestJwtWithEnvelope(
+      makeUser(),
+      "pharmacy",
+      ["pharmacy"]
+    );
+
+    expect(hkiEnvelope).toMatchObject({
+      hki_version: "1.0",
+      org_id: "default",
+      subject_id: "1",
+      active_domain: "pharmacy",
+      authorized_domains: ["pharmacy"],
+      purpose: "chat",
+      risk_tier: "read-only",
+      issuer: "agentic-bff",
+    });
+    expect(hkiEnvelope?.signature).toMatch(/^hmac-sha256:/);
+    expect(validateEnvelope(hkiEnvelope, { requireSignature: true }).ok).toBe(
+      true
+    );
+    expect(verifyEnvelopeSignature(hkiEnvelope!, "unit-test-hki-secret")).toBe(
+      true
+    );
   });
 
   it("fails closed when hermetic isolation omits an explicit scope", async () => {
