@@ -21,9 +21,7 @@ import {
   BarChart3,
 } from "lucide-react";
 
-const OBSERVABILITY_URL =
-  import.meta.env.VITE_OBSERVABILITY_URL ||
-  "";
+const OBSERVABILITY_URL = import.meta.env.VITE_OBSERVABILITY_URL || "";
 
 export function PlatformNav() {
   const [location] = useLocation();
