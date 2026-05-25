@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HKI — Hermetic Knowledge Isolation</title>
+  <meta name="description" content="A signed runtime contract for enterprise agentic systems. One request, one active domain, no implicit global visibility." />
+  <link rel="canonical" href="https://hki.dev/" />
+  <meta property="og:title" content="HKI — Hermetic Knowledge Isolation" />
+  <meta property="og:description" content="A signed runtime contract for enterprise agentic systems. One request, one active domain, no implicit global visibility." />
+  <meta property="og:url" content="https://hki.dev/" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-subtle: #f8f9fa;
+      --bg-code: #0f1117;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --accent: #0ea5e9;
+      --accent-dim: #e0f2fe;
+      --critical: #ef4444;
+      --high: #f97316;
+      --medium: #eab308;
+      --pass: #22c55e;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, monospace;
+      --radius: 8px;
+      --max-w: 900px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0e14;
+        --bg-subtle: #131720;
+        --bg-code: #070a10;
+        --border: #1e2535;
+        --text: #e2e8f0;
+        --text-muted: #64748b;
+        --accent: #38bdf8;
+        --accent-dim: #082f49;
+      }
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .nav-brand span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      flex: 1;
+    }
+
+    .nav-links a {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .nav-links a:hover { color: var(--text); background: var(--bg-subtle); }
+
+    .nav-right {
+      margin-left: auto;
+    }
+
+    .btn-gh {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-gh:hover { background: var(--border); }
+
+    /* ── Layout ── */
+    .page { max-width: var(--max-w); margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+    section { padding: 4rem 0 0; }
+
+    h1 { font-size: clamp(2rem, 5vw, 2.75rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; }
+    h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1.25rem; }
+    h3 { font-size: 1.0625rem; font-weight: 600; margin-bottom: 0.5rem; }
+
+    p { color: var(--text); margin-bottom: 1rem; }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: var(--accent); }
+
+    /* ── Hero ── */
+    #hero { padding-top: 5rem; }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.1875rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin-top: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-contract {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      font-size: 1rem;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-bottom: 2.5rem;
+      max-width: 640px;
+    }
+
+    .hero-contract strong { color: var(--text); font-style: normal; }
+
+    .hero-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.88; color: #fff; }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.9375rem;
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-secondary:hover { background: var(--border); }
+
+    /* ── Section divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+    }
+
+    /* ── Invariants ── */
+    .invariant-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .invariant-list li {
+      display: flex;
+      gap: 0.875rem;
+      align-items: flex-start;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.875rem 1rem;
+    }
+
+    .inv-num {
+      flex-shrink: 0;
+      width: 1.5rem;
+      height: 1.5rem;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-top: 0.125rem;
+    }
+
+    /* ── Install cards ── */
+    .install-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .install-card {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .install-card-header {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .install-card pre {
+      padding: 0.875rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.8125rem;
+      color: #e2e8f0;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+
+    .install-card pre .dim { color: #64748b; }
+    .install-card pre .kw { color: #7dd3fc; }
+    .install-card pre .str { color: #86efac; }
+    .install-card pre .fn { color: #c4b5fd; }
+    .install-card pre .cm { color: #475569; }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; margin-top: 0.5rem; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 0.6rem 0.875rem;
+      border-bottom: 2px solid var(--border);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.6rem 0.875rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .mono { font-family: var(--mono); font-size: 0.8125rem; }
+
+    /* ── Severity badges ── */
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+    }
+
+    .badge-critical { background: #fef2f2; color: #dc2626; }
+    .badge-high     { background: #fff7ed; color: #c2410c; }
+    .badge-medium   { background: #fefce8; color: #854d0e; }
+    .badge-low      { background: #f0fdf4; color: #15803d; }
+    .badge-pass     { background: #f0fdf4; color: #15803d; }
+    .badge-must     { background: var(--accent-dim); color: var(--accent); }
+
+    @media (prefers-color-scheme: dark) {
+      .badge-critical { background: #2d0e0e; color: #f87171; }
+      .badge-high     { background: #2a1505; color: #fb923c; }
+      .badge-medium   { background: #2a2005; color: #facc15; }
+      .badge-low      { background: #0a2a14; color: #4ade80; }
+      .badge-pass     { background: #0a2a14; color: #4ade80; }
+      .badge-must     { background: var(--accent-dim); color: var(--accent); }
+    }
+
+    /* ── Conformance levels ── */
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .level-card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    .level-label {
+      font-size: 1.375rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    .level-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .level-desc { font-size: 0.8125rem; color: var(--text-muted); }
+
+    /* ── Registry ── */
+    .registry-card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+
+    .registry-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .registry-title { font-size: 1rem; font-weight: 700; }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+    }
+
+    .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+    .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem; }
+
+    .packages-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+
+    .pkg-chip {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      color: var(--text-muted);
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 5rem;
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      max-width: var(--max-w);
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-brand { font-weight: 700; font-size: 0.875rem; color: var(--text-muted); }
+    .footer-brand span { color: var(--accent); }
+    .footer-links { display: flex; gap: 1.25rem; }
+    .footer-links a { font-size: 0.8125rem; color: var(--text-muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .level-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ Nav ══════════════════════════════════════════════════════════════════ -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="#hero"><span>HKI</span> · Hermetic Knowledge Isolation</a>
+    <div class="nav-links">
+      <a href="#spec">Spec</a>
+      <a href="#install">Install</a>
+      <a href="#conformance">Conformance</a>
+      <a href="#threats">Threats</a>
+      <a href="#registry">Registry</a>
+    </div>
+    <div class="nav-right">
+      <a class="btn-gh" href="https://github.com/h3nok/HKI" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- ══ Hero ══════════════════════════════════════════════════════════════ -->
+  <section id="hero">
+    <div class="hero-eyebrow">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 12.5a5.5 5.5 0 110-11 5.5 5.5 0 010 11zm.75-8.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM7.5 6h1v4.5h-1V6z"/></svg>
+      Draft Standard · MIT License · v0.1.0
+    </div>
+    <h1>Hermetic<br>Knowledge Isolation</h1>
+    <p class="hero-subtitle">
+      A signed runtime contract for enterprise agentic systems. Defines the isolation invariant
+      that every RAG pipeline, tool call, cache write, and async job must preserve.
+    </p>
+    <blockquote class="hero-contract">
+      Every runtime request carries exactly one signed HKI envelope describing one active domain.
+      Every artifact, cache key, tool call, retrieval, memory write, and gateway target is bound
+      to that domain by <strong>exact equality</strong>. Cross-domain visibility exists only through
+      explicit, audited publication. The runtime <strong>fails closed</strong> on missing, expired,
+      global, wildcard, or mismatched domains.
+    </blockquote>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#install">Get started</a>
+      <a class="btn-secondary" href="https://github.com/h3nok/HKI/blob/main/spec/HKI-1.0.md" target="_blank" rel="noopener">Read the spec →</a>
+      <a class="btn-secondary" href="#registry">View registry</a>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══ Spec ══════════════════════════════════════════════════════════════ -->
+  <section id="spec">
+    <h2>Core Invariants</h2>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      Every conforming implementation must enforce all six invariants. They are tested by
+      <code style="font-family:var(--mono); font-size:0.875em">@hki/conformance</code> (28 cases, HKI-C01..C28).
+    </p>
+    <ul class="invariant-list">
+      <li>
+        <span class="inv-num">1</span>
+        <div>
+          <strong>One active domain per request.</strong>
+          No global, no wildcard, no nullable. The active domain must appear in authorized_domains.
+        </div>
+      </li>
+      <li>
+        <span class="inv-num">2</span>
+        <div>
+          <strong>Signed envelope at every hop.</strong>
+          The gateway mints and signs the envelope. Each downstream service validates it before processing.
+        </div>
+      </li>
+      <li>
+        <span class="inv-num">3</span>
+        <div>
+          <strong>Exact-equality reads only.</strong>
+          No prefix matching, no glob expansion, no implicit inheritance. Use <code style="font-family:var(--mono); font-size:0.875em">sameHkiDomain()</code> / <code style="font-family:var(--mono); font-size:0.875em">same_domain()</code>.
+        </div>
+      </li>
+      <li>
+        <span class="inv-num">4</span>
+        <div>
+          <strong>Domain-bound cache keys.</strong>
+          <code style="font-family:var(--mono); font-size:0.875em">org_id</code> and <code style="font-family:var(--mono); font-size:0.875em">active_domain</code> are part of every cache, memo, and embedding key.
+        </div>
+      </li>
+      <li>
+        <span class="inv-num">5</span>
+        <div>
+          <strong>Body arguments cannot override the envelope.</strong>
+          <code style="font-family:var(--mono); font-size:0.875em">scope</code>, <code style="font-family:var(--mono); font-size:0.875em">domain</code>, and <code style="font-family:var(--mono); font-size:0.875em">stream_id</code> fields that disagree with the signed envelope cause a hard 403.
+        </div>
+      </li>
+      <li>
+        <span class="inv-num">6</span>
+        <div>
+          <strong>Admin paths are physically separate.</strong>
+          Runtime code cannot import from or call admin/governance modules.
+          Cross-domain inspection is admin-plane only.
+        </div>
+      </li>
+    </ul>
+
+    <h3 style="margin-top: 2rem; margin-bottom: 0.75rem;">Envelope schema <code style="font-family:var(--mono); font-size:0.875em; font-weight:400">hki/1.0</code></h3>
+    <div class="install-card">
+      <div class="install-card-header">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style="color:#94a3b8"><rect x="1" y="4" width="14" height="10" rx="2" ry="2"/><path d="M10.5 2h-5L4 4h8l-1.5-2z"/></svg>
+        hki-envelope.json
+      </div>
+      <pre>{
+  <span class="str">"hki_version"</span>:        <span class="str">"1.0"</span>,
+  <span class="str">"envelope_id"</span>:        <span class="str">"env_01HX..."</span>,
+  <span class="str">"org_id"</span>:             <span class="str">"acme"</span>,
+  <span class="str">"subject_id"</span>:         <span class="str">"user:42"</span>,
+  <span class="str">"active_domain"</span>:      <span class="str">"payments"</span>,     <span class="cm">// MUST NOT be "global" or "*"</span>
+  <span class="str">"authorized_domains"</span>: [<span class="str">"payments"</span>, <span class="str">"hr"</span>],
+  <span class="str">"purpose"</span>:            <span class="str">"retrieve"</span>,
+  <span class="str">"risk_tier"</span>:          <span class="str">"read-only"</span>,
+  <span class="str">"policy_pack_id"</span>:     <span class="str">"payments@2026-04"</span>,
+  <span class="str">"issued_at"</span>:          <span class="kw">1714867200</span>,
+  <span class="str">"expires_at"</span>:         <span class="kw">1714870800</span>,
+  <span class="str">"issuer"</span>:             <span class="str">"gateway@acme.example"</span>,
+  <span class="str">"signature"</span>:          <span class="str">"ed25519:&lt;base64&gt;"</span>
+}</pre>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══ Install ═══════════════════════════════════════════════════════════ -->
+  <section id="install">
+    <h2>Install</h2>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      Runtime packages for TypeScript and Python. The conformance kit runs against any implementation.
+    </p>
+    <div class="install-grid">
+      <div class="install-card">
+        <div class="install-card-header">
+          <svg width="12" height="12" viewBox="0 0 18 18" fill="#3178c6"><path d="M0 0h18v18H0z"/><path fill="#fff" d="M4.5 9.75h3v1.5h-1.5V15h-1.5V9.75zm5.25 0h4.5v1.5h-1.5V15h-1.5v-3.75H9.75V9.75z"/></svg>
+          TypeScript runtime
+        </div>
+        <pre><span class="dim">$</span> <span class="kw">npm</span> install @hki/runtime
+
+<span class="cm">// Validate an envelope</span>
+<span class="kw">import</span> { verifyEnvelope } <span class="kw">from</span> <span class="str">"@hki/runtime"</span>;
+<span class="kw">const</span> result = verifyEnvelope(envelope);</pre>
+      </div>
+      <div class="install-card">
+        <div class="install-card-header">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="#3572A5"><circle cx="8" cy="8" r="8"/></svg>
+          Python runtime
+        </div>
+        <pre><span class="dim">$</span> <span class="kw">pip</span> install hki-runtime[fastapi]
+
+<span class="cm"># FastAPI middleware</span>
+<span class="kw">from</span> hki_runtime.fastapi <span class="kw">import</span> HkiMiddleware
+app.add_middleware(HkiMiddleware)</pre>
+      </div>
+      <div class="install-card">
+        <div class="install-card-header">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="#cb3837"><path d="M0 0h16v16H0z"/><path fill="#fff" d="M3 3h10v10H9V6H7v7H3z"/></svg>
+          Conformance kit
+        </div>
+        <pre><span class="dim">$</span> <span class="kw">npm</span> install @hki/conformance
+
+<span class="cm"># Run 28 conformance cases</span>
+<span class="dim">$</span> pnpm verify:hki-conformance
+<span class="dim">$</span> pnpm probe:smoke   <span class="cm"># HTTP probes</span></pre>
+      </div>
+      <div class="install-card">
+        <div class="install-card-header">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="#f7df1e" style="background:#323330;border-radius:2px"><text x="1" y="13" font-size="12" font-family="monospace">J</text></svg>
+          SDK (mint + wrap)
+        </div>
+        <pre><span class="dim">$</span> <span class="kw">npm</span> install @hki/sdk
+
+<span class="kw">import</span> { mintEnvelope } <span class="kw">from</span> <span class="str">"@hki/sdk/client"</span>;
+<span class="kw">const</span> env = <span class="fn">mintEnvelope</span>({
+  activeDomain: <span class="str">"payments"</span>, ...
+});</pre>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 2rem; margin-bottom: 0.75rem;">Framework adapters</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Package</th>
+            <th>Framework</th>
+            <th>Key export</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">hki-litellm</td><td>LiteLLM</td><td><code class="mono">HkiLiteLLMCallback</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+          <tr><td class="mono">hki-langchain</td><td>LangChain / LangGraph</td><td><code class="mono">HkiCallbackHandler, HkiRetriever</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+          <tr><td class="mono">hki-llamaindex</td><td>LlamaIndex</td><td><code class="mono">HkiRetrieverMixin</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+          <tr><td class="mono">hki-adk</td><td>Google ADK</td><td><code class="mono">HkiAdkCallback, HkiToolGuard</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+          <tr><td class="mono">hki-autogen</td><td>AutoGen</td><td><code class="mono">HkiAutogenMiddleware</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+          <tr><td class="mono">hki-crewai</td><td>CrewAI</td><td><code class="mono">HkiCrewMiddleware</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+          <tr><td class="mono">@hki/mcp</td><td>MCP (any server)</td><td><code class="mono">HkiToolGuard, HkiResourceGuard</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══ Conformance ═══════════════════════════════════════════════════════ -->
+  <section id="conformance">
+    <h2>Conformance Levels</h2>
+    <p style="color: var(--text-muted); margin-bottom: 1.75rem;">
+      A conformance level is a claim backed by reproducible evidence, not a self-assessment.
+      Run <code style="font-family:var(--mono); font-size:0.875em">pnpm registry:build</code> to generate a signed
+      <code style="font-family:var(--mono); font-size:0.875em">conformance.json</code> for your implementation.
+    </p>
+    <div class="level-grid">
+      <div class="level-card">
+        <div class="level-label">L0</div>
+        <div class="level-name">Documented</div>
+        <p class="level-desc">Domain-sensitive surfaces inventoried. No runtime claim made.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-label">L1</div>
+        <div class="level-name">Labeled</div>
+        <p class="level-desc">Runtime artifacts carry non-null org and domain labels.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-label">L2</div>
+        <div class="level-name">Routed</div>
+        <p class="level-desc">Requests carry one signed active-domain envelope through each hop.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-label">L3</div>
+        <div class="level-name">Enforced</div>
+        <p class="level-desc">Runtime rejects missing, global, wildcard, or cross-domain scope.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-label">L4</div>
+        <div class="level-name">Tested</div>
+        <p class="level-desc">Automated negative tests and HTTP probes prove isolation invariants.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-label">L5</div>
+        <div class="level-name">Audited</div>
+        <p class="level-desc">Signed release evidence independently reviewed with external reference.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 2rem; margin-bottom: 0.75rem;">What "tested" requires (L4)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Gate</th><th>Command</th><th>Requirement</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Adapter conformance</td><td class="mono">pnpm verify:hki-conformance</td><td>28/28 cases pass (HKI-C01..C28)</td></tr>
+          <tr><td>Python runtime</td><td class="mono">pnpm test:hki-runtime-py</td><td>All pytest cases green</td></tr>
+          <tr><td>HTTP probe</td><td class="mono">pnpm probe:smoke</td><td>10/10 probes PASS (P01..P10)</td></tr>
+          <tr><td>Service evidence</td><td class="mono">pnpm hki-service-evidence</td><td>35/35 JWT boundary cases</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══ Threats ════════════════════════════════════════════════════════════ -->
+  <section id="threats">
+    <h2>Threat Catalog</h2>
+    <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
+      15 concrete, runnable failure modes (HKI-T01..T15). Each has a
+      <code style="font-family:var(--mono); font-size:0.875em">pre_hki.py</code> (the failure)
+      and a <code style="font-family:var(--mono); font-size:0.875em">post_hki.py</code> (the block).
+      Source: <a href="https://github.com/h3nok/HKI/blob/main/docs/HKI_THREATS.md" target="_blank" rel="noopener">docs/HKI_THREATS.md</a>
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Title</th><th>Surface</th><th>Severity</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">HKI-T01</td><td>Semantic cache cross-domain leak</td><td>Cache</td><td><span class="badge badge-critical">Critical</span></td></tr>
+          <tr><td class="mono">HKI-T02</td><td>Body-parameter scope override</td><td>Runtime / API</td><td><span class="badge badge-high">High</span></td></tr>
+          <tr><td class="mono">HKI-T03</td><td>Implicit <code class="mono">or "global"</code> fallback</td><td>Runtime</td><td><span class="badge badge-high">High</span></td></tr>
+          <tr><td class="mono">HKI-T04</td><td>Async job loses domain on resume</td><td>Runtime / Jobs</td><td><span class="badge badge-high">High</span></td></tr>
+          <tr><td class="mono">HKI-T05</td><td>Vector index shared across tenants without filter</td><td>Knowledge</td><td><span class="badge badge-critical">Critical</span></td></tr>
+          <tr><td class="mono">HKI-T06</td><td>MCP tool registered without domain binding</td><td>MCP Gateway</td><td><span class="badge badge-high">High</span></td></tr>
+          <tr><td class="mono">HKI-T07</td><td>A2A delegation drops envelope</td><td>Multi-agent</td><td><span class="badge badge-critical">Critical</span></td></tr>
+          <tr><td class="mono">HKI-T08</td><td>Embedding model cache key omits domain</td><td>Cache</td><td><span class="badge badge-critical">Critical</span></td></tr>
+          <tr><td class="mono">HKI-T09</td><td>Admin route reachable from runtime path</td><td>Admin / Runtime</td><td><span class="badge badge-critical">Critical</span></td></tr>
+          <tr><td class="mono">HKI-T10</td><td>Wildcard publication into runtime domain</td><td>Publication</td><td><span class="badge badge-high">High</span></td></tr>
+          <tr><td class="mono">HKI-T11</td><td>Envelope replay (no envelope_id check)</td><td>Edge / Auth</td><td><span class="badge badge-high">High</span></td></tr>
+          <tr><td class="mono">HKI-T12</td><td>Expired envelope accepted (clock skew abuse)</td><td>Edge / Auth</td><td><span class="badge badge-medium">Medium</span></td></tr>
+          <tr><td class="mono">HKI-T13</td><td>Envelope downgrade to older hki_version</td><td>Edge / Auth</td><td><span class="badge badge-medium">Medium</span></td></tr>
+          <tr><td class="mono">HKI-T14</td><td>Graph traversal crosses domain edges</td><td>Knowledge / Graph</td><td><span class="badge badge-high">High</span></td></tr>
+          <tr><td class="mono">HKI-T15</td><td>Prompt-injected scope override echoed by tool</td><td>LLM / Tool</td><td><span class="badge badge-high">High</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══ Registry ══════════════════════════════════════════════════════════ -->
+  <section id="registry">
+    <h2>Conformance Registry</h2>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      Live evidence from the HKI reference implementation. Generated by
+      <code style="font-family:var(--mono); font-size:0.875em">pnpm registry:build</code>
+      and committed as <a href="https://github.com/h3nok/HKI/blob/main/conformance.json" target="_blank" rel="noopener">conformance.json</a>.
+    </p>
+    <div class="registry-card" id="registry-card">
+      <div class="registry-header">
+        <span class="registry-title">hki-reference</span>
+        <span class="badge badge-pass" id="reg-level">L4-tested</span>
+        <span class="badge badge-must" id="reg-profile">smoke evidence</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-value" id="reg-adapter">28/28</div>
+          <div class="stat-label">Adapter cases</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="reg-probe">10/10</div>
+          <div class="stat-label">HTTP probes</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="reg-threats">15</div>
+          <div class="stat-label">Threat examples</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="reg-pkgs">9</div>
+          <div class="stat-label">Packages</div>
+        </div>
+      </div>
+      <div class="packages-row" id="reg-packages">
+        <span class="pkg-chip">@hki/runtime</span>
+        <span class="pkg-chip">@hki/conformance</span>
+        <span class="pkg-chip">hki-runtime-py</span>
+        <span class="pkg-chip">hki-litellm</span>
+        <span class="pkg-chip">hki-langchain</span>
+        <span class="pkg-chip">hki-llamaindex</span>
+        <span class="pkg-chip">hki-adk</span>
+        <span class="pkg-chip">hki-autogen</span>
+        <span class="pkg-chip">hki-crewai</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══ Footer ════════════════════════════════════════════════════════════ -->
+<footer>
+  <span class="footer-brand"><span>HKI</span> — Hermetic Knowledge Isolation · MIT License</span>
+  <nav class="footer-links">
+    <a href="https://github.com/h3nok/HKI/blob/main/spec/HKI-1.0.md" target="_blank" rel="noopener">Spec</a>
+    <a href="https://github.com/h3nok/HKI" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/h3nok/HKI/blob/main/docs/HKI_THREATS.md" target="_blank" rel="noopener">Threats</a>
+    <a href="https://github.com/h3nok/HKI/blob/main/conformance.json" target="_blank" rel="noopener">Registry</a>
+    <a href="https://github.com/h3nok/HKI/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contribute</a>
+  </nav>
+</footer>
+
+<script>
+  // Fetch live conformance.json if available (same-origin / CORS-enabled host)
+  (async () => {
+    try {
+      const res = await fetch("/conformance.json");
+      if (!res.ok) return;
+      const data = await res.json();
+
+      const level = data.level ?? "L4-tested";
+      const profile = data.evidenceProfile ?? "smoke";
+      const adapterPassed = data.conformance?.passed ?? 28;
+      const adapterTotal = data.conformance?.total ?? 28;
+      const probePassed = data.httpProbe?.passed ?? 10;
+      const probeTotal = data.httpProbe?.total ?? 10;
+      const threatCount = data.threats?.total ?? 15;
+      const pkgs = data.packages ? Object.keys(data.packages) : [];
+
+      document.getElementById("reg-level").textContent = level;
+      document.getElementById("reg-profile").textContent = profile + " evidence";
+      document.getElementById("reg-adapter").textContent = `${adapterPassed}/${adapterTotal}`;
+      document.getElementById("reg-probe").textContent = `${probePassed}/${probeTotal}`;
+      document.getElementById("reg-threats").textContent = String(threatCount);
+
+      if (pkgs.length) {
+        document.getElementById("reg-pkgs").textContent = String(pkgs.length);
+        const row = document.getElementById("reg-packages");
+        row.innerHTML = pkgs.map(p => `<span class="pkg-chip">${p}</span>`).join("");
+      }
+    } catch (_) {
+      // graceful degradation — static defaults already rendered
+    }
+  })();
+</script>
+
+</body>
+</html>

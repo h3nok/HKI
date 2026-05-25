@@ -1,0 +1,18 @@
+{
+  "buildCommand": "node build.mjs",
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    { "source": "/conformance.json", "destination": "/conformance.json" }
+  ],
+  "headers": [
+    {
+      "source": "/conformance.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    }
+  ]
+}

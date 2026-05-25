@@ -60,6 +60,8 @@
     "test:hki-conformance-py": "cd packages/hki-conformance-py && uv run --extra dev pytest -q",
     "verify:hki-conformance-py": "cd packages/hki-conformance-py && uv run --extra dev hki-conformance --min-level 3",
     "registry:build": "node scripts/build-conformance-registry.mjs",
+    "build:hki-site": "node apps/hki-site/build.mjs",
+    "dev:hki-site": "node apps/hki-site/build.mjs && npx serve apps/hki-site/dist -p 3100",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "changeset": "changeset",

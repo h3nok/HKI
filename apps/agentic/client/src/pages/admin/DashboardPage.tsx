@@ -29,8 +29,7 @@ const DashboardChartsGrid = lazy(() =>
 );
 
 const OBSERVABILITY_URL =
-  (import.meta.env.VITE_OBSERVABILITY_URL as string) ||
-  "";
+  (import.meta.env.VITE_OBSERVABILITY_URL as string) || "";
 
 const ENV =
   (import.meta.env.VITE_ENV as string) ||
