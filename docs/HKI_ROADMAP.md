@@ -346,9 +346,9 @@ Goal: the platform is a credible _reference_, not a confusing _product_.
 
 | ID  | Title                   | DoD                                                                                                                                                                                                                                                                                                  |
 | --- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M16 | Boundary decision       | Choose: (a) strip enterprise specifics from `apps/agentic`, or (b) move to private repo and ship `examples/` only. Decided and executed.                                                                                                                                                             |
+| M16 | Boundary decision       | ✅ Done — Decision: **strip**. `apps/agentic/` stays as the reference platform. Removed all enterprise identifiers: `retail_agentic` → `hki_agentic`; `retail` agent type → `knowledge`; hardcoded GCP project IDs (`p-642-cilab-*`) → `YOUR_GCP_PROJECT` / `${_GCP_PROJECT}`; retail system prompt → generic; retail tool registry → HKI tools (`search_knowledge`, `get_document`, `run_policy_check`, `get_audit_trail`); "retail-grade" comments → "domain-scoped". |
 | M17 | Examples directory      | ✅ Done — `examples/fastapi-rag` (FastAPI + HkiMiddleware RAG, 140 LOC), `examples/mcp-server` (TS gateway guard, 165 LOC), `examples/langgraph-agent` (StateGraph + envelope propagation + handoff, 175 LOC), `examples/bedrock-claude` (boto3 + BEDROCK_STUB mode, 160 LOC). All verified locally. |
-| M18 | Doc/code reconciliation | ✅ Done — `docs/ARCHITECTURE.md` updated to MySQL throughout (5 occurrences); DATABASE_URL example corrected to `mysql://root:root@127.0.0.1:9306/retail_agentic`.                                                                                                                                   |
+| M18 | Doc/code reconciliation | ✅ Done — `docs/ARCHITECTURE.md` updated to MySQL throughout (5 occurrences); DATABASE_URL example corrected to `mysql://root:root@127.0.0.1:9306/hki_agentic`.                                                                                                                                      |
 | M19 | UI debt burn-down       | `@hki/ui` token-audit findings → 0, or rename to `@hki/agentic-ui` and remove from “standard” surface.                                                                                                                                                                                               |
 | M20 | Required CI gates       | ✅ Partial — `verify:hki-conformance`, `test:hki-runtime-py`, `probe:smoke`, and `hki-service-evidence` are required PR gates. `audit:hki:strict` is report-only (8 `body-scope-trust` findings in JWT-protected S2S internal routes; non-strict gate blocks regressions).                           |
 
@@ -377,9 +377,7 @@ Goal: external systems claim HKI conformance unprompted.
    Full EKS/Aurora/OpenSearch reference architecture still needed.
 2. ~~**M17 — Examples directory.**~~ ✅ Done — four self-contained examples committed.
 3. ~~**M18 — Doc/code reconciliation.**~~ ✅ Done — ARCHITECTURE.md corrected to MySQL.
-4. **M16 — Boundary decision.** Strip enterprise specifics from `apps/agentic`,
-   or move to private repo and ship `examples/` only. Unresolved; blocks
-   clean public perception of the standard.
+4. ~~**M16 — Boundary decision.**~~ ✅ Done — stripped. Zero enterprise identifiers remain in `apps/agentic/`.
 5. ~~**M22 — "Break a RAG in 60 seconds" demo.**~~ ✅ Done — `examples/break-a-rag/` committed, 3/3 failures + fixes verified.
 6. **M25 — Three design partners.** One regulated enterprise, one AI-native
    vendor, one OSS project. Required for L5.

@@ -30,7 +30,7 @@ const DashboardChartsGrid = lazy(() =>
 
 const OBSERVABILITY_URL =
   (import.meta.env.VITE_OBSERVABILITY_URL as string) ||
-  "https://console.cloud.google.com/monitoring/dashboards?project=p-642-cilab-gke";
+  "";
 
 const ENV =
   (import.meta.env.VITE_ENV as string) ||
