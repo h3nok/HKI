@@ -109,7 +109,7 @@ export default function SafetyCard({
               <span
                 className={cn(
                   "tabular-nums",
-                  s.ok ? "text-muted-foreground/70" : ""
+                  s.ok ? "text-muted-foreground/85" : ""
                 )}
               >
                 {s.ok ? `${s.latencyMs}ms` : "down"}

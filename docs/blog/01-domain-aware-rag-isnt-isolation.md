@@ -179,16 +179,16 @@ result = tool_registry.dispatch(tool_name, args)
 
 The retrieval filter is one enforcement point. A real isolation contract covers:
 
-| Path | Enforcement point |
-|------|------------------|
-| Vector retrieval | Domain filter on every kNN query |
-| Completion cache | Domain-bound cache key derivation |
-| Async job | Envelope re-attachment on resume |
-| Tool dispatch | Gateway-target domain check |
-| Sub-agent handoff | Child envelope with narrowed scope |
-| Memory write | Artifact label on every persisted value |
-| Graph traversal | Edge-label enforcement (no cross-domain edges) |
-| Admin inspection | Physically separate plane, unreachable from runtime |
+| Path              | Enforcement point                                   |
+| ----------------- | --------------------------------------------------- |
+| Vector retrieval  | Domain filter on every kNN query                    |
+| Completion cache  | Domain-bound cache key derivation                   |
+| Async job         | Envelope re-attachment on resume                    |
+| Tool dispatch     | Gateway-target domain check                         |
+| Sub-agent handoff | Child envelope with narrowed scope                  |
+| Memory write      | Artifact label on every persisted value             |
+| Graph traversal   | Edge-label enforcement (no cross-domain edges)      |
+| Admin inspection  | Physically separate plane, unreachable from runtime |
 
 A system that implements only the first row and calls itself "domain-isolated"
 is marketing, not engineering. The other seven rows are where the leakage

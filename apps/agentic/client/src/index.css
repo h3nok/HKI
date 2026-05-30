@@ -497,6 +497,39 @@ body::before {
 /* Glass utility classes — shared from @hki/ui */
 @import "@hki/ui/tokens/glass.css";
 
+/* ── Custom Thin Scrollbar Design System ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+.terminal-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.terminal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.terminal-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+.terminal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    AMBIENT CANVAS — Subtle radial gradient behind main content
    Creates a soft spotlight effect that draws the eye center and adds
@@ -1623,7 +1656,7 @@ body::before {
   .platform-nav-link {
     position: relative;
     overflow: hidden;
-    color: color-mix(in srgb, var(--muted-foreground) 80%, transparent);
+    color: var(--muted-foreground);
     transition:
       color 200ms ease,
       transform 200ms ease;
@@ -3609,6 +3642,7 @@ body::before {
   }
 
   .dark .admin-surface-card {
+    border: 1px solid color-mix(in srgb, var(--foreground) 6%, transparent) !important;
     background:
       radial-gradient(
         30rem 18rem at 0% 0%,
@@ -3622,17 +3656,17 @@ body::before {
       ),
       linear-gradient(
         180deg,
-        var(--card) 0%,
-        color-mix(in srgb, var(--card) 90%, var(--background)) 100%
+        color-mix(in srgb, var(--card) 97%, white) 0%,
+        var(--card) 100%
       ) !important;
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 2%, transparent),
-      0 14px 24px -28px color-mix(in srgb, var(--background) 46%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 14px 24px -28px rgba(0, 0, 0, 0.32),
       0 24px 44px -42px
         color-mix(
           in srgb,
-          var(--admin-duotone-a, var(--primary)) 24%,
-          var(--background)
+          var(--admin-duotone-a, var(--primary)) 20%,
+          transparent
         ) !important;
   }
 
@@ -3640,19 +3674,19 @@ body::before {
     filter: saturate(1.08);
     transform: translateY(-3px);
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
-      0 20px 36px -30px color-mix(in srgb, var(--background) 62%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 20px 36px -30px rgba(0, 0, 0, 0.44),
       0 34px 70px -56px
         color-mix(
           in srgb,
-          var(--admin-duotone-a, var(--primary)) 38%,
-          var(--background)
+          var(--admin-duotone-a, var(--primary)) 32%,
+          transparent
         ),
       0 36px 78px -64px
         color-mix(
           in srgb,
-          var(--admin-duotone-b, var(--secondary)) 18%,
-          var(--background)
+          var(--admin-duotone-b, var(--secondary)) 16%,
+          transparent
         ) !important;
   }
 
@@ -3685,9 +3719,11 @@ body::before {
   }
 
   .dark .admin-surface-inset {
-    background: color-mix(in srgb, var(--card) 88%, var(--background));
-    border: 0;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    background: color-mix(in srgb, var(--background) 62%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--foreground) 5%, transparent);
+    box-shadow:
+      inset 0 1px 3px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.02);
   }
 
   .admin-panel-primary {
@@ -3707,14 +3743,15 @@ body::before {
   }
 
   .dark .admin-panel-primary {
+    border: 1px solid
+      color-mix(in srgb, var(--primary) 16%, rgba(255, 255, 255, 0.05));
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--card) 94%, var(--primary) 6%) 0%,
-      color-mix(in srgb, var(--card) 88%, var(--primary) 12%) 100%
+      color-mix(in srgb, var(--card) 92%, var(--primary) 8%) 0%,
+      color-mix(in srgb, var(--card) 86%, var(--primary) 14%) 100%
     );
-    border: 0;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.02),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
       0 8px 14px -20px rgba(0, 0, 0, 0.28);
   }
 
@@ -3870,22 +3907,24 @@ body::before {
   }
 
   .dark .admin-surface-hero {
+    border: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent);
     background: linear-gradient(
       180deg,
       color-mix(
           in srgb,
-          var(--card) 94%,
-          var(--admin-duotone-a, var(--primary)) 6%
+          var(--card) 96%,
+          var(--admin-duotone-a, var(--primary)) 4%
         )
         0%,
       color-mix(
           in srgb,
-          var(--card) 91%,
-          var(--admin-duotone-b, var(--secondary)) 9%
+          var(--card) 93%,
+          var(--admin-duotone-b, var(--secondary)) 7%
         )
         100%
     );
     box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
       0 18px 32px -26px color-mix(in srgb, var(--background) 56%, transparent),
       0 24px 46px -42px
         color-mix(
@@ -3954,7 +3993,7 @@ body::before {
   .dark .admin-card-header {
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--card) 82%, var(--background)) 0%,
+      color-mix(in srgb, var(--card) 97%, white) 0%,
       var(--card) 100%
     ) !important;
   }
@@ -4054,7 +4093,12 @@ body::before {
   }
 
   .dark .admin-data-panel {
-    background: var(--card);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 97%, white) 0%,
+      var(--card) 100%
+    );
+    border-top: 1px solid color-mix(in srgb, var(--foreground) 5%, transparent);
   }
 
   .admin-preview-row {
@@ -4087,22 +4131,22 @@ body::before {
     border: 0;
     background: linear-gradient(
       180deg,
-      var(--card) 0%,
-      color-mix(in srgb, var(--card) 88%, var(--background)) 100%
+      color-mix(in srgb, var(--card) 97%, white) 0%,
+      var(--card) 100%
     );
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.02),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03),
       0 8px 14px -22px rgba(0, 0, 0, 0.28);
   }
 
   .dark .admin-preview-row:hover {
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, #111821 94%, var(--primary) 6%) 0%,
-      color-mix(in srgb, #10161d 90%, var(--primary) 10%) 100%
+      color-mix(in srgb, var(--card) 94%, var(--primary) 6%) 0%,
+      color-mix(in srgb, var(--card) 90%, var(--primary) 10%) 100%
     );
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.02),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
       0 10px 16px -24px rgba(0, 0, 0, 0.3);
     transform: none;
   }
@@ -4189,6 +4233,7 @@ body::before {
   }
 
   .dark .admin-metric-card {
+    border: 1px solid color-mix(in srgb, var(--foreground) 6%, transparent) !important;
     background:
       radial-gradient(
         16rem 10rem at 0% 0%,
@@ -4202,27 +4247,17 @@ body::before {
       ),
       linear-gradient(
         180deg,
-        color-mix(
-            in srgb,
-            var(--card) 94%,
-            var(--admin-duotone-a, var(--primary)) 6%
-          )
-          0%,
-        color-mix(
-            in srgb,
-            var(--card) 92%,
-            var(--admin-duotone-b, var(--secondary)) 8%
-          )
-          100%
+        color-mix(in srgb, var(--card) 97%, white) 0%,
+        var(--card) 100%
       ) !important;
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 2%, transparent),
-      0 10px 18px -26px color-mix(in srgb, var(--background) 36%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 10px 18px -26px rgba(0, 0, 0, 0.3),
       0 22px 40px -38px
         color-mix(
           in srgb,
-          var(--admin-duotone-a, var(--primary)) 22%,
-          var(--background)
+          var(--admin-duotone-a, var(--primary)) 18%,
+          transparent
         ) !important;
   }
 
@@ -4231,24 +4266,30 @@ body::before {
   }
 
   .dark .admin-metric-card:hover {
-    background: linear-gradient(
-      180deg,
-      color-mix(
-          in srgb,
-          var(--card) 94%,
-          var(--admin-duotone-a, var(--primary)) 6%
-        )
-        0%,
-      color-mix(
-          in srgb,
-          var(--card) 90%,
-          var(--admin-duotone-b, var(--secondary)) 10%
-        )
-        100%
-    ) !important;
+    background:
+      radial-gradient(
+        16rem 10rem at 0% 0%,
+        color-mix(
+            in srgb,
+            var(--admin-duotone-a, var(--primary)) 9%,
+            transparent
+          )
+          0%,
+        transparent 72%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 96%, white) 0%,
+        color-mix(
+            in srgb,
+            var(--card) 94%,
+            var(--admin-duotone-a, var(--primary)) 6%
+          )
+          100%
+      ) !important;
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--foreground) 2%, transparent),
-      0 12px 18px -28px color-mix(in srgb, var(--background) 36%, transparent) !important;
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 12px 18px -28px rgba(0, 0, 0, 0.36) !important;
     transform: translateY(-2px);
   }
 
@@ -4274,7 +4315,7 @@ body::before {
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--muted-foreground) 84%, transparent);
+    color: var(--muted-foreground);
   }
 
   .admin-metric-value {
@@ -5010,17 +5051,10 @@ body::before {
         transparent 0 50%,
         color-mix(in srgb, var(--foreground) 5%, transparent) 50% 50.45%,
         transparent 50.45% 100%
-      ),
-      linear-gradient(
-        45deg,
-        transparent 0 64%,
-        color-mix(in srgb, var(--foreground) 8%, transparent) 64% 64.35%,
-        transparent 64.35% 100%
       );
     background-position:
       right 2rem top 0,
-      right -3rem top 0,
-      right 2rem bottom -2rem;
+      right -3rem top 0;
     background-size:
       18rem 100%,
       20rem 12rem,
@@ -5714,9 +5748,10 @@ body::before {
       inset 0 1px 0 color-mix(in srgb, white 64%, transparent),
       0 1px 2px color-mix(in srgb, var(--foreground) 10%, transparent);
     transition:
-      border-color 160ms ease,
-      box-shadow 160ms ease,
-      background 160ms ease;
+      border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      background 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .kb-self-service-field::placeholder {
@@ -5724,11 +5759,30 @@ body::before {
   }
 
   .kb-self-service-field:focus {
-    border-color: color-mix(in srgb, var(--primary) 44%, var(--border));
+    border-color: var(--primary) !important;
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, white 46%, transparent),
-      0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
+      0 0 0 1.5px var(--background),
+      0 0 0 4px color-mix(in srgb, var(--primary) 32%, transparent),
+      inset 0 1px 1px rgba(0, 0, 0, 0.03) !important;
+    animation: kb-focus-pulse 2.4s infinite cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
+    transform: translateY(-0.5px);
+  }
+
+  @keyframes kb-focus-pulse {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 1.5px var(--background),
+        0 0 0 4px color-mix(in srgb, var(--primary) 32%, transparent),
+        inset 0 1px 1px rgba(0, 0, 0, 0.03) !important;
+    }
+    50% {
+      box-shadow:
+        0 0 0 1.5px var(--background),
+        0 0 0 6px color-mix(in srgb, var(--primary) 54%, transparent),
+        inset 0 1px 1px rgba(0, 0, 0, 0.03) !important;
+    }
   }
 
   .dark .kb-self-service-field {
@@ -6552,8 +6606,26 @@ body::before {
     var(--muted-foreground) 56%,
     var(--primary) 44%
   );
-  background: var(--hki-page-bg) !important;
-  background-image: none !important;
+
+  /* Modern premium midnight design system variables */
+  --hki-page-bg: #030712;
+  --hki-page-panel: rgba(13, 17, 28, 0.45);
+  --hki-page-inset: rgba(3, 7, 18, 0.55);
+  --hki-page-border: rgba(255, 255, 255, 0.045);
+  --hki-page-border-strong: rgba(255, 255, 255, 0.08);
+  --hki-page-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(59, 130, 246, 0.04) 0%,
+    #030712 65%
+  ) !important;
+  background-image: radial-gradient(
+    circle at 50% 0%,
+    rgba(59, 130, 246, 0.04) 0%,
+    #030712 65%
+  ) !important;
   color-scheme: dark;
 }
 
@@ -6574,11 +6646,15 @@ body::before {
     .admin-panel-primary,
     .admin-data-panel
   ) {
+  border: 1px solid var(--hki-page-border) !important;
   border-color: var(--hki-page-border) !important;
   background: var(--hki-page-panel) !important;
   background-image: none !important;
   box-shadow: var(--hki-page-shadow) !important;
   filter: none !important;
+  backdrop-filter: blur(16px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 
 .dark
@@ -6592,15 +6668,11 @@ body::before {
     .admin-data-panel
   ):hover {
   border-color: var(--hki-page-border-strong) !important;
-  background: color-mix(
-    in srgb,
-    var(--hki-page-panel) 92%,
-    var(--primary) 8%
-  ) !important;
+  background: rgba(24, 31, 48, 0.55) !important;
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
-    0 10px 22px -30px color-mix(in srgb, black 44%, transparent) !important;
-  transform: none !important;
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+  transform: translateY(-2px) !important;
 }
 
 .dark
@@ -6631,34 +6703,96 @@ body::before {
 .dark
   .dashboard-shell.admin-control-plane-canvas
   :is(.admin-surface-inset, .admin-field) {
-  border-color: var(--hki-page-border) !important;
-  background: var(--hki-page-inset) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  background: rgba(3, 7, 18, 0.45) !important;
   background-image: none !important;
-  box-shadow: inset 0 1px 0
-    color-mix(in srgb, var(--foreground) 3%, transparent) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
 }
 
 .dark
   .dashboard-shell.admin-control-plane-canvas
   :is(.dashboard-breadcrumb, .admin-breadcrumb-bar) {
-  backdrop-filter: none !important;
-  background: color-mix(
-    in srgb,
-    var(--hki-page-panel) 92%,
-    var(--hki-page-bg)
-  ) !important;
-  box-shadow: inset 0 1px 0
-    color-mix(in srgb, var(--foreground) 4%, transparent) !important;
+  backdrop-filter: blur(16px) saturate(110%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(110%) !important;
+  background: rgba(13, 17, 28, 0.35) !important;
+  border-bottom: 1px solid var(--hki-page-border) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02) !important;
 }
 
 .dark .dashboard-shell.admin-control-plane-canvas .admin-card-header {
   border-bottom: 1px solid var(--hki-page-border) !important;
-  background: color-mix(
-    in srgb,
-    var(--hki-page-panel) 86%,
-    var(--foreground) 3%
-  ) !important;
+  background: rgba(255, 255, 255, 0.015) !important;
   background-image: none !important;
+}
+
+/* Eliminate nested card outlines and backgrounds inside .admin-surface-card */
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  .admin-surface-card
+  .admin-data-panel {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+}
+
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  .admin-surface-card
+  .admin-data-panel:hover {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+}
+
+/* Responsive dividers between nested panels */
+@media (min-width: 1024px) {
+  .dark
+    .dashboard-shell.admin-control-plane-canvas
+    .admin-surface-card
+    .admin-data-panel:first-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.045) !important;
+    border-bottom: none !important;
+  }
+}
+@media (max-width: 1023px) {
+  .dark
+    .dashboard-shell.admin-control-plane-canvas
+    .admin-surface-card
+    .admin-data-panel:first-child {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.045) !important;
+    border-right: none !important;
+  }
+}
+
+/* Soften nested metric cards inside .admin-surface-card to avoid box-in-box look */
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  .admin-surface-card
+  .admin-metric-card {
+  border: 1px solid rgba(255, 255, 255, 0.035) !important;
+  background: rgba(3, 7, 18, 0.25) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+}
+
+.dark
+  .dashboard-shell.admin-control-plane-canvas
+  .admin-surface-card
+  .admin-metric-card:hover {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  background: rgba(3, 7, 18, 0.45) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: translateY(-1px) !important;
 }
 
 .dark
@@ -6670,14 +6804,14 @@ body::before {
     .admin-pill-critical
   ) {
   border: 1px solid
-    color-mix(in srgb, var(--primary) 22%, var(--hki-page-border)) !important;
-  background: color-mix(in srgb, var(--primary) 10%, transparent) !important;
-  color: color-mix(in srgb, var(--primary) 78%, var(--foreground)) !important;
+    color-mix(in srgb, var(--primary) 18%, rgba(255, 255, 255, 0.05)) !important;
+  background: color-mix(in srgb, var(--primary) 7%, transparent) !important;
+  color: color-mix(in srgb, var(--primary) 85%, var(--foreground)) !important;
 }
 
 .dark .dashboard-shell.admin-control-plane-canvas .admin-pill-neutral {
-  border: 1px solid var(--hki-page-border) !important;
-  background: color-mix(in srgb, var(--foreground) 6%, transparent) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
   color: var(--muted-foreground) !important;
 }
 
@@ -6689,12 +6823,12 @@ body::before {
     .admin-icon-warning,
     .admin-icon-critical
   ) {
-  background: color-mix(in srgb, var(--primary) 11%, transparent) !important;
+  background: color-mix(in srgb, var(--primary) 8%, transparent) !important;
   color: var(--primary) !important;
 }
 
 .dark .dashboard-shell.admin-control-plane-canvas .admin-icon-neutral {
-  background: color-mix(in srgb, var(--foreground) 6%, transparent) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
   color: var(--muted-foreground) !important;
 }
 
@@ -7205,19 +7339,30 @@ body::before {
   }
 
   .dark .dashboard-shell.admin-control-plane-canvas .admin-command-banner {
-    border-color: color-mix(
-      in srgb,
-      var(--primary) 30%,
-      var(--hki-page-border)
-    ) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
     background:
       linear-gradient(
         135deg,
-        color-mix(in srgb, var(--primary) 22%, transparent) 0%,
-        color-mix(in srgb, var(--primary) 8%, transparent) 62%,
-        transparent 100%
+        rgba(59, 130, 246, 0.08) 0%,
+        rgba(99, 102, 241, 0.03) 50%,
+        rgba(0, 0, 0, 0) 100%
       ),
-      color-mix(in srgb, var(--hki-page-panel) 58%, transparent) !important;
+      rgba(13, 17, 28, 0.4) !important;
+    box-shadow:
+      0 4px 30px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(16px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  }
+
+  .dark
+    .dashboard-shell.admin-control-plane-canvas
+    .admin-command-banner__operator-panel {
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background: rgba(3, 7, 18, 0.45) !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
   }
 
   .dashboard-shell.admin-control-plane-canvas
@@ -7455,46 +7600,49 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ENGINEERING UI CHROME
+   ENGINEERING UI CHROME — v3 (minimal, agentic, futuristic)
    Shared by HKI landing, standard, architecture, and research-note pages.
-   Keep this layer semantic-token based so dark mode cannot drift by page.
+   Semantic-token based so dark mode cannot drift by page.
    ═══════════════════════════════════════════════════════════════════════════ */
 @layer components {
+  /* ── Page canvas ───────────────────────────────────────────────────── */
   .engineering-canvas {
     position: relative;
     isolation: isolate;
     color: var(--foreground);
     background:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--background) 94%, var(--card) 6%) 0%,
-        var(--background) 42%,
-        color-mix(in srgb, var(--background) 96%, var(--primary) 4%) 100%
+      /* primary bloom — top centre */
+      radial-gradient(
+        ellipse 100% 55% at 50% -4%,
+        color-mix(in srgb, var(--primary) 11%, transparent) 0%,
+        transparent 68%
       ),
+      /* violet trace — far right */
+        radial-gradient(
+          ellipse 56% 38% at 96% 22%,
+          color-mix(in srgb, #7c3aed 6%, transparent) 0%,
+          transparent 72%
+        ),
       var(--background);
   }
 
+  /* Dot-grid texture — fades out after ~55% of page height */
   .engineering-canvas::before {
     content: "";
     position: absolute;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background-image:
-      linear-gradient(
-        color-mix(in srgb, var(--foreground) 5%, transparent) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--foreground) 5%, transparent) 1px,
-        transparent 1px
-      );
-    background-size: 56px 56px;
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--foreground) 20%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: 32px 32px;
     mask-image: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--color-neutral-950) 42%, transparent),
-      transparent 62%
+      color-mix(in srgb, var(--foreground) 46%, transparent) 0%,
+      transparent 52%
     );
   }
 
@@ -7505,45 +7653,56 @@ body::before {
 
   .dark .engineering-canvas {
     background:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--background) 88%, var(--card) 12%) 0%,
-        var(--background) 46%,
-        color-mix(in srgb, var(--background) 94%, var(--primary) 6%) 100%
+      radial-gradient(
+        ellipse 100% 55% at 50% -4%,
+        color-mix(in srgb, var(--primary) 14%, transparent) 0%,
+        transparent 68%
+      ),
+      radial-gradient(
+        ellipse 56% 38% at 96% 22%,
+        color-mix(in srgb, #7c3aed 8%, transparent) 0%,
+        transparent 72%
       ),
       var(--background);
   }
 
   .dark .engineering-canvas::before {
-    background-image:
-      linear-gradient(
-        color-mix(in srgb, var(--foreground) 4%, transparent) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--foreground) 4%, transparent) 1px,
-        transparent 1px
-      );
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--foreground) 14%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: 32px 32px;
     mask-image: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--color-neutral-950) 34%, transparent),
-      transparent 58%
+      color-mix(in srgb, var(--foreground) 36%, transparent) 0%,
+      transparent 50%
     );
   }
 
+  /* ── Topbar — transparent engineering nav ──────────────────────────── */
   .engineering-topbar {
-    border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    backdrop-filter: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent) !important;
+    background: color-mix(
+      in srgb,
+      var(--background) 85%,
+      transparent
+    ) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    backdrop-filter: blur(12px) !important;
   }
-
   .dark .engineering-topbar {
-    background: transparent !important;
-    box-shadow: none !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent) !important;
+    background: color-mix(
+      in srgb,
+      var(--background) 85%,
+      transparent
+    ) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    backdrop-filter: blur(12px) !important;
   }
 
+  /* ── Segmented nav ─────────────────────────────────────────────────── */
   .engineering-segmented {
     display: inline-flex;
     align-items: center;
@@ -7552,11 +7711,6 @@ body::before {
     border-radius: 0;
     background: transparent;
     padding: 0;
-    box-shadow: none;
-  }
-
-  .dark .engineering-segmented {
-    background: transparent;
     box-shadow: none;
   }
 
@@ -7608,6 +7762,7 @@ body::before {
     background: color-mix(in srgb, var(--primary) 82%, var(--foreground) 18%);
   }
 
+  /* ── Icon button ───────────────────────────────────────────────────── */
   .engineering-icon-button {
     display: inline-flex;
     height: 2rem;
@@ -7622,31 +7777,100 @@ body::before {
       background-color 150ms ease,
       color 150ms ease;
   }
-
   .engineering-icon-button:hover {
     background: color-mix(in srgb, var(--foreground) 6%, transparent);
     color: var(--foreground);
   }
 
-  .engineering-topbar .engineering-primary-action {
-    min-height: 2rem;
-    background: transparent;
+  /* ── CTA buttons ───────────────────────────────────────────────────── */
+  .engineering-primary-action,
+  .engineering-secondary-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    border-radius: 0.5rem;
+    padding: 0.625rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition:
+      transform 160ms ease,
+      box-shadow 160ms ease,
+      border-color 160ms ease;
+  }
+
+  .engineering-primary-action {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--primary) 94%, black 6%) 0%,
+      color-mix(in srgb, var(--primary) 82%, #7c3aed 18%) 100%
+    );
+    color: var(--primary-foreground);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+      0 4px 16px -4px color-mix(in srgb, var(--primary) 50%, transparent),
+      0 18px 40px -24px color-mix(in srgb, var(--primary) 65%, transparent);
+  }
+
+  .engineering-primary-action:hover {
+    transform: translateY(-1.5px);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+      0 6px 20px -4px color-mix(in srgb, var(--primary) 58%, transparent),
+      0 24px 48px -24px color-mix(in srgb, var(--primary) 72%, transparent);
+  }
+
+  .engineering-secondary-action {
+    border: 1px solid
+      color-mix(in srgb, var(--border) 72%, var(--foreground) 8%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 90%, white) 0%,
+      color-mix(in srgb, var(--card) 82%, var(--background) 18%) 100%
+    );
     color: var(--foreground);
-    box-shadow: none;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 36%, transparent),
+      0 1px 2px color-mix(in srgb, var(--foreground) 6%, transparent);
   }
 
-  .engineering-topbar .engineering-primary-action:hover {
-    background: color-mix(in srgb, var(--foreground) 6%, transparent);
-    transform: none;
+  .engineering-secondary-action:hover {
+    transform: translateY(-1.5px);
+    border-color: color-mix(in srgb, var(--primary) 20%, var(--border) 80%);
   }
 
+  .dark .engineering-secondary-action {
+    background: color-mix(in srgb, var(--card) 80%, var(--background) 20%);
+    border-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
+  }
+
+  .dark .engineering-secondary-action:hover {
+    border-color: color-mix(in srgb, var(--primary) 26%, transparent);
+  }
+
+  /* ── Legacy chip (used by other eng pages) ─────────────────────────── */
+  .engineering-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--border) 74%);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 12%, var(--card) 88%);
+    color: var(--primary);
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--foreground) 6%, transparent);
+  }
+
+  /* ── Legacy panel (used by architecture + standard pages) ──────────── */
   .engineering-panel {
     border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
     border-radius: 0.5rem;
     background:
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--card) 96%, var(--color-neutral-0) 4%) 0%,
+        color-mix(in srgb, var(--card) 96%, white 4%) 0%,
         color-mix(in srgb, var(--card) 88%, var(--muted) 12%) 100%
       ),
       var(--card);
@@ -7672,39 +7896,18 @@ body::before {
     transition:
       transform 150ms ease,
       border-color 150ms ease,
-      box-shadow 150ms ease,
-      background-color 150ms ease;
+      box-shadow 150ms ease;
   }
 
   .engineering-panel-interactive:hover {
     transform: translateY(-1px);
     border-color: color-mix(in srgb, var(--primary) 22%, var(--border) 78%);
-    box-shadow:
-      0 2px 4px color-mix(in srgb, var(--foreground) 10%, transparent),
-      0 26px 54px -38px color-mix(in srgb, var(--foreground) 32%, transparent);
-  }
-
-  .dark .engineering-panel-interactive:hover {
-    box-shadow: inset 0 1px 0
-      color-mix(in srgb, var(--foreground) 5%, transparent);
   }
 
   .engineering-inset {
     border: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
     border-radius: 0.5rem;
     background: color-mix(in srgb, var(--background) 72%, var(--card) 28%);
-  }
-
-  .engineering-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--border) 74%);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--primary) 12%, var(--card) 88%);
-    color: var(--primary);
-    box-shadow: inset 0 1px 0
-      color-mix(in srgb, var(--foreground) 6%, transparent);
   }
 
   .engineering-icon-tile {
@@ -7717,46 +7920,576 @@ body::before {
     color: var(--primary);
   }
 
-  .engineering-primary-action,
-  .engineering-secondary-action {
-    display: inline-flex;
+  .engineering-footer {
+    border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    background: transparent;
+    color: var(--muted-foreground);
+  }
+
+  /* ── Inline SVG Theme Integration ──────────────────────────────────── */
+  .hki-article svg,
+  figure svg {
+    --page: #f8fafc;
+    --surface: #ffffff;
+    --surface-2: #f1f5f9;
+    --text: #0f172a;
+    --muted: #475569;
+    --rule: #cbd5e1;
+    --line: #64748b;
+    --arrow: #64748b;
+    --safe-fill: #ecfdf5;
+    --safe-stroke: #059669;
+    --safe-text: #065f46;
+    --policy-fill: #eef2ff;
+    --policy-stroke: #4f46e5;
+    --policy-text: #3730a3;
+    --shared-fill: #f5f3ff;
+    --shared-stroke: #7c3aed;
+    --shared-text: #5b21b6;
+    --warn-fill: #fff7ed;
+    --warn-stroke: #ea580c;
+    --warn-text: #9a3412;
+    --danger-fill: #fef2f2;
+    --danger-stroke: #dc2626;
+    --danger-text: #991b1b;
+    --glow-warn: rgba(234, 88, 12, 0.18);
+    --glow-danger: rgba(220, 38, 38, 0.18);
+    --glow-safe: rgba(5, 150, 105, 0.18);
+    --glow-policy: rgba(79, 70, 229, 0.18);
+    --glow-shared: rgba(124, 58, 237, 0.18);
+    transition: all 150ms ease;
+  }
+
+  .dark .hki-article svg,
+  .dark figure svg {
+    --page: #09111a;
+    --surface: #0f172a;
+    --surface-2: #111c2d;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --rule: #334155;
+    --line: #7dd3fc;
+    --arrow: #7dd3fc;
+    --safe-fill: #0e2c28;
+    --safe-stroke: #34d399;
+    --safe-text: #bbf7d0;
+    --policy-fill: #1f2451;
+    --policy-stroke: #a78bfa;
+    --policy-text: #ddd6fe;
+    --shared-fill: #26143f;
+    --shared-stroke: #c084fc;
+    --shared-text: #e9d5ff;
+    --warn-fill: #3a220b;
+    --warn-stroke: #fb923c;
+    --warn-text: #fed7aa;
+    --danger-fill: #3a1618;
+    --danger-stroke: #f87171;
+    --danger-text: #fecaca;
+    --glow-warn: rgba(251, 146, 60, 0.22);
+    --glow-danger: rgba(248, 113, 113, 0.22);
+    --glow-safe: rgba(52, 211, 153, 0.22);
+    --glow-policy: rgba(167, 139, 250, 0.22);
+    --glow-shared: rgba(192, 132, 252, 0.22);
+  }
+
+  /* ── Background canvas ─────────────────────────────────────────────── */
+  .eng-bg-canvas {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .eng-bg-orb {
+    position: absolute;
+    border-radius: 50%;
+  }
+
+  /* Primary bloom — sits top-centre, large and soft */
+  .eng-bg-orb--primary {
+    left: 50%;
+    top: -15%;
+    translate: -50% 0;
+    width: min(1100px, 130vw);
+    height: min(720px, 90vw);
+    background: radial-gradient(
+      ellipse at 50% 50%,
+      color-mix(in srgb, var(--primary) 13%, transparent) 0%,
+      transparent 65%
+    );
+    animation: eng-breathe 8s ease-in-out infinite;
+  }
+
+  /* Violet accent — far right, mid height */
+  .eng-bg-orb--violet {
+    right: -18%;
+    top: 18%;
+    width: min(700px, 80vw);
+    height: min(700px, 80vw);
+    background: radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, #7c3aed 7%, transparent) 0%,
+      transparent 62%
+    );
+    animation: eng-breathe 10s ease-in-out infinite reverse;
+  }
+
+  /* Trace — bottom-left, small */
+  .eng-bg-orb--trace {
+    left: -8%;
+    bottom: 12%;
+    width: min(420px, 50vw);
+    height: min(420px, 50vw);
+    background: radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--primary) 4%, transparent) 0%,
+      transparent 65%
+    );
+  }
+
+  /* ── Hero layout ───────────────────────────────────────────────────── */
+  .eng-hero {
+    display: grid;
+    grid-template-columns: 1fr;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    min-height: 2.5rem;
-    border-radius: 0.5rem;
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
+    gap: 3rem;
+    padding-block: 4rem 3rem;
+  }
+
+  @media (min-width: 1024px) {
+    .eng-hero {
+      grid-template-columns: 1fr 1.08fr;
+      min-height: calc(100svh - 3.5rem - 5rem);
+      padding-block: 5rem 4rem;
+      gap: 4rem;
+    }
+  }
+
+  /* ── Hero text column ──────────────────────────────────────────────── */
+  .eng-hero-copy {
+    min-width: 0;
+  }
+
+  @media (min-width: 1024px) {
+    .eng-hero-copy {
+      padding-right: 1rem;
+    }
+  }
+
+  /* Monospace eyebrow */
+  .eng-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.6875rem;
     font-weight: 700;
-    transition:
-      transform 150ms ease,
-      border-color 150ms ease,
-      background-color 150ms ease,
-      box-shadow 150ms ease;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: color-mix(in srgb, var(--primary) 80%, var(--muted-foreground) 20%);
   }
 
-  .engineering-primary-action {
-    background: var(--primary);
-    color: var(--primary-foreground);
-    box-shadow: 0 16px 30px -22px
-      color-mix(in srgb, var(--primary) 78%, transparent);
+  .eng-eyebrow-line {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      var(--primary) 0%,
+      color-mix(in srgb, var(--primary) 40%, transparent) 100%
+    );
+    flex-shrink: 0;
   }
 
-  .engineering-secondary-action {
-    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-    background: color-mix(in srgb, var(--card) 84%, var(--background) 16%);
+  /* Headline */
+  .eng-headline {
+    font-size: clamp(2.625rem, 5.5vw, 4.25rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.035em;
     color: var(--foreground);
   }
 
-  .engineering-primary-action:hover,
-  .engineering-secondary-action:hover {
-    transform: translateY(-1px);
+  /* Gradient accent on "agent" */
+  .eng-headline-accent {
+    background: linear-gradient(
+      130deg,
+      var(--primary) 0%,
+      color-mix(in srgb, var(--primary) 60%, #7c3aed 40%) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .engineering-footer {
-    border-top: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
-    background: color-mix(in srgb, var(--background) 78%, transparent);
+  /* Legacy alias — used by other pages */
+  .engineering-headline-accent {
+    background: linear-gradient(
+      130deg,
+      var(--primary) 0%,
+      color-mix(in srgb, var(--primary) 60%, #7c3aed 40%) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .eng-tagline {
+    margin-top: 1.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
     color: var(--muted-foreground);
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Hero art column ───────────────────────────────────────────────── */
+  .eng-hero-art {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Ambient radial bloom behind the glass panel */
+  .eng-art-glow {
+    position: absolute;
+    inset: -4rem;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse at 50% 46%,
+      color-mix(in srgb, var(--primary) 13%, transparent) 0%,
+      color-mix(in srgb, #7c3aed 5%, transparent) 48%,
+      transparent 70%
+    );
+    filter: blur(48px);
+    animation: eng-breathe 9s ease-in-out infinite;
+  }
+
+  .dark .eng-art-glow {
+    background: radial-gradient(
+      ellipse at 50% 46%,
+      color-mix(in srgb, var(--primary) 18%, transparent) 0%,
+      color-mix(in srgb, #7c3aed 8%, transparent) 46%,
+      transparent 68%
+    );
+  }
+
+  /* Glass panel — sits above the glow, blurs the page behind the art */
+  .eng-art-glass {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    /* Subtle glass surface */
+    background: color-mix(in srgb, var(--card) 28%, transparent);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    /* Hairline border with a top highlight */
+    border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+      0 1px 0 color-mix(in srgb, var(--primary) 6%, transparent),
+      0 4px 6px color-mix(in srgb, var(--foreground) 4%, transparent),
+      0 28px 64px -36px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+
+  .dark .eng-art-glass {
+    background: color-mix(in srgb, var(--card) 42%, transparent);
+    border-color: color-mix(in srgb, var(--foreground) 10%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 5%, transparent),
+      0 28px 64px -36px color-mix(in srgb, var(--primary) 22%, transparent);
+  }
+
+  /* Top accent line on the glass panel */
+  .eng-art-glass::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    inset-x: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--primary) 60%, transparent) 30%,
+      color-mix(in srgb, #7c3aed 40%, transparent) 68%,
+      transparent 100%
+    );
+    z-index: 2;
+  }
+
+  /* L4 Deployed badge — inside glass panel, top-right */
+  .eng-art-badge {
+    position: absolute;
+    top: 0.875rem;
+    right: 0.875rem;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid color-mix(in srgb, #22c55e 26%, transparent);
+    border-radius: 999px;
+    padding: 0.175rem 0.5rem;
+    font-size: 0.5rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #22c55e;
+    background: color-mix(in srgb, #22c55e 8%, var(--card) 92%);
+    backdrop-filter: blur(8px);
+  }
+
+  .dark .eng-art-badge {
+    color: #4ade80;
+    border-color: color-mix(in srgb, #4ade80 26%, transparent);
+    background: color-mix(in srgb, #22c55e 10%, transparent);
+  }
+
+  .eng-art-badge-dot {
+    display: inline-block;
+    width: 0.3125rem;
+    height: 0.3125rem;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: eng-pulse-green 2.4s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  .dark .eng-art-badge-dot {
+    background: #4ade80;
+  }
+
+  /* ── Stats bar — full-width, glass ────────────────────────────────── */
+  .eng-stats-bar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    border-top: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
+    background: color-mix(in srgb, var(--card) 35%, var(--background) 65%);
+    backdrop-filter: blur(16px) saturate(130%);
+    -webkit-backdrop-filter: blur(16px) saturate(130%);
+  }
+
+  /* Thin top-edge primary line */
+  .eng-stats-bar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    inset-x: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--primary) 40%, transparent) 28%,
+      color-mix(in srgb, var(--primary) 40%, transparent) 72%,
+      transparent 100%
+    );
+  }
+
+  .dark .eng-stats-bar {
+    background: color-mix(in srgb, var(--card) 50%, transparent);
+    border-color: color-mix(in srgb, var(--foreground) 7%, transparent);
+  }
+
+  .eng-stat {
+    flex: 1 1 7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.875rem 1.5rem;
+  }
+
+  .eng-stat--divided {
+    border-left: 1px solid color-mix(in srgb, var(--border) 48%, transparent);
+  }
+
+  .dark .eng-stat--divided {
+    border-left-color: color-mix(in srgb, var(--foreground) 6%, transparent);
+  }
+
+  /* Mono value — deliberately restrained size */
+  .eng-stat-value {
+    font-size: 0.9375rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--foreground);
+  }
+
+  .eng-stat-label {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    opacity: 0.6;
+  }
+
+  /* ── Hub cards ─────────────────────────────────────────────────────── */
+  .eng-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    border-radius: 0.875rem;
+    padding: 1.375rem 1.375rem 1.25rem;
+    background:
+      linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--card) 96%, white 4%) 0%,
+        color-mix(in srgb, var(--card) 87%, var(--muted) 13%) 100%
+      ),
+      var(--card);
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--foreground) 6%, transparent),
+      0 14px 36px -28px color-mix(in srgb, var(--foreground) 16%, transparent);
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .eng-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(
+      in srgb,
+      var(--c, var(--primary)) 30%,
+      var(--border) 70%
+    );
+    box-shadow:
+      0 2px 4px color-mix(in srgb, var(--foreground) 8%, transparent),
+      0 20px 48px -28px
+        color-mix(in srgb, var(--c, var(--primary)) 28%, transparent);
+  }
+
+  .dark .eng-card {
+    border-color: color-mix(in srgb, var(--foreground) 9%, transparent);
+    background:
+      linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--card) 90%, var(--muted) 10%) 0%,
+        color-mix(in srgb, var(--card) 80%, var(--background) 20%) 100%
+      ),
+      var(--card);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
+  }
+
+  .dark .eng-card:hover {
+    border-color: color-mix(in srgb, var(--c, var(--primary)) 34%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 5%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--c, var(--primary)) 14%, transparent);
+  }
+
+  /* Left accent rail — slides in from left on hover */
+  .eng-card-rail {
+    position: absolute;
+    top: 0.75rem;
+    bottom: 0.75rem;
+    left: 0;
+    width: 2.5px;
+    border-radius: 999px;
+    background: var(--c, var(--primary));
+    opacity: 0;
+    transform: scaleY(0.4);
+    transform-origin: center;
+    transition:
+      opacity 200ms ease,
+      transform 200ms ease;
+  }
+
+  .eng-card:hover .eng-card-rail {
+    opacity: 0.7;
+    transform: scaleY(1);
+  }
+
+  .eng-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2rem;
+    width: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+    transition: background-color 150ms ease;
+  }
+
+  .eng-card-eyebrow {
+    margin-bottom: 0.25rem;
+    font-size: 0.5625rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .eng-card-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    color: var(--foreground);
+    margin-bottom: 0.5rem;
+  }
+
+  .eng-card-body {
+    flex: 1;
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    color: var(--muted-foreground);
+    margin-bottom: 0;
+  }
+
+  .eng-card-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 1.125rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  /* Meta badge — absolute top-right */
+  .eng-card-meta {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-family: ui-monospace, "Fira Code", monospace;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    color: var(--muted-foreground);
+    opacity: 0.55;
+    letter-spacing: 0.04em;
+  }
+}
+
+/* ── Engineering keyframes — must live outside @layer for Lightning CSS ── */
+@keyframes eng-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(0.94);
+  }
+}
+
+@keyframes eng-pulse-green {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.68);
   }
 }
 
@@ -8016,14 +8749,25 @@ body::before {
     background:
       radial-gradient(
         48rem 22rem at 12% 18%,
-        color-mix(in srgb, var(--plane-admin) 7%, transparent) 0%,
+        rgba(59, 130, 246, 0.04) 0%,
         transparent 78%
       ),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--background) 92%, var(--plane-admin) 8%) 0%,
-        color-mix(in srgb, var(--background) 97%, var(--plane-admin) 3%) 100%
-      );
+      linear-gradient(180deg, rgba(8, 10, 20, 1) 0%, #000000 100%);
+    --admin-duotone-inset: rgba(3, 7, 18, 0.55);
+    --admin-duotone-panel: rgba(13, 17, 28, 0.45);
+  }
+
+  .dark .dashboard-shell.admin-control-plane-canvas .admin-surface-inset {
+    background: rgba(3, 7, 18, 0.55) !important;
+    border: 1px solid rgba(255, 255, 255, 0.035) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.01),
+      0 12px 24px -24px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .dark .admin-sidebar-shell {
+    --admin-duotone-inset: rgba(3, 7, 18, 0.55);
+    --admin-duotone-panel: rgba(13, 17, 28, 0.45);
   }
 
   .dashboard-shell.admin-control-plane-canvas::before {
@@ -8671,7 +9415,7 @@ body::before {
     box-shadow:
       var(--inset-highlight),
       0 0 0 1px var(--plane-publication-border) inset;
-    color: var(--plane-publication-fg);
+    color: var(--plane-publication);
   }
 
   .kb-self-service-back:focus-visible,
@@ -8737,7 +9481,7 @@ body::before {
       var(--plane-publication-muted) 60%,
       transparent
     );
-    color: var(--plane-publication-fg);
+    color: var(--plane-publication);
     border: 1px solid var(--plane-publication-border);
     border-radius: 999px;
     font-family: var(--font-display);
@@ -8765,7 +9509,7 @@ body::before {
       var(--plane-publication-muted) 50%,
       transparent
     );
-    color: var(--plane-publication-fg);
+    color: var(--plane-publication);
     border-radius: 999px;
     font-family: var(--font-display);
     font-size: 0.6875rem;
@@ -8784,13 +9528,99 @@ body::before {
       var(--plane-publication-muted) 70%,
       transparent
     );
-    color: var(--plane-publication-fg);
+    color: var(--plane-publication);
     border-color: var(--plane-publication-border);
   }
 
-  /* — KB accent text — adopt plane-publication-fg ——————————————— */
+  /* — KB accent text — use the plane colour itself (visible on any surface) */
   .kb-duotone-accent-text,
   .kb-brand-red-text {
-    color: var(--plane-publication-fg);
+    color: var(--plane-publication);
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════════════
+     HKI CONTROL PLANE PREMIUM VISUAL OVERRIDES
+     ═══════════════════════════════════════════════════════════════════════════════ */
+
+  /* 1. Premium Sidebar Active Indicator & Left Accent Glow */
+  .admin-sidebar-nav-button::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 25%;
+    bottom: 25%;
+    width: 3px;
+    background: var(--primary);
+    border-radius: 0 4px 4px 0;
+    opacity: 0;
+    transform: scaleY(0.4);
+    transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 0 10px var(--primary);
+  }
+  .admin-sidebar-nav-button[data-active="true"]::after {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  /* 2. Premium Top Bar Telemetry Hairline Gradient */
+  .dashboard-breadcrumb.admin-breadcrumb-bar {
+    position: relative;
+    border-bottom: 1px solid transparent !important;
+  }
+  .dashboard-breadcrumb.admin-breadcrumb-bar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 40%, transparent) 0%,
+      color-mix(in srgb, var(--secondary) 20%, transparent) 40%,
+      transparent 100%
+    );
+    opacity: 0.85;
+    pointer-events: none;
+  }
+
+  /* 3. Premium Settings Vertical Rail active indicator overrides */
+  .admin-settings-vertical-tab-list .admin-tab-trigger {
+    padding-left: 1.15rem;
+    position: relative;
+  }
+  .admin-settings-vertical-tab-list
+    .admin-tab-trigger[data-state="active"]::before {
+    content: "";
+    position: absolute;
+    top: 0.5rem !important;
+    bottom: 0.5rem !important;
+    left: 0 !important;
+    width: 3px !important;
+    border-radius: 0 4px 4px 0 !important;
+    background: var(--plane-admin) !important;
+    box-shadow: 0 0 10px var(--plane-admin) !important;
+    opacity: 1 !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   UNLAYERED PREMIUM OVERRIDES — NEUTRALIZE FOREIGN SURFACE COLORS (DARK MODE)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.dark .dashboard-shell.admin-control-plane-canvas .admin-surface-inset,
+.dark .admin-surface-inset,
+.dark .admin-forward-signals-card__radar-surface {
+  background: #080a14 !important; /* Premium deep charcoal midnight-black */
+  background-image: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.03) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.01),
+    0 12px 24px -24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Force dark mode inset variable to be a beautiful deep midnight-slate, completely overriding the unlayered greenish-teal gradient */
+.dark .dashboard-shell.admin-control-plane-canvas,
+.dark .admin-sidebar-shell {
+  --admin-duotone-inset: #080a14 !important;
 }

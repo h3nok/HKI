@@ -44,7 +44,7 @@ export function SettingsRail({
           <TabsList
             className={cn(
               a.tabList,
-              "flex h-auto w-full flex-col items-stretch justify-start gap-1 rounded-xl p-1.5 text-foreground"
+              "admin-settings-vertical-tab-list flex h-auto w-full flex-col items-stretch justify-start gap-1 rounded-xl p-1.5 text-foreground"
             )}
           >
             {tabs.map(item => {
@@ -107,7 +107,7 @@ export function SettingsRail({
           <div className="mx-2 my-1.5 h-px bg-border/40" />
 
           {/* ── Quick links ──────────────────────────────────── */}
-          <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+          <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
             Jump To
           </p>
           <button

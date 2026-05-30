@@ -117,7 +117,7 @@ export function OverviewMetricsStrip({
               <p className="text-xs font-semibold text-foreground capitalize truncate">
                 {svc.name.replace(/-/g, " ")}
               </p>
-              <p className="text-xs tabular-nums text-muted-foreground/70">
+              <p className="text-xs tabular-nums text-muted-foreground/85">
                 {svc.ok ? `${svc.latencyMs}ms` : "Unreachable"}
               </p>
             </div>

@@ -80,11 +80,11 @@ function FeatureSectionCard({
               <h3 className="text-sm font-semibold text-foreground">
                 {meta.title}
               </h3>
-              <span className="text-[11px] text-muted-foreground/72">
+              <span className="text-[11px] text-muted-foreground/85">
                 {enabledCount}/{items.length} on
               </span>
             </div>
-            <p className="mt-0.5 text-[12px] text-muted-foreground/78">
+            <p className="mt-0.5 text-[12px] text-muted-foreground">
               {meta.description}
             </p>
           </div>
@@ -168,9 +168,8 @@ export function FeatureListCard({
       ),
     [featureIssueMap, groupedItems]
   );
-  const [openSectionKey, setOpenSectionKey] = useState<FeatureSectionKey | null>(
-    null
-  );
+  const [openSectionKey, setOpenSectionKey] =
+    useState<FeatureSectionKey | null>(null);
 
   useEffect(() => {
     if (
@@ -195,8 +194,9 @@ export function FeatureListCard({
               </CardDescription>
             ) : null}
           </div>
-          <p className="text-[11px] text-muted-foreground/72">
-            {groupedItems.length} sections · {enabledCount}/{items.length} on · {overrideCount} overrides
+          <p className="text-[11px] text-muted-foreground/85">
+            {groupedItems.length} sections · {enabledCount}/{items.length} on ·{" "}
+            {overrideCount} overrides
           </p>
         </div>
       </CardHeader>

@@ -18,11 +18,12 @@ deployed AgentEngineWrapper on Agent Engine.
 
 from __future__ import annotations
 
+import time
 from typing import Any
 from unittest.mock import MagicMock, patch
 
+import hki_runtime
 import pytest
-
 
 # ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -36,9 +37,51 @@ def _make_remote(events: list[dict[str, Any]], final_response: str = "") -> Magi
 
 def _make_stream_config(**kwargs) -> Any:
     """Build a real StreamConfig Pydantic model (avoids import at module level)."""
-    from src.api.routes import StreamConfig
+    from src.domain.models import StreamConfig
 
     return StreamConfig(**kwargs)
+
+
+def _hki_envelope(
+    active_domain: str = "pharmacy",
+    *,
+    subject_id: str = "user-1",
+    org_id: str = "default",
+) -> hki_runtime.HkiEnvelope:
+    now = int(time.time())
+    payload = {
+        "hki_version": "1.0",
+        "envelope_id": f"env-test-{active_domain}",
+        "org_id": org_id,
+        "subject_id": subject_id,
+        "active_domain": active_domain,
+        "authorized_domains": [active_domain],
+        "purpose": "chat",
+        "risk_tier": "read-only",
+        "policy_pack_id": "policy-test",
+        "issued_at": now - 1,
+        "expires_at": now + 300,
+        "issuer": "agentic-bff",
+    }
+    payload["signature"] = hki_runtime.sign_envelope(payload, "unit-test-hki-secret")
+    validation = hki_runtime.validate_envelope(
+        payload,
+        require_signature=True,
+        signing_secret="unit-test-hki-secret",
+    )
+    assert validation.envelope is not None
+    return validation.envelope
+
+
+def _runtime_kwargs(envelope: hki_runtime.HkiEnvelope | None = None) -> dict[str, Any]:
+    env = envelope or _hki_envelope()
+    return {
+        "user_id": env.subject_id,
+        "org_id": env.org_id,
+        "scope": env.active_domain,
+        "scopes": list(env.authorized_domains),
+        "hki_envelope": env,
+    }
 
 
 async def _collect(gen) -> list[dict[str, Any]]:
@@ -92,7 +135,11 @@ class TestProxyFlow:
         client._remote = _make_remote(events)
 
         result = await _collect(
-            client.chat_stream(session_id="s-1", message="What is the answer?")
+            client.chat_stream(
+                session_id="s-1",
+                message="What is the answer?",
+                **_runtime_kwargs(),
+            )
         )
 
         assert result == events
@@ -106,16 +153,19 @@ class TestProxyFlow:
             client.chat_stream(
                 session_id="sess-42",
                 message="Hello Agent Engine",
-                scope="pharmacy",
+                **_runtime_kwargs(),
             )
         )
 
-        client._remote.query.assert_called_once_with(
-            message="Hello Agent Engine",
-            session_id="sess-42",
-            scope="pharmacy",
-            stream_config=None,
-        )
+        _, kwargs = client._remote.query.call_args
+        assert kwargs["message"] == "Hello Agent Engine"
+        assert kwargs["session_id"] == "sess-42"
+        assert kwargs["user_id"] == "user-1"
+        assert kwargs["org_id"] == "default"
+        assert kwargs["scope"] == "pharmacy"
+        assert kwargs["scopes"] == ["pharmacy"]
+        assert kwargs["hki_envelope"]["active_domain"] == "pharmacy"
+        assert kwargs["stream_config"] is None
 
     async def test_empty_events_list_yields_nothing(self, patched_client):
         """An empty events list results in zero yielded chunks — no crash."""
@@ -123,20 +173,39 @@ class TestProxyFlow:
         client._remote = _make_remote([])
 
         result = await _collect(
-            client.chat_stream(session_id="s-1", message="Hello")
+            client.chat_stream(session_id="s-1", message="Hello", **_runtime_kwargs())
         )
 
         assert result == []
 
-    async def test_default_scope_is_non_global(self, patched_client):
-        """scope defaults to a non-global development domain when not supplied."""
+    async def test_missing_hki_envelope_fails_closed(self, patched_client):
+        """Remote runtime calls cannot drop the signed HKI envelope."""
         client, _ = patched_client
         client._remote = _make_remote([])
 
-        await _collect(client.chat_stream(session_id="s-1", message="Hi"))
+        with pytest.raises(PermissionError, match="HKI envelope is required"):
+            await _collect(client.chat_stream(session_id="s-1", message="Hi"))
 
-        _, kwargs = client._remote.query.call_args
-        assert kwargs["scope"] == "default"
+        client._remote.query.assert_not_called()
+
+    async def test_scope_mismatch_fails_before_remote_call(self, patched_client):
+        """Body/runtime scope cannot override the signed envelope."""
+        client, _ = patched_client
+        client._remote = _make_remote([])
+
+        with pytest.raises(PermissionError, match="active_domain"):
+            await _collect(
+                client.chat_stream(
+                    session_id="s-1",
+                    message="Hi",
+                    **{
+                        **_runtime_kwargs(),
+                        "scope": "optical",
+                    },
+                )
+            )
+
+        client._remote.query.assert_not_called()
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -152,7 +221,12 @@ class TestStreamConfigSerialisation:
         sc = _make_stream_config(system_prompt="Be concise.", retrieval_strategy="hybrid")
 
         await _collect(
-            client.chat_stream(session_id="s-1", message="Hi", stream_config=sc)
+            client.chat_stream(
+                session_id="s-1",
+                message="Hi",
+                stream_config=sc,
+                **_runtime_kwargs(),
+            )
         )
 
         _, kwargs = client._remote.query.call_args
@@ -167,7 +241,12 @@ class TestStreamConfigSerialisation:
         sc = _make_stream_config(system_prompt="Short answers only.")
 
         await _collect(
-            client.chat_stream(session_id="s-1", message="Hi", stream_config=sc)
+            client.chat_stream(
+                session_id="s-1",
+                message="Hi",
+                stream_config=sc,
+                **_runtime_kwargs(),
+            )
         )
 
         _, kwargs = client._remote.query.call_args
@@ -181,7 +260,12 @@ class TestStreamConfigSerialisation:
         client._remote = _make_remote([])
 
         await _collect(
-            client.chat_stream(session_id="s-1", message="Hi", stream_config=None)
+            client.chat_stream(
+                session_id="s-1",
+                message="Hi",
+                stream_config=None,
+                **_runtime_kwargs(),
+            )
         )
 
         _, kwargs = client._remote.query.call_args
@@ -194,7 +278,12 @@ class TestStreamConfigSerialisation:
         sc = _make_stream_config(enabled_tools=["search_knowledge", "check_inventory"])
 
         await _collect(
-            client.chat_stream(session_id="s-1", message="Hi", stream_config=sc)
+            client.chat_stream(
+                session_id="s-1",
+                message="Hi",
+                stream_config=sc,
+                **_runtime_kwargs(),
+            )
         )
 
         _, kwargs = client._remote.query.call_args
@@ -202,6 +291,26 @@ class TestStreamConfigSerialisation:
             "search_knowledge",
             "check_inventory",
         ]
+
+    async def test_response_metadata_gets_provider_evidence(self, patched_client):
+        """Provider evidence is attached without changing non-metadata events."""
+        client, _ = patched_client
+        client._remote = _make_remote(
+            [
+                {"type": "thinking", "content": "Working"},
+                {"type": "response_metadata", "metadata": {"model": "gemini"}},
+            ],
+            final_response="",
+        )
+
+        result = await _collect(
+            client.chat_stream(session_id="s-1", message="Hi", **_runtime_kwargs())
+        )
+
+        assert result[0] == {"type": "thinking", "content": "Working"}
+        provider = result[1]["metadata"]["provider_evidence"]
+        assert provider["provider"] == "gemini-agent-platform"
+        assert provider["agent_engine_resource"].endswith("/123")
 
 
 # ═══════════════════════════════════════════════════════════════════════════

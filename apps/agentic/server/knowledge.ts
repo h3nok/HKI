@@ -4938,10 +4938,11 @@ export const knowledgeRouter = router({
         periodEnd: null,
       };
       try {
-        const resolvedStreamId =
-          resolveAuthorizedStreamId(ctx, input?.valueStreamId, {
-            allowGlobalSelection: true,
-          }) ?? null;
+        const resolvedStreamId = resolveKnowledgeRuntimeStreamId(
+          ctx,
+          input?.valueStreamId,
+          "Select a value stream before viewing knowledge analytics"
+        );
         const raw = await serviceJsonTyped<{
           totalEvents?: number;
           uniqueUsers?: number;
@@ -5031,13 +5032,10 @@ export const knowledgeRouter = router({
           "Gap analysis is disabled for this deployment"
         );
 
-        const resolvedStreamId = requireAuthorizedStreamId(
+        const resolvedStreamId = resolveKnowledgeRuntimeStreamId(
           ctx,
           input.valueStreamId,
-          {
-            missingSelectionMessage:
-              "Select a value stream before reviewing agent-detected gaps",
-          }
+          "Select a value stream before reviewing agent-detected gaps"
         );
 
         try {

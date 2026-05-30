@@ -43,12 +43,12 @@ under the same policy version.
 Acme Corp runs two business units — `payments` and `hr` — on the same agentic
 platform. Both have agents with a RAG pipeline and a semantic cache.
 
-A `payments` analyst asks: *"What is the penalty for late invoice processing?"*
+A `payments` analyst asks: _"What is the penalty for late invoice processing?"_
 
 The answer is cached: "A 2% surcharge on overdue amounts, per the standard
 vendor contract clause 4.3."
 
-Two days later, an `hr` analyst asks: *"What is the penalty for late submission?"*
+Two days later, an `hr` analyst asks: _"What is the penalty for late submission?"_
 
 The embedding similarity between these two queries is 0.96. Above the threshold.
 The cache returns the `payments` completion to the `hr` caller.

@@ -1,10 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock3,
   Download,
+  GitBranch,
   RefreshCw,
+  Server,
   ShieldCheck,
   ShieldAlert,
   FileJson,
+  Terminal,
+  XCircle,
+  type LucideIcon,
 } from "lucide-react";
 import {
   cn,
@@ -16,12 +24,17 @@ import {
 } from "@hki/ui";
 import { toast } from "sonner";
 
-import { trpc } from "@/lib/trpc";
+import { trpc, type RouterOutputs } from "@/lib/trpc";
+
+type AdminValueStream = RouterOutputs["admin"]["listValueStreams"][number];
+type ReleaseEvidence = RouterOutputs["admin"]["releaseEvidence"];
 import {
   GovernanceFrame,
   GovernanceNotice,
   GovernanceRegistry,
 } from "./components/GovernanceFrame";
+import { EnvelopeSandbox } from "./components/EnvelopeSandbox";
+import { LiveSignalTerminal } from "./components/LiveSignalTerminal";
 import { a } from "./theme";
 
 const EVENT_FILTERS = [
@@ -75,6 +88,30 @@ function compactId(value: string) {
   return value.length > 18 ? `${value.slice(0, 10)}…${value.slice(-6)}` : value;
 }
 
+function compactCommit(value: string | null | undefined) {
+  if (!value) return "unknown";
+  return value.length > 12 ? value.slice(0, 12) : value;
+}
+
+function evidenceTone(status: string | null | undefined) {
+  switch (status) {
+    case "ready":
+    case "pass":
+    case "baseline-present":
+    case "inventory-complete":
+      return a.pillPositive;
+    case "blocked":
+    case "fail":
+    case "missing":
+      return a.pillCritical;
+    case "sample":
+    case "present":
+      return a.pillWarning;
+    default:
+      return a.pillNeutral;
+  }
+}
+
 export default function AuditPage() {
   const [scope, setScope] = useState("");
   const [eventType, setEventType] = useState("all");
@@ -84,13 +121,24 @@ export default function AuditPage() {
   const streamsQ = trpc.admin.listValueStreams.useQuery(undefined, {
     retry: false,
   });
+  const releaseQ = trpc.admin.releaseEvidence.useQuery(undefined, {
+    retry: false,
+    refetchInterval: 60_000,
+  });
   const streams = useMemo(
-    () => (streamsQ.data ?? []).filter((stream: any) => stream.id !== "global"),
+    () =>
+      (streamsQ.data ?? []).filter(
+        (stream: AdminValueStream) => stream.id !== "global"
+      ),
     [streamsQ.data]
   );
 
   useEffect(() => {
-    if (scope && streams.some((stream: any) => stream.id === scope)) return;
+    if (
+      scope &&
+      streams.some((stream: AdminValueStream) => stream.id === scope)
+    )
+      return;
     setScope(streams[0]?.id ?? "");
   }, [scope, streams]);
 
@@ -112,6 +160,11 @@ export default function AuditPage() {
     }
   );
 
+  const tracesQ = trpc.governance.recentTraces.useQuery(
+    { limit: 20 },
+    { retry: false, refetchInterval: 30_000 }
+  );
+
   const events = timelineQ.data?.events ?? [];
   const denied = timelineQ.data?.summary.byDecision.deny ?? 0;
   const allowed = timelineQ.data?.summary.byDecision.allow ?? 0;
@@ -124,7 +177,9 @@ export default function AuditPage() {
 
   const refresh = () => {
     streamsQ.refetch();
+    releaseQ.refetch();
     timelineQ.refetch();
+    tracesQ.refetch();
   };
 
   const downloadEvents = () => {
@@ -183,6 +238,13 @@ export default function AuditPage() {
         </div>
       }
       metrics={[
+        {
+          label: "Release",
+          value: releaseQ.data?.releaseReadiness.status ?? "Pending",
+          tone: releaseQ.data?.releaseReadiness.strictReleaseEligible
+            ? "positive"
+            : "warning",
+        },
         { label: "Events", value: String(events.length), tone: "primary" },
         { label: "Allowed", value: String(allowed), tone: "positive" },
         {
@@ -193,6 +255,19 @@ export default function AuditPage() {
         { label: "Services", value: String(serviceCount), tone: "neutral" },
       ]}
     >
+      <ReleaseReadinessPanel
+        evidence={releaseQ.data}
+        isLoading={releaseQ.isLoading}
+      />
+
+      <EnvelopeSandbox domains={streams} />
+
+      <LiveSignalTerminal
+        traces={tracesQ.data ?? []}
+        isLoading={tracesQ.isLoading}
+        className="mt-6"
+      />
+
       <GovernanceRegistry
         title="Evidence Timeline"
         description="Validated native HKI audit events from reference producers."
@@ -208,7 +283,7 @@ export default function AuditPage() {
                 <SelectValue placeholder="Domain" />
               </SelectTrigger>
               <SelectContent>
-                {streams.map((stream: any) => (
+                {streams.map((stream: AdminValueStream) => (
                   <SelectItem key={stream.id} value={stream.id}>
                     {stream.name || stream.id}
                   </SelectItem>
@@ -335,5 +410,296 @@ export default function AuditPage() {
         )}
       </GovernanceRegistry>
     </GovernanceFrame>
+  );
+}
+
+function ReleaseReadinessPanel({
+  evidence,
+  isLoading,
+}: {
+  evidence?: ReleaseEvidence;
+  isLoading: boolean;
+}) {
+  const isReady = Boolean(evidence?.releaseReadiness.strictReleaseEligible);
+  const status = evidence?.releaseReadiness.status ?? "unknown";
+  const blockers = evidence?.releaseReadiness.blockers ?? [];
+  const warnings = evidence?.releaseReadiness.warnings ?? [];
+  const commands = evidence?.commandManifest ?? [];
+
+  return (
+    <GovernanceRegistry
+      title="Release Readiness"
+      description="Conformance registry, HTTP probe evidence, audit gates, and strict-release blockers."
+      countLabel={evidence?.level ?? "not generated"}
+      className="mb-4"
+    >
+      {isLoading ? (
+        <GovernanceNotice className="text-sm text-muted-foreground">
+          Loading release evidence…
+        </GovernanceNotice>
+      ) : !evidence?.available ? (
+        <GovernanceNotice className="flex items-center gap-3">
+          <FileJson className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">
+            conformance.json has not been generated for this deployment.
+          </span>
+        </GovernanceNotice>
+      ) : (
+        <div className="space-y-4">
+          <div
+            className={cn(
+              a.inset,
+              "flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between"
+            )}
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div
+                className={cn(
+                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border",
+                  isReady
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
+                    : "border-amber-500/30 bg-amber-500/10 text-amber-600"
+                )}
+              >
+                {isReady ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : (
+                  <AlertTriangle className="h-5 w-5" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-base font-semibold text-foreground">
+                    Strict release {isReady ? "ready" : status}
+                  </span>
+                  <span
+                    className={cn(
+                      "inline-flex rounded-full px-2 py-1 text-xs font-medium",
+                      isReady ? a.pillPositive : a.pillWarning
+                    )}
+                  >
+                    {evidence.evidenceProfile ?? "evidence"}
+                  </span>
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <GitBranch className="h-3.5 w-3.5" />
+                    {evidence.implementation.branch ?? "branch"} ·{" "}
+                    {compactCommit(evidence.implementation.commit)}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock3 className="h-3.5 w-3.5" />
+                    {evidence.generatedAt
+                      ? formatTime(evidence.generatedAt)
+                      : "not generated"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-right md:min-w-55">
+              <StatusCount label="Blockers" value={blockers.length} />
+              <StatusCount label="Warnings" value={warnings.length} />
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <EvidenceStat
+              icon={ShieldCheck}
+              label="Adapter Conformance"
+              value={`${evidence.conformance.passed ?? 0}/${evidence.conformance.total ?? 0}`}
+              detail={
+                evidence.conformance.overallPassed ? "passed" : "not passed"
+              }
+              tone={
+                evidence.conformance.overallPassed ? "positive" : "critical"
+              }
+            />
+            <EvidenceStat
+              icon={Server}
+              label="HTTP Probe"
+              value={`${evidence.httpProbe.passed ?? 0}/${evidence.httpProbe.total ?? 0}`}
+              detail={evidence.httpProbe.target ?? "no target"}
+              tone={
+                (evidence.httpProbe.failed ?? 1) === 0 ? "positive" : "critical"
+              }
+            />
+            <EvidenceStat
+              icon={ShieldAlert}
+              label="AST Audit"
+              value={`${(evidence.audit.astBlocking ?? 0) + (evidence.audit.astTsBlocking ?? 0)} blocking`}
+              detail={`${(evidence.audit.astAdvisory ?? 0) + (evidence.audit.astTsAdvisory ?? 0)} advisory`}
+              tone={
+                (evidence.audit.astBlocking ?? 0) +
+                  (evidence.audit.astTsBlocking ?? 0) ===
+                0
+                  ? "positive"
+                  : "critical"
+              }
+            />
+            <EvidenceStat
+              icon={FileJson}
+              label="Managed Evidence"
+              value={evidence.managedEvidence.profile ?? "none"}
+              detail={`${evidence.managedEvidence.missingCapabilities.length} missing`}
+              tone={
+                evidence.managedEvidence.profile === "none"
+                  ? "warning"
+                  : (evidence.managedEvidence.servicesFailed ?? 0) > 0
+                    ? "critical"
+                    : "positive"
+              }
+            />
+          </div>
+
+          {(blockers.length > 0 || warnings.length > 0) && (
+            <div className="grid gap-3 lg:grid-cols-2">
+              <EvidenceMessageList
+                title="Blockers"
+                icon={XCircle}
+                items={blockers}
+                empty="No strict-release blockers"
+                tone="critical"
+              />
+              <EvidenceMessageList
+                title="Warnings"
+                icon={AlertTriangle}
+                items={warnings}
+                empty="No release warnings"
+                tone="warning"
+              />
+            </div>
+          )}
+
+          <div className="overflow-x-auto">
+            <table className="admin-governance-table w-full text-sm">
+              <thead>
+                <tr>
+                  <th>Gate</th>
+                  <th>Status</th>
+                  <th>Command</th>
+                </tr>
+              </thead>
+              <tbody>
+                {commands.map(command => (
+                  <tr key={command.id}>
+                    <td className="font-medium text-foreground">
+                      {command.id}
+                    </td>
+                    <td>
+                      <span
+                        className={cn(
+                          "inline-flex rounded-full px-2 py-1 text-xs font-medium",
+                          evidenceTone(command.status)
+                        )}
+                      >
+                        {command.status}
+                      </span>
+                    </td>
+                    <td className="font-mono text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-2">
+                        <Terminal className="h-3.5 w-3.5" />
+                        {command.command}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </GovernanceRegistry>
+  );
+}
+
+function StatusCount({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-background/40 px-3 py-2">
+      <div className="font-mono text-lg font-semibold tabular-nums text-foreground">
+        {value}
+      </div>
+      <div className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function EvidenceStat({
+  icon: Icon,
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  detail: string;
+  tone: "positive" | "warning" | "critical" | "neutral";
+}) {
+  const toneClass =
+    tone === "positive"
+      ? "text-emerald-600"
+      : tone === "warning"
+        ? "text-amber-600"
+        : tone === "critical"
+          ? "text-destructive"
+          : "text-muted-foreground";
+
+  return (
+    <div className={cn(a.inset, "p-4")}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          {label}
+        </div>
+        <Icon className={cn("h-4 w-4", toneClass)} />
+      </div>
+      <div className="mt-3 text-xl font-semibold text-foreground">{value}</div>
+      <div className="mt-1 truncate text-xs text-muted-foreground">
+        {detail}
+      </div>
+    </div>
+  );
+}
+
+function EvidenceMessageList({
+  title,
+  icon: Icon,
+  items,
+  empty,
+  tone,
+}: {
+  title: string;
+  icon: LucideIcon;
+  items: ReleaseEvidence["releaseReadiness"]["blockers"];
+  empty: string;
+  tone: "critical" | "warning";
+}) {
+  return (
+    <div className={cn(a.inset, "p-4")}>
+      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+        <Icon
+          className={cn(
+            "h-4 w-4",
+            tone === "critical" ? "text-destructive" : "text-amber-600"
+          )}
+        />
+        {title}
+      </div>
+      {items.length === 0 ? (
+        <div className="text-sm text-muted-foreground">{empty}</div>
+      ) : (
+        <div className="space-y-2">
+          {items.map(item => (
+            <div key={item.id} className="text-sm">
+              <div className="font-medium text-foreground">{item.id}</div>
+              <div className="mt-0.5 text-muted-foreground">{item.message}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

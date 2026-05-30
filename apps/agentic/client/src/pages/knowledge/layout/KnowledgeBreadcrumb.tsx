@@ -96,7 +96,7 @@ export default function KnowledgeBreadcrumb({
               {
                 label: metaDesc,
                 hideOnMobile: true,
-                className: "text-muted-foreground/60 font-normal text-xs",
+                className: "text-muted-foreground/85 font-normal text-xs",
               },
             ]
           : []),

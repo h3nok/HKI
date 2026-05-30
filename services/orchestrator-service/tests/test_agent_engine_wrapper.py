@@ -18,8 +18,11 @@ All I/O is mocked — no Redis, no real AdkAgent LLM calls.
 
 from __future__ import annotations
 
+import dataclasses
+import time
 import unittest.mock
 
+import hki_runtime
 import pytest
 
 import src.adapters.agent_engine
@@ -37,13 +40,54 @@ async def _collect(gen) -> list:
     return [x async for x in gen]
 
 
+def _hki_envelope(
+    active_domain: str = "pharmacy",
+    *,
+    subject_id: str = "user-1",
+    org_id: str = "default",
+) -> hki_runtime.HkiEnvelope:
+    now = int(time.time())
+    payload = {
+        "hki_version": "1.0",
+        "envelope_id": f"env-test-{active_domain}",
+        "org_id": org_id,
+        "subject_id": subject_id,
+        "active_domain": active_domain,
+        "authorized_domains": [active_domain],
+        "purpose": "chat",
+        "risk_tier": "read-only",
+        "policy_pack_id": "policy-test",
+        "issued_at": now - 1,
+        "expires_at": now + 300,
+        "issuer": "agentic-bff",
+    }
+    payload["signature"] = hki_runtime.sign_envelope(payload, "unit-test-hki-secret")
+    validation = hki_runtime.validate_envelope(
+        payload,
+        require_signature=True,
+        signing_secret="unit-test-hki-secret",
+    )
+    assert validation.envelope is not None
+    return validation.envelope
+
+
+def _runtime_kwargs(envelope: hki_runtime.HkiEnvelope | None = None) -> dict:
+    env = envelope or _hki_envelope()
+    return {
+        "user_id": env.subject_id,
+        "org_id": env.org_id,
+        "scope": env.active_domain,
+        "scopes": list(env.authorized_domains),
+        "hki_envelope": dataclasses.asdict(env),
+    }
+
+
 # ── Fixtures ──────────────────────────────────────────────────────────────
 
 
 @pytest.fixture()
 def wrapper() -> src.adapters.agent_engine.AgentEngineWrapper:
     """A fresh AgentEngineWrapper with test config (no real connections)."""
-    from src.adapters.agent_engine import AgentEngineWrapper
 
     return src.adapters.agent_engine.AgentEngineWrapper(
         redis_url="redis://localhost:9379/0",
@@ -99,7 +143,6 @@ class TestSetUp:
 
     def test_custom_model_is_applied(self) -> None:
         """Non-default model is written to settings by set_up()."""
-        from src.adapters.agent_engine import AgentEngineWrapper
         from src.core.config import settings
 
         w = src.adapters.agent_engine.AgentEngineWrapper(agent_model="gemini-2.5-pro")
@@ -124,7 +167,11 @@ class TestQuery:
             )
         )
 
-        result = await wrapper.query(message="Hi", session_id="s-1")
+        result = await wrapper.query(
+            message="Hi",
+            session_id="s-1",
+            **_runtime_kwargs(),
+        )
 
         assert result["final_response"] == "Hello world!"
         assert len(result["events"]) == 3
@@ -140,7 +187,11 @@ class TestQuery:
             )
         )
 
-        result = await wrapper.query(message="Return policy?", session_id="s-1")
+        result = await wrapper.query(
+            message="Return policy?",
+            session_id="s-1",
+            **_runtime_kwargs(),
+        )
 
         assert result["final_response"] == "The policy is 30 days."
 
@@ -155,7 +206,7 @@ class TestQuery:
             )
         )
 
-        result = await wrapper.query(message="Q", session_id="s-1")
+        result = await wrapper.query(message="Q", session_id="s-1", **_runtime_kwargs())
 
         assert result["final_response"] == "Answer."
 
@@ -170,7 +221,7 @@ class TestQuery:
         ]
         mock_agent.chat_stream = unittest.mock.MagicMock(return_value=_agen(*events))
 
-        result = await wrapper.query(message="Q", session_id="s-1")
+        result = await wrapper.query(message="Q", session_id="s-1", **_runtime_kwargs())
 
         assert result["events"] == events
 
@@ -179,23 +230,59 @@ class TestQuery:
         wrapper, mock_agent = initialised_wrapper
         mock_agent.chat_stream = unittest.mock.MagicMock(return_value=_agen())
 
-        result = await wrapper.query(message="Q", session_id="s-1")
+        result = await wrapper.query(message="Q", session_id="s-1", **_runtime_kwargs())
 
-        assert result == {"final_response": "", "events": []}
+        assert result["final_response"] == ""
+        assert result["events"] == []
+        assert result["provider_evidence"]["active_domain"] == "pharmacy"
 
-    async def test_session_id_and_scope_forwarded_to_agent(self, initialised_wrapper) -> None:
-        """session_id and scope are passed through to AdkAgent.chat_stream()."""
+    async def test_hki_context_forwarded_to_agent(self, initialised_wrapper) -> None:
+        """The validated envelope drives AdkAgent identity and scope."""
         wrapper, mock_agent = initialised_wrapper
         mock_agent.chat_stream = unittest.mock.MagicMock(return_value=_agen())
 
-        await wrapper.query(message="Q", session_id="user-99", scope="pharmacy")
-
-        mock_agent.chat_stream.assert_called_once_with(
-            session_id="user-99",
+        await wrapper.query(
             message="Q",
-            scope="pharmacy",
-            stream_config=None,
+            session_id="session-99",
+            **_runtime_kwargs(),
         )
+
+        _, kwargs = mock_agent.chat_stream.call_args
+        assert kwargs["session_id"] == "session-99"
+        assert kwargs["message"] == "Q"
+        assert kwargs["scope"] == "pharmacy"
+        assert kwargs["scopes"] == ["pharmacy"]
+        assert kwargs["user_id"] == "user-1"
+        assert kwargs["org_id"] == "default"
+        assert kwargs["hki_envelope"].active_domain == "pharmacy"
+        assert kwargs["stream_config"] is None
+
+    async def test_missing_hki_envelope_fails_closed(self, initialised_wrapper) -> None:
+        """Managed runtime cannot run without a signed envelope."""
+        wrapper, mock_agent = initialised_wrapper
+        mock_agent.chat_stream = unittest.mock.MagicMock(return_value=_agen())
+
+        with pytest.raises(PermissionError, match="HKI envelope is required"):
+            await wrapper.query(message="Q", session_id="s-1")
+
+        mock_agent.chat_stream.assert_not_called()
+
+    async def test_scope_override_fails_closed(self, initialised_wrapper) -> None:
+        """A conflicting runtime scope is rejected before AdkAgent runs."""
+        wrapper, mock_agent = initialised_wrapper
+        mock_agent.chat_stream = unittest.mock.MagicMock(return_value=_agen())
+
+        with pytest.raises(PermissionError, match="active_domain"):
+            await wrapper.query(
+                message="Q",
+                session_id="s-1",
+                **{
+                    **_runtime_kwargs(),
+                    "scope": "optical",
+                },
+            )
+
+        mock_agent.chat_stream.assert_not_called()
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -213,18 +300,28 @@ class TestStreamQuery:
         ]
         mock_agent.chat_stream = unittest.mock.MagicMock(return_value=_agen(*events))
 
-        result = await _collect(wrapper.stream_query(message="Q", session_id="s-1"))
+        result = await _collect(
+            wrapper.stream_query(message="Q", session_id="s-1", **_runtime_kwargs())
+        )
 
         assert result == events
 
-    async def test_stream_query_forwards_scope(self, initialised_wrapper) -> None:
+    async def test_stream_query_forwards_hki_scope(self, initialised_wrapper) -> None:
         wrapper, mock_agent = initialised_wrapper
         mock_agent.chat_stream = unittest.mock.MagicMock(return_value=_agen())
 
-        await _collect(wrapper.stream_query(message="Q", session_id="s-1", scope="optical"))
+        envelope = _hki_envelope("optical")
+        await _collect(
+            wrapper.stream_query(
+                message="Q",
+                session_id="s-1",
+                **_runtime_kwargs(envelope),
+            )
+        )
 
         _, kwargs = mock_agent.chat_stream.call_args
         assert kwargs["scope"] == "optical"
+        assert kwargs["hki_envelope"].active_domain == "optical"
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -284,13 +381,11 @@ class TestLazyInit:
 
 class TestBuildStreamConfig:
     def test_none_returns_none(self) -> None:
-        from src.adapters.agent_engine import AgentEngineWrapper
 
         assert src.adapters.agent_engine.AgentEngineWrapper._build_stream_config(None) is None
 
     def test_dict_converted_to_stream_config(self) -> None:
-        from src.adapters.agent_engine import AgentEngineWrapper
-        from src.api.routes import StreamConfig
+        from src.domain.models import StreamConfig
 
         result = src.adapters.agent_engine.AgentEngineWrapper._build_stream_config(
             {"system_prompt": "Be brief.", "retrieval_strategy": "hybrid"}
@@ -302,8 +397,7 @@ class TestBuildStreamConfig:
 
     def test_empty_dict_gives_default_stream_config(self) -> None:
         """An empty dict produces a StreamConfig with all-None fields."""
-        from src.adapters.agent_engine import AgentEngineWrapper
-        from src.api.routes import StreamConfig
+        from src.domain.models import StreamConfig
 
         result = src.adapters.agent_engine.AgentEngineWrapper._build_stream_config({})
 
@@ -324,7 +418,6 @@ class TestFromSettings:
         Agent Engine uses ADC directly — routing through Apigee from Agent
         Engine is unnecessary and adds latency.
         """
-        from src.adapters.agent_engine import AgentEngineWrapper
 
         with unittest.mock.patch("src.adapters.agent_engine.settings") as mock_settings:
             mock_settings.REDIS_URL = "redis://prod:6379/0"
@@ -332,12 +425,13 @@ class TestFromSettings:
             mock_settings.AGENT_MODEL = "gemini-2.5-pro"
             mock_settings.KNOWLEDGE_API_URL = "http://knowledge-api:9509"
 
-            w: src.adapters.agent_engine.AgentEngineWrapper = src.adapters.agent_engine.AgentEngineWrapper.from_settings()
+            w: src.adapters.agent_engine.AgentEngineWrapper = (
+                src.adapters.agent_engine.AgentEngineWrapper.from_settings()
+            )
 
         assert w._llm_gateway_url == ""
 
     def test_redis_and_model_forwarded(self) -> None:
-        from src.adapters.agent_engine import AgentEngineWrapper
 
         with unittest.mock.patch("src.adapters.agent_engine.settings") as mock_settings:
             mock_settings.REDIS_URL = "redis://prod:6379/0"
@@ -345,7 +439,9 @@ class TestFromSettings:
             mock_settings.AGENT_MODEL = "gemini-2.5-pro"
             mock_settings.KNOWLEDGE_API_URL = "http://knowledge:9509"
 
-            w: src.adapters.agent_engine.AgentEngineWrapper = src.adapters.agent_engine.AgentEngineWrapper.from_settings()
+            w: src.adapters.agent_engine.AgentEngineWrapper = (
+                src.adapters.agent_engine.AgentEngineWrapper.from_settings()
+            )
 
         assert w._redis_url == "redis://prod:6379/0"
         assert w._agent_model == "gemini-2.5-pro"

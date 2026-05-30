@@ -108,7 +108,7 @@ export function DisclosureAffordance({
   closeLabel?: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/72">
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
       {isOpen ? closeLabel : openLabel}
       {isOpen ? (
         <ChevronDown className="h-3.5 w-3.5" />

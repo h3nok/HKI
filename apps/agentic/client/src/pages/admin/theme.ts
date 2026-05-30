@@ -29,9 +29,9 @@ export const a = {
   iconWarning: "admin-icon-warning",
   iconCritical: "admin-icon-critical",
   iconNeutral: "admin-icon-neutral",
-  subtleText: "text-muted-foreground/72",
-  microText: "text-muted-foreground/65",
-  microTextStrong: "text-muted-foreground/80",
+  subtleText: "text-muted-foreground/85",
+  microText: "text-muted-foreground/80",
+  microTextStrong: "text-muted-foreground",
 } as const;
 
 export type AdminTone =

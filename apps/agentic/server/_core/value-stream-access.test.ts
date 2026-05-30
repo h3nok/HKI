@@ -56,6 +56,29 @@ describe("value stream authorization helpers", () => {
     ).toThrow(/global knowledge scope/);
   });
 
+  it("rejects explicit global selection by default", () => {
+    expect(() =>
+      resolveAuthorizedStreamId(
+        {
+          user: { role: "admin", valueStreams: null },
+        },
+        "global"
+      )
+    ).toThrow(/global knowledge scope/);
+  });
+
+  it("allows explicit global selection only when requested by an admin plane caller", () => {
+    const resolved = resolveAuthorizedStreamId(
+      {
+        user: { role: "admin", valueStreams: null },
+      },
+      "global",
+      { allowGlobalSelection: true }
+    );
+
+    expect(resolved).toBe("global");
+  });
+
   it("defaults to the first assigned stream when requested", () => {
     const resolved = resolveAuthorizedStreamId(
       {

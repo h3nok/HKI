@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import base64
 import datetime
+import hmac
 import json
 import logging
+import os
 import typing
 
 import fastapi
@@ -21,6 +23,7 @@ import pydantic
 
 import src.adapters.database
 import src.core.auth
+import src.core.config
 import src.core.logging
 import src.domain.entities
 import src.domain.use_cases
@@ -30,7 +33,8 @@ logger: logging.Logger = src.core.logging.logger.getChild("routes")
 # Main router — auth required for all endpoints
 router = fastapi.APIRouter(dependencies=[fastapi.Depends(src.core.auth.verify_request_jwt)])
 
-# Separate router for Pub/Sub push — no JWT auth (Pub/Sub uses OIDC)
+# Separate router for event ingress/query endpoints. Ingest routes use a
+# service-auth dependency; query routes use the caller JWT dependency.
 events_router = fastapi.APIRouter(prefix="/v1/events", tags=["events"])
 
 RequestIdentityDependency = typing.Annotated[
@@ -65,9 +69,57 @@ class DirectEventRequest(pydantic.BaseModel):
     user_id: str = ""
     org_id: str = "default"
     service: str = ""
-    scope: str = "global"
+    scope: str = "unscoped-analytics"
     timestamp: float = 0.0
     payload: dict[str, typing.Any] = {}
+
+
+def _auth_enabled() -> bool:
+    return os.environ.get("AUTH_ENABLED", "true").lower() not in {"false", "0", "no"}
+
+
+def _analytics_ingest_secret() -> str:
+    return str(getattr(src.core.config.settings, "ANALYTICS_INGEST_SECRET", "") or "").strip()
+
+
+def _valid_event_scope(scope: typing.Any) -> str:
+    normalized: str = str(scope or "").strip()
+    if not normalized or normalized.lower() in {"global", "*"}:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Analytics events require an explicit non-global scope",
+        )
+    return normalized
+
+
+async def verify_analytics_ingest_request(
+    request: fastapi.Request,
+) -> src.core.auth.RequestIdentity | None:
+    """
+    Authenticate event producers.
+
+    Production callers must present either:
+      - X-Analytics-Secret matching ANALYTICS_INGEST_SECRET, or
+      - a normal service JWT accepted by shared auth.
+
+    When AUTH_ENABLED=false and no ingest secret is configured, this follows the
+    repo's local-dev behavior and allows the request through.
+    """
+    configured_secret: str = _analytics_ingest_secret()
+    presented_secret: str = request.headers.get("X-Analytics-Secret", "").strip()
+    if configured_secret:
+        if hmac.compare_digest(presented_secret, configured_secret):
+            return None
+        if presented_secret:
+            raise fastapi.HTTPException(
+                status_code=fastapi.status.HTTP_403_FORBIDDEN,
+                detail="Invalid analytics ingest secret",
+            )
+
+    if not _auth_enabled() and not configured_secret:
+        return None
+
+    return await src.core.auth.verify_request_jwt(request)
 
 
 def _validation_issues(
@@ -127,6 +179,7 @@ def _parse_hki_audit_event(body: dict[str, typing.Any]) -> src.domain.entities.A
 async def ingest_direct_event(
     body: DirectEventRequest,
     request: fastapi.Request,
+    _producer: src.core.auth.RequestIdentity | None = fastapi.Depends(verify_analytics_ingest_request),  # noqa: B008
 ) -> dict[str, str]:
     """
     Direct HTTP event ingestion — used by services that cannot use Pub/Sub
@@ -144,7 +197,7 @@ async def ingest_direct_event(
         user_id=body.user_id,
         org_id=body.org_id,
         service=body.service,
-        scope=body.scope,
+        scope=_valid_event_scope(body.scope),
         payload=body.payload,
         timestamp=body.timestamp or 0.0,
     )
@@ -161,6 +214,7 @@ async def ingest_direct_event(
 async def ingest_hki_audit_event(
     body: dict[str, typing.Any],
     request: fastapi.Request,
+    _producer: src.core.auth.RequestIdentity | None = fastapi.Depends(verify_analytics_ingest_request),  # noqa: B008
 ) -> dict[str, str]:
     """Ingest a native HKI evidence-grade audit event."""
     store: src.adapters.database.EventStoreProtocol = _get_store(request)
@@ -178,6 +232,7 @@ async def ingest_hki_audit_event(
 async def ingest_event(
     envelope: PubSubMessage,
     request: fastapi.Request,
+    _producer: src.core.auth.RequestIdentity | None = fastapi.Depends(verify_analytics_ingest_request),  # noqa: B008
 ) -> dict[str, str]:
     """
     Pub/Sub push endpoint — receives agent-events from all services.
@@ -202,6 +257,7 @@ async def ingest_event(
         event: src.domain.entities.AgentEvent = _parse_hki_audit_event(raw_event)
     else:
         event: src.domain.entities.AgentEvent = src.domain.use_cases.parse_pubsub_event(raw_event)
+        event.scope = _valid_event_scope(event.scope)
     await store.append(event)
 
     logger.info(
@@ -299,15 +355,15 @@ async def usage_summary(
         raise fastapi.HTTPException(status_code=403, detail="Organization access denied")
 
     normalized_stream_id: str = (stream_id or "").strip()
-    if not normalized_stream_id and identity.scope != "global":
+    if not normalized_stream_id and not hki_runtime.same_domain(identity.scope, "global"):
         normalized_stream_id: str = identity.scope
-    if normalized_stream_id == "global":
+    if hki_runtime.same_domain(normalized_stream_id, "global"):
         normalized_stream_id: str = ""
 
     if (
         normalized_stream_id
-        and "global" not in identity.scopes
-        and normalized_stream_id not in identity.scopes
+        and not any(hki_runtime.same_domain(scope, "global") for scope in identity.scopes)
+        and not any(hki_runtime.same_domain(scope, normalized_stream_id) for scope in identity.scopes)
     ):
         raise fastapi.HTTPException(status_code=403, detail="Stream access denied")
 
@@ -345,6 +401,7 @@ async def usage_summary(
 @events_router.get("/usage")
 async def token_usage(
     request: fastapi.Request,
+    identity: RequestIdentityDependency,
     org_id: str | None = None,
     stream_id: str | None = None,
     period: str | None = None,
@@ -355,24 +412,43 @@ async def token_usage(
     Aggregates llm.usage and embedding.usage events by org_id and stream_id.
     Returns total tokens consumed per model, with estimated cost.
     """
+    _ = period
     store: src.adapters.database.EventStoreProtocol = _get_store(request)
+    normalized_org_id: str = (org_id or identity.org_id).strip() or identity.org_id
+    if normalized_org_id != identity.org_id:
+        raise fastapi.HTTPException(status_code=403, detail="Organization access denied")
+
+    normalized_stream_id: str = (stream_id or "").strip()
+    is_global_admin: bool = any(
+        hki_runtime.same_domain(scope, "global") for scope in identity.scopes
+    )
+    if not normalized_stream_id and not is_global_admin:
+        normalized_stream_id = identity.scope
+    if hki_runtime.same_domain(normalized_stream_id, "global"):
+        if not is_global_admin:
+            raise fastapi.HTTPException(status_code=403, detail="Stream access denied")
+        normalized_stream_id = ""
+
+    if (
+        normalized_stream_id
+        and not is_global_admin
+        and not any(hki_runtime.same_domain(scope, normalized_stream_id) for scope in identity.scopes)
+    ):
+        raise fastapi.HTTPException(status_code=403, detail="Stream access denied")
+
     events: list[src.domain.entities.AgentEvent] = await store.query(
         limit=10000,
         event_type=None,
         user_id=None,
+        org_id=normalized_org_id,
+        stream_id=normalized_stream_id or None,
     )
 
     usage_events: list[src.domain.entities.AgentEvent] = [
         e for e in events
         if e.event_type in ("llm.usage", "embedding.usage")
-        and (org_id is None or e.org_id == org_id)
+        and e.org_id == normalized_org_id
     ]
-
-    if stream_id:
-        usage_events: list[src.domain.entities.AgentEvent] = [
-            e for e in usage_events
-            if e.payload.get("stream_id") == stream_id
-        ]
 
     by_model: dict[str, dict[str, int]] = {}
     total_input = 0
@@ -402,8 +478,8 @@ async def token_usage(
         by_model[model]["calls"] += 1
 
     return {
-        "org_id": org_id or "all",
-        "stream_id": stream_id,
+        "org_id": normalized_org_id,
+        "stream_id": normalized_stream_id or None,
         "total_input_tokens": total_input,
         "total_output_tokens": total_output,
         "total_embedding_tokens": total_embedding,

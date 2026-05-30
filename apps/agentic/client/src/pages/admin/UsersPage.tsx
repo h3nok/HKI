@@ -36,7 +36,10 @@ import {
   SelectValue,
 } from "@hki/ui";
 
-import { trpc } from "@/lib/trpc";
+import { trpc, type RouterOutputs } from "@/lib/trpc";
+
+type AdminValueStream = RouterOutputs["admin"]["listValueStreams"][number];
+type AdminUser = RouterOutputs["admin"]["listUsers"]["users"][number];
 import { useAuth } from "@/_core/hooks/useAuth";
 import { a } from "./theme";
 import {
@@ -510,7 +513,7 @@ export default function UsersPage() {
                 <div>
                   <label className="block text-[10px] font-medium text-muted-foreground mb-1">
                     Email <span className="text-destructive">*</span>
-                    <span className="text-muted-foreground/65 ml-1">
+                    <span className="text-muted-foreground/85 ml-1">
                       (@hki.com)
                     </span>
                   </label>
@@ -533,8 +536,8 @@ export default function UsersPage() {
                     </SelectTrigger>
                     <SelectContent className={ADMIN_POPOVER_PANEL_Z}>
                       {(streamsQ.data ?? [])
-                        .filter((s: any) => s.id !== "global")
-                        .map((s: any) => (
+                        .filter((s: AdminValueStream) => s.id !== "global")
+                        .map((s: AdminValueStream) => (
                           <SelectItem key={s.id} value={s.id}>
                             {s.icon} {s.name}
                           </SelectItem>
@@ -592,14 +595,16 @@ export default function UsersPage() {
                 </button>
                 <button
                   disabled={!invEmail || !invStream || inviteMut.isPending}
-                  onClick={() =>
+                  onClick={() => {
+                    const inviteRole: "manager" | "operator" | "viewer" =
+                      invRole === "admin" ? "manager" : invRole;
                     inviteMut.mutate({
                       email: invEmail.trim(),
                       valueStreamId: invStream,
-                      role: invRole as any,
+                      role: inviteRole,
                       note: invNote.trim() || undefined,
-                    })
-                  }
+                    });
+                  }}
                   className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
                 >
                   {inviteMut.isPending && (
@@ -673,7 +678,7 @@ export default function UsersPage() {
             </HkiTr>
           </HkiThead>
           <HkiTbody>
-            {(usersQ.data?.users ?? []).map((u: any) => {
+            {(usersQ.data?.users ?? []).map((u: AdminUser) => {
               const isSelf = u.id === user?.id;
               return (
                 <HkiTr
@@ -721,7 +726,7 @@ export default function UsersPage() {
                             .slice(0, 3)
                             .map((sid: string) => {
                               const stream = (streamsQ.data ?? []).find(
-                                (s: any) => s.id === sid
+                                (s: AdminValueStream) => s.id === sid
                               );
                               return stream ? (
                                 <span
@@ -743,7 +748,7 @@ export default function UsersPage() {
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground/65">
+                        <span className="text-xs text-muted-foreground/85">
                           Global (default)
                         </span>
                       )}

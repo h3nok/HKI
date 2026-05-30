@@ -18,7 +18,7 @@ export function ReviewQueueCard({ data }: { data: ReviewQueueCardModel }) {
         ? "warning"
         : data.readyToPublishCount > 0
           ? "brand"
-        : "success";
+          : "success";
   const hasItems =
     data.pendingCount > 0 ||
     data.readyToPublishCount > 0 ||
@@ -83,7 +83,7 @@ export function ReviewQueueCard({ data }: { data: ReviewQueueCardModel }) {
                   failed
                 </span>
               </span>
-              <span className="text-[10px] text-muted-foreground/50">
+              <span className="text-[10px] text-muted-foreground/75">
                 {data.pendingCount > 0
                   ? `· oldest ${data.oldestPendingLabel}`
                   : data.readyToPublishCount > 0

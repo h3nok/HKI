@@ -90,7 +90,7 @@ export function AnswerTrustCard({ data }: { data: AnswerTrustCardModel }) {
                   chunks/q
                 </span>
               </span>
-              <span className="text-[10px] text-muted-foreground/50">
+              <span className="text-[10px] text-muted-foreground/75">
                 · {data.lastCheckedLabel}
               </span>
             </div>

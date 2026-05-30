@@ -18,16 +18,6 @@ from __future__ import annotations
 import re
 import typing
 
-from ..domain.quality_gates import QualityReport
-from ..domain.quality_gates import PIIScanResult
-from ..domain.quality_gates import RedactResult
-from ..domain.rag_evaluation import RAGEvaluationResult
-from ..domain.observability import TraceEvent
-from ..domain.observability import TraceEvent
-from ..domain.observability import TraceSummary
-from ..domain.pre_ingest import PreIngestAnalysis
-from ..domain.pre_ingest import PreIngestAnalysis
-from ..domain.scheduler import JobType
 import fastapi
 import httpx
 import pydantic
@@ -38,6 +28,11 @@ import src.core.logging
 import src.domain.models
 import src.domain.pipeline
 import src.domain.queue_messages
+
+from ..domain.observability import TraceEvent, TraceSummary
+from ..domain.pre_ingest import PreIngestAnalysis
+from ..domain.quality_gates import PIIScanResult, QualityReport, RedactResult
+from ..domain.rag_evaluation import RAGEvaluationResult
 
 _identity_dependency = fastapi.Depends(src.core.auth.verify_request_jwt)
 _ingest_file_field = fastapi.File(..., description="File to upload")
@@ -72,20 +67,47 @@ def _caller_scopes(identity: src.core.auth.RequestIdentity) -> list[str]:
     return [scope] if scope else []
 
 
+def _runtime_stream_scopes(identity: src.core.auth.RequestIdentity) -> list[str]:
+    result: list[str] = []
+    for raw_scope in _caller_scopes(identity):
+        scope = str(raw_scope).strip()
+        if not scope or scope.lower() in {"global", "*"}:
+            continue
+        result.append(scope)
+    return result
+
+
+def _same_stream(a: typing.Any, b: typing.Any) -> bool:
+    left = str(a).strip().lower() if a is not None else ""
+    right = str(b).strip().lower() if b is not None else ""
+    return bool(left and right and left == right)
+
+
+def _request_stream_id(request_model: typing.Any) -> str | None:
+    value = getattr(request_model, "stream_id", None)
+    return str(value) if value is not None else None
+
+
+def _metadata_stream_id(metadata: typing.Any) -> str | None:
+    if not isinstance(metadata, dict):
+        return None
+    value = metadata.get("stream_id")
+    return str(value) if value is not None else None
+
+
 def _job_visible(job: typing.Any, identity: src.core.auth.RequestIdentity) -> bool:
     if getattr(job, "org_id", "default") != identity.org_id:
         return False
-    scopes: list[str] = _caller_scopes(identity)
+    scopes: list[str] = _runtime_stream_scopes(identity)
     stream_id: typing.Any | None = getattr(job, "stream_id", None) or None
-    # "global" scope is a wildcard — grants visibility to all streams
-    return bool(stream_id) and ("global" in scopes or stream_id in scopes)
+    return bool(stream_id) and any(_same_stream(stream_id, scope) for scope in scopes)
 
 
 def _resolve_stream_id(
     identity: src.core.auth.RequestIdentity,
     requested_stream_id: str | None,
 ) -> str:
-    scopes: list[str] = _caller_scopes(identity)
+    scopes: list[str] = _runtime_stream_scopes(identity)
     if not scopes:
         raise fastapi.HTTPException(
             status_code=403,
@@ -96,8 +118,10 @@ def _resolve_stream_id(
     if not normalized:
         raise fastapi.HTTPException(status_code=400, detail="Value stream ID is required")
 
-    # "global" scope acts as a wildcard — grants access to every stream
-    if "global" in scopes or normalized in scopes:
+    if normalized.lower() in {"global", "*"}:
+        raise fastapi.HTTPException(status_code=403, detail="Runtime stream scope is invalid")
+
+    if any(_same_stream(normalized, scope) for scope in scopes):
         return normalized
 
     raise fastapi.HTTPException(
@@ -173,7 +197,7 @@ async def ingest_text(
     publisher: typing.Any | None = _get_publisher(request)
     org_id: typing.Any | str = getattr(identity, "org_id", "default")
     auth_token: str = _extract_bearer_token(request)
-    stream_id: str = _resolve_stream_id(identity, body.stream_id)
+    stream_id: str = _resolve_stream_id(identity, _request_stream_id(body))
 
     if not body.content.strip():
         raise fastapi.HTTPException(status_code=400, detail="Content cannot be empty")
@@ -270,7 +294,7 @@ async def ingest_url(
     publisher: typing.Any | None = _get_publisher(request)
     org_id: typing.Any | str = getattr(identity, "org_id", "default")
     auth_token: str = _extract_bearer_token(request)
-    stream_id: str = _resolve_stream_id(identity, body.stream_id)
+    stream_id: str = _resolve_stream_id(identity, _request_stream_id(body))
 
     if not body.url.strip():
         raise fastapi.HTTPException(status_code=400, detail="URL cannot be empty")
@@ -497,7 +521,9 @@ async def list_jobs(
     pipeline: src.domain.pipeline.IngestionPipeline = _get_pipeline(request)
     jobs, total = await pipeline.list_jobs(limit=limit, offset=offset)
 
-    visible_jobs: list[IngestionJob] = [job for job in jobs if _job_visible(job, identity)]
+    visible_jobs: list[src.domain.models.IngestionJob] = [
+        job for job in jobs if _job_visible(job, identity)
+    ]
 
     return JobListResponse(
         jobs=[
@@ -1413,6 +1439,7 @@ async def reprocess_document(
 
     content = doc_data["content"]
     metadata = doc_data.get("metadata", {})
+    stream_id: str = _resolve_stream_id(identity, _metadata_stream_id(metadata))
     title = metadata.get("title", "")
     department = metadata.get("department", "")
     document_type = metadata.get("document_type", "general")
@@ -1438,6 +1465,7 @@ async def reprocess_document(
         tags=tags,
         chunk_size=body.chunk_size,
         chunk_overlap=body.chunk_overlap,
+        stream_id=stream_id,
         auth_token=auth_token,
         org_id=org_id,
     )
@@ -1448,6 +1476,7 @@ async def reprocess_document(
             "original_document_id": body.document_id,
             "new_job_id": result.job_id,
             "content_length": len(content),
+            "stream_id": stream_id,
         },
     )
 
@@ -1525,6 +1554,7 @@ async def refresh_document(
     doc_data = resp.json()
 
     metadata = doc_data.get("metadata", {})
+    stream_id: str = _resolve_stream_id(identity, _metadata_stream_id(metadata))
     source_url = metadata.get("source_url", "")
     if not source_url:
         raise fastapi.HTTPException(
@@ -1583,6 +1613,7 @@ async def refresh_document(
         tags=tags,
         chunk_size=body.chunk_size,
         chunk_overlap=body.chunk_overlap,
+        stream_id=stream_id,
         auth_token=auth_token,
         org_id=org_id,
     )
@@ -1595,6 +1626,7 @@ async def refresh_document(
             "source_url": source_url,
             "old_length": len(old_content),
             "new_length": len(new_content),
+            "stream_id": stream_id,
         },
     )
 

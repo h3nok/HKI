@@ -387,7 +387,7 @@ function CodeBlock({ code, title }: { code: string; title?: string }) {
     <div className="rounded-lg border border-black/5 dark:border-border/30 overflow-hidden">
       {title && (
         <div className="flex items-center justify-between px-3 py-1.5 bg-black/2 dark:bg-card border-b border-black/5 dark:border-border/30">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/50">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/75">
             {title}
           </span>
           <CopyButton text={code} />
@@ -471,7 +471,7 @@ function SchemaProperties({
                   <td className="px-3 py-2 text-foreground dark:text-muted-foreground text-[12px]">
                     {p?.description ?? ""}
                     {p?.default !== undefined && (
-                      <span className="ml-1 text-xs text-muted-foreground/50">
+                      <span className="ml-1 text-xs text-muted-foreground/70">
                         (default:{" "}
                         <code className="text-primary dark:text-primary">
                           {JSON.stringify(p.default)}
@@ -1057,7 +1057,7 @@ export default function KnowledgeApiDocs() {
       <div className="flex items-center justify-center h-screen bg-background">
         <div className="text-center space-y-3">
           <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
-          <p className="text-xs text-muted-foreground/60">
+          <p className="text-xs text-muted-foreground/80">
             Loading API specification…
           </p>
         </div>
@@ -1241,10 +1241,10 @@ export default function KnowledgeApiDocs() {
                   )}
                 </p>
                 <div className="flex items-center gap-3 mt-2">
-                  <span className="text-xs text-muted-foreground/50">
+                  <span className="text-xs text-muted-foreground/75">
                     {filteredEndpoints.length} endpoints
                   </span>
-                  <span className="text-xs text-muted-foreground/50">
+                  <span className="text-xs text-muted-foreground/75">
                     {tags.length} groups
                   </span>
                 </div>
@@ -1278,7 +1278,7 @@ export default function KnowledgeApiDocs() {
                     <h2 className="text-base font-extrabold text-foreground">
                       {meta.label}
                     </h2>
-                    <span className="text-xs text-muted-foreground/40 tabular-nums">
+                    <span className="text-xs text-muted-foreground/65 tabular-nums">
                       {eps.length}
                     </span>
                   </div>
@@ -1309,7 +1309,7 @@ export default function KnowledgeApiDocs() {
                     ? "No endpoints match your search"
                     : "No endpoints available"}
                 </p>
-                <p className="text-xs text-muted-foreground/60 mt-1">
+                <p className="text-xs text-muted-foreground/80 mt-1">
                   {searchQuery
                     ? "Try a different search term."
                     : status === "offline"

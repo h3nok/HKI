@@ -155,6 +155,11 @@ resource "google_cloud_run_v2_service" "pipeline" {
         value = google_storage_bucket.documents.name
       }
 
+      env {
+        name  = "GCS_ENABLED"
+        value = "true"
+      }
+
       # ======================================================================
       # PUB/SUB
       # ======================================================================
@@ -167,6 +172,11 @@ resource "google_cloud_run_v2_service" "pipeline" {
       env {
         name  = "PUBSUB_SUBSCRIPTION"
         value = google_pubsub_subscription.document_processing.name
+      }
+
+      env {
+        name  = "PUBSUB_ENABLED"
+        value = "true"
       }
 
       # ======================================================================
@@ -222,6 +232,11 @@ resource "google_cloud_run_v2_service" "pipeline" {
         value = "true"
       }
 
+      env {
+        name  = "GEMINI_ENABLED"
+        value = "true"
+      }
+
       # LLM_GATEWAY_URL deliberately left unset — triggers direct Vertex AI path
 
       # ======================================================================
@@ -229,12 +244,12 @@ resource "google_cloud_run_v2_service" "pipeline" {
       # ======================================================================
 
       env {
-        name  = "ENABLE_DOCUMENT_AI"
+        name  = "DOCAI_ENABLED"
         value = "false"
       }
 
       env {
-        name  = "DOCUMENT_AI_PROCESSOR_ID"
+        name  = "DOCAI_PROCESSOR_ID"
         value = ""
       }
     }

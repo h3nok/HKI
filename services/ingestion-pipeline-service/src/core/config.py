@@ -44,6 +44,7 @@ class Settings(shared.config.ServiceSettings):
     # Set to emit kb.ingest events for pipeline metrics.
     # Empty = analytics disabled (no-op client).
     ANALYTICS_SERVICE_URL: str = ""
+    ANALYTICS_INGEST_SECRET: str = ""
 
     # ── Memorystore Redis (job persistence + cache) ────────────────────
     REDIS_URL: str = ""  # redis://host:port (empty = in-memory fallback)

@@ -75,7 +75,7 @@ export function ConnectedSourcesCard({
                   errors
                 </span>
               </span>
-              <span className="text-[10px] text-muted-foreground/50">
+              <span className="text-[10px] text-muted-foreground/75">
                 · {data.latestSyncLabel}
               </span>
             </div>

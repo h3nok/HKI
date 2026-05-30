@@ -3,8 +3,8 @@
  * Professional living reference for all custom components, tokens, and patterns.
  */
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Palette,
   Type,
@@ -22,6 +22,21 @@ import {
   Sparkles,
   Copy,
   Check,
+  // New icons for rich agentic & defensive UI
+  Lock,
+  Shield,
+  ShieldOff,
+  AlertOctagon,
+  Hash,
+  ExternalLink,
+  ArrowRightLeft,
+  Play,
+  Pause,
+  RotateCcw,
+  UserCheck,
+  Activity,
+  Wrench,
+  Zap,
 } from "lucide-react";
 import {
   Button,
@@ -35,6 +50,30 @@ import {
   Logo,
   STREAM_ICON_OPTIONS,
   StreamIcon,
+  // Defensive
+  ScopeBadge,
+  DomainStripe,
+  EnvelopeTtl,
+  FailClosedState,
+  DomainFootprint,
+  CrossDomainGuard,
+  AuditPill,
+  // Guardrails
+  GuardrailAlert,
+  GuardrailsIndicator,
+  HallucinationWarning,
+  RiskScoreIndicator,
+  // Thought Trace / Tool Use
+  ThoughtTraceStream,
+  ThoughtTraceTimeline,
+  StreamingIndicator,
+  ReasoningCard,
+  ToolExecutionCard,
+  // Core / HITL / Execution
+  ConfidenceIndicator,
+  ApprovalQueue,
+  ExecutionPlanCard,
+  InterventionCard,
 } from "@hki/ui";
 import { FONT_FAMILY } from "@/design-system/tokens";
 import {
@@ -67,8 +106,15 @@ const NAV = [
   { id: "components", num: "04", label: "Components", icon: Layers },
   { id: "icons", num: "05", label: "Icons", icon: ChevronRight },
   { id: "patterns", num: "06", label: "Patterns", icon: Fingerprint },
-  { id: "agentic", num: "07", label: "Agentic", icon: BrainCircuit },
-  { id: "states", num: "08", label: "States", icon: ShieldCheck },
+  { id: "defensive", num: "07", label: "Defensive", icon: ShieldCheck },
+  { id: "guardrails", num: "08", label: "Guardrails", icon: Shield },
+  {
+    id: "agentic-trace",
+    num: "09",
+    label: "Agentic Trace",
+    icon: BrainCircuit,
+  },
+  { id: "hitl", num: "10", label: "HITL & Plan", icon: UserCheck },
 ] as const;
 
 type SectionId = (typeof NAV)[number]["id"];
@@ -985,256 +1031,851 @@ style={{
   );
 }
 
-// ── Section 07 · Agentic ───────────────────────────────────────────────────────
+// ── Section 07 · Defensive ─────────────────────────────────────────────────────
 
-function AgenticSection() {
-  const [variant, setVariant] = useState<"minimal" | "standard" | "expanded">(
-    "standard"
+function DefensiveSection() {
+  const [domain, setDomain] = useState<string>("pharmacy");
+  const [plane, setPlane] = useState<"runtime" | "publication" | "admin" | any>(
+    "runtime"
   );
+  const [locked, setLocked] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [expiresAt, setExpiresAt] = useState(
+    () => Math.floor(Date.now() / 1000) + 300
+  );
+  const [failKind, setFailKind] = useState<FailClosedKind>("scope-override");
+  const [confirmMsg, setConfirmMsg] = useState<string | null>(null);
+
+  const resetTtl = () => {
+    setExpiresAt(Math.floor(Date.now() / 1000) + 300);
+  };
 
   return (
     <Section
-      id="agentic"
+      id="defensive"
       num="07"
-      title="Agentic Components"
-      subtitle="Purpose-built for AI chat, agent reasoning displays, and streaming response surfaces. No analogues in generic component libraries."
+      title="Defensive UI Primitives"
+      subtitle="Visual contracts that make HKI isolation guarantees legible in real time. These components ensure that missing tokens, unauthorized domains, and scope expirations are instantly visible."
     >
-      <Demo title="Thinking Animation · Interactive">
-        <div className="flex gap-2 mb-6">
-          {(["minimal", "standard", "expanded"] as const).map(v => (
-            <button
-              key={v}
-              onClick={() => setVariant(v)}
-              aria-pressed={variant === v}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all"
-              style={{
-                background: variant === v ? PRIMARY : "var(--muted)",
-                color: variant === v ? "#fff" : "var(--muted-foreground)",
-                boxShadow:
-                  variant === v
-                    ? "0 10px 18px -14px color-mix(in srgb, var(--primary) 58%, transparent)"
-                    : "none",
-              }}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
-
-        <div
-          className="flex items-center justify-center rounded-xl py-14"
-          style={{
-            background: "color-mix(in srgb, var(--primary) 4%, var(--card))",
-          }}
-        >
-          <ThinkingAnimation variant={variant} />
-        </div>
-
-        <div className="grid grid-cols-3 gap-4 mt-5">
-          {(["minimal", "standard", "expanded"] as const).map(v => (
-            <div
-              key={v}
-              className="flex flex-col items-center gap-3 p-4 rounded-xl bg-muted/30 border border-border/50"
-            >
-              <ThinkingAnimation variant={v} showLabel={false} />
-              <p className="text-[10px] text-muted-foreground capitalize font-semibold">
-                {v}
-              </p>
-            </div>
-          ))}
-        </div>
-      </Demo>
-
-      <Demo title="ThinkingInline + ThinkingCard">
-        <div className="space-y-6">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
-              Inline — used in chat bubbles
+      <div className="relative overflow-hidden rounded-2xl border border-border/40 p-1 mb-6 bg-muted/5">
+        <DomainStripe plane={plane} />
+        <div className="p-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">
+              Active Environment Banner
             </p>
-            <div className="inline-flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/40 border border-border/60">
-              <ThinkingInline />
-              <span className="text-sm text-muted-foreground">
-                Agent is reasoning…
+            <p className="text-xs text-muted-foreground">
+              Represents the sticky context of the active user session.
+            </p>
+          </div>
+          <div className="flex-1 max-w-md w-full border border-border/40 rounded-xl overflow-hidden shadow-sm">
+            <ScopeBadge
+              domain={pending ? undefined : domain}
+              plane={plane}
+              locked={locked}
+              pending={pending}
+              variant="banner"
+              secondary={
+                <div className="flex items-center gap-2">
+                  <EnvelopeTtl
+                    expiresAt={expiresAt}
+                    warnSeconds={60}
+                    onExpired={() => {}}
+                  />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-1.5"
+                    onClick={resetTtl}
+                    title="Refresh token"
+                  >
+                    <RotateCcw className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+                  </Button>
+                </div>
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-6">
+        <Demo title="Active Scope Playground">
+          <div className="space-y-5">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Active Domain
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {["pharmacy", "payments", "logistics", "global", "*"].map(d => (
+                  <button
+                    key={d}
+                    onClick={() => {
+                      setDomain(d);
+                      if (d === "global" || d === "*") {
+                        setPlane("admin");
+                      }
+                    }}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border ${
+                      domain === d
+                        ? "bg-primary text-white border-primary shadow-sm"
+                        : "bg-muted/40 text-muted-foreground border-border hover:bg-muted/70"
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Security Plane
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {(["runtime", "publication", "admin"] as const).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setPlane(p)}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-mono capitalize transition-all border ${
+                      plane === p
+                        ? "bg-primary text-white border-primary shadow-sm"
+                        : "bg-muted/40 text-muted-foreground border-border hover:bg-muted/70"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-4 items-center pt-2">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold select-none">
+                <input
+                  type="checkbox"
+                  checked={locked}
+                  onChange={e => setLocked(e.target.checked)}
+                  className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5"
+                />
+                Locked Scope
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold select-none">
+                <input
+                  type="checkbox"
+                  checked={pending}
+                  onChange={e => setPending(e.target.checked)}
+                  className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5"
+                />
+                Resolving State
+              </label>
+            </div>
+
+            <Separator className="my-2" />
+
+            <div className="flex items-center justify-between p-3.5 bg-muted/10 rounded-xl border border-border/40">
+              <span className="text-xs font-semibold text-muted-foreground">
+                Chip Badge rendering:
               </span>
+              <ScopeBadge
+                domain={pending ? undefined : domain}
+                plane={plane}
+                locked={locked}
+                pending={pending}
+              />
             </div>
           </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
-              Card — for step-by-step traces
+        </Demo>
+
+        <Demo title="Fail-Closed Guardrails">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Enforced Deny Reason
+              </span>
+              <select
+                value={failKind}
+                onChange={e => setFailKind(e.target.value as FailClosedKind)}
+                className="text-[11px] font-bold uppercase tracking-wider rounded-lg px-2.5 py-1 bg-muted/60 border border-border/60 text-foreground"
+              >
+                <option value="missing-envelope">Missing Envelope</option>
+                <option value="unauthorized-domain">Unauthorized Domain</option>
+                <option value="scope-override">Scope Override</option>
+                <option value="expired-envelope">Expired Envelope</option>
+                <option value="artifact-out-of-scope">
+                  Artifact Out of Scope
+                </option>
+                <option value="cross-domain-blocked">
+                  Cross Domain Blocked
+                </option>
+                <option value="tool-blocked">Tool Blocked</option>
+              </select>
+            </div>
+
+            <FailClosedState
+              kind={failKind}
+              code={
+                failKind === "scope-override"
+                  ? "ERR_HKI_SCOPE_OVERRIDE"
+                  : failKind === "unauthorized-domain"
+                    ? "ERR_HKI_UNAUTHORIZED_DOMAIN"
+                    : failKind === "expired-envelope"
+                      ? "ERR_HKI_ENVELOPE_EXPIRED"
+                      : failKind === "tool-blocked"
+                        ? "ERR_HKI_TOOL_BLOCKED"
+                        : "ERR_HKI_SECURITY_DENIAL"
+              }
+              reason={
+                failKind === "scope-override"
+                  ? "Gateway blocked raw body override of 'active_domain' to 'global' in payments endpoint."
+                  : failKind === "tool-blocked"
+                    ? "evaluateGatewayTarget rejected call to tool 'mcp__payments__bulk_charge' with risk score 0.94."
+                    : `HKI control loop closed request on plane '${plane}' because domain isolation validation failed.`
+              }
+              domain={domain}
+              traceId="tr_99a80e11894b"
+              size="sm"
+            />
+          </div>
+        </Demo>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-6 mt-6">
+        <Demo title="Cross-Domain Interactive Confirm">
+          <div className="space-y-4">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              When an action crosses security boundaries, HKI requires the
+              developer to present an explicit confirmation.
             </p>
-            <div className="max-w-sm space-y-2.5">
-              <ThinkingCard
-                title="Analyzing your request"
-                description="Understanding context and planning approach…"
-              />
-              <ThinkingCard
-                title="Searching knowledge base"
-                description="Finding relevant docs across 14,000 vectors"
+            <CrossDomainGuard
+              fromDomain="pharmacy"
+              toDomain="logistics"
+              intent="Transfer clinical trial storage shipment metadata into delivery stream database"
+              confirmLabel="Confirm Cross-Domain Data Access"
+              cancelLabel="Abort Transfer"
+              onConfirm={() => {
+                setConfirmMsg("Operation approved and published!");
+                setTimeout(() => setConfirmMsg(null), 3000);
+              }}
+              onCancel={() => {
+                setConfirmMsg("Operation cancelled by operator.");
+                setTimeout(() => setConfirmMsg(null), 3000);
+              }}
+            />
+            <AnimatePresence>
+              {confirmMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className={`p-3 rounded-lg text-xs font-semibold text-center border ${
+                    confirmMsg.includes("approved")
+                      ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                      : "bg-destructive/10 text-destructive border-destructive/20"
+                  }`}
+                >
+                  {confirmMsg}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </Demo>
+
+        <Demo title="Domain Footprint in Messages">
+          <div className="space-y-4 flex flex-col justify-between h-full">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Every single message generated by the agent is stamped with the
+              domain, policy pack, and deep audit trace.
+            </p>
+            <div className="p-4 bg-muted/15 border border-border/40 rounded-xl space-y-3">
+              <div className="flex gap-2">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                  <Logo size={12} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-foreground/90">
+                    HKI Copilot
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Based on payments records, transfer status for batch{" "}
+                    <code className="font-mono bg-muted px-1 rounded">
+                      BT_09A
+                    </code>{" "}
+                    is settled.
+                  </p>
+                </div>
+              </div>
+              <DomainFootprint
+                domain="payments"
+                plane="runtime"
+                policyPackId="p_pack_v12_default"
+                traceId="tr_56c22bc891001a"
+                auditHref="#overview"
               />
             </div>
           </div>
-        </div>
-      </Demo>
+        </Demo>
+      </div>
     </Section>
   );
 }
 
-// ── Section 08 · States ────────────────────────────────────────────────────────
+// ── Section 08 · Guardrails ───────────────────────────────────────────────────
 
-type BannerType = "success" | "info" | "loading" | "warning" | "error";
+function GuardrailsSection() {
+  const [overallStatus, setOverallStatus] =
+    useState<GuardrailOverallStatus>("warning");
+  const [riskScore, setRiskScore] = useState<number>(0.64);
+  const [confidence, setConfidence] = useState<number>(0.85);
 
-const BANNER_CONFIG: Record<
-  BannerType,
-  { icon: React.ElementType; color: string; bg: string }
-> = {
-  success: { icon: CheckCircle2, color: "#10B981", bg: "#10B98110" },
-  info: { icon: Info, color: IRIS, bg: `${IRIS}10` },
-  loading: { icon: BrainCircuit, color: IRIS, bg: `${IRIS}10` },
-  warning: { icon: AlertTriangle, color: "#F59E0B", bg: "#F59E0B10" },
-  error: { icon: XCircle, color: PULSE, bg: `${PULSE}10` },
-};
-
-function StatesSection() {
-  const banners: { type: BannerType; title: string; msg: string }[] = [
+  const checks: GuardrailCheck[] = [
     {
-      type: "success",
-      title: "Knowledge base synced",
-      msg: "127 documents indexed · 3 updated · Last run: 2 min ago",
+      name: "Prompt Injection Detector",
+      status: riskScore > 0.8 ? "fail" : riskScore > 0.4 ? "warn" : "pass",
+      message:
+        riskScore > 0.8
+          ? "High risk prompt payload blocked"
+          : riskScore > 0.4
+            ? "Indirect vector signature match"
+            : "Clean input",
     },
     {
-      type: "info",
-      title: "Retrieval in progress",
-      msg: "Semantic search running against 14,000 vectors…",
+      name: "PII Extractor Guard",
+      status: "pass",
+      message: "No SSN, credit cards, or passwords leaked",
     },
     {
-      type: "loading",
-      title: "Agent is thinking",
-      msg: "Reasoning step 2 of 4 — planning tool calls",
+      name: "Hallucination Self-Check",
+      status: confidence < 0.6 ? "fail" : confidence < 0.8 ? "warn" : "pass",
+      message: `Grounding confidence ${Math.round(confidence * 100)}%`,
     },
     {
-      type: "warning",
-      title: "Rate limit approaching",
-      msg: "85% of daily token budget consumed. Consider optimizing prompts.",
-    },
-    {
-      type: "error",
-      title: "Knowledge ingestion failed",
-      msg: "File 'Q4_SOP.pdf' could not be parsed — unsupported encoding.",
+      name: "Toxicity and Abuse filter",
+      status: "pass",
     },
   ];
 
   return (
     <Section
-      id="states"
+      id="guardrails"
       num="08"
-      title="States & Feedback"
-      subtitle="Defensive UI patterns for every edge case — empty, loading, error, success, and inline validation."
+      title="Guardrails & AI Safety"
+      subtitle="Defensive alignment screens that monitor agent input and output streams. Ensures hallucination warnings, risk coefficients, and prompt checks are displayed transparently."
     >
-      <Demo title="Status Banners">
-        <div className="space-y-2.5">
-          {banners.map(({ type, title, msg }) => {
-            const { icon: Icon, color, bg } = BANNER_CONFIG[type];
-            return (
-              <div
-                key={type}
-                className="flex items-start gap-3 p-4 rounded-xl border"
-                style={{ background: bg, borderColor: `${color}25` }}
-              >
-                <Icon
-                  className={`w-4 h-4 shrink-0 mt-0.5 ${type === "loading" ? "animate-pulse" : ""}`}
-                  style={{ color }}
-                />
-                <div>
-                  <p className="text-sm font-semibold" style={{ color }}>
-                    {title}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    {msg}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </Demo>
-
-      <div className="grid sm:grid-cols-3 gap-4">
-        <Demo title="Empty State">
-          <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center"
-              style={{
-                background: `${IRIS}0d`,
-                border: `1.5px dashed ${IRIS}45`,
-              }}
-            >
-              <StreamIcon id="pkg" size={24} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold">No domains yet</p>
-              <p className="text-xs text-muted-foreground mt-0.5 max-w-40 leading-snug">
-                Create a domain to scope the agent to a business boundary.
-              </p>
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              style={{ borderColor: `${IRIS}40`, color: IRIS }}
-            >
-              Create Stream
-            </Button>
-          </div>
-        </Demo>
-
-        <Demo title="Skeleton Loading">
-          <div className="space-y-3.5">
-            {[80, 65, 72].map((w, i) => (
-              <div key={i} className="flex items-center gap-3 animate-pulse">
-                <div className="w-10 h-10 rounded-xl bg-muted shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div
-                    className="h-3 bg-muted rounded"
-                    style={{ width: `${w}%` }}
-                  />
-                  <div
-                    className="h-2.5 bg-muted/60 rounded"
-                    style={{ width: `${w - 22}%` }}
-                  />
-                </div>
-                <div className="h-5 w-12 bg-muted rounded-full shrink-0" />
-              </div>
-            ))}
-          </div>
-        </Demo>
-
-        <Demo title="Inline Validation">
+      <div className="grid sm:grid-cols-2 gap-6">
+        <Demo title="Real-time Guardrail Auditor">
           <div className="space-y-4">
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                Valid
-              </p>
-              <Input
-                defaultValue="pharmacy"
-                className="border-emerald-500/60 focus-visible:ring-emerald-500/30"
-              />
-              <p className="text-[11px] text-emerald-600 flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> ID is available
-              </p>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Overall Status:
+              </span>
+              <div className="flex gap-1.5">
+                {(["safe", "warning", "blocked"] as const).map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setOverallStatus(s)}
+                    className={`px-2 py-1 rounded text-[11px] font-bold uppercase tracking-wider capitalize ${
+                      overallStatus === s
+                        ? s === "safe"
+                          ? "bg-emerald-500/20 text-emerald-600 border border-emerald-500/30"
+                          : s === "warning"
+                            ? "bg-amber-500/20 text-amber-600 border border-amber-500/30"
+                            : "bg-destructive/20 text-destructive border border-destructive/30"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                Error
-              </p>
-              <Input
-                defaultValue="global"
-                className="border-destructive/60 focus-visible:ring-destructive/30"
-              />
-              <p className="text-[11px] text-destructive flex items-center gap-1">
-                <XCircle className="w-3 h-3" /> ID already in use
-              </p>
-            </div>
+
+            <GuardrailAlert checks={checks} overallStatus={overallStatus} />
           </div>
         </Demo>
+
+        <div className="space-y-4">
+          <Demo title="Safety Signals & Gauges">
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span className="text-muted-foreground">
+                    Agent Risk Coefficient
+                  </span>
+                  <span
+                    className={
+                      riskScore > 0.7 ? "text-destructive" : "text-foreground"
+                    }
+                  >
+                    {Math.round(riskScore * 100)}%
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={riskScore}
+                    onChange={e => {
+                      const v = parseFloat(e.target.value);
+                      setRiskScore(v);
+                      if (v > 0.8) setOverallStatus("blocked");
+                      else if (v > 0.4) setOverallStatus("warning");
+                      else setOverallStatus("safe");
+                    }}
+                    className="w-full h-1.5 rounded-full bg-muted accent-primary cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-center pt-2">
+                  <RiskScoreIndicator
+                    score={riskScore}
+                    showLabel
+                    label="Audit Risk Coefficient"
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span className="text-muted-foreground">
+                    Self-Check Grounding Confidence
+                  </span>
+                  <span>{Math.round(confidence * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1"
+                  step="0.01"
+                  value={confidence}
+                  onChange={e => setConfidence(parseFloat(e.target.value))}
+                  className="w-full h-1.5 rounded-full bg-muted accent-primary cursor-pointer"
+                />
+                <AnimatePresence mode="popLayout">
+                  {confidence < 0.75 && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="pt-2"
+                    >
+                      <HallucinationWarning
+                        confidenceScore={confidence}
+                        alertMessage="Fact Check Indicator shows high variation across referenced corpus database records."
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </Demo>
+
+          <Demo title="Guardrails Summary Pill">
+            <div className="flex items-center justify-between p-2.5 bg-muted/10 rounded-xl border border-border/40">
+              <span className="text-xs font-semibold text-muted-foreground">
+                Active Policy Check:
+              </span>
+              <GuardrailsIndicator
+                status={overallStatus}
+                totalChecks={checks.length}
+              />
+            </div>
+          </Demo>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ── Section 09 · Agentic Trace ─────────────────────────────────────────────────
+
+function AgenticTraceSection() {
+  const [streamStatus, setStreamStatus] = useState<StreamStatus>("complete");
+  const [chunks, setChunks] = useState<ThoughtChunk[]>([
+    {
+      id: "1",
+      type: "thinking",
+      content:
+        "Minting runtime environment envelope targeting 'pharmacy' domain...",
+      timestamp: new Date(Date.now() - 4000).toISOString(),
+    },
+    {
+      id: "2",
+      type: "reasoning",
+      content:
+        "Domain exact-match check succeeded (payments !== pharmacy). Enforcing fail-closed boundaries.",
+      timestamp: new Date(Date.now() - 3000).toISOString(),
+    },
+    {
+      id: "3",
+      type: "action",
+      content:
+        "Calling tool 'get_pharmacy_inventory' with args { storeId: 'ST_0981' }",
+      timestamp: new Date(Date.now() - 2000).toISOString(),
+    },
+    {
+      id: "4",
+      type: "conclusion",
+      content:
+        "Formulating optimal shipment relocation strategy for trial batches.",
+      timestamp: new Date(Date.now() - 1000).toISOString(),
+    },
+  ]);
+
+  const [toolStatus, setToolStatus] = useState<
+    "success" | "running" | "failed"
+  >("success");
+
+  // Streaming player logic
+  const intervalRef = useRef<number | any>(null);
+  const playStream = () => {
+    if (intervalRef.current) window.clearInterval(intervalRef.current);
+    setChunks([]);
+    setStreamStatus("streaming");
+
+    const flow: Omit<ThoughtChunk, "id" | "timestamp">[] = [
+      {
+        type: "thinking",
+        content: "Evaluating incoming gateway request envelope...",
+      },
+      {
+        type: "reasoning",
+        content:
+          "Authenticating token signature. Token valid. Active Domain matched to 'pharmacy'.",
+      },
+      {
+        type: "action",
+        content: "Triggering vector search for chemical trial batch files...",
+      },
+      {
+        type: "thinking",
+        content: "Traversing index of 14,000 document vectors...",
+      },
+      {
+        type: "conclusion",
+        content: "Found 3 verified files. Formulating summary response.",
+      },
+    ];
+
+    let i = 0;
+    intervalRef.current = window.setInterval(() => {
+      if (i < flow.length) {
+        setChunks(prev => [
+          ...prev,
+          {
+            id: String(i + 1),
+            ...flow[i],
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+        i++;
+      } else {
+        setStreamStatus("complete");
+        if (intervalRef.current) {
+          window.clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      }
+    }, 1500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  return (
+    <Section
+      id="agentic-trace"
+      num="09"
+      title="Agentic Reasoning & Traces"
+      subtitle="Comprehensive tools for rendering thoughts, step-by-step logic stream flow, and granular tool execution outputs."
+    >
+      <div className="grid sm:grid-cols-12 gap-6">
+        <div className="sm:col-span-7 space-y-4">
+          <Demo title="Reasoning & Chain of Thought Stream">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Thinking Trace Simulator
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={playStream}
+                    disabled={streamStatus === "streaming"}
+                    className="gap-1.5"
+                  >
+                    <Play className="w-3.5 h-3.5 text-primary" /> Run Simulation
+                  </Button>
+                  {streamStatus === "streaming" && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setStreamStatus("complete");
+                        if (intervalRef.current) {
+                          window.clearInterval(intervalRef.current);
+                          intervalRef.current = null;
+                        }
+                      }}
+                    >
+                      Stop
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <ThoughtTraceStream
+                title="Reasoning Engine trace"
+                chunks={chunks}
+                status={streamStatus}
+                maxHeight={260}
+                onClear={() => setChunks([])}
+              />
+            </div>
+          </Demo>
+        </div>
+
+        <div className="sm:col-span-5 space-y-4">
+          <Demo title="Granular Tool Execution Card">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Tool Status:
+                </span>
+                <div className="flex gap-1">
+                  {(["success", "running", "failed"] as const).map(s => (
+                    <button
+                      key={s}
+                      onClick={() => setToolStatus(s)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                        toolStatus === s
+                          ? s === "success"
+                            ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-500"
+                            : s === "running"
+                              ? "bg-amber-500/20 text-amber-500"
+                              : "bg-destructive/20 text-destructive"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <ToolExecutionCard
+                toolName="vector_search_products"
+                durationMs={380}
+                status={toolStatus}
+                input={JSON.stringify(
+                  { query: "trial active components", limit: 3 },
+                  null,
+                  2
+                )}
+                output={
+                  toolStatus === "success"
+                    ? JSON.stringify(
+                        { matches: ["active_v1", "active_v3"], score: 0.98 },
+                        null,
+                        2
+                      )
+                    : toolStatus === "failed"
+                      ? "Error: Access denied. activeDomain 'logistics' does not match target 'payments'."
+                      : "Executing read target..."
+                }
+              />
+            </div>
+          </Demo>
+
+          <Demo title="Real-time Inline Loading & Sorters">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Streaming State:
+                </span>
+                <StreamingIndicator
+                  status={
+                    streamStatus === "streaming" ? "streaming" : "completed"
+                  }
+                />
+              </div>
+              <Separator />
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Agent Confidence
+                </span>
+                <ConfidenceIndicator
+                  confidence={0.92}
+                  label="Result Accuracy Score"
+                  size="sm"
+                />
+              </div>
+            </div>
+          </Demo>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ── Section 10 · HITL & Plan Execution ───────────────────────────────────────────
+
+function HitlSection() {
+  const [items, setItems] = useState<ApprovalItem[]>([
+    {
+      id: "app_01",
+      type: "tool_execution",
+      title: "Run 'mcp__pharmacy__bulk_distribute'",
+      description:
+        "Approve bulk distribution of 14,000 vaccine units into local cold-chains. This action writes back to the supply database records.",
+      agentName: "Pharmacy Relocator Agent",
+      priority: "critical",
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 600000).toISOString(),
+      riskScore: 0.91,
+      metadata: {
+        items: 14000,
+        target_depot: "EU_DEP_09",
+        source_batch: "LOT_v9",
+      },
+    },
+    {
+      id: "app_02",
+      type: "sensitive_action",
+      title: "Relocate experimental batch LOT_77",
+      description:
+        "Transfer possession records of chemical compounds from active trial domain to inactive archival cold stores.",
+      agentName: "Clinical Auditor Copilot",
+      priority: "high",
+      status: "pending",
+      createdAt: new Date(Date.now() - 120000).toISOString(),
+      riskScore: 0.58,
+      metadata: { compound: "C_77_A", authorization_policy: "P_ARCHIVE_L3" },
+    },
+    {
+      id: "app_03",
+      type: "data_access",
+      title: "Query payments ledgers for 'trial_invoice_9901'",
+      description:
+        "Read invoice records of active participants in logistics trial to process relocation bonuses.",
+      agentName: "Logistics Accounting Bot",
+      priority: "medium",
+      status: "pending",
+      createdAt: new Date(Date.now() - 360000).toISOString(),
+      riskScore: 0.35,
+      metadata: { invoice: "INV_9901", target_ledger: "payments_ledger_2026" },
+    },
+  ]);
+
+  const handleApprove = (ids: string[]) => {
+    setItems(prev =>
+      prev.map(item =>
+        ids.includes(item.id) ? { ...item, status: "approved" as any } : item
+      )
+    );
+  };
+
+  const handleReject = (ids: string[], reason?: string) => {
+    setItems(prev =>
+      prev.map(item =>
+        ids.includes(item.id) ? { ...item, status: "rejected" as any } : item
+      )
+    );
+  };
+
+  const planData = {
+    title: "Multi-Step Trial Supply Chain Strategy",
+    status: "running" as PlanStatus,
+    steps: [
+      {
+        id: "st_1",
+        title: "Verify trial storage location bounds",
+        description:
+          "Verifies the current HKI envelope activeDomain fits targeted store.",
+        status: "success" as StepStatus,
+        durationMs: 120,
+      },
+      {
+        id: "st_2",
+        title: "Pull compound records for batch LOT_77",
+        description: "Read action against vector DB within trial bounds.",
+        status: "success" as StepStatus,
+        durationMs: 440,
+      },
+      {
+        id: "st_3",
+        title: "Execute relocator distribute tool",
+        description: "Writes distribution entries. Awaiting HITL Approval.",
+        status: "running" as StepStatus,
+      },
+      {
+        id: "st_4",
+        title: "Stamp audit ledger",
+        description: "Mints audit trace & publishes to immutable ledger.",
+        status: "pending" as StepStatus,
+      },
+    ],
+  };
+
+  return (
+    <Section
+      id="hitl"
+      num="10"
+      title="HITL Approval & Plan Execution"
+      subtitle="Ensuring high-risk actions are queued for manual verification. Visualizes execution pipelines and agent self-correction parameters."
+    >
+      <div className="grid sm:grid-cols-12 gap-6">
+        <div className="sm:col-span-8 space-y-4">
+          <Demo title="Interactive Human-In-the-Loop Queue">
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Approve or reject high-risk agent tool calls directly from this
+                dashboard queue. Try expanding rows to see details.
+              </p>
+              <ApprovalQueue
+                items={items}
+                onApprove={handleApprove}
+                onReject={handleReject}
+              />
+            </div>
+          </Demo>
+        </div>
+
+        <div className="sm:col-span-4 space-y-6">
+          <Demo title="Plan Execution Timeline">
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                Execution steps tracking live progress:
+              </p>
+              <ExecutionPlanCard
+                title={planData.title}
+                steps={planData.steps}
+                status={planData.status}
+              />
+            </div>
+          </Demo>
+
+          <Demo title="Inline Intervention Request">
+            <InterventionCard
+              title="Operator Intervention"
+              description="Relocator distributing tool requires clarification on backup store ID. The target 'cold_store_09' is reporting low nitrogen volume."
+              status="active"
+              suggestedActions={[
+                { id: "act_1", label: "Use alternative store 'cold_store_12'" },
+                { id: "act_2", label: "Override volume warnings" },
+              ]}
+              onAction={actId => {
+                alert(`Intervened with action: ${actId}`);
+              }}
+            />
+          </Demo>
+        </div>
       </div>
     </Section>
   );
@@ -1437,8 +2078,10 @@ export default function UIShowcase() {
             <ComponentsSection />
             <IconsSection />
             <PatternsSection />
-            <AgenticSection />
-            <StatesSection />
+            <DefensiveSection />
+            <GuardrailsSection />
+            <AgenticTraceSection />
+            <HitlSection />
           </div>
         </div>
       </div>

@@ -1,5 +1,7 @@
 /** Admin-only CRUD for value streams and user management. */
 
+import fs from "node:fs/promises";
+import path from "node:path";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import {
@@ -62,6 +64,7 @@ import {
 import { getSyntheticUserReasons } from "./_core/synthetic-cleanup";
 import {
   KNOWLEDGE_PIPELINE_URL,
+  ORCHESTRATOR_URL,
   VECTOR_STORE_URL,
   serviceJsonTyped,
 } from "./service-client";
@@ -89,6 +92,492 @@ type AdminKnowledgeStreamSummary = AdminKnowledgeOpsSummary & {
   jobs: IngestionJob[];
   partialFailure: boolean;
 };
+
+type ReleaseEvidenceMessage = {
+  id: string;
+  message: string;
+};
+
+type ReleaseEvidenceCommand = {
+  id: string;
+  command: string;
+  status: string;
+};
+
+type ReleaseEvidencePayload = {
+  available: boolean;
+  sourcePath: string | null;
+  checkedAt: string;
+  generatedAt: string | null;
+  level: string | null;
+  evidenceProfile: string | null;
+  implementation: {
+    commit: string | null;
+    branch: string | null;
+    dirty: boolean | null;
+  };
+  releaseReadiness: {
+    strictReleaseEligible: boolean;
+    status: string;
+    blockers: ReleaseEvidenceMessage[];
+    warnings: ReleaseEvidenceMessage[];
+  };
+  conformance: {
+    passed: number | null;
+    total: number | null;
+    overallPassed: boolean | null;
+  };
+  audit: {
+    baseline: number | null;
+    astBlocking: number | null;
+    astAdvisory: number | null;
+    astTsBlocking: number | null;
+    astTsAdvisory: number | null;
+  };
+  httpProbe: {
+    passed: number | null;
+    failed: number | null;
+    total: number | null;
+    generatedAt: string | null;
+    target: string | null;
+  };
+  managedEvidence: {
+    profile: string | null;
+    servicesPassed: number | null;
+    servicesFailed: number | null;
+    missingCapabilities: string[];
+  };
+  commandManifest: ReleaseEvidenceCommand[];
+};
+
+type GeapReadinessStatus = "ready" | "missing" | "warning" | "blocked";
+type GeapRegistrationType = "adk" | "a2a";
+
+type GeapReadinessItem = {
+  id: string;
+  label: string;
+  status: GeapReadinessStatus;
+  detail: string;
+  action: string;
+};
+
+type GeapDomainAgent = {
+  domainId: string;
+  domainName: string;
+  displayName: string;
+  description: string | null;
+  activeDomain: string;
+  registrationType: GeapRegistrationType;
+  status: "publishable" | "blocked";
+  blockers: string[];
+  command: string;
+};
+
+type GeapRuntimeAdapter = {
+  id: string;
+  service: string;
+  adapter: string;
+  target: string;
+  status: GeapReadinessStatus;
+  hkiContract: string;
+  evidence: string;
+};
+
+type GeapEvidenceContract = {
+  id: string;
+  label: string;
+  status: GeapReadinessStatus;
+  source: string;
+  detail: string;
+};
+
+type GeapOverviewPayload = {
+  checkedAt: string;
+  environment: {
+    projectId: string | null;
+    location: string | null;
+    geminiEnterpriseAppId: string | null;
+    agentRuntimeId: string | null;
+    registrationType: GeapRegistrationType;
+    agentCardUrl: string | null;
+    agentEngineEnabled: boolean;
+    orchestratorUrl: string;
+    knowledgeApiUrl: string;
+    pipelineUrl: string;
+  };
+  readiness: GeapReadinessItem[];
+  runtimeAdapters: GeapRuntimeAdapter[];
+  evidenceContract: GeapEvidenceContract[];
+  domainAgents: GeapDomainAgent[];
+  commandPreview: string;
+};
+
+function firstEnv(keys: string[]): string | null {
+  for (const key of keys) {
+    const value = process.env[key]?.trim();
+    if (value) return value;
+  }
+  return null;
+}
+
+function parseBooleanEnv(value: string | null): boolean {
+  if (!value) return false;
+  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
+}
+
+function normalizeGeapRegistrationType(
+  value: string | null
+): GeapRegistrationType {
+  return value?.toLowerCase() === "a2a" ? "a2a" : "adk";
+}
+
+function resourceSegment(resourceName: string | null, segment: string) {
+  if (!resourceName) return null;
+  const match = resourceName.match(
+    new RegExp(`(?:^|/)${segment}/([^/]+)(?:/|$)`)
+  );
+  return match?.[1] ?? null;
+}
+
+function buildGeapPublishCommand(options: {
+  appId: string | null;
+  runtimeId: string | null;
+  registrationType: GeapRegistrationType;
+  agentCardUrl: string | null;
+  displayName: string;
+  description?: string | null;
+}) {
+  const lines = ["agents-cli publish gemini-enterprise"];
+
+  if (options.registrationType === "a2a") {
+    lines.push("  --registration-type a2a");
+    lines.push(
+      `  --agent-card-url "${options.agentCardUrl ?? "$AGENT_CARD_URL"}"`
+    );
+  } else {
+    lines.push("  --registration-type adk");
+    lines.push(
+      `  --agent-runtime-id "${options.runtimeId ?? "$AGENT_RUNTIME_ID"}"`
+    );
+  }
+
+  lines.push(
+    `  --gemini-enterprise-app-id "${options.appId ?? "$GEMINI_ENTERPRISE_APP_ID"}"`
+  );
+  lines.push(`  --display-name "${options.displayName}"`);
+  if (options.description) {
+    lines.push(`  --description "${options.description}"`);
+    if (options.registrationType === "adk") {
+      lines.push(`  --tool-description "${options.description}"`);
+    }
+  }
+
+  return lines.join(" \\\n");
+}
+
+async function readGeapOverview(): Promise<GeapOverviewPayload> {
+  const checkedAt = new Date().toISOString();
+  const runtimeId = firstEnv([
+    "AGENT_RUNTIME_ID",
+    "AGENT_ENGINE_RESOURCE_NAME",
+    "GEAP_AGENT_RUNTIME_ID",
+    "REMOTE_AGENT_RUNTIME_ID",
+  ]);
+  const appId = firstEnv(["GEMINI_ENTERPRISE_APP_ID", "ID"]);
+  const agentCardUrl = firstEnv(["AGENT_CARD_URL", "GEMINI_AGENT_CARD_URL"]);
+  const registrationType = normalizeGeapRegistrationType(
+    firstEnv(["REGISTRATION_TYPE", "GEMINI_REGISTRATION_TYPE"])
+  );
+  const agentEngineEnabled = parseBooleanEnv(
+    firstEnv(["AGENT_ENGINE_ENABLED", "GEAP_ENABLED"])
+  );
+  const projectId =
+    firstEnv(["GOOGLE_CLOUD_PROJECT", "GCP_PROJECT_ID", "PROJECT_ID"]) ??
+    resourceSegment(runtimeId, "projects") ??
+    resourceSegment(appId, "projects");
+  const location =
+    firstEnv([
+      "GOOGLE_CLOUD_LOCATION",
+      "VERTEX_AI_LOCATION",
+      "GCP_LOCATION",
+      "LOCATION",
+    ]) ?? resourceSegment(runtimeId, "locations");
+  const signingSecret = firstEnv([
+    "HKI_SIGNING_SECRET",
+    "SERVICE_AUTH_SECRET",
+    "JWT_SECRET",
+  ]);
+  const identityProvider = firstEnv([
+    "OIDC_ISSUER",
+    "GOOGLE_OAUTH_CLIENT_ID",
+    "MANUS_OAUTH_CLIENT_ID",
+    "AUTH_ISSUER",
+  ]);
+
+  const runtimeConfigured =
+    registrationType === "a2a" ? Boolean(agentCardUrl) : Boolean(runtimeId);
+
+  const db = await getDb();
+  let domainRows: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+  }> = [];
+
+  if (db) {
+    try {
+      const rows = await db
+        .select({
+          id: valueStreams.id,
+          name: valueStreams.name,
+          description: valueStreams.description,
+        })
+        .from(valueStreams)
+        .where(eq(valueStreams.isActive, 1))
+        .orderBy(asc(valueStreams.name));
+
+      domainRows = rows.filter(row => row.id !== "global");
+    } catch (err) {
+      log.warn({ err }, "GEAP overview could not load value streams");
+    }
+  }
+
+  const commandPreview = buildGeapPublishCommand({
+    appId,
+    runtimeId,
+    registrationType,
+    agentCardUrl,
+    displayName: "HKI Domain Head",
+    description:
+      "Routes Gemini Enterprise requests through HKI domain-scoped runtime controls.",
+  });
+
+  const readiness: GeapReadinessItem[] = [
+    {
+      id: "agent-runtime",
+      label: "Agent Runtime",
+      status: runtimeConfigured ? "ready" : "missing",
+      detail:
+        registrationType === "a2a"
+          ? (agentCardUrl ?? "AGENT_CARD_URL is not set")
+          : (runtimeId ?? "AGENT_RUNTIME_ID is not set"),
+      action: runtimeConfigured ? "configured" : "configure runtime target",
+    },
+    {
+      id: "gemini-enterprise-app",
+      label: "Gemini Enterprise app",
+      status: appId ? "ready" : "missing",
+      detail: appId ?? "GEMINI_ENTERPRISE_APP_ID is not set",
+      action: appId ? "configured" : "create or set app resource",
+    },
+    {
+      id: "registration-mode",
+      label: "Registration mode",
+      status: registrationType === "a2a" && !agentCardUrl ? "blocked" : "ready",
+      detail:
+        registrationType === "a2a"
+          ? agentCardUrl
+            ? "A2A agent card available"
+            : "A2A requires AGENT_CARD_URL"
+          : "ADK registration via Agent Runtime",
+      action: registrationType,
+    },
+    {
+      id: "hki-signing",
+      label: "HKI envelope signing",
+      status: signingSecret ? "ready" : "missing",
+      detail: signingSecret
+        ? "runtime can validate signed HkiEnvelope payloads"
+        : "HKI_SIGNING_SECRET is not set",
+      action: signingSecret ? "configured" : "set signing secret",
+    },
+    {
+      id: "identity-mapping",
+      label: "Identity mapping",
+      status: identityProvider ? "ready" : "warning",
+      detail: identityProvider
+        ? "provider configured"
+        : "operator identity provider not detected",
+      action: identityProvider ? "configured" : "configure SSO/OIDC",
+    },
+    {
+      id: "provider-evidence",
+      label: "Provider evidence",
+      status:
+        agentEngineEnabled && runtimeConfigured
+          ? "ready"
+          : runtimeConfigured
+            ? "warning"
+            : "missing",
+      detail: agentEngineEnabled
+        ? "Agent Runtime adapter is enabled"
+        : "AGENT_ENGINE_ENABLED is not enabled",
+      action: agentEngineEnabled ? "collecting" : "enable runtime adapter",
+    },
+  ];
+
+  const runtimeAdapters: GeapRuntimeAdapter[] = [
+    {
+      id: "runtime",
+      service: "orchestrator-service",
+      adapter: "AgentEngineClient / Agent Engine wrapper",
+      target:
+        registrationType === "a2a"
+          ? "Gemini Enterprise A2A agent card"
+          : "Gemini Enterprise Agent Runtime",
+      status:
+        agentEngineEnabled && runtimeConfigured
+          ? "ready"
+          : runtimeConfigured
+            ? "warning"
+            : "missing",
+      hkiContract:
+        "forwards user_id, org_id, scopes, active_domain, and signed HkiEnvelope",
+      evidence: "provider_evidence merged into response_metadata",
+    },
+    {
+      id: "knowledge",
+      service: "knowledge-api",
+      adapter: "HKI retrieval and graph guard",
+      target: VECTOR_STORE_URL,
+      status: "ready",
+      hkiContract: "requires active_domain for retrieval and artifact checks",
+      evidence: "domain-scoped retrieval events",
+    },
+    {
+      id: "ingestion",
+      service: "ingestion-pipeline-service",
+      adapter: "domain publication pipeline",
+      target: KNOWLEDGE_PIPELINE_URL,
+      status: "ready",
+      hkiContract: "publishes artifacts into explicit HKI domains",
+      evidence: "ingestion job and review evidence",
+    },
+    {
+      id: "identity",
+      service: "agentic BFF",
+      adapter: "subject-to-domain scope mapper",
+      target: identityProvider ? "configured provider" : "local session",
+      status: identityProvider ? "ready" : "warning",
+      hkiContract: "maps operators to authorized domain scopes",
+      evidence: "admin audit timeline and access-request records",
+    },
+    {
+      id: "tools",
+      service: "hki-mcp",
+      adapter: "MCP tool/resource guard",
+      target: firstEnv(["MCP_GATEWAY_URL", "HKI_MCP_URL"]) ?? "not configured",
+      status: firstEnv(["MCP_GATEWAY_URL", "HKI_MCP_URL"])
+        ? "ready"
+        : "warning",
+      hkiContract: "evaluateGatewayTarget before tool/resource access",
+      evidence: "tool allow/deny decisions",
+    },
+    {
+      id: "observability",
+      service: "analytics-service",
+      adapter: "HKI + provider telemetry correlation",
+      target: projectId ? "Cloud Trace / audit store" : "local audit store",
+      status: projectId ? "ready" : "warning",
+      hkiContract: "correlates HKI audit IDs with provider invocation IDs",
+      evidence: "release bundle, HTTP probes, and provider evidence",
+    },
+  ];
+
+  const evidenceContract: GeapEvidenceContract[] = [
+    {
+      id: "envelope",
+      label: "Envelope preserved",
+      status: signingSecret ? "ready" : "missing",
+      source: "agentic BFF -> orchestrator-service -> Agent Runtime",
+      detail: "HkiEnvelope is attached to every remote runtime call",
+    },
+    {
+      id: "scope",
+      label: "Domain exact match",
+      status: "ready",
+      source: "orchestrator-service",
+      detail: "runtime rejects user/org/scope mismatches before provider calls",
+    },
+    {
+      id: "knowledge",
+      label: "Knowledge isolation",
+      status: "ready",
+      source: "knowledge-api",
+      detail: "retrieval, graph, and artifacts remain active-domain scoped",
+    },
+    {
+      id: "provider",
+      label: "Provider correlation",
+      status:
+        agentEngineEnabled && runtimeConfigured
+          ? "ready"
+          : runtimeConfigured
+            ? "warning"
+            : "missing",
+      source: "Agent Runtime response metadata",
+      detail: "provider_evidence is merged into HKI response metadata",
+    },
+    {
+      id: "conformance",
+      label: "GEAP probes",
+      status: runtimeConfigured && appId ? "warning" : "missing",
+      source: "conformance harness",
+      detail: "GEAP-managed runtime probes still need a dedicated evidence run",
+    },
+  ];
+
+  const domainAgents = domainRows.map<GeapDomainAgent>(stream => {
+    const displayName = `${stream.name} HKI Agent`;
+    const blockers = [
+      ...(appId ? [] : ["missing Gemini Enterprise app"]),
+      ...(runtimeConfigured ? [] : ["missing runtime target"]),
+      ...(signingSecret ? [] : ["missing HKI signing secret"]),
+    ];
+
+    return {
+      domainId: stream.id,
+      domainName: stream.name,
+      displayName,
+      description: stream.description,
+      activeDomain: stream.id,
+      registrationType,
+      status: blockers.length === 0 ? "publishable" : "blocked",
+      blockers,
+      command: buildGeapPublishCommand({
+        appId,
+        runtimeId,
+        registrationType,
+        agentCardUrl,
+        displayName,
+        description:
+          stream.description ??
+          `HKI-governed Gemini Enterprise agent for ${stream.name}.`,
+      }),
+    };
+  });
+
+  return {
+    checkedAt,
+    environment: {
+      projectId,
+      location,
+      geminiEnterpriseAppId: appId,
+      agentRuntimeId: runtimeId,
+      registrationType,
+      agentCardUrl,
+      agentEngineEnabled,
+      orchestratorUrl: ORCHESTRATOR_URL,
+      knowledgeApiUrl: VECTOR_STORE_URL,
+      pipelineUrl: KNOWLEDGE_PIPELINE_URL,
+    },
+    readiness,
+    runtimeAdapters,
+    evidenceContract,
+    domainAgents,
+    commandPreview,
+  };
+}
 
 function emptyAdminKnowledgeOpsSummary(): AdminKnowledgeOpsSummary {
   return {
@@ -412,6 +901,206 @@ function safeParseAuditDetail(
   }
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function asString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function asNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function asBoolean(value: unknown): boolean | null {
+  return typeof value === "boolean" ? value : null;
+}
+
+function asMessageList(value: unknown): ReleaseEvidenceMessage[] {
+  return asArray(value)
+    .map(item => {
+      const record = asRecord(item);
+      const id = asString(record.id);
+      const message = asString(record.message);
+      return id && message ? { id, message } : null;
+    })
+    .filter((item): item is ReleaseEvidenceMessage => Boolean(item));
+}
+
+function conformanceRegistryCandidatePaths(): string[] {
+  return Array.from(
+    new Set(
+      [
+        process.env.HKI_CONFORMANCE_REGISTRY_PATH,
+        path.resolve(process.cwd(), "conformance.json"),
+        path.resolve(process.cwd(), "..", "..", "conformance.json"),
+        path.resolve(import.meta.dirname, "..", "..", "..", "conformance.json"),
+      ].filter((item): item is string => Boolean(item))
+    )
+  );
+}
+
+async function readFirstJsonFile(
+  candidatePaths: string[]
+): Promise<{ sourcePath: string; payload: Record<string, unknown> } | null> {
+  for (const candidate of candidatePaths) {
+    try {
+      const raw = await fs.readFile(candidate, "utf8");
+      return {
+        sourcePath: candidate,
+        payload: asRecord(JSON.parse(raw)),
+      };
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === "ENOENT" || code === "ENOTDIR") continue;
+      log.warn({ err, candidate }, "Failed to read HKI conformance registry");
+    }
+  }
+  return null;
+}
+
+async function readReleaseEvidence(): Promise<ReleaseEvidencePayload> {
+  const checkedAt = new Date().toISOString();
+  const registry = await readFirstJsonFile(conformanceRegistryCandidatePaths());
+
+  if (!registry) {
+    return {
+      available: false,
+      sourcePath: null,
+      checkedAt,
+      generatedAt: null,
+      level: null,
+      evidenceProfile: null,
+      implementation: {
+        commit: null,
+        branch: null,
+        dirty: null,
+      },
+      releaseReadiness: {
+        strictReleaseEligible: false,
+        status: "missing",
+        blockers: [
+          {
+            id: "missing-conformance-registry",
+            message:
+              "Generate conformance.json before viewing release evidence.",
+          },
+        ],
+        warnings: [],
+      },
+      conformance: {
+        passed: null,
+        total: null,
+        overallPassed: null,
+      },
+      audit: {
+        baseline: null,
+        astBlocking: null,
+        astAdvisory: null,
+        astTsBlocking: null,
+        astTsAdvisory: null,
+      },
+      httpProbe: {
+        passed: null,
+        failed: null,
+        total: null,
+        generatedAt: null,
+        target: null,
+      },
+      managedEvidence: {
+        profile: null,
+        servicesPassed: null,
+        servicesFailed: null,
+        missingCapabilities: [],
+      },
+      commandManifest: [],
+    };
+  }
+
+  const payload = registry.payload;
+  const implementation = asRecord(payload.implementation);
+  const conformance = asRecord(payload.conformance);
+  const audit = asRecord(payload.audit);
+  const ast = asRecord(audit.ast);
+  const astTs = asRecord(audit.astTs);
+  const httpProbe = asRecord(payload.httpProbe);
+  const target = asRecord(httpProbe.target);
+  const managedEvidence = asRecord(payload.managedEvidence);
+  const managedCoverage = asRecord(managedEvidence.coverage);
+  const managedServices = asRecord(managedCoverage.services);
+  const releaseEvidence = asRecord(payload.releaseEvidence);
+  const releaseReadiness = asRecord(releaseEvidence.releaseReadiness);
+
+  const commandManifest = asArray(releaseEvidence.commandManifest)
+    .map(item => {
+      const record = asRecord(item);
+      const id = asString(record.id);
+      const command = asString(record.command);
+      const status = asString(record.status);
+      return id && command && status ? { id, command, status } : null;
+    })
+    .filter((item): item is ReleaseEvidenceCommand => Boolean(item));
+
+  return {
+    available: true,
+    sourcePath: registry.sourcePath,
+    checkedAt,
+    generatedAt: asString(payload.generatedAt),
+    level: asString(payload.level),
+    evidenceProfile: asString(payload.evidenceProfile),
+    implementation: {
+      commit: asString(implementation.commit),
+      branch: asString(implementation.branch),
+      dirty: asBoolean(implementation.dirty),
+    },
+    releaseReadiness: {
+      strictReleaseEligible:
+        asBoolean(releaseReadiness.strictReleaseEligible) ?? false,
+      status: asString(releaseReadiness.status) ?? "unknown",
+      blockers: asMessageList(releaseReadiness.blockers),
+      warnings: asMessageList(releaseReadiness.warnings),
+    },
+    conformance: {
+      passed: asNumber(conformance.passed),
+      total: asNumber(conformance.total),
+      overallPassed: asBoolean(conformance.overallPassed),
+    },
+    audit: {
+      baseline: asNumber(audit.baseline),
+      astBlocking: asNumber(ast.blocking),
+      astAdvisory: asNumber(ast.advisory),
+      astTsBlocking: asNumber(astTs.blocking),
+      astTsAdvisory: asNumber(astTs.advisory),
+    },
+    httpProbe: {
+      passed: asNumber(httpProbe.passed),
+      failed: asNumber(httpProbe.failed),
+      total: asNumber(httpProbe.total),
+      generatedAt: asString(httpProbe.generated_at),
+      target:
+        asString(target.base_url) && asString(target.route)
+          ? `${asString(target.base_url)}${asString(target.route)}`
+          : null,
+    },
+    managedEvidence: {
+      profile: asString(managedEvidence.profile),
+      servicesPassed: asNumber(managedServices.passed),
+      servicesFailed: asNumber(managedServices.failed),
+      missingCapabilities: asArray(managedEvidence.missingCapabilities)
+        .map(item => asString(item))
+        .filter((item): item is string => Boolean(item)),
+    },
+    commandManifest,
+  };
+}
+
 async function requireAdminFeatureFlag(options: {
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>;
   user: { role: Role; valueStreams: string | null; orgId?: string | null };
@@ -675,6 +1364,10 @@ const knowledgeConfigSchema = z.object({
 });
 
 export const adminRouter = router({
+  releaseEvidence: adminProcedure.query(async () => readReleaseEvidence()),
+
+  geapOverview: adminProcedure.query(async () => readGeapOverview()),
+
   // ── Access Requests ──
 
   submitAccessRequest: publicProcedure
@@ -1004,7 +1697,8 @@ export const adminRouter = router({
     try {
       // Prefer full schema, but gracefully fall back when DB migrations
       // for newly added billing columns have not been applied yet.
-      let streams: any[] = [];
+      type ValueStreamRow = typeof valueStreams.$inferSelect;
+      let streams: ValueStreamRow[] = [];
       try {
         streams = await db
           .select()
@@ -1040,6 +1734,7 @@ export const adminRouter = router({
           monthlyTokenBudget: null,
           monthlyTokenUsed: 0,
           billingPeriod: null,
+          createdAt: new Date(),
         }));
       }
 
@@ -3074,8 +3769,7 @@ export const adminRouter = router({
       try {
         ensureManagerHasStreamAccess(ctx, input.valueStreamId);
 
-        const ALLOWED_DOMAIN =
-          process.env.INVITE_ALLOWED_DOMAIN || "hki.com";
+        const ALLOWED_DOMAIN = process.env.INVITE_ALLOWED_DOMAIN || "hki.com";
         if (!input.email.endsWith(`@${ALLOWED_DOMAIN}`)) {
           throw new TRPCError({
             code: "BAD_REQUEST",

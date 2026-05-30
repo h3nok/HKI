@@ -147,12 +147,14 @@ a narrative.
 A wrapper replaces the MCP protocol. A profile extends it.
 
 HKI adds:
+
 - A header convention for envelope transport (`x-hki-envelope`)
 - A validation step before tool dispatch
 - A label requirement on returned resources
 - An audit convention for denial reasons
 
 HKI does not replace:
+
 - MCP tool definitions (unchanged)
 - MCP streaming semantics (unchanged)
 - MCP version negotiation (unchanged)

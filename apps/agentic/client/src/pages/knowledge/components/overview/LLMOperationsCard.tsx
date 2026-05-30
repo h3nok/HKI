@@ -86,7 +86,7 @@ export default function LLMOperationsCard() {
             >
               {s.value}
             </p>
-            <p className="text-[10px] text-muted-foreground/72">{s.label}</p>
+            <p className="text-[10px] text-muted-foreground/85">{s.label}</p>
           </div>
         ))}
       </div>
@@ -101,7 +101,7 @@ export default function LLMOperationsCard() {
 
       {/* Token usage */}
       {((totalInputTokens ?? 0) > 0 || (totalOutputTokens ?? 0) > 0) && (
-        <p className="text-[11px] text-muted-foreground/65">
+        <p className="text-[11px] text-muted-foreground/80">
           {(totalInputTokens ?? 0).toLocaleString()} input tokens
           {" · "}
           {(totalOutputTokens ?? 0).toLocaleString()} output tokens

@@ -22,8 +22,8 @@ import uuid
 import google.adk.runners
 import google.adk.sessions
 import google.genai
-import hki_runtime
 import google.genai.types
+import hki_runtime
 
 import src.adapters.cache
 import src.core.config
@@ -226,9 +226,9 @@ class ToolRunContext:
     conversation_id: str
     scope: str
     scopes: list[str]
-    hki_envelope: hki_runtime.HkiEnvelope | None
     policy: src.domain.models.ExecutionPolicy
     enabled_tools: list[str]
+    hki_envelope: hki_runtime.HkiEnvelope | None = None
     executed_tool_calls: int = 0
 
 
@@ -519,10 +519,12 @@ class AdkAgent:
         self.memory: src.domain.memory.MemoryManager | None = memory_manager
         self.cache: src.adapters.cache.TieredCache | None = cache
         self._session_service = google.adk.sessions.InMemorySessionService()
-        self._tool_catalog: dict[str, ToolSpec] = src.domain.tools.get_tool_catalog()
+        self._tool_catalog: dict[str, src.domain.tools.ToolSpec] = (
+            src.domain.tools.get_tool_catalog()
+        )
 
     @property
-    def tools(self) -> list[Any]:
+    def tools(self) -> list[typing.Any]:
         """Expose base tool callables for the /tools listing endpoint."""
         return [spec.func for spec in self._tool_catalog.values()]
 
@@ -660,7 +662,7 @@ class AdkAgent:
                 else src.domain.models.ModelTier.FAST
             )
 
-        model_map: dict[ModelTier, str] = {
+        model_map: dict[src.domain.models.ModelTier, str] = {
             src.domain.models.ModelTier.FAST: src.core.config.settings.AGENT_MODEL_FAST,
             src.domain.models.ModelTier.SMART: src.core.config.settings.AGENT_MODEL_SMART,
             src.domain.models.ModelTier.THINKING: src.core.config.settings.AGENT_MODEL_THINKING,
@@ -678,7 +680,7 @@ class AdkAgent:
         primary_model: str,
         model_tier: src.domain.models.ModelTier,
     ) -> list[str]:
-        candidate_map: dict[ModelTier, list[str]] = {
+        candidate_map: dict[src.domain.models.ModelTier, list[str]] = {
             src.domain.models.ModelTier.FAST: [
                 primary_model,
                 src.core.config.settings.AGENT_MODEL,
@@ -734,7 +736,7 @@ class AdkAgent:
             working_memory: str = context.to_prompt_section().strip()
             working_memory_count: int = context.total_memories
 
-        prompt_stack: dict[str, Any] = src.domain.adk_agent.build_prompt_stack(
+        prompt_stack: dict[str, typing.Any] = src.domain.adk_agent.build_prompt_stack(
             domain_prompt=base_prompt,
             enabled_tools=enabled_tools,
             scope=scope,
@@ -876,7 +878,9 @@ class AdkAgent:
 
     def _build_tool_wrappers(self, context: ToolRunContext) -> dict[str, typing.Any]:
         wrappers: dict[str, typing.Any] = {}
-        tool_specs: dict[str, ToolSpec] = src.domain.tools.get_tool_catalog(context.enabled_tools)
+        tool_specs: dict[str, src.domain.tools.ToolSpec] = (
+            src.domain.tools.get_tool_catalog(context.enabled_tools)
+        )
 
         for tool_name, spec in tool_specs.items():
             tool_func = spec.func

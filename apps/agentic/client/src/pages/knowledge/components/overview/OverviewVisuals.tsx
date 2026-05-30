@@ -115,7 +115,7 @@ function OverviewBarRow({
           >
             {item.valueLabel ?? item.value}
           </span>
-          <span className="w-8 text-[10px] tabular-nums text-muted-foreground/70">
+          <span className="w-8 text-[10px] tabular-nums text-muted-foreground/85">
             {pct}%
           </span>
         </div>

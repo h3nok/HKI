@@ -4,7 +4,7 @@
   "private": true,
   "description": "HKI public specification site — hki.dev",
   "scripts": {
-    "dev": "cp ../../conformance.json public/conformance.json && npx serve public -p 3100",
+    "dev": "node build.mjs && npx serve dist -p 3100",
     "build": "node build.mjs",
     "preview": "npx serve dist -p 3100"
   },

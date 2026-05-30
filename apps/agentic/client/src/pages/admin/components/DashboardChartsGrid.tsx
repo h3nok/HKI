@@ -8,12 +8,18 @@ import {
   IngestionTimelineChart,
   ResourceUsageChart,
 } from "../DashboardCharts";
+import type { RouterOutputs } from "@/lib/trpc";
+import type { KnowledgeOpsJob } from "./KnowledgeStatsGrid";
+
+type RecentTrace = RouterOutputs["governance"]["recentTraces"][number];
+type ToolStat = RouterOutputs["governance"]["toolStats"][number];
+type ResourceMetrics = RouterOutputs["governance"]["resourceMetrics"];
 
 interface DashboardChartsGridProps {
-  traces: any[];
-  toolStats: any[];
-  ingestionData: any;
-  resourceData: any;
+  traces: RecentTrace[];
+  toolStats: ToolStat[];
+  ingestionData: KnowledgeOpsJob[];
+  resourceData: ResourceMetrics | null | undefined;
 }
 
 // #7 — Chart config with question-style titles
@@ -107,7 +113,7 @@ export function DashboardChartsGrid({
                     <ChartIcon className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-foreground dark:text-foreground/82">
+                    <h3 className="text-sm font-semibold text-foreground">
                       {chart.title}
                     </h3>
                     <p className="line-clamp-2 text-[11px] leading-snug text-muted-foreground">

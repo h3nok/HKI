@@ -328,20 +328,20 @@ function OverviewHero({ hero }: { hero: OverviewHeroModel }) {
   return (
     <SurfaceCard
       variant="default"
-      className="kb-overview-hero relative overflow-hidden rounded-[30px] border border-border/30 bg-card px-7 py-6 lg:px-9 lg:py-7 dark:border-white/6 dark:bg-card"
+      className="kb-overview-hero relative overflow-hidden rounded-[30px] border border-border/60 bg-card px-7 py-6 lg:px-9 lg:py-7 dark:border-white/10 dark:bg-card"
     >
       <HeroBrandDecoration />
 
       <div className="relative flex flex-col gap-5 xl:flex-row xl:items-stretch">
         {/* ── Left: content ── */}
         <div className="flex min-w-0 flex-1 flex-col gap-4">
-          <p className="text-[12px] font-medium text-muted-foreground/78">
+          <p className="text-[12px] font-medium text-muted-foreground">
             {hero.firstName ? (
               <>
-                <span className="text-foreground/56">
+                <span className="text-foreground/75">
                   Welcome back, {hero.firstName}
                 </span>
-                <span className="mx-2 select-none text-border">&#47;</span>
+                <span className="mx-2 select-none text-border/80">&#47;</span>
               </>
             ) : null}
             <span>{hero.streamLabel}</span>
@@ -349,7 +349,7 @@ function OverviewHero({ hero }: { hero: OverviewHeroModel }) {
               hero.phaseLabel.toLowerCase() !==
                 hero.streamLabel.toLowerCase() && (
                 <>
-                  <span className="mx-2 select-none text-border">&#47;</span>
+                  <span className="mx-2 select-none text-border/80">&#47;</span>
                   <span className="font-semibold text-primary">
                     {hero.phaseLabel}
                   </span>
@@ -360,7 +360,7 @@ function OverviewHero({ hero }: { hero: OverviewHeroModel }) {
           {/* Title block */}
           <div className="space-y-2.5">
             <HeroTitleLockup title={hero.title} />
-            <p className="max-w-[54ch] text-[0.9rem] leading-relaxed text-muted-foreground/90">
+            <p className="max-w-[54ch] text-[0.9rem] leading-relaxed text-muted-foreground">
               {hero.description}
             </p>
           </div>

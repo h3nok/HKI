@@ -143,7 +143,7 @@ class TestIngestText:
             "/v1/ingest/text",
             json={
                 "content": "HKI is a membership-based warehouse club. " * 20,
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Pipeline Test Doc",
                 "department": "test",
                 "document_type": "policy",
@@ -159,7 +159,7 @@ class TestIngestText:
     def test_ingest_empty_content_rejected(self, client: TestClient) -> None:
         resp = client.post(
             "/v1/ingest/text",
-            json={"content": "   ", "title": "Empty", "stream_id": "global"},
+            json={"content": "   ", "title": "Empty", "stream_id": "dev"},
         )
         assert resp.status_code == 400
 
@@ -170,13 +170,24 @@ class TestIngestText:
         )
         assert resp.status_code == 422
 
+    def test_ingest_global_stream_rejected(self, client: TestClient) -> None:
+        resp = client.post(
+            "/v1/ingest/text",
+            json={
+                "content": "Global runtime streams should fail closed.",
+                "title": "Global Stream",
+                "stream_id": "global",
+            },
+        )
+        assert resp.status_code == 403
+
     def test_ingest_then_list_jobs(self, client: TestClient) -> None:
         """After ingestion, the job appears in the jobs list."""
         ingest_resp = client.post(
             "/v1/ingest/text",
             json={
                 "content": "Some content for the pipeline to process. " * 10,
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Job List Test",
             },
         )
@@ -194,7 +205,7 @@ class TestIngestText:
             "/v1/ingest/text",
             json={
                 "content": "Pipeline testing content for job detail check. " * 10,
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Job Detail Test",
             },
         )
@@ -213,7 +224,7 @@ class TestIngestText:
             "/v1/ingest/text",
             json={
                 "content": "Review queue wiring test. " * 20,
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Queue Visibility Test",
                 "department": "test",
                 "document_type": "faq",
@@ -557,7 +568,7 @@ class TestVersions:
             data={
                 "title": "Drive Sync Document",
                 "source_ref": source_ref,
-                "stream_id": "global",
+                "stream_id": "dev",
             },
         )
         assert resp.status_code == 200
@@ -596,7 +607,7 @@ class TestReview:
             "/v1/review/submit",
             json={
                 "document_id": "doc-review-1",
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Test Review",
                 "quality_report": {"overall_score": 0.85},
             },
@@ -617,12 +628,23 @@ class TestReview:
         )
         assert resp.status_code == 422
 
+    def test_submit_review_global_stream_rejected(self, client: TestClient) -> None:
+        resp = client.post(
+            "/v1/review/submit",
+            json={
+                "document_id": "doc-review-global",
+                "stream_id": "global",
+                "title": "Global Review",
+            },
+        )
+        assert resp.status_code == 403
+
     def test_submit_then_list_pending(self, client: TestClient) -> None:
         client.post(
             "/v1/review/submit",
             json={
                 "document_id": "doc-review-2",
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Pending Test",
                 "quality_report": {"overall_score": 0.7},
             },
@@ -637,7 +659,7 @@ class TestReview:
             "/v1/review/submit",
             json={
                 "document_id": "doc-review-3",
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Get By ID Test",
                 "quality_report": {"overall_score": 0.9},
             },
@@ -657,7 +679,7 @@ class TestReview:
             "/v1/review/submit",
             json={
                 "document_id": "doc-review-approve",
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Approve Test",
                 "quality_report": {"overall_score": 0.95},
             },
@@ -681,7 +703,7 @@ class TestReview:
             "/v1/review/submit",
             json={
                 "document_id": "doc-review-reject",
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Reject Test",
                 "quality_report": {"overall_score": 0.3},
             },
@@ -705,7 +727,7 @@ class TestReview:
             "/v1/review/submit",
             json={
                 "document_id": "doc-review-publish-sync",
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Publish Sync Test",
                 "quality_report": {"overall_score": 0.95},
             },
@@ -750,7 +772,7 @@ class TestReview:
             "/v1/review/submit",
             json={
                 "document_id": "doc-review-remind",
-                "stream_id": "global",
+                "stream_id": "dev",
                 "title": "Reminder Test",
                 "quality_report": {"overall_score": 0.82},
             },

@@ -21,6 +21,7 @@ Usage:
 from __future__ import annotations
 
 import dataclasses
+import hmac
 
 import fastapi
 
@@ -36,6 +37,14 @@ class ServiceIdentity:
     org_id: str = "default"
 
 
+def _allow_local_secret_bypass() -> bool:
+    return (
+        str(src.core.config.settings.ENVIRONMENT).lower()
+        in {"local", "dev", "development", "test"}
+        or str(src.core.config.settings.AUTH_ENABLED).lower() in {"false", "0", "no"}
+    )
+
+
 async def verify_service_token(request: fastapi.Request) -> ServiceIdentity:
     """
     FastAPI dependency — validates the X-Internal-Token header.
@@ -46,7 +55,12 @@ async def verify_service_token(request: fastapi.Request) -> ServiceIdentity:
     Bypassed when INTERNAL_SERVICE_TOKEN is empty (local dev).
     """
     if not src.core.config.settings.PIPELINE_SERVICE_SECRET:
-        # Dev mode: accept anything, extract service name for logging
+        if not _allow_local_secret_bypass():
+            raise fastapi.HTTPException(
+                status_code=fastapi.status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Pipeline service secret is not configured",
+            )
+
         service: str = request.headers.get("X-Service-Name", "dev")
         src.core.logging.logger.debug(
             "Pipeline secret check skipped (PIPELINE_SERVICE_SECRET not set)",
@@ -61,7 +75,7 @@ async def verify_service_token(request: fastapi.Request) -> ServiceIdentity:
             detail="Missing X-Pipeline-Secret header",
         )
 
-    if token != src.core.config.settings.PIPELINE_SERVICE_SECRET:
+    if not hmac.compare_digest(token, src.core.config.settings.PIPELINE_SERVICE_SECRET):
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_403_FORBIDDEN,
             detail="Invalid service token",

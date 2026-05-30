@@ -326,7 +326,7 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_submit_goes_to_pending(self, workflow_no_policy) -> None:
         record = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global", title="Test Doc"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev", title="Test Doc"),
             org_id="org1",
         )
         assert record.status == src.domain.review.ReviewStatus.PENDING_REVIEW
@@ -337,7 +337,7 @@ class TestReviewWorkflow:
         record = await workflow.submit(
             src.domain.review.SubmitRequest(
                 document_id="doc-1",
-                stream_id="global",
+                stream_id="dev",
                 title="IT Doc",
                 department="IT",
                 submitted_by="admin",
@@ -354,7 +354,7 @@ class TestReviewWorkflow:
         record = await workflow.submit(
             src.domain.review.SubmitRequest(
                 document_id="doc-1",
-                stream_id="global",
+                stream_id="dev",
                 title="Re-ingest",
                 department="Marketing",
             ),
@@ -367,14 +367,14 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_submit_reuses_existing_record_for_same_document(self, workflow_no_policy, store) -> None:
         original = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global", title="Original"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev", title="Original"),
             org_id="org1",
         )
 
         updated = await workflow_no_policy.submit(
             src.domain.review.SubmitRequest(
                 document_id="doc-1",
-                stream_id="global",
+                stream_id="dev",
                 title="Updated",
                 submitted_by="pipeline",
             ),
@@ -394,7 +394,7 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_approve_review(self, workflow_no_policy, store) -> None:
         record = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev"),
             org_id="org1",
         )
         assert record.status == src.domain.review.ReviewStatus.PENDING_REVIEW
@@ -414,7 +414,7 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_reject_review(self, workflow_no_policy) -> None:
         record = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev"),
             org_id="org1",
         )
         rejected = await workflow_no_policy.review(
@@ -430,7 +430,7 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_request_revision(self, workflow_no_policy) -> None:
         record = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev"),
             org_id="org1",
         )
         revised = await workflow_no_policy.review(
@@ -446,7 +446,7 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_remind_assigned_review(self, workflow_no_policy) -> None:
         record = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev"),
             org_id="org1",
         )
         await workflow_no_policy.assign(
@@ -474,7 +474,7 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_remind_unassigned_review_raises(self, workflow_no_policy) -> None:
         record = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev"),
             org_id="org1",
         )
 
@@ -489,7 +489,7 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_publish_approved(self, workflow_no_policy) -> None:
         record = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev"),
             org_id="org1",
         )
         await workflow_no_policy.review(
@@ -506,7 +506,7 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_publish_non_approved_raises(self, workflow_no_policy) -> None:
         record = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev"),
             org_id="org1",
         )
         with pytest.raises(ValueError, match="must be APPROVED"):
@@ -515,7 +515,7 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_resubmit_rejected(self, workflow_no_policy) -> None:
         record = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev"),
             org_id="org1",
         )
         await workflow_no_policy.review(
@@ -542,7 +542,7 @@ class TestReviewWorkflow:
     @pytest.mark.asyncio
     async def test_invalid_transition_raises(self, workflow_no_policy) -> None:
         record = await workflow_no_policy.submit(
-            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="global"),
+            src.domain.review.SubmitRequest(document_id="doc-1", stream_id="dev"),
             org_id="org1",
         )
         await workflow_no_policy.review(
@@ -566,7 +566,7 @@ class TestReviewWorkflow:
     async def test_get_pending(self, workflow_no_policy) -> None:
         for i in range(3):
             await workflow_no_policy.submit(
-                src.domain.review.SubmitRequest(document_id=f"doc-{i}", stream_id="global"),
+                src.domain.review.SubmitRequest(document_id=f"doc-{i}", stream_id="dev"),
                 org_id="org1",
             )
         pending = await workflow_no_policy.get_pending("org1")
@@ -579,7 +579,7 @@ class TestReviewWorkflow:
         record = await workflow_no_policy.submit(
             src.domain.review.SubmitRequest(
                 document_id="doc-lifecycle",
-                stream_id="global",
+                stream_id="dev",
                 title="Lifecycle Test",
                 submitted_by="author",
             ),

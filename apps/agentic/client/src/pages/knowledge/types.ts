@@ -5,7 +5,7 @@ import {
   Loader2,
   LayoutDashboard,
   Plus,
-  BookOpen,
+  LibraryBig,
   ShieldCheck,
   Activity,
   Landmark,
@@ -42,16 +42,16 @@ export interface KBNavItem {
 export const NAV_ITEMS: KBNavItem[] = [
   { key: "overview", label: "Overview", icon: LayoutDashboard },
   { key: "ingest", label: "Add", icon: Plus },
-  { key: "library", label: "Library", icon: BookOpen },
+  { key: "library", label: "Content", icon: LibraryBig },
   { key: "validate", label: "Validate", icon: ShieldCheck },
   { key: "govern", label: "Govern", icon: Landmark },
   { key: "pipelines", label: "Processing", icon: Workflow },
   { key: "activity", label: "Activity", icon: Activity },
 ];
 
-/** Manage — primary nav (first 5) */
+/** Manage — primary nav. "ingest" is omitted: Add content lives as a button inside the Content tab. */
 export const CHAPTER_ITEMS = NAV_ITEMS.filter(i =>
-  ["overview", "ingest", "library", "validate", "govern"].includes(i.key)
+  ["overview", "library", "validate", "govern"].includes(i.key)
 );
 /** Monitor — secondary nav (Pipelines + Activity) */
 export const INDEX_ITEMS = NAV_ITEMS.filter(i =>

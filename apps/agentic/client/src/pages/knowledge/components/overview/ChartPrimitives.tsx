@@ -310,7 +310,7 @@ export function SegBar({
                 <span className="ml-auto text-xs font-semibold tabular-nums text-foreground shrink-0">
                   {seg.value}
                 </span>
-                <span className="text-[10px] text-muted-foreground/65 tabular-nums shrink-0 w-7 text-right">
+                <span className="text-[10px] text-muted-foreground/80 tabular-nums shrink-0 w-7 text-right">
                   {Math.round((seg.value / total) * 100)}%
                 </span>
               </div>
@@ -357,7 +357,7 @@ export function RankList({
             className="grid grid-cols-[1fr_auto] items-center gap-2"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[10px] font-bold text-muted-foreground/65 tabular-nums w-3 shrink-0 text-right">
+              <span className="text-[10px] font-bold text-muted-foreground/80 tabular-nums w-3 shrink-0 text-right">
                 {i + 1}
               </span>
               <div className="flex-1 space-y-1 min-w-0">
@@ -383,7 +383,7 @@ export function RankList({
                 {item.value}
               </span>
               {total > 0 && (
-                <span className="text-[10px] text-muted-foreground/65 tabular-nums">
+                <span className="text-[10px] text-muted-foreground/80 tabular-nums">
                   {Math.round((item.value / total) * 100)}%
                 </span>
               )}
@@ -424,7 +424,7 @@ export function StatRow({
         const t = TONE[item.tone ?? "neutral"];
         return (
           <div key={item.label} className="space-y-0.5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/72">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/85">
               {item.label}
             </p>
             <p
@@ -473,7 +473,7 @@ export function BigNum({
       </p>
       <p className="mt-1 text-xs font-medium text-muted-foreground">{label}</p>
       {sub && (
-        <p className="mt-0.5 text-[10px] text-muted-foreground/65 tabular-nums">
+        <p className="mt-0.5 text-[10px] text-muted-foreground/80 tabular-nums">
           {sub}
         </p>
       )}
@@ -554,7 +554,7 @@ export function RingChart({
           {pct}%
         </span>
         {label && (
-          <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/72 leading-none">
+          <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/85 leading-none">
             {label}
           </span>
         )}
@@ -656,7 +656,7 @@ export function DonutChart({
           />
         </svg>
         {emptyMessage && (
-          <span className="absolute text-[9px] text-muted-foreground/65 text-center px-1 leading-tight">
+          <span className="absolute text-[9px] text-muted-foreground/80 text-center px-1 leading-tight">
             {emptyMessage}
           </span>
         )}
@@ -737,7 +737,7 @@ export function DonutChart({
             </span>
           )}
           {sublabel && (
-            <span className="text-[9px] font-medium text-muted-foreground/72 leading-none mt-0.5">
+            <span className="text-[9px] font-medium text-muted-foreground/85 leading-none mt-0.5">
               {sublabel}
             </span>
           )}
@@ -776,7 +776,7 @@ export function MiniColumnChart({
             key={item.label}
             className="flex-1 flex flex-col items-center gap-1 min-w-0"
           >
-            <span className="text-[10px] font-bold tabular-nums text-foreground/60 leading-none h-3 flex items-center">
+            <span className="text-[10px] font-bold tabular-nums text-foreground/80 leading-none h-3 flex items-center">
               {item.value}
             </span>
             <div
@@ -797,7 +797,7 @@ export function MiniColumnChart({
                 }}
               />
             </div>
-            <span className="text-[9px] text-muted-foreground/65 truncate w-full text-center leading-none">
+            <span className="text-[9px] text-muted-foreground/80 truncate w-full text-center leading-none">
               {item.label}
             </span>
           </div>

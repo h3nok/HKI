@@ -117,7 +117,7 @@ export function RolloutActivityCard({
                     </span>{" "}
                     <span className="font-medium">{event.title}</span>
                   </span>
-                  <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground/65">
+                  <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground/80">
                     {formatAuditTimestamp(event.createdAt)}
                   </span>
                 </div>

@@ -340,7 +340,7 @@ export function AdminCommandPalette({
                         strokeWidth={1.5}
                       />
                     </div>
-                    <p className="text-[14px] font-medium text-foreground/70">
+                    <p className="text-[14px] font-medium text-foreground/85">
                       No results for &ldquo;{query}&rdquo;
                     </p>
                     <p className="text-[12px] text-muted-foreground">
@@ -352,7 +352,7 @@ export function AdminCommandPalette({
                     {sections.map(section => (
                       <div key={section.label}>
                         <div className="flex items-center gap-2 px-4 pt-3 pb-1.5">
-                          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80">
                             {section.label}
                           </span>
                         </div>

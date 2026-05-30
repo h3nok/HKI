@@ -96,13 +96,16 @@ def _hki_reject_status(issues: tuple[hki_runtime.HkiValidationIssue, ...]) -> in
 def _resolve_hki_envelope(
     request: fastapi.Request,
     identity: src.core.auth.RequestIdentity,
-) -> hki_runtime.HkiEnvelope | None:
+) -> hki_runtime.HkiEnvelope:
     header_value = request.headers.get(hki_runtime.fastapi.DEFAULT_HEADER)
     if not header_value:
-        return None
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
+            detail="Missing X-HKI-Envelope header",
+        )
 
     try:
-        payload: dict[str, Any] = hki_runtime.fastapi.decode_envelope_header(header_value)
+        payload: dict[str, typing.Any] = hki_runtime.fastapi.decode_envelope_header(header_value)
     except hki_runtime.fastapi.HkiEnvelopeError as exc:
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
@@ -138,11 +141,9 @@ def _resolve_hki_envelope(
 
 
 def _reject_body_scope_override(
-    envelope: hki_runtime.HkiEnvelope | None,
+    envelope: hki_runtime.HkiEnvelope,
     body: pydantic.BaseModel,
 ) -> fastapi.responses.JSONResponse | None:
-    if envelope is None:
-        return None
     scope_error: str | None = hki_runtime.reject_conflicting_scope_argument(
         envelope,
         body.model_dump(exclude_none=True),
@@ -158,17 +159,19 @@ def _reject_body_scope_override(
 def _effective_subject_id(
     body: ChatRequest,
     identity: src.core.auth.RequestIdentity,
-    envelope: hki_runtime.HkiEnvelope | None,
+    envelope: hki_runtime.HkiEnvelope,
 ) -> str:
-    return envelope.subject_id if envelope else body.user_id or identity.user_id
+    _ = body, identity
+    return envelope.subject_id
 
 
 def _effective_org_id(
     body: ChatRequest,
     identity: src.core.auth.RequestIdentity,
-    envelope: hki_runtime.HkiEnvelope | None,
+    envelope: hki_runtime.HkiEnvelope,
 ) -> str:
-    return envelope.org_id if envelope else body.org_id or identity.org_id
+    _ = body, identity
+    return envelope.org_id
 
 
 def _emit_chat_audit_event(
@@ -176,7 +179,7 @@ def _emit_chat_audit_event(
     *,
     body: ChatRequest,
     identity: src.core.auth.RequestIdentity,
-    hki_envelope: hki_runtime.HkiEnvelope | None = None,
+    hki_envelope: hki_runtime.HkiEnvelope,
     effective_user_id: str,
     decision_outcome: str,
     decision_reason: str,
@@ -189,16 +192,12 @@ def _emit_chat_audit_event(
     if analytics is None:
         return
 
-    active_domain = hki_envelope.active_domain if hki_envelope else identity.scope
-    authorized_domains = (
-        list(hki_envelope.authorized_domains)
-        if hki_envelope
-        else list(identity.scopes or [identity.scope])
-    )
+    active_domain = hki_envelope.active_domain
+    authorized_domains = list(hki_envelope.authorized_domains)
     response_metadata = response_metadata or {}
     analytics.fire_audit_event(
         operation_type="agent.chat",
-        org_id=hki_envelope.org_id if hki_envelope else body.org_id or identity.org_id,
+        org_id=hki_envelope.org_id,
         subject_id=effective_user_id,
         active_domain=active_domain,
         authorized_domains=authorized_domains,
@@ -208,8 +207,8 @@ def _emit_chat_audit_event(
         decision_outcome=decision_outcome,
         decision_reason=decision_reason,
         actor_role=identity.role,
-        policy_pack_id=hki_envelope.policy_pack_id if hki_envelope else "",
-        risk_tier=str(hki_envelope.risk_tier) if hki_envelope else "",
+        policy_pack_id=hki_envelope.policy_pack_id,
+        risk_tier=str(hki_envelope.risk_tier),
         evidence={
             "conversation_id": body.conversation_id,
             "message_hash": _message_hash(body.message),
@@ -280,7 +279,7 @@ async def chat_stream(
     Process a user message with SSE streaming back to the BFF.
     Stream structure mimics the expected format of the frontend.
     """
-    hki_envelope: hki_runtime.HkiEnvelope | None = _resolve_hki_envelope(request, identity)
+    hki_envelope: hki_runtime.HkiEnvelope = _resolve_hki_envelope(request, identity)
     scope_override_response = _reject_body_scope_override(hki_envelope, body)
     if scope_override_response is not None:
         return scope_override_response
@@ -338,8 +337,8 @@ async def chat_stream(
             user_id=effective_user_id,
             org_id=effective_org_id,
             message=body.message,
-            scope=hki_envelope.active_domain if hki_envelope else identity.scope,
-            scopes=list(hki_envelope.authorized_domains) if hki_envelope else identity.scopes,
+            scope=hki_envelope.active_domain,
+            scopes=list(hki_envelope.authorized_domains),
             hki_envelope=hki_envelope,
             stream_config=body.stream_config,
         ):
@@ -423,7 +422,7 @@ async def chat(
     """
     Synchronous fallback endpoint that accumulates the stream before returning.
     """
-    hki_envelope: hki_runtime.HkiEnvelope | None = _resolve_hki_envelope(request, identity)
+    hki_envelope: hki_runtime.HkiEnvelope = _resolve_hki_envelope(request, identity)
     scope_override_response = _reject_body_scope_override(hki_envelope, body)
     if scope_override_response is not None:
         return scope_override_response
@@ -469,8 +468,8 @@ async def chat(
         user_id=effective_user_id,
         org_id=effective_org_id,
         message=body.message,
-        scope=hki_envelope.active_domain if hki_envelope else identity.scope,
-        scopes=list(hki_envelope.authorized_domains) if hki_envelope else identity.scopes,
+        scope=hki_envelope.active_domain,
+        scopes=list(hki_envelope.authorized_domains),
         hki_envelope=hki_envelope,
         stream_config=body.stream_config,
     ):
@@ -571,7 +570,7 @@ async def llm_complete(
 
     fallback = src.adapters.llm_client.LLMClient(base_url="", api_key=body.api_key, model=body.model)
     try:
-        result: dict[str, Any] = await _run_completion(fallback, body)
+        result: dict[str, typing.Any] = await _run_completion(fallback, body)
         result["fallback_used"] = True
         return result
     except Exception as exc:

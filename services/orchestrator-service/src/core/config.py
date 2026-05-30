@@ -50,6 +50,8 @@ class Settings(shared.config.ServiceSettings):
     GCP_LOCATION: str = "us-central1"
     VERTEX_AI_LOCATION: str = "us-central1"
     GOOGLE_GENAI_USE_VERTEXAI: bool = True
+    AGENT_ENGINE_ENABLED: bool = False
+    AGENT_ENGINE_RESOURCE_NAME: str = ""
 
     # ── Redis (memory + rate limiting) ────────────────────────────────────
     REDIS_URL: str = "redis://localhost:9379/0"
@@ -65,6 +67,7 @@ class Settings(shared.config.ServiceSettings):
     VECTOR_STORE_URL: str = "http://localhost:9509"
     KNOWLEDGE_PIPELINE_URL: str = "http://localhost:9508"
     ANALYTICS_SERVICE_URL: str = "http://localhost:9510"
+    ANALYTICS_INGEST_SECRET: str = ""
 
     # ── Tool stub mode ────────────────────────────────────────────────────
     # When True, search_products / check_inventory / get_product_pricing
@@ -100,6 +103,11 @@ class Settings(shared.config.ServiceSettings):
             errors.append(
                 "STUB_TOOLS=true — product search, inventory, and pricing tools return "
                 "mock data. Set STUB_TOOLS=false and connect real API endpoints."
+            )
+
+        if self.AGENT_ENGINE_ENABLED and not self.AGENT_ENGINE_RESOURCE_NAME.strip():
+            errors.append(
+                "AGENT_ENGINE_ENABLED=true but AGENT_ENGINE_RESOURCE_NAME is empty"
             )
 
         if errors:

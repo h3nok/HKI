@@ -83,6 +83,7 @@ class Settings(ServiceSettings):
     # Set to emit kb.search / kb.ingest events for CMOS and ingest metrics.
     # Empty = analytics disabled (no-op client).
     ANALYTICS_SERVICE_URL: str = ""
+    ANALYTICS_INGEST_SECRET: str = ""
 
     # ── Redis (optional caching layer) ────────────────────────────────────
     REDIS_URL: str = "redis://localhost:9379/1"

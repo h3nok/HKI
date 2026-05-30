@@ -134,24 +134,8 @@ export function ForwardSignalsPanel({ summary }: ForwardSignalsPanelProps) {
     .filter(signal => signal.mode === "pressure" && signal.hasData)
     .sort((a, b) => b.score - a.score)[0];
   const evidenceCount = rows.filter(signal => signal.hasData).length;
-  const pressureTone = pressureSignal?.tone ?? "positive";
-  const summaryMetrics = [
-    {
-      label: "Ready",
-      value: `${summary.readinessScore}%`,
-      tone: summary.readinessScore >= 72 ? "primary" : "warning",
-    },
-    {
-      label: "Data",
-      value: `${evidenceCount}/${rows.length}`,
-      tone: evidenceCount === rows.length ? "positive" : "warning",
-    },
-    {
-      label: pressureSignal?.shortLabel ?? "Risk",
-      value: pressureSignal?.badge ?? "Low",
-      tone: pressureTone,
-    },
-  ] satisfies Array<{ label: string; value: string; tone: AdminTone }>;
+  const readinessTone: AdminTone =
+    summary.readinessScore >= 72 ? "primary" : "warning";
 
   return (
     <motion.div
@@ -194,36 +178,22 @@ export function ForwardSignalsPanel({ summary }: ForwardSignalsPanelProps) {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {weakestSignal && (
-              <span
-                className={cn(
-                  a.inset,
-                  "inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold text-muted-foreground"
-                )}
-              >
-                Focus: {weakestSignal.shortLabel}
-              </span>
-            )}
-            {pressureSignal && pressureSignal.score >= 36 && (
-              <span
-                className={cn(
-                  SIGNAL_TONES[pressureTone].pill,
-                  "inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold"
-                )}
-              >
-                {pressureSignal.shortLabel}: {pressureSignal.badge}
-              </span>
-            )}
             <span
               className={cn(
-                SIGNAL_TONES[
-                  summary.readinessScore >= 72 ? "primary" : "warning"
-                ].pill,
+                SIGNAL_TONES[readinessTone].pill,
                 "inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] tabular-nums"
               )}
             >
               <ShieldCheck className="size-3" />
               {summary.readinessScore}% ready
+            </span>
+            <span
+              className={cn(
+                a.inset,
+                "inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium text-muted-foreground"
+              )}
+            >
+              {evidenceCount}/{rows.length} signals
             </span>
           </div>
         </div>
@@ -332,52 +302,81 @@ export function ForwardSignalsPanel({ summary }: ForwardSignalsPanelProps) {
                     Ready
                   </text>
                 </svg>
-                <div className="absolute inset-x-8 bottom-1 h-8 rounded-full bg-primary/8 blur-2xl" />
+                <div className="absolute inset-x-8 bottom-1 h-8 rounded-full bg-primary/8 dark:bg-slate-500/4 blur-2xl" />
               </div>
 
-              <div className="admin-forward-signals-card__metrics grid grid-cols-3 gap-1.5 border-t border-border/60 pt-2.5">
-                {summaryMetrics.map(metric => (
-                  <div
-                    key={metric.label}
-                    className={cn(
-                      SIGNAL_TONES[metric.tone].pill,
-                      "admin-forward-signals-card__metric min-w-0 rounded-lg px-1.5 py-1.5"
-                    )}
-                  >
-                    <p className="text-[8px] font-semibold uppercase tracking-normal text-muted-foreground/75">
-                      {metric.label}
-                    </p>
-                    <p className="mt-0.5 truncate text-[13px] font-semibold tabular-nums text-foreground">
-                      {metric.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="admin-forward-signals-card__rows divide-y divide-border/45">
-                {rows.map((row, index) => (
-                  <div
-                    key={row.key}
-                    title={`${row.title}: ${row.label}. ${row.detail}`}
-                    className={cn(
-                      "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-1 py-1.5 transition-colors hover:bg-background/40",
-                      index === 0 && "pt-0"
-                    )}
-                  >
-                    <div className="flex min-w-0 items-center gap-1.5">
+              <div
+                className="admin-forward-signals-card__rows mt-1 flex flex-col gap-1 border-t border-border/50 pt-2"
+                role="list"
+              >
+                {rows.map(row => {
+                  const isFocus = weakestSignal?.key === row.key;
+                  const isPressure =
+                    pressureSignal?.key === row.key && row.score >= 36;
+                  return (
+                    <div
+                      key={row.key}
+                      role="listitem"
+                      title={`${row.title}: ${row.label}. ${row.detail}`}
+                      className={cn(
+                        "group grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-background/40"
+                      )}
+                    >
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <span
+                          className={cn(
+                            "size-1.5 shrink-0 rounded-full",
+                            !row.hasData && "opacity-40"
+                          )}
+                          style={{ backgroundColor: row.color }}
+                        />
+                        <span className="truncate text-[11px] font-medium text-foreground/85">
+                          {row.shortLabel}
+                        </span>
+                        {isFocus && (
+                          <span className="text-[8px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/85">
+                            focus
+                          </span>
+                        )}
+                        {isPressure && (
+                          <span
+                            className={cn(
+                              "text-[8px] font-semibold uppercase tracking-[0.14em]",
+                              row.tone === "critical"
+                                ? "text-destructive/80"
+                                : "text-warning/80"
+                            )}
+                          >
+                            pressure
+                          </span>
+                        )}
+                      </div>
+                      <div
+                        className="relative h-1 min-w-0 overflow-hidden rounded-full bg-border/40"
+                        aria-hidden="true"
+                      >
+                        <span
+                          className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500 ease-out"
+                          style={{
+                            width: `${row.hasData ? clampPercent(row.radarScore) : 0}%`,
+                            backgroundColor: row.color,
+                            opacity: row.hasData ? 0.85 : 0,
+                          }}
+                        />
+                      </div>
                       <span
-                        className="size-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: row.color }}
-                      />
-                      <span className="truncate text-[11px] font-semibold text-foreground">
-                        {row.shortLabel}
+                        className={cn(
+                          "shrink-0 text-right text-[10px] font-semibold tabular-nums",
+                          row.hasData
+                            ? "text-foreground/80"
+                            : "text-muted-foreground/70"
+                        )}
+                      >
+                        {row.badge}
                       </span>
                     </div>
-                    <span className="shrink-0 text-[10px] font-semibold tabular-nums text-muted-foreground">
-                      {row.badge}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

@@ -15,6 +15,9 @@ import { createContext } from "./context";
 import { setupWebSocket } from "../websocket";
 import { logger } from "./logger";
 import { requestIdMiddleware } from "./request-id";
+import { applySecurityMiddleware } from "./security";
+import { createOriginGuard } from "./origin-guard";
+import type { ErrorRequestHandler } from "express";
 
 const staticFallbackRateLimit = createRouteRateLimiter({
   identifier: "agentic-static-fallback",
@@ -87,10 +90,19 @@ async function startServer() {
   // Trust proxy headers from the load balancer / ingress layer.
   app.set("trust proxy", true);
 
+  // ── Security headers (helmet) + CORS ──────────────────────────────────────
+  // Must run before any route so headers attach to every response.
+  applySecurityMiddleware(app);
+
+  // Disable the X-Powered-By: Express header.
+  app.disable("x-powered-by");
+
   // Configure body parsers.
-  // tRPC mutations can carry base64 file payloads (up to 50 MB per file).
-  // A 50 MB file expands to roughly 67 MB when base64-encoded, so the tRPC
-  // parser needs headroom above the decoded file-size limit.
+  // The default API parser is 2 MB. tRPC needs a larger ceiling because
+  // base64-encoded file uploads pass through it; the limit is configurable
+  // via TRPC_BODY_LIMIT (default 20 MB). Long-term plan: migrate file uploads
+  // to presigned GCS/S3 URLs and drop this to 2 MB.
+  const trpcBodyLimit = process.env.TRPC_BODY_LIMIT || "20mb";
   const defaultJson = express.json({ limit: "2mb" });
   app.use((req, res, next) => {
     // Skip the 2 MB parser for tRPC — it gets its own larger one below.
@@ -98,10 +110,16 @@ async function startServer() {
     defaultJson(req, res, next);
   });
   app.use(express.urlencoded({ limit: "2mb", extended: true }));
-  app.use("/api/trpc", express.json({ limit: "75mb" }));
+  app.use("/api/trpc", express.json({ limit: trpcBodyLimit }));
 
   // ── Request-ID propagation (before any route) ─────────────────────────────
   app.use(requestIdMiddleware);
+
+  // ── CSRF: reject cross-origin browser POSTs to state-changing endpoints. ──
+  // Health/ready and OAuth callbacks come from external origins (Google), so
+  // mount the guard on /api/trpc only — OAuth routes do their own state check.
+  app.use("/api/trpc", createOriginGuard());
+
   // ── Health endpoints (raw HTTP for K8s probes — NOT behind tRPC) ──────────
   app.get("/health", (_req, res) => {
     res.json({
@@ -156,20 +174,23 @@ async function startServer() {
   }
 
   // Global error handler — prevents stack trace leaks and unhandled crashes
-  app.use((err: any, req: any, res: any, _next: any) => {
-    const log = req.log || logger;
-    log.error(
-      { err, status: err.status || err.statusCode || 500 },
-      "Unhandled error"
-    );
-    const status = err.status || err.statusCode || 500;
+  const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+    const errWithStatus = err as {
+      status?: number;
+      statusCode?: number;
+      message?: string;
+    };
+    const status = errWithStatus.status ?? errWithStatus.statusCode ?? 500;
+    const log = (req as { log?: typeof logger }).log ?? logger;
+    log.error({ err, status }, "Unhandled error");
     res.status(status).json({
       error:
         process.env.NODE_ENV === "production"
           ? "Internal server error"
-          : err.message,
+          : (errWithStatus.message ?? "Unknown error"),
     });
-  });
+  };
+  app.use(errorHandler);
 
   const preferredPort = parseInt(process.env.PORT || "9001");
 

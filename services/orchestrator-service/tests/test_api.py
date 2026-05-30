@@ -60,7 +60,11 @@ def _inject_agent(agent, analytics: _FakeAnalytics | None = None) -> fastapi.tes
     """Return a ``TestClient`` with the given mock agent on ``app.state``."""
     src.api.app.app.state.agent = agent
     src.api.app.app.state.analytics = analytics
-    return fastapi.testclient.TestClient(src.api.app.app, raise_server_exceptions=False)
+    return fastapi.testclient.TestClient(
+        src.api.app.app,
+        raise_server_exceptions=False,
+        headers={"X-HKI-Envelope": _hki_envelope_header(active_domain="dev")},
+    )
 
 
 def _chat_payload(
@@ -293,8 +297,8 @@ class TestChatEndpoint:
         assert isinstance(body["guardrails"], dict)
         assert isinstance(body["citations"], list)
 
-    def test_body_scopes_do_not_override_verified_identity(self) -> None:
-        """Request body scope hints must not widen the signed caller identity."""
+    def test_body_scopes_cannot_override_hki_envelope(self) -> None:
+        """Request body scope hints must match the signed HKI envelope."""
         agent: unittest.mock.MagicMock = _make_mock_agent(
             chunks=[{"type": "final_response_chunk", "content": "ok"}],
         )
@@ -312,9 +316,8 @@ class TestChatEndpoint:
         ):
             resp = client.post("/v1/chat", json=payload)
 
-        assert resp.status_code == 200
-        assert agent.chat_stream_calls[-1]["scope"] == "pharmacy"
-        assert agent.chat_stream_calls[-1]["scopes"] == ["pharmacy"]
+        assert resp.status_code == 403
+        assert agent.chat_stream_calls == []
 
     def test_standard_hki_envelope_drives_agent_scope(self) -> None:
         """When present, the standard HKI envelope is the runtime scope source."""
@@ -585,9 +588,8 @@ class TestChatStreamEndpoint:
         ):
             resp = client.post("/v1/chat/stream", json=payload)
 
-        assert resp.status_code == 200
-        assert agent.chat_stream_calls[-1]["scope"] == "pharmacy"
-        assert agent.chat_stream_calls[-1]["scopes"] == ["pharmacy"]
+        assert resp.status_code == 403
+        assert agent.chat_stream_calls == []
 
 
 # ═════════════════════════════════════════════════════════════════════════════

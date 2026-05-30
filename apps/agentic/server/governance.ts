@@ -397,6 +397,7 @@ export const governanceRouter = router({
             guardrails: messages.guardrails,
             toolCalls: messages.toolCalls,
             createdAt: messages.createdAt,
+            scope: messages.scope,
           })
           .from(messages)
           .where(eq(messages.role, "assistant"))
@@ -470,6 +471,7 @@ export const governanceRouter = router({
               tools: tools.map(t => t.toolName),
               guardrails: grParsed,
               timestamp: msg.createdAt,
+              scope: msg.scope,
             };
           })
         );

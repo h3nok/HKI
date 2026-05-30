@@ -575,7 +575,7 @@ class TestDomainModels:
     def test_ingest_text_request(self) -> None:
         req = src.domain.models.IngestTextRequest(
             content="Test content",
-            stream_id="global",
+            stream_id="dev",
             title="Test Title",
             department="IT",
         )

@@ -11,6 +11,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
+import { motion } from "framer-motion";
 import {
   cn,
   Avatar,
@@ -40,6 +41,14 @@ import {
   Sun,
   ShieldCheck,
   SlidersHorizontal,
+  ShieldAlert,
+  Fingerprint,
+  Lock,
+  Info,
+  Server,
+  Cpu,
+  Activity,
+  Bot,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -72,7 +81,9 @@ import {
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
-import { trpc } from "@/lib/trpc";
+import { trpc, type RouterOutputs } from "@/lib/trpc";
+
+type AdminValueStream = RouterOutputs["admin"]["listValueStreams"][number];
 import { toast } from "sonner";
 
 import { Search } from "lucide-react";
@@ -80,6 +91,7 @@ import DashboardPage from "./DashboardPage";
 import StreamsPage from "./StreamsPage";
 import UsersPage from "./UsersPage";
 import AuditPage from "./AuditPage";
+import GeapPage from "./GeapPage";
 import FeatureControlsPage from "./FeatureControlsPage";
 import FeaturePresetsPage from "./FeaturePresetsPage";
 import { a } from "./theme";
@@ -119,6 +131,18 @@ const NAV_GROUPS: NavGroup[] = [
         label: "Overview",
         path: "/admin",
         shortcut: "⌘1",
+      },
+    ],
+  },
+  {
+    label: "Agent Platform",
+    items: [
+      {
+        icon: Bot,
+        label: "GEAP Head",
+        path: "/admin/geap",
+        shortcut: "⌘9",
+        adminOnly: true,
       },
     ],
   },
@@ -186,6 +210,7 @@ const SETTINGS_MENU_ITEMS: NavItem[] = [
 
 type AdminPage =
   | "dashboard"
+  | "geap"
   | "streams"
   | "users"
   | "audit"
@@ -194,6 +219,7 @@ type AdminPage =
 
 function resolvePageFromPath(pathname: string): AdminPage {
   if (pathname === SETTINGS_PRESETS_PATH) return "featurePresets";
+  if (pathname === "/admin/geap") return "geap";
   if (pathname === "/admin/audit") return "audit";
   if (pathname === "/admin/streams") return "streams";
   if (pathname === "/admin/users") return "users";
@@ -206,6 +232,8 @@ function resolvePageFromPath(pathname: string): AdminPage {
 // ADMIN LAYOUT (entry point)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 export default function AdminLayout() {
   const { role } = usePermissions();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -215,22 +243,195 @@ export default function AdminLayout() {
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <div className="text-center space-y-3">
-          <Shield className="w-12 h-12 text-muted-foreground mx-auto" />
-          <p className="text-lg font-semibold text-foreground">
-            Access Restricted
-          </p>
-          <p className="text-sm text-muted-foreground max-w-sm">
-            You need Platform Admin privileges to access the Control Plane.
-          </p>
-          <a
-            href="/chat"
-            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mt-4"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back to Chat
-          </a>
+      <div className="fixed inset-0 overflow-hidden bg-background flex items-center justify-center">
+        {/* ── Ambient canvas ── */}
+        <div className="absolute inset-0" />
+
+        {/* Mesh glow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px]"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(239,68,68,0.1) 0%, transparent 70%)",
+            }}
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.6, 0.8, 0.6],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <motion.div
+            className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] rounded-full blur-[120px]"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)",
+            }}
+            animate={{
+              scale: [1.1, 1, 1.1],
+              opacity: [0.5, 0.7, 0.5],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
         </div>
+
+        {/* Grain overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.025] dark:opacity-[0.035]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+            backgroundSize: "200px 200px",
+          }}
+        />
+
+        {/* Card and Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: EASE }}
+          className="relative z-10 w-full max-w-lg px-6"
+        >
+          <div
+            className="rounded-2xl p-8 border backdrop-blur-2xl relative overflow-hidden"
+            style={{
+              borderColor:
+                "color-mix(in srgb, var(--neutral-0) 12%, var(--border))",
+              background:
+                "color-mix(in srgb, var(--neutral-0) 6%, rgba(0,0,0,0.03))",
+              boxShadow: "var(--shadow-2xl)",
+            }}
+          >
+            {/* Animated alert lights in header of card */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
+
+            <div className="flex flex-col items-center text-center">
+              {/* Shield Emblem with pulse */}
+              <div className="relative mb-6">
+                <motion.div
+                  className="absolute inset-0 rounded-full blur-xl"
+                  style={{
+                    background: "rgba(239, 68, 68, 0.15)",
+                  }}
+                  animate={{
+                    scale: [1, 1.4, 1],
+                    opacity: [0.3, 0.6, 0.3],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+                <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl border border-red-500/20 bg-red-500/5 text-red-500">
+                  <ShieldAlert className="w-8 h-8" />
+                </div>
+              </div>
+
+              {/* Title & subtitle */}
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight mb-2">
+                Control Plane Gateway Shield
+              </h1>
+              <p className="text-muted-foreground text-sm max-w-md mb-6">
+                You have reached a restricted internal boundary of the Hermetic
+                Knowledge Isolation (HKI) control plane. Explicit admin-plane
+                authorizations are required.
+              </p>
+
+              {/* Isolation Diagnostics Panel */}
+              <div
+                className="w-full rounded-xl border p-4 mb-6 text-left font-mono text-xs space-y-2.5 bg-neutral-950/5 dark:bg-neutral-950/20"
+                style={{
+                  borderColor:
+                    "color-mix(in srgb, var(--neutral-0) 10%, var(--border))",
+                }}
+              >
+                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                  <span className="text-muted-foreground flex items-center gap-1.5 font-sans font-semibold text-[11px] uppercase tracking-wider">
+                    <Fingerprint className="w-3.5 h-3.5 text-primary" />
+                    Identity & Security Diagnostics
+                  </span>
+                  <span className="text-red-500/90 bg-red-500/10 px-2 py-0.5 rounded-full text-[10px] font-semibold border border-red-500/20">
+                    ACCESS_DENIED
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-muted-foreground">Subject Role:</span>
+                  <span className="text-foreground font-semibold bg-foreground/5 px-2 py-0.5 rounded">
+                    {role || "guest"}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-muted-foreground">Required Role:</span>
+                  <span className="text-primary font-semibold bg-primary/10 px-2 py-0.5 rounded">
+                    admin
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-muted-foreground">
+                    Invariants Check:
+                  </span>
+                  <span className="text-green-500 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    Fail-Closed (Active)
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-muted-foreground">
+                    Request Signature:
+                  </span>
+                  <span
+                    className="text-muted-foreground/80 truncate max-w-[200px]"
+                    title="sha256:d8a2bc4...ec19"
+                  >
+                    sha256:d8a2bc4...ec19
+                  </span>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+                <a
+                  href="/chat"
+                  className="flex-1 w-full h-11 rounded-xl font-semibold text-sm text-primary-foreground
+                             flex items-center justify-center gap-2 overflow-hidden bg-primary shadow-md
+                             transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Return to Chat Workspace</span>
+                </a>
+
+                <a
+                  href="/login"
+                  className="flex-1 w-full h-11 rounded-xl font-semibold text-sm text-foreground
+                             flex items-center justify-center gap-2 border border-border/50 hover:bg-muted/50
+                             transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <Lock className="w-4 h-4 text-muted-foreground" />
+                  <span>Re-authenticate</span>
+                </a>
+              </div>
+
+              <div className="flex items-center justify-center gap-1.5 mt-6 text-[11px] text-muted-foreground/60">
+                <Info className="w-3.5 h-3.5" />
+                <span>
+                  Violation recorded under Invariant 6 (Audit Plane Separation).
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     );
   }
@@ -278,7 +479,9 @@ function AdminSidebar() {
     retry: false,
   });
   const badgeCounts: Record<string, number> = {
-    streams: (streamsQ.data ?? []).filter((s: any) => s.id !== "global").length,
+    streams: (streamsQ.data ?? []).filter(
+      (s: AdminValueStream) => s.id !== "global"
+    ).length,
   };
 
   const settingsMenuItems = SETTINGS_MENU_ITEMS.filter(
@@ -409,6 +612,31 @@ function AdminSidebar() {
 
       {/* ── Footer: Quiet bug link + editorial user line ── */}
       <SidebarFooter className={cn(isCollapsed ? "p-2.5" : "px-3.5 pb-3 pt-2")}>
+        {/* On-Prem System Telemetry Widget (Collapsed shortcut only) */}
+        {isCollapsed && (
+          <div className="mb-2">
+            <div className="flex justify-center p-2 rounded-xl bg-primary/5 border border-primary/10 relative group/telemetry">
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <Server className="size-4 text-primary" />
+              {/* Tooltip on hover */}
+              <div className="absolute left-12 top-0 scale-0 group-hover/telemetry:scale-100 transition-all origin-left duration-200 z-50 bg-neutral-900 border border-border rounded-xl p-3.5 shadow-xl w-60 font-sans text-xs">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-bold text-foreground">
+                    On-Prem Node Active
+                  </span>
+                </div>
+                <div className="space-y-1 font-mono text-[10px] text-muted-foreground">
+                  <p>Node: hki-node-prd-01</p>
+                  <p>Mode: Isolated Airgap</p>
+                  <p>CPU: 12.4% · RAM: 4.8 GB</p>
+                  <p>SSO HSM: Verified</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <SidebarMenu className="gap-0.5">
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -452,13 +680,13 @@ function AdminSidebar() {
                       <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
                         {isAdmin ? "Admin" : "Manager"}
                       </span>
-                      <span className="text-muted-foreground/40">·</span>
-                      <span className="truncate text-[11px] text-muted-foreground/70">
+                      <span className="text-muted-foreground/60">·</span>
+                      <span className="truncate text-[11px] text-muted-foreground/85">
                         {user?.email || ""}
                       </span>
                     </div>
                   </div>
-                  <ChevronsUpDown className="ml-auto size-3.5 text-muted-foreground/40" />
+                  <ChevronsUpDown className="ml-auto size-3.5 text-muted-foreground/60" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -522,7 +750,7 @@ function AdminSidebar() {
       {!isCollapsed && (
         <div className="px-4 pb-2 pt-1">
           <p
-            className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/50"
+            className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70"
             title={formatAppVersionTitle("Control Plane", APP_BUILD_INFO)}
           >
             {APP_VERSION_LABEL}
@@ -569,6 +797,11 @@ const ADMIN_PAGE_META: Record<
 > = {
   dashboard: {
     title: "Overview",
+  },
+  geap: {
+    title: "GEAP Head",
+    group: "Agent Platform",
+    groupPath: "/admin",
   },
   streams: {
     title: "Domains",
@@ -694,7 +927,60 @@ function AdminContent() {
             </kbd>
           </button>
         }
-        trailing={<ThemeToggle />}
+        trailing={
+          <div className="flex items-center gap-3">
+            {/* Enterprise Airgap pill indicator */}
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-xl border border-emerald-500/20 bg-emerald-500/5 relative group/top-pill cursor-help">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-widest flex items-center gap-1">
+                <ShieldCheck className="size-3" />
+                Airgap Local HSM
+              </span>
+
+              {/* Top pill detailed popup tooltip on hover */}
+              <div className="absolute right-0 top-10 scale-0 group-hover/top-pill:scale-100 transition-all origin-top-right duration-200 z-50 bg-neutral-900/95 backdrop-blur-md border border-border rounded-xl p-4 shadow-2xl w-72 text-left text-xs font-sans">
+                <div className="flex items-center justify-between pb-2 border-b border-border/40 mb-2.5">
+                  <span className="font-bold text-foreground flex items-center gap-1.5">
+                    <ShieldCheck className="size-4 text-emerald-500" />
+                    On-Prem Cluster Node
+                  </span>
+                  <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono">
+                    v1.2.4
+                  </span>
+                </div>
+                <div className="space-y-1.5 font-mono text-[10.5px] text-muted-foreground">
+                  <div className="flex justify-between">
+                    <span>Cluster Host:</span>
+                    <span className="text-foreground font-semibold">
+                      onprem-hki-01
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>IP Address:</span>
+                    <span className="text-foreground font-semibold">
+                      10.124.8.45
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Airgap Security:</span>
+                    <span className="text-emerald-500 font-semibold">
+                      Strict Isolated
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>SSO Authenticator:</span>
+                    <span className="text-foreground">SAML HSM Active</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <ThemeToggle />
+          </div>
+        }
       />
 
       <div className="flex-1 relative flex flex-col z-10 min-h-0">
@@ -704,6 +990,7 @@ function AdminContent() {
           <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="admin-internal-page-frame w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
               {guardedPage === "streams" && <StreamsPage />}
+              {guardedPage === "geap" && isAdmin && <GeapPage />}
               {guardedPage === "users" && isAdmin && <UsersPage />}
               {guardedPage === "audit" && isAdmin && <AuditPage />}
               {guardedPage === "features" && isAdmin && <FeatureControlsPage />}

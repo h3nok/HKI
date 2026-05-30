@@ -307,7 +307,7 @@ export default function ActivitiesTab({
                   color:
                     jobStats.failedCount > 0
                       ? "text-red-500"
-                      : "text-muted-foreground/60",
+                      : "text-muted-foreground/75",
                   bg:
                     jobStats.failedCount > 0
                       ? "bg-red-500/8"
@@ -460,7 +460,7 @@ export default function ActivitiesTab({
 
                             {/* Timestamp */}
                             <div className="shrink-0 text-right">
-                              <p className="text-xs tabular-nums text-muted-foreground/60">
+                              <p className="text-xs tabular-nums text-muted-foreground/80">
                                 {formatTime(
                                   job.createdAt || new Date().toISOString()
                                 )}
@@ -613,7 +613,7 @@ export default function ActivitiesTab({
                             >
                               {n.title}
                             </p>
-                            <span className="text-xs tabular-nums text-muted-foreground/60 shrink-0 pt-0.5">
+                            <span className="text-xs tabular-nums text-muted-foreground/80 shrink-0 pt-0.5">
                               {timeAgo(n.timestamp)}
                             </span>
                           </div>
@@ -633,7 +633,7 @@ export default function ActivitiesTab({
                               {sev.label}
                             </span>
                             {n.group && (
-                              <span className="bg-black/3 px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider text-muted-foreground/60 dark:bg-muted/40">
+                              <span className="bg-black/3 px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider text-muted-foreground/80 dark:bg-muted/40">
                                 {n.group}
                               </span>
                             )}

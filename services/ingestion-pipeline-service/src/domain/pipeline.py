@@ -712,9 +712,6 @@ class IngestionPipeline:
         job.document_id = result.get("document_id")
         job.chunk_count = result.get("chunk_count", 0)
         job.entity_count = result.get("entity_count", 0)
-        job.status = src.domain.models.JobStatus.COMPLETED
-        job.completed_at = datetime.datetime.now(datetime.UTC)
-        await self._persist_job(job)
 
         if (
             self._change_detector
@@ -750,6 +747,9 @@ class IngestionPipeline:
             trust_score=trust_score,
             is_reingestion=bool(version_result and version_result.previous_version),
         )
+        job.status = src.domain.models.JobStatus.COMPLETED
+        job.completed_at = datetime.datetime.now(datetime.UTC)
+        await self._persist_job(job)
 
     async def _submit_review_record(
         self,
@@ -768,8 +768,10 @@ class IngestionPipeline:
         This hardens policy enforcement at the pipeline layer so knowledge
         cannot bypass review if ingested outside the UI.
         """
-        if not self._review_workflow or not job.document_id:
-            return
+        if not job.document_id:
+            raise RuntimeError("Cannot create review record without document_id")
+        if not self._review_workflow:
+            raise RuntimeError("Review workflow is not configured")
         try:
             from src.domain.review import SubmitRequest
 
@@ -790,10 +792,11 @@ class IngestionPipeline:
                 is_reingestion=is_reingestion,
             )
         except Exception as exc:
-            src.core.logging.logger.warning(
-                "Auto review submit failed (non-fatal)",
+            src.core.logging.logger.error(
+                "Auto review submit failed",
                 extra={"job_id": job.id, "document_id": job.document_id, "error": str(exc)},
             )
+            raise RuntimeError("Auto review submit failed") from exc
 
     # ═══════════════════════════════════════════════════════════════════════
     # Stage 1: Extraction

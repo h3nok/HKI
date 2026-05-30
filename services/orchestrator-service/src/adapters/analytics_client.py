@@ -25,6 +25,10 @@ class AnalyticsClient:
         self._client: httpx.AsyncClient | None = None
         self._enabled: bool = bool(self._url)
 
+    def _headers(self) -> dict[str, str]:
+        secret: str = src.core.config.settings.ANALYTICS_INGEST_SECRET.strip()
+        return {"X-Analytics-Secret": secret} if secret else {}
+
     async def start(self) -> None:
         if self._enabled:
             self._client = httpx.AsyncClient(
@@ -114,6 +118,7 @@ class AnalyticsClient:
             await self._client.post(  # type: ignore[union-attr]
                 f"{self._url}/v1/events/audit",
                 json=event,
+                headers=self._headers(),
             )
         except Exception as exc:
             src.core.logging.logger.debug(

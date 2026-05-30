@@ -46,6 +46,7 @@ import {
   dedupeQuestions,
 } from "./suggestions/question-quality";
 import { KeyboardShortcutsDialog } from "./ui/keyboard-shortcuts-dialog";
+import { DomainIsolationDialog } from "./ui/domain-isolation-dialog";
 import { useTaskMessages } from "./hooks/use-task-messages";
 
 import { useSafeSearchParams, SearchParamKey } from "./hooks/use-search-params";
@@ -274,6 +275,9 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
   const hasAppliedStarterRef = useRef(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [pendingScopeChange, setPendingScopeChange] = useState<string | null>(
+    null
+  );
   const { theme, toggleTheme } = useTheme();
   const {
     activeScope,
@@ -720,30 +724,40 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
   const handleScopeChange = useCallback(
     (scopeId: string) => {
       if (scopeId === activeScope) return;
-
-      const scopeName =
-        scopeId === GLOBAL_SCOPE
-          ? "General HKI context"
-          : availableScopes.find(scope => scope.id === scopeId)?.name ||
-            "the selected stream";
-
-      setActiveScope(scopeId);
-      updateParams({
-        [SearchParamKey.SCOPE]: scopeId === GLOBAL_SCOPE ? null : scopeId,
-        ...(taskID ? { [SearchParamKey.TASK_ID]: null } : {}),
-      });
-
-      if (!taskID) return;
-
-      setSelectedMessageId(null);
-      setPromptValue("");
-      setIsTracesSidebarOpen(false);
-      toast.info(
-        `Switched to ${scopeName}. Started a new chat to keep value-stream context isolated.`
-      );
+      setPendingScopeChange(scopeId);
     },
-    [activeScope, availableScopes, setActiveScope, taskID, updateParams]
+    [activeScope]
   );
+
+  const confirmScopeChange = useCallback(() => {
+    if (!pendingScopeChange) return;
+    const scopeId = pendingScopeChange;
+    setPendingScopeChange(null);
+
+    const scopeName =
+      scopeId === GLOBAL_SCOPE
+        ? "General HKI context"
+        : availableScopes.find(scope => scope.id === scopeId)?.name ||
+          "the selected stream";
+
+    setActiveScope(scopeId);
+    updateParams({
+      [SearchParamKey.SCOPE]: scopeId === GLOBAL_SCOPE ? null : scopeId,
+      ...(taskID ? { [SearchParamKey.TASK_ID]: null } : {}),
+    });
+
+    setSelectedMessageId(null);
+    setPromptValue("");
+    setIsTracesSidebarOpen(false);
+    toast.success(`Switched to ${scopeName}. Context isolated successfully.`);
+  }, [
+    pendingScopeChange,
+    activeScope,
+    availableScopes,
+    setActiveScope,
+    taskID,
+    updateParams,
+  ]);
 
   const handleTaskSelect = useCallback(
     (task: Task) => {
@@ -1163,6 +1177,24 @@ export function ChatUIRoot({ userId, className }: ChatUIRootProps) {
               open={isShortcutsOpen}
               onClose={() => setIsShortcutsOpen(false)}
               showActivityShortcut={canUseActivityPanel}
+            />
+            <DomainIsolationDialog
+              open={!!pendingScopeChange}
+              onClose={() => setPendingScopeChange(null)}
+              onConfirm={confirmScopeChange}
+              currentScopeName={
+                activeScope === GLOBAL_SCOPE
+                  ? "General HKI context"
+                  : availableScopes.find(s => s.id === activeScope)?.name ||
+                    "current context"
+              }
+              targetScopeName={
+                pendingScopeChange === GLOBAL_SCOPE
+                  ? "General HKI context"
+                  : availableScopes.find(s => s.id === pendingScopeChange)
+                      ?.name || "target context"
+              }
+              isTransactionActive={!!taskID}
             />
           </div>
         </header>

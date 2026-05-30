@@ -460,6 +460,11 @@ export {
   type GuardrailsIndicatorProps,
   type GuardrailCheck,
   type GuardrailOverallStatus,
+  HallucinationWarning,
+  type HallucinationWarningProps,
+  type HallucinationSeverity,
+  RiskScoreIndicator,
+  type RiskScoreIndicatorProps,
 } from "./agentic/guardrails";
 
 // Tool Use
@@ -526,6 +531,25 @@ export {
   type InterventionData,
   type InterventionAction,
 } from "./agentic/execution";
+
+// Defensive UI Primitives
+export {
+  ScopeBadge,
+  type ScopeBadgeProps,
+  DomainStripe,
+  type DomainStripeProps,
+  EnvelopeTtl,
+  type EnvelopeTtlProps,
+  FailClosedState,
+  type FailClosedStateProps,
+  type FailClosedKind,
+  DomainFootprint,
+  type DomainFootprintProps,
+  CrossDomainGuard,
+  type CrossDomainGuardProps,
+  AuditPill,
+  type AuditPillProps,
+} from "./agentic/defensive";
 
 // Alert Dialog
 export {

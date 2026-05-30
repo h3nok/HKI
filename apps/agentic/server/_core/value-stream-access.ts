@@ -58,7 +58,7 @@ export function resolveAuthorizedStreamId(
   }
 
   if (normalized === "global") {
-    if (opts.allowGlobalSelection === false || !hasGlobalScope) {
+    if (opts.allowGlobalSelection !== true || !hasGlobalScope) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "You do not have access to the global knowledge scope",

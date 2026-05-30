@@ -27,8 +27,12 @@ Usage (see scripts/deploy_agent_engine.py for full workflow):
 from __future__ import annotations
 
 import asyncio
+import dataclasses
+import os
 from collections.abc import AsyncIterator
 from typing import Any
+
+import hki_runtime
 
 from src.core.config import settings
 from src.core.logging import logger as _root_logger
@@ -95,7 +99,11 @@ class AgentEngineWrapper:
         *,
         message: str,
         session_id: str = "default",
+        user_id: str | None = None,
+        org_id: str = "default",
         scope: str = DEFAULT_RUNTIME_SCOPE,
+        scopes: list[str] | None = None,
+        hki_envelope: dict[str, Any] | hki_runtime.HkiEnvelope | None = None,
         stream_config: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
@@ -113,7 +121,11 @@ class AgentEngineWrapper:
         return await self._run_query(
             message=message,
             session_id=session_id,
+            user_id=user_id,
+            org_id=org_id,
             scope=scope,
+            scopes=scopes,
+            hki_envelope=hki_envelope,
             stream_config=stream_config,
         )
 
@@ -122,7 +134,11 @@ class AgentEngineWrapper:
         *,
         message: str,
         session_id: str = "default",
+        user_id: str | None = None,
+        org_id: str = "default",
         scope: str = DEFAULT_RUNTIME_SCOPE,
+        scopes: list[str] | None = None,
+        hki_envelope: dict[str, Any] | hki_runtime.HkiEnvelope | None = None,
         stream_config: dict[str, Any] | None = None,
     ) -> AsyncIterator[dict[str, Any]]:
         """
@@ -132,11 +148,22 @@ class AgentEngineWrapper:
         """
         await self._ensure_initialized()
         sc = self._build_stream_config(stream_config)
+        envelope = self._resolve_hki_envelope(
+            hki_envelope=hki_envelope,
+            user_id=user_id,
+            org_id=org_id,
+            scope=scope,
+            scopes=scopes,
+        )
         async for chunk in self._agent.chat_stream(
             session_id=session_id,
             message=message,
-            scope=scope,
+            scope=envelope.active_domain,
             stream_config=sc,
+            user_id=envelope.subject_id,
+            org_id=envelope.org_id,
+            scopes=list(envelope.authorized_domains),
+            hki_envelope=envelope,
         ):
             yield chunk
 
@@ -166,11 +193,22 @@ class AgentEngineWrapper:
         *,
         message: str,
         session_id: str,
+        user_id: str | None,
+        org_id: str,
         scope: str,
+        scopes: list[str] | None,
+        hki_envelope: dict[str, Any] | hki_runtime.HkiEnvelope | None,
         stream_config: dict[str, Any] | None,
     ) -> dict[str, Any]:
         await self._ensure_initialized()
         sc = self._build_stream_config(stream_config)
+        envelope = self._resolve_hki_envelope(
+            hki_envelope=hki_envelope,
+            user_id=user_id,
+            org_id=org_id,
+            scope=scope,
+            scopes=scopes,
+        )
 
         events: list[dict[str, Any]] = []
         final_response = ""
@@ -178,8 +216,12 @@ class AgentEngineWrapper:
         async for chunk in self._agent.chat_stream(
             session_id=session_id,
             message=message,
-            scope=scope,
+            scope=envelope.active_domain,
             stream_config=sc,
+            user_id=envelope.subject_id,
+            org_id=envelope.org_id,
+            scopes=list(envelope.authorized_domains),
+            hki_envelope=envelope,
         ):
             events.append(chunk)
             if chunk.get("type") == "final_response_chunk":
@@ -189,11 +231,17 @@ class AgentEngineWrapper:
             "AgentEngine query complete",
             extra={
                 "session_id": session_id,
+                "org_id": envelope.org_id,
+                "scope": envelope.active_domain,
                 "events": len(events),
                 "response_len": len(final_response),
             },
         )
-        return {"final_response": final_response, "events": events}
+        return {
+            "final_response": final_response,
+            "events": events,
+            "provider_evidence": self._provider_evidence(session_id, envelope),
+        }
 
     async def _ensure_initialized(self) -> None:
         """Lazily create async resources (Redis, cache, AdkAgent) on first use."""
@@ -239,9 +287,61 @@ class AgentEngineWrapper:
         """
         if raw is None:
             return None
-        from src.api.routes import StreamConfig
+        from src.domain.models import StreamConfig
 
         return StreamConfig(**raw)
+
+    @staticmethod
+    def _resolve_hki_envelope(
+        *,
+        hki_envelope: dict[str, Any] | hki_runtime.HkiEnvelope | None,
+        user_id: str | None,
+        org_id: str,
+        scope: str,
+        scopes: list[str] | None,
+    ) -> hki_runtime.HkiEnvelope:
+        if hki_envelope is None:
+            raise PermissionError("HKI envelope is required for Agent Engine runtime calls")
+
+        validation = hki_runtime.validate_envelope(
+            _envelope_record_for_validation(hki_envelope),
+            require_signature=True,
+            signing_secret=_get_hki_signing_secret(),
+        )
+        if not validation.ok or validation.envelope is None:
+            issues = ", ".join(
+                f"{issue.field}:{issue.code}" for issue in validation.issues
+            )
+            raise PermissionError(f"HKI envelope rejected by Agent Engine: {issues}")
+
+        envelope = validation.envelope
+        if user_id is not None and envelope.subject_id != user_id:
+            raise PermissionError("HKI envelope subject does not match runtime user_id")
+        if org_id and envelope.org_id != org_id:
+            raise PermissionError("HKI envelope org does not match runtime org_id")
+        if not hki_runtime.same_domain(envelope.active_domain, scope):
+            raise PermissionError("HKI envelope active_domain does not match runtime scope")
+        if scopes is not None and not _same_domain_set(scopes, envelope.authorized_domains):
+            raise PermissionError(
+                "HKI envelope authorized_domains do not match runtime scopes"
+            )
+        return envelope
+
+    @staticmethod
+    def _provider_evidence(
+        session_id: str,
+        envelope: hki_runtime.HkiEnvelope,
+    ) -> dict[str, Any]:
+        return {
+            "provider": "gemini-agent-platform",
+            "runtime": "agent_engine",
+            "session_id": session_id,
+            "org_id": envelope.org_id,
+            "subject_id": envelope.subject_id,
+            "active_domain": envelope.active_domain,
+            "authorized_domains": list(envelope.authorized_domains),
+            "envelope_id": envelope.envelope_id,
+        }
 
     # ── Sync shim (for Agent Engine runtimes that call query() sync) ──────
 
@@ -250,7 +350,11 @@ class AgentEngineWrapper:
         *,
         message: str,
         session_id: str = "default",
+        user_id: str | None = None,
+        org_id: str = "default",
         scope: str = DEFAULT_RUNTIME_SCOPE,
+        scopes: list[str] | None = None,
+        hki_envelope: dict[str, Any] | hki_runtime.HkiEnvelope | None = None,
         stream_config: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
@@ -272,7 +376,11 @@ class AgentEngineWrapper:
                         self._run_query(
                             message=message,
                             session_id=session_id,
+                            user_id=user_id,
+                            org_id=org_id,
                             scope=scope,
+                            scopes=scopes,
+                            hki_envelope=hki_envelope,
                             stream_config=stream_config,
                         ),
                     )
@@ -281,7 +389,11 @@ class AgentEngineWrapper:
                 self._run_query(
                     message=message,
                     session_id=session_id,
+                    user_id=user_id,
+                    org_id=org_id,
                     scope=scope,
+                    scopes=scopes,
+                    hki_envelope=hki_envelope,
                     stream_config=stream_config,
                 )
             )
@@ -290,7 +402,57 @@ class AgentEngineWrapper:
                 self._run_query(
                     message=message,
                     session_id=session_id,
+                    user_id=user_id,
+                    org_id=org_id,
                     scope=scope,
+                    scopes=scopes,
+                    hki_envelope=hki_envelope,
                     stream_config=stream_config,
                 )
             )
+
+
+def _get_hki_signing_secret() -> str | None:
+    return (
+        os.environ.get("HKI_SIGNING_SECRET")
+        or os.environ.get("SERVICE_AUTH_SECRET")
+        or os.environ.get("JWT_SECRET")
+        or None
+    )
+
+
+def _envelope_record_for_validation(
+    envelope: dict[str, Any] | hki_runtime.HkiEnvelope,
+) -> dict[str, Any]:
+    record = (
+        dataclasses.asdict(envelope)
+        if dataclasses.is_dataclass(envelope)
+        else dict(envelope)
+    )
+    record["authorized_domains"] = list(record.get("authorized_domains") or [])
+    record["issued_at"] = _json_epoch(record.get("issued_at"))
+    record["expires_at"] = _json_epoch(record.get("expires_at"))
+    return record
+
+
+def _json_epoch(value: Any) -> Any:
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    return value
+
+
+def _same_domain_set(
+    left: list[str] | tuple[str, ...],
+    right: list[str] | tuple[str, ...],
+) -> bool:
+    if len(left) != len(right):
+        return False
+    unmatched = list(right)
+    for candidate in left:
+        for idx, expected in enumerate(unmatched):
+            if hki_runtime.same_domain(candidate, expected):
+                unmatched.pop(idx)
+                break
+        else:
+            return False
+    return not unmatched

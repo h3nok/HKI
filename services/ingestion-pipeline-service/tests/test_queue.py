@@ -33,7 +33,7 @@ class TestIngestionMessage:
             message_type=src.domain.queue_messages.IngestionMessageType.INGEST_TEXT,
             job_id="job-123",
             org_id="hki",
-            stream_id="global",
+            stream_id="dev",
             content="Hello world",
             title="Test Doc",
             department="IT",
@@ -54,7 +54,7 @@ class TestIngestionMessage:
             message_type=src.domain.queue_messages.IngestionMessageType.INGEST_URL,
             job_id="job-456",
             org_id="default",
-            stream_id="global",
+            stream_id="dev",
             url="https://example.com",
         )
         data: bytes = msg.to_json_bytes()
@@ -68,7 +68,7 @@ class TestIngestionMessage:
         msg = src.domain.queue_messages.IngestionMessage(
             message_type=src.domain.queue_messages.IngestionMessageType.INGEST_TEXT,
             job_id="job-789",
-            stream_id="global",
+            stream_id="dev",
         )
         assert msg.org_id == "default"
         assert msg.chunk_size == 512
@@ -107,7 +107,7 @@ class TestInMemoryQueue:
         msg = src.domain.queue_messages.IngestionMessage(
             message_type=src.domain.queue_messages.IngestionMessageType.INGEST_TEXT,
             job_id="test-001",
-            stream_id="global",
+            stream_id="dev",
             content="Test content",
         )
         msg_id: str = await publisher.publish(msg)
@@ -138,7 +138,7 @@ class TestInMemoryQueue:
                 src.domain.queue_messages.IngestionMessage(
                     message_type=src.domain.queue_messages.IngestionMessageType.INGEST_TEXT,
                     job_id=f"batch-{i}",
-                    stream_id="global",
+                    stream_id="dev",
                     content=f"Content {i}",
                 )
             )
@@ -168,7 +168,7 @@ class TestInMemoryQueue:
             src.domain.queue_messages.IngestionMessage(
                 message_type=src.domain.queue_messages.IngestionMessageType.INGEST_TEXT,
                 job_id="fail-1",
-                stream_id="global",
+                stream_id="dev",
                 content="Will fail",
             )
         )
@@ -176,7 +176,7 @@ class TestInMemoryQueue:
             src.domain.queue_messages.IngestionMessage(
                 message_type=src.domain.queue_messages.IngestionMessageType.INGEST_TEXT,
                 job_id="ok-2",
-                stream_id="global",
+                stream_id="dev",
                 content="Will succeed",
             )
         )

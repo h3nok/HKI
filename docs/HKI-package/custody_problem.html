@@ -1,6 +1,16 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      (function () {
+        const saved = localStorage.getItem("hki-theme-preference");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const theme = saved || (prefersDark ? "dark" : "light");
+        document.documentElement.classList.toggle("dark", theme === "dark");
+        document.documentElement.classList.toggle("light", theme === "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
@@ -10,9 +20,10 @@
       name="description"
       content="Why enterprise AI security must move beyond training opt-outs toward data sovereignty, runtime usage control, domain isolation, and explicit publication boundaries."
     />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <style>
       :root {
-        --bg: #090d13;
+        --bg: #0b1117;
         --panel: rgba(255, 255, 255, 0.04);
         --line: rgba(255, 255, 255, 0.1);
         --line2: rgba(255, 255, 255, 0.18);
@@ -40,7 +51,7 @@
           ),
           rgba(255, 255, 255, 0.02);
         --thesis-bg: rgba(20, 184, 166, 0.045);
-        --topbar-bg: rgba(9, 13, 19, 0.84);
+        --topbar-bg: rgba(11, 17, 23, 0.84);
         --hero-bg:
           radial-gradient(
             circle at 16% 8%,
@@ -52,7 +63,7 @@
             rgba(255, 255, 255, 0.06),
             transparent 26%
           ),
-          linear-gradient(180deg, #080b10 0%, var(--bg) 44%, #070a0f 100%);
+          linear-gradient(180deg, #0b1117 0%, var(--bg) 44%, #0a1016 100%);
         --download-text: #06100f;
       }
 
@@ -87,6 +98,21 @@
       }
       html {
         scroll-behavior: smooth;
+      }
+      /* Scrollbar Customization for perfect platform harmony */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--line2);
+        border-radius: 999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--teal);
       }
       body {
         margin: 0;
@@ -700,7 +726,7 @@
             <span id="themeLabel">Light</span>
           </button>
           <a class="navlink" href="#contract">Runtime contract</a>
-          <a class="download" href="./custody_problem.md">View Markdown</a>
+          <a class="download" href="./custody_problem_overview.pdf" download>Download PDF</a>
         </div>
       </div>
     </nav>
@@ -1190,13 +1216,12 @@
 
     <script>
       (function () {
-        const body = document.body;
+        const html = document.documentElement;
         const toggle = document.getElementById("themeToggle");
         const icon = document.getElementById("themeIcon");
         const label = document.getElementById("themeLabel");
 
-        function setTheme(theme) {
-          body.setAttribute("data-theme", theme);
+        function updateToggleUI(theme) {
           if (theme === "dark") {
             label.textContent = "Light";
             icon.innerHTML =
@@ -1208,14 +1233,25 @@
           }
         }
 
-        toggle.addEventListener("click", () => {
-          const current = body.getAttribute("data-theme");
-          const next = current === "dark" ? "light" : "dark";
-          setTheme(next);
-        });
+        function setTheme(theme) {
+          html.classList.toggle("dark", theme === "dark");
+          html.classList.toggle("light", theme === "light");
+          html.setAttribute("data-theme", theme);
+          localStorage.setItem("hki-theme-preference", theme);
+          updateToggleUI(theme);
+        }
 
-        // Start dark
-        setTheme("dark");
+        if (toggle) {
+          toggle.addEventListener("click", () => {
+            const current = html.getAttribute("data-theme") || "dark";
+            const next = current === "dark" ? "light" : "dark";
+            setTheme(next);
+          });
+        }
+
+        // Initialize toggle UI based on current class/attribute set by blocking head script
+        const activeTheme = html.getAttribute("data-theme") || "dark";
+        updateToggleUI(activeTheme);
       })();
     </script>
   </body>

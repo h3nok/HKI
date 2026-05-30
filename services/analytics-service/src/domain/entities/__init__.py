@@ -38,7 +38,7 @@ class AgentEvent:
     user_id: str = ""
     org_id: str = "default"
     service: str = ""
-    scope: str = "global"
+    scope: str = "unscoped-analytics"
     payload: dict[str, typing.Any] = dataclasses.field(default_factory=dict)
     timestamp: float = 0.0
     ingested_at: float = 0.0

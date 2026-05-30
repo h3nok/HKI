@@ -27,6 +27,7 @@ import time
 import typing
 
 import fastapi
+import hki_runtime
 import pydantic
 
 import src.adapters.analytics_client
@@ -89,6 +90,18 @@ def _caller_acl_principals(identity: src.core.auth.RequestIdentity) -> list[str]
     if role:
         principals.add(f"role:{role}")
     return sorted(principals)
+
+
+def _gap_visible_to_identity(
+    gap: dict[str, typing.Any],
+    identity: src.core.auth.RequestIdentity,
+) -> bool:
+    if gap.get("org_id") != identity.org_id:
+        return False
+    gap_scope: str = str(gap.get("scope") or "").strip()
+    if not gap_scope:
+        return False
+    return any(hki_runtime.same_domain(scope, gap_scope) for scope in _caller_stream_scopes(identity))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -877,7 +890,7 @@ async def report_gap(
         "query": body.query,
         "gap_description": body.gap_description,
         "org_id": identity.org_id,
-        "scope": body.scope or identity.scope,
+        "scope": identity.scope,
         "conversation_id": body.conversation_id,
         "detected_at": datetime.datetime.now(datetime.UTC).isoformat(),
         "user_id": identity.user_id,
@@ -895,7 +908,7 @@ async def report_gap(
         payload={
             "query": body.query,
             "gap_description": body.gap_description,
-            "scope": body.scope or identity.scope,
+            "scope": identity.scope,
             "conversation_id": body.conversation_id or "",
         },
     )
@@ -916,7 +929,11 @@ async def list_gaps(
     Results are from the in-process ring buffer — cleared on restart.
     """
     caller_org: str = identity.org_id
-    gaps: list[dict] = [g for g in request.app.state.recent_gaps if g.get("org_id") == caller_org]
+    gaps: list[dict] = [
+        g
+        for g in request.app.state.recent_gaps
+        if g.get("org_id") == caller_org and _gap_visible_to_identity(g, identity)
+    ]
     # Most recent first
     gaps = gaps[::-1][:limit]
     return {"gaps": gaps, "total": len(gaps)}

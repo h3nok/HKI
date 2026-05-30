@@ -245,7 +245,7 @@ function MatrixRow({
         />
 
         {isLinked ? (
-          <div className="inline-flex min-w-18 items-center justify-end gap-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">
+          <div className="inline-flex min-w-18 items-center justify-end gap-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/85">
             <span>{cap.external ? "External" : isMvp ? "Launch" : "Open"}</span>
             {cap.external ? (
               <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />

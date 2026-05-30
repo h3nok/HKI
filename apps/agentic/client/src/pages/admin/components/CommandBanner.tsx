@@ -97,12 +97,12 @@ export function CommandBanner({
                 {allOk ? "Live control plane" : "Operator attention"}
               </span>
             </div>
-            <h1 className="text-xl font-semibold leading-tight text-foreground dark:text-foreground/80 sm:text-2xl">
+            <h1 className="text-xl font-semibold leading-tight text-foreground sm:text-2xl">
               {greeting},{" "}
               <AppAiText>{user?.name?.split(" ")[0] || "Admin"}</AppAiText>
             </h1>
-            <p className="mt-1 text-xs text-muted-foreground/70">{dateStr}</p>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground/78">
+            <p className="mt-1 text-xs text-muted-foreground/85">{dateStr}</p>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               Service readiness, agent activity, and knowledge-plane health in
               one operator surface.
             </p>

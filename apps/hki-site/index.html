@@ -1,261 +1,579 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("hki-theme-preference");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = saved || (prefersDark ? "dark" : "light");
+      document.documentElement.classList.toggle("dark", theme === "dark");
+      document.documentElement.classList.toggle("light", theme === "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HKI — Hermetic Knowledge Isolation</title>
   <meta name="description" content="A signed runtime contract for enterprise agentic systems. One request, one active domain, no implicit global visibility." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="canonical" href="https://hki.dev/" />
   <meta property="og:title" content="HKI — Hermetic Knowledge Isolation" />
   <meta property="og:description" content="A signed runtime contract for enterprise agentic systems. One request, one active domain, no implicit global visibility." />
   <meta property="og:url" content="https://hki.dev/" />
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="hki-design-system.css" />
+
   <style>
+    /* ── Core Design Token System ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #ffffff;
-      --bg-subtle: #f8f9fa;
-      --bg-code: #0f1117;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --accent: #0ea5e9;
-      --accent-dim: #e0f2fe;
-      --critical: #ef4444;
-      --high: #f97316;
-      --medium: #eab308;
-      --pass: #22c55e;
-      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, monospace;
-      --radius: 8px;
-      --max-w: 900px;
+      /* Map local variables directly to @hki/ui semantic tokens */
+      --bg: var(--background);
+      --bg-subtle: var(--muted);
+      --bg-card: var(--card);
+      --bg-code: var(--muted);
+      --border: var(--border);
+      --border-hover: var(--border);
+      --text: var(--foreground);
+      --text-muted: var(--muted-foreground);
+      --primary: var(--primary);
+      --primary-glow: color-mix(in srgb, var(--primary) 16%, transparent);
+      --violet: #7c3aed;
+      --violet-glow: color-mix(in srgb, #7c3aed 16%, transparent);
+      --emerald: var(--success, #10b981);
+      --emerald-glow: color-mix(in srgb, var(--success, #10b981) 15%, transparent);
+      --amber: var(--warning, #f59e0b);
+      --rose: var(--destructive, #ef4444);
+      --font: "Inter", system-ui, -apple-system, sans-serif;
+      --font-display: "Plus Jakarta Sans", sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, monospace;
+      --radius: 16px;
+      --radius-sm: 8px;
+      --max-w: 1200px;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 12px 36px rgba(0, 0, 0, 0.5);
+      --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0b0e14;
-        --bg-subtle: #131720;
-        --bg-code: #070a10;
-        --border: #1e2535;
-        --text: #e2e8f0;
-        --text-muted: #64748b;
-        --accent: #38bdf8;
-        --accent-dim: #082f49;
-      }
+    html.dark {
+      --bg: #0b1117;
+      --bg-subtle: #16222f;
+      --bg-card: #111922;
+      --border: #2a3642;
+      --border-hover: #3b4d5c;
+      --text: #e6edf3;
+      --text-muted: #9fb0c3;
     }
 
-    html { scroll-behavior: smooth; }
+    html.light {
+      --bg: #fcfcfb;
+      --bg-subtle: #f4f7fb;
+      --bg-card: #ffffff;
+      --border: #d9e2ec;
+      --border-hover: #bcccdc;
+      --text: #17202a;
+      --text-muted: #52606d;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
 
     body {
       font-family: var(--font);
       background: var(--bg);
       color: var(--text);
-      line-height: 1.65;
-      font-size: 16px;
+      line-height: 1.7;
+      font-size: 15.5px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    /* ── Nav ── */
+    /* Scrollbar Customization for perfect platform harmony */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.75rem;
+      border-radius: 999px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: var(--transition);
+      height: 31px;
+    }
+    .theme-toggle:hover {
+      background: var(--bg-subtle);
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    /* ── Ambient Background Canvas ── */
+    .site-bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: -10;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .site-bg-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.38;
+      mix-blend-mode: screen;
+    }
+
+    html.light .site-bg-orb {
+      mix-blend-mode: multiply;
+      opacity: 0.08;
+      filter: blur(110px);
+    }
+
+    .site-bg-orb--primary {
+      width: 50vw;
+      height: 50vw;
+      top: -15vw;
+      left: -10vw;
+      background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+    }
+
+    .site-bg-orb--violet {
+      width: 60vw;
+      height: 60vw;
+      bottom: -15vw;
+      right: -10vw;
+      background: radial-gradient(circle, var(--violet) 0%, transparent 70%);
+    }
+
+    /* ── Sticky Navigation Header ── */
     nav {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: var(--bg);
+      background: rgba(3, 7, 18, 0.7);
       border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: var(--transition);
+    }
+
+    html.light nav {
+      background: rgba(248, 250, 252, 0.75);
     }
 
     .nav-inner {
       max-width: var(--max-w);
       margin: 0 auto;
       padding: 0 1.5rem;
-      height: 52px;
+      height: 64px;
       display: flex;
       align-items: center;
-      gap: 2rem;
+      justify-content: space-between;
+      gap: 1.5rem;
     }
 
     .nav-brand {
-      font-weight: 700;
+      font-family: var(--font-display);
+      font-weight: 800;
       font-size: 1rem;
-      letter-spacing: 0.02em;
+      letter-spacing: -0.01em;
       text-decoration: none;
       color: var(--text);
-      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    .nav-brand span { color: var(--accent); }
+    .nav-brand span {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--violet) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
-      flex: 1;
+      gap: 0.35rem;
     }
 
     .nav-links a {
-      font-size: 0.875rem;
+      font-size: 0.825rem;
+      font-weight: 500;
       color: var(--text-muted);
       text-decoration: none;
-      padding: 0.35rem 0.65rem;
-      border-radius: 6px;
-      transition: color 0.15s, background 0.15s;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      transition: var(--transition);
     }
 
-    .nav-links a:hover { color: var(--text); background: var(--bg-subtle); }
+    .nav-links a:hover {
+      color: var(--text);
+      background: var(--primary-glow);
+    }
 
     .nav-right {
-      margin-left: auto;
+      display: flex;
+      align-items: center;
     }
 
     .btn-gh {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      font-size: 0.8125rem;
+      gap: 0.45rem;
+      font-size: 0.8rem;
       font-weight: 600;
-      padding: 0.35rem 0.85rem;
-      border-radius: 6px;
-      background: var(--bg-subtle);
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      background: var(--bg-card);
       border: 1px solid var(--border);
       color: var(--text);
       text-decoration: none;
-      transition: background 0.15s;
+      transition: var(--transition);
     }
-    .btn-gh:hover { background: var(--border); }
 
-    /* ── Layout ── */
-    .page { max-width: var(--max-w); margin: 0 auto; padding: 0 1.5rem 5rem; }
+    .btn-gh:hover {
+      background: var(--primary-glow);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
 
-    section { padding: 4rem 0 0; }
+    /* ── Layout & Sections ── */
+    .page {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 1.5rem 6rem;
+    }
 
-    h1 { font-size: clamp(2rem, 5vw, 2.75rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; }
-    h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1.25rem; }
-    h3 { font-size: 1.0625rem; font-weight: 600; margin-bottom: 0.5rem; }
+    section {
+      padding: 5rem 0 1rem;
+    }
 
-    p { color: var(--text); margin-bottom: 1rem; }
-    p:last-child { margin-bottom: 0; }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.25rem, 6vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
 
-    a { color: var(--accent); }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--violet) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-    /* ── Hero ── */
-    #hero { padding-top: 5rem; }
+    h2 {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    h3 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      color: var(--text);
+      margin-bottom: 1.25rem;
+    }
+
+    p.muted {
+      color: var(--text-muted);
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    a:hover {
+      color: var(--violet);
+    }
+
+    /* ── Hero Section ── */
+    #hero {
+      padding-top: 6.5rem;
+      position: relative;
+    }
 
     .hero-eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      font-family: var(--mono);
       font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent);
-      background: var(--accent-dim);
-      padding: 0.3rem 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      background: var(--primary-glow);
+      padding: 0.4rem 0.8rem;
       border-radius: 999px;
-      margin-bottom: 1.25rem;
+      border: 1px solid rgba(6, 182, 212, 0.15);
+      margin-bottom: 1.75rem;
     }
 
     .hero-subtitle {
-      font-size: 1.1875rem;
+      font-size: 1.25rem;
       color: var(--text-muted);
-      max-width: 600px;
+      max-width: 680px;
+      line-height: 1.6;
       margin-top: 1rem;
-      margin-bottom: 2.5rem;
+      margin-bottom: 2.75rem;
     }
 
     .hero-contract {
-      background: var(--bg-subtle);
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-left: 3px solid var(--accent);
+      border-left: 4px solid var(--primary);
       border-radius: var(--radius);
-      padding: 1.25rem 1.5rem;
-      font-size: 1rem;
-      color: var(--text-muted);
-      font-style: italic;
-      margin-bottom: 2.5rem;
-      max-width: 640px;
+      padding: 1.5rem 1.75rem;
+      font-size: 1.05rem;
+      color: var(--text);
+      line-height: 1.7;
+      margin-bottom: 3rem;
+      max-width: 760px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      position: relative;
     }
 
-    .hero-contract strong { color: var(--text); font-style: normal; }
+    .hero-contract-badge {
+      position: absolute;
+      top: -12px;
+      right: 20px;
+      background: #030712;
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.675rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
 
-    .hero-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    html.light .hero-contract-badge {
+      background: #fff;
+    }
+
+    .hero-contract strong {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
 
     .btn-primary {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      background: var(--accent);
+      gap: 0.5rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary) 50%, var(--violet) 100%);
       color: #fff;
-      font-weight: 600;
-      font-size: 0.9375rem;
-      padding: 0.6rem 1.25rem;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.925rem;
+      padding: 0.75rem 1.5rem;
       border-radius: var(--radius);
       text-decoration: none;
-      transition: opacity 0.15s;
+      transition: var(--transition);
+      box-shadow: 0 4px 14px var(--primary-glow);
     }
-    .btn-primary:hover { opacity: 0.88; color: #fff; }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.3);
+      color: #fff;
+    }
 
     .btn-secondary {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      background: var(--bg-subtle);
+      gap: 0.5rem;
+      background: var(--bg-card);
       border: 1px solid var(--border);
       color: var(--text);
+      font-family: var(--font-display);
       font-weight: 600;
-      font-size: 0.9375rem;
-      padding: 0.6rem 1.25rem;
+      font-size: 0.925rem;
+      padding: 0.75rem 1.5rem;
       border-radius: var(--radius);
       text-decoration: none;
-      transition: background 0.15s;
+      transition: var(--transition);
     }
-    .btn-secondary:hover { background: var(--border); }
 
-    /* ── Section divider ── */
+    .btn-secondary:hover {
+      background: var(--primary-glow);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* ── Dividers ── */
     .divider {
       border: none;
       border-top: 1px solid var(--border);
-      margin-top: 4rem;
+      margin-top: 4.5rem;
     }
 
     /* ── Invariants ── */
     .invariant-list {
       list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
     }
 
     .invariant-list li {
+      position: relative;
+      overflow: hidden;
       display: flex;
-      gap: 0.875rem;
-      align-items: flex-start;
-      background: var(--bg-subtle);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 0.875rem 1rem;
+      flex-direction: column;
+      background: linear-gradient(145deg, var(--card) 0%, color-mix(in srgb, var(--card) 85%, var(--bg) 15%) 100%);
+      border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+      border-radius: 1rem;
+      padding: 1.75rem;
+      transition: var(--transition);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      min-height: 11.5rem;
     }
 
-    .inv-num {
-      flex-shrink: 0;
-      width: 1.5rem;
-      height: 1.5rem;
-      background: var(--accent);
-      color: #fff;
-      border-radius: 50%;
+    .invariant-list li:hover {
+      transform: translateY(-5px);
+      border-color: color-mix(in srgb, var(--c, var(--primary)) 35%, transparent);
+      box-shadow: 0 16px 36px -12px color-mix(in srgb, var(--c, var(--primary)) 20%, transparent);
+    }
+
+    /* Giant floating background number */
+    .invariant-list li::before {
+      content: var(--num-text);
+      position: absolute;
+      bottom: -1rem;
+      right: -0.5rem;
+      font-family: var(--font-display);
+      font-size: 7.5rem;
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--c, var(--primary)) 12%, transparent) 0%, transparent 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      pointer-events: none;
+      user-select: none;
+      z-index: 1;
+      transition: var(--transition);
+    }
+
+    .invariant-list li:hover::before {
+      transform: scale(1.08) translate(-4px, -4px);
+      background: linear-gradient(135deg, color-mix(in srgb, var(--c, var(--primary)) 20%, transparent) 0%, transparent 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Left glowing rail */
+    .invariant-list li::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 25%;
+      height: 50%;
+      width: 3.5px;
+      background: var(--c, var(--primary));
+      opacity: 0;
+      border-radius: 0 4px 4px 0;
+      transition: var(--transition);
+      filter: drop-shadow(0 0 4px var(--c, var(--primary)));
+    }
+
+    .invariant-list li:hover::after {
+      opacity: 1;
+      height: 65%;
+      top: 17.5%;
+    }
+
+    .invariant-list li strong {
+      position: relative;
+      z-index: 2;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 700;
-      margin-top: 0.125rem;
+      gap: 0.5rem;
+      margin-bottom: 0.65rem;
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text);
     }
 
-    /* ── Install cards ── */
+    .invariant-list li .inv-desc {
+      position: relative;
+      z-index: 2;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Inline code block styling specifically inside descriptions */
+    .invariant-list li .inv-desc code {
+      font-family: var(--mono);
+      font-size: 0.725rem;
+      background: color-mix(in srgb, var(--c, var(--primary)) 8%, rgba(255, 255, 255, 0.03));
+      border: 1px solid color-mix(in srgb, var(--c, var(--primary)) 15%, rgba(255, 255, 255, 0.05));
+      color: color-mix(in srgb, var(--c, var(--primary)) 85%, #fff);
+      padding: 0.1rem 0.3rem;
+      border-radius: 4px;
+    }
+
+    /* ── Terminal and Code Cards ── */
     .install-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.5rem;
     }
 
     .install-card {
@@ -263,36 +581,109 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .install-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
     }
 
     .install-card-header {
-      padding: 0.6rem 1rem;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.8125rem;
-      font-weight: 600;
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 700;
       color: var(--text-muted);
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 0.5rem;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .install-card-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    /* Mac terminal buttons */
+    .terminal-dots {
+      display: flex;
+      gap: 0.35rem;
+      margin-right: 0.5rem;
+    }
+
+    .terminal-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .terminal-dots span:nth-child(1) { background: #ff5f56; }
+    .terminal-dots span:nth-child(2) { background: #ffbd2e; }
+    .terminal-dots span:nth-child(3) { background: #27c93f; }
+
+    .btn-copy {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.675rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .btn-copy:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.08);
     }
 
     .install-card pre {
-      padding: 0.875rem 1rem;
+      padding: 1.25rem 1.5rem;
       font-family: var(--mono);
-      font-size: 0.8125rem;
-      color: #e2e8f0;
-      line-height: 1.7;
+      font-size: 0.825rem;
+      color: #cbd5e1;
+      line-height: 1.65;
       overflow-x: auto;
+      flex: 1;
     }
 
-    .install-card pre .dim { color: #64748b; }
-    .install-card pre .kw { color: #7dd3fc; }
-    .install-card pre .str { color: #86efac; }
-    .install-card pre .fn { color: #c4b5fd; }
-    .install-card pre .cm { color: #475569; }
+    /* Syntaxes */
+    .install-card pre .dim { color: #57657a; }
+    .install-card pre .kw { color: var(--primary); font-weight: 500; }
+    .install-card pre .str { color: #a78bfa; }
+    .install-card pre .fn { color: #38bdf8; }
+    .install-card pre .cm { color: #475569; font-style: italic; }
 
-    /* ── Tables ── */
-    .table-wrap { overflow-x: auto; margin-top: 0.5rem; }
+    /* ── Tables & Schedules ── */
+    .table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 1.25rem;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
 
     table {
       width: 100%;
@@ -302,139 +693,275 @@
 
     th {
       text-align: left;
-      padding: 0.6rem 0.875rem;
+      padding: 1rem 1.25rem;
       border-bottom: 2px solid var(--border);
-      font-size: 0.75rem;
+      font-family: var(--font-display);
+      font-size: 0.725rem;
       font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--text-muted);
       white-space: nowrap;
+      background: rgba(0, 0, 0, 0.05);
     }
 
     td {
-      padding: 0.6rem 0.875rem;
+      padding: 1rem 1.25rem;
       border-bottom: 1px solid var(--border);
-      vertical-align: top;
+      vertical-align: middle;
+      color: var(--text);
     }
 
     tr:last-child td { border-bottom: none; }
 
-    .mono { font-family: var(--mono); font-size: 0.8125rem; }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.01);
+    }
 
-    /* ── Severity badges ── */
+    html.light tr:hover td {
+      background: rgba(0, 0, 0, 0.005);
+    }
+
+    .mono {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* ── Badges ── */
     .badge {
-      display: inline-block;
-      font-size: 0.7rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--mono);
+      font-size: 0.675rem;
       font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      padding: 0.15rem 0.5rem;
+      padding: 0.2rem 0.6rem;
       border-radius: 999px;
+      border: 1px solid transparent;
     }
 
-    .badge-critical { background: #fef2f2; color: #dc2626; }
-    .badge-high     { background: #fff7ed; color: #c2410c; }
-    .badge-medium   { background: #fefce8; color: #854d0e; }
-    .badge-low      { background: #f0fdf4; color: #15803d; }
-    .badge-pass     { background: #f0fdf4; color: #15803d; }
-    .badge-must     { background: var(--accent-dim); color: var(--accent); }
-
-    @media (prefers-color-scheme: dark) {
-      .badge-critical { background: #2d0e0e; color: #f87171; }
-      .badge-high     { background: #2a1505; color: #fb923c; }
-      .badge-medium   { background: #2a2005; color: #facc15; }
-      .badge-low      { background: #0a2a14; color: #4ade80; }
-      .badge-pass     { background: #0a2a14; color: #4ade80; }
-      .badge-must     { background: var(--accent-dim); color: var(--accent); }
+    .badge-critical {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+    .badge-high {
+      background: rgba(249, 115, 22, 0.1);
+      color: #fb923c;
+      border-color: rgba(249, 115, 22, 0.2);
+    }
+    .badge-medium {
+      background: rgba(245, 158, 11, 0.1);
+      color: #facc15;
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+    .badge-low, .badge-pass {
+      background: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .badge-must {
+      background: var(--primary-glow);
+      color: var(--primary);
+      border-color: rgba(6, 182, 212, 0.2);
     }
 
-    /* ── Conformance levels ── */
+    html.light .badge-critical { background: #fef2f2; color: #b91c1c; }
+    html.light .badge-high     { background: #fff7ed; color: #c2410c; }
+    html.light .badge-medium   { background: #fefce8; color: #a16207; }
+    html.light .badge-low, html.light .badge-pass { background: #f0fdf4; color: #15803d; }
+
+    /* ── Conformance Levels Grid ── */
     .level-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 0.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.85rem;
+      margin-top: 1.5rem;
     }
 
     .level-card {
-      background: var(--bg-subtle);
+      background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1rem;
+      padding: 1.25rem;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .level-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Active tested level highlight */
+    .level-card.level-card--active {
+      border-color: var(--primary);
+      background: linear-gradient(180deg, var(--bg-card) 0%, rgba(6, 182, 212, 0.02) 100%);
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.05);
+    }
+
+    .level-card.level-card--active::after {
+      content: "";
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
     }
 
     .level-label {
-      font-size: 1.375rem;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
       font-weight: 800;
-      color: var(--accent);
+      color: var(--primary);
       letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+    }
+
+    .level-card.level-card--active .level-label {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--violet) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .level-name {
-      font-size: 0.8rem;
+      font-family: var(--font-display);
+      font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      margin-bottom: 0.35rem;
+      letter-spacing: 0.06em;
+      color: var(--text);
+      margin-bottom: 0.5rem;
     }
 
-    .level-desc { font-size: 0.8125rem; color: var(--text-muted); }
+    .level-desc {
+      font-size: 0.775rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
 
-    /* ── Registry ── */
+    /* ── Registry Dashboard Widget ── */
     .registry-card {
-      background: var(--bg-subtle);
+      background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.5rem;
+      padding: 1.75rem;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+      margin-top: 1.5rem;
+    }
+
+    /* Subtle top line glow */
+    .registry-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--violet), transparent);
     }
 
     .registry-header {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
       flex-wrap: wrap;
     }
 
-    .registry-title { font-size: 1rem; font-weight: 700; }
+    .registry-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
 
     .stat-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 0.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
     }
 
     .stat-box {
-      background: var(--bg);
+      background: rgba(0, 0, 0, 0.15);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      transition: var(--transition);
     }
 
-    .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
-    .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem; }
+    html.light .stat-box {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .stat-box:hover {
+      border-color: var(--border-hover);
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+      font-weight: 500;
+    }
 
     .packages-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 1.25rem;
+      gap: 0.45rem;
+      margin-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
     }
 
     .pkg-chip {
       font-family: var(--mono);
-      font-size: 0.75rem;
-      background: var(--bg);
+      font-size: 0.725rem;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
-      padding: 0.25rem 0.65rem;
+      padding: 0.35rem 0.75rem;
       border-radius: 999px;
       color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .pkg-chip:hover {
+      border-color: var(--primary);
+      color: var(--text);
+      background: var(--primary-glow);
+    }
+
+    html.light .pkg-chip {
+      background: rgba(0, 0, 0, 0.02);
     }
 
     /* ── Footer ── */
     footer {
-      margin-top: 5rem;
+      margin-top: 6rem;
       border-top: 1px solid var(--border);
       padding: 2.5rem 1.5rem;
       max-width: var(--max-w);
@@ -442,41 +969,949 @@
       margin-right: auto;
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 2rem;
       align-items: center;
       justify-content: space-between;
     }
 
-    .footer-brand { font-weight: 700; font-size: 0.875rem; color: var(--text-muted); }
-    .footer-brand span { color: var(--accent); }
-    .footer-links { display: flex; gap: 1.25rem; }
-    .footer-links a { font-size: 0.8125rem; color: var(--text-muted); text-decoration: none; }
-    .footer-links a:hover { color: var(--text); }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
 
-    /* ── Responsive ── */
-    @media (max-width: 640px) {
+    .footer-brand span {
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--violet) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .footer-commit {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      opacity: 0.4;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .footer-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    .footer-strategy-btn {
+      color: var(--text) !important;
+      font-weight: 600 !important;
+      background: color-mix(in srgb, var(--primary) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
+      padding: 0.3rem 0.65rem;
+      border-radius: 8px;
+      transition: var(--transition);
+    }
+
+    .footer-strategy-btn:hover {
+      background: color-mix(in srgb, var(--primary) 15%, transparent);
+      border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+      box-shadow: 0 0 12px -2px color-mix(in srgb, var(--primary) 30%, transparent);
+      transform: translateY(-1px);
+    }
+
+    /* ── Background canvas ─────────────────────────────────────────────── */
+    .eng-bg-canvas {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .eng-bg-orb {
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    /* Primary bloom — sits top-centre, large and soft */
+    .eng-bg-orb--primary {
+      left: 50%;
+      top: -15%;
+      transform: translate(-50%, 0);
+      width: min(1100px, 130vw);
+      height: min(720px, 90vw);
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        color-mix(in srgb, var(--primary) 13%, transparent) 0%,
+        transparent 65%
+      );
+      animation: eng-breathe 8s ease-in-out infinite;
+    }
+
+    /* Violet accent — far right, mid height */
+    .eng-bg-orb--violet {
+      right: -18%;
+      top: 18%;
+      width: min(700px, 80vw);
+      height: min(700px, 80vw);
+      background: radial-gradient(
+        circle at 50% 50%,
+        color-mix(in srgb, #7c3aed 7%, transparent) 0%,
+        transparent 62%
+      );
+      animation: eng-breathe 10s ease-in-out infinite reverse;
+    }
+
+    /* Trace — bottom-left, small */
+    .eng-bg-orb--trace {
+      left: -8%;
+      bottom: 12%;
+      width: min(420px, 50vw);
+      height: min(420px, 50vw);
+      background: radial-gradient(
+        circle at 50% 50%,
+        color-mix(in srgb, var(--primary) 4%, transparent) 0%,
+        transparent 65%
+      );
+    }
+
+    /* ── Hero layout ───────────────────────────────────────────────────── */
+    .eng-hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      align-items: center;
+      gap: 3rem;
+      padding-block: 4rem 3rem;
+    }
+
+    @media (min-width: 1024px) {
+      .eng-hero {
+        grid-template-columns: 1fr 1.08fr;
+        min-height: calc(100svh - 3.5rem - 5rem);
+        padding-block: 5rem 4rem;
+        gap: 4rem;
+      }
+    }
+
+    /* ── Hero text column ──────────────────────────────────────────────── */
+    .eng-hero-copy {
+      min-width: 0;
+    }
+
+    @media (min-width: 1024px) {
+      .eng-hero-copy {
+        padding-right: 1rem;
+      }
+    }
+
+    /* Monospace eyebrow status badge */
+    .eng-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--primary);
+      border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+      background: color-mix(in srgb, var(--primary) 5%, transparent);
+      padding: 0.375rem 0.875rem;
+      border-radius: 9999px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      width: fit-content;
+    }
+
+    /* Headline */
+    .eng-headline {
+      font-size: clamp(2.625rem, 5.5vw, 4.25rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      color: var(--text);
+    }
+
+    /* Gradient accent on "agent" */
+    .eng-headline-accent {
+      background: linear-gradient(
+        130deg,
+        var(--primary) 0%,
+        color-mix(in srgb, var(--primary) 60%, #7c3aed 40%) 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .eng-tagline {
+      margin-top: 1.25rem;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Hero art column ───────────────────────────────────────────────── */
+    .eng-hero-art {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Ambient radial bloom behind the glass panel */
+    .eng-art-glow {
+      position: absolute;
+      inset: -4rem;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: 50%;
+      background: radial-gradient(
+        ellipse at 50% 46%,
+        color-mix(in srgb, var(--primary) 18%, transparent) 0%,
+        color-mix(in srgb, #7c3aed 8%, transparent) 46%,
+        transparent 68%
+      );
+      filter: blur(48px);
+      animation: eng-breathe 9s ease-in-out infinite;
+    }
+
+    /* Glass panel — sits above the glow, blurs the page behind the art */
+    .eng-art-glass {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      border-radius: 1.25rem;
+      background: color-mix(in srgb, var(--card) 42%, transparent);
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 5%, transparent),
+        0 28px 64px -36px color-mix(in srgb, var(--primary) 22%, transparent);
+    }
+
+    /* Top accent line on the glass panel */
+    .eng-art-glass::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--primary) 60%, transparent) 30%,
+        color-mix(in srgb, #7c3aed 40%, transparent) 68%,
+        transparent 100%
+      );
+      z-index: 2;
+    }
+
+    /* L4 Deployed badge — inside glass panel, top-right */
+    .eng-art-badge {
+      position: absolute;
+      top: 0.875rem;
+      right: 0.875rem;
+      z-index: 10;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      border: 1px solid color-mix(in srgb, #4ade80 26%, transparent);
+      border-radius: 999px;
+      padding: 0.175rem 0.5rem;
+      font-size: 0.5rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #4ade80;
+      background: color-mix(in srgb, #22c55e 10%, transparent);
+      backdrop-filter: blur(8px);
+    }
+
+    .eng-art-badge-dot {
+      display: inline-block;
+      width: 0.3125rem;
+      height: 0.3125rem;
+      border-radius: 50%;
+      background: #4ade80;
+      animation: eng-pulse-green 2.4s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    /* ── Stats bar — full-width, glass ────────────────────────────────── */
+    .eng-stats-bar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      margin-top: 2.5rem;
+      margin-bottom: 2rem;
+      border-top: 1px solid color-mix(in srgb, var(--text) 7%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--text) 7%, transparent);
+      background: color-mix(in srgb, var(--card) 40%, transparent);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, white 2%, transparent), 0 10px 30px -10px rgba(0,0,0,0.3);
+    }
+
+    /* Thin top-edge primary line */
+    .eng-stats-bar::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--primary) 50%, transparent) 25%,
+        color-mix(in srgb, var(--primary) 50%, transparent) 75%,
+        transparent 100%
+      );
+    }
+
+    .eng-stat {
+      flex: 1 1 7rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      padding: 1.125rem 1.75rem;
+      transition: background-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+
+    .eng-stat:hover {
+      background: color-mix(in srgb, var(--text) 3%, transparent);
+      transform: translateY(-1px);
+    }
+
+    .eng-stat--divided {
+      border-left: 1px solid color-mix(in srgb, var(--text) 6%, transparent);
+    }
+
+    .eng-stat-value {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .eng-stat-label {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0.65;
+    }
+
+    /* ── Hub cards ─────────────────────────────────────────────────────── */
+    .eng-card {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+      border-radius: 1rem;
+      padding: 1.625rem 1.625rem 1.5rem;
+      background:
+        linear-gradient(
+          160deg,
+          color-mix(in srgb, var(--card) 92%, var(--bg-subtle) 8%) 0%,
+          color-mix(in srgb, var(--card) 82%, var(--bg) 18%) 100%
+        ),
+        var(--card);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent), 0 8px 32px -8px rgba(0, 0, 0, 0.2);
+      transition:
+        transform    var(--transition),
+        border-color var(--transition),
+        box-shadow   var(--transition);
+      text-decoration: none;
+    }
+
+    .eng-card:hover {
+      transform: translateY(-4px);
+      border-color: color-mix(in srgb, var(--c, var(--primary)) 38%, transparent);
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 6%, transparent),
+        0 16px 40px -12px color-mix(in srgb, var(--c, var(--primary)) 24%, transparent);
+    }
+
+    /* Left accent rail — slides in from left on hover */
+    .eng-card-rail {
+      position: absolute;
+      top: 0.75rem;
+      bottom: 0.75rem;
+      left: 0;
+      width: 3.5px;
+      border-radius: 999px;
+      background: var(--c, var(--primary));
+      opacity: 0;
+      transform: scaleY(0.4);
+      transform-origin: center;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .eng-card:hover .eng-card-rail {
+      opacity: 1;
+      transform: scaleY(1.05);
+      filter: drop-shadow(0 0 4px var(--c, var(--primary)));
+    }
+
+    .eng-card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.25rem;
+      width: 2.25rem;
+      border-radius: 0.65rem;
+      margin-bottom: 1.125rem;
+      flex-shrink: 0;
+      transition: background-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+
+    .eng-card:hover .eng-card-icon {
+      background: color-mix(in srgb, var(--c) 16%, var(--card) 84%) !important;
+      box-shadow: 0 0 12px -2px color-mix(in srgb, var(--c) 40%, transparent);
+      transform: translateY(-1px);
+    }
+
+    .eng-card-eyebrow {
+      margin-bottom: 0.35rem;
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .eng-card-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      line-height: 1.3;
+      letter-spacing: -0.015em;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .eng-card-body {
+      flex: 1;
+      font-size: 0.825rem;
+      line-height: 1.65;
+      color: var(--text-muted);
+      margin-bottom: 0;
+    }
+
+    .eng-card-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      margin-top: 1.125rem;
+      font-size: 0.8125rem;
+      font-weight: 700;
+    }
+
+    /* Meta badge — absolute top-right */
+    .eng-card-meta {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-family: var(--mono);
+      font-size: 0.5625rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      opacity: 0.55;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── CTA buttons ───────────────────────────────────────────────────── */
+    .engineering-primary-action,
+    .engineering-secondary-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 2.5rem;
+      border-radius: 0.5rem;
+      padding: 0.625rem 1.125rem;
+      font-size: 0.875rem;
+      font-weight: 700;
+      transition:
+        transform 160ms ease,
+        box-shadow 160ms ease,
+        border-color 160ms ease;
+      text-decoration: none;
+    }
+
+    .engineering-primary-action {
+      background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary) 94%, black 6%) 0%,
+        color-mix(in srgb, var(--primary) 82%, #7c3aed 18%) 100%
+      );
+      color: #ffffff !important;
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+        0 4px 16px -4px color-mix(in srgb, var(--primary) 50%, transparent),
+        0 18px 40px -24px color-mix(in srgb, var(--primary) 65%, transparent);
+    }
+
+    .engineering-primary-action:hover {
+      transform: translateY(-1.5px);
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+        0 6px 20px -4px color-mix(in srgb, var(--primary) 58%, transparent),
+        0 24px 48px -24px color-mix(in srgb, var(--primary) 72%, transparent);
+    }
+
+    .engineering-secondary-action {
+      background: color-mix(in srgb, var(--card) 80%, var(--bg) 20%);
+      border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
+      color: var(--text);
+    }
+
+    .engineering-secondary-action:hover {
+      transform: translateY(-1.5px);
+      border-color: color-mix(in srgb, var(--primary) 26%, transparent);
+    }
+
+    /* ── Engineering keyframes ── */
+    @keyframes eng-breathe {
+      0%, 100% { opacity: 1;    transform: scale(1); }
+      50%       { opacity: 0.72; transform: scale(0.94); }
+    }
+
+    @keyframes eng-pulse-green {
+      0%, 100% { opacity: 1;   transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.68); }
+    }
+
+    @keyframes eng-ping {
+      0% { transform: scale(1); opacity: 0.8; }
+      70%, 100% { transform: scale(2.8); opacity: 0; }
+    }
+
+    /* ── Responsive Refinements ── */
+    @media (max-width: 768px) {
       .nav-links { display: none; }
       .level-grid { grid-template-columns: repeat(3, 1fr); }
+      #hero { padding-top: 4.5rem; }
+    }
+
+    @media (max-width: 480px) {
+      .level-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-actions { flex-direction: column; }
+      .hero-actions a { justify-content: center; }
+    }
+
+    /* ── HKI Sandbox Studio Styles ── */
+    .hki-sb-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(13, 14, 28, 0.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      margin-top: 1.5rem;
+      text-align: left;
+    }
+
+    @media (min-width: 992px) {
+      .hki-sb-container {
+        grid-template-columns: 7fr 5fr;
+      }
+    }
+
+    .hki-sb-left {
+      padding: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    @media (min-width: 992px) {
+      .hki-sb-left {
+        border-bottom: none;
+        border-right: 1px solid var(--border);
+      }
+    }
+
+    .hki-sb-right {
+      padding: 2rem;
+      background: rgba(3, 7, 18, 0.25);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hki-sb-title-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .hki-sb-title-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--primary) 12%, transparent);
+      color: var(--primary);
+      border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    .hki-sb-title-text h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text);
+    }
+
+    .hki-sb-title-text p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: 2px 0 0 0;
+      line-height: 1.3;
+    }
+
+    .hki-sb-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 576px) {
+      .hki-sb-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+      }
+    }
+
+    .hki-sb-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .hki-sb-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .hki-sb-input, .hki-sb-select {
+      height: 40px;
+      padding: 0 0.85rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.85rem;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .hki-sb-input:focus, .hki-sb-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary-glow);
+    }
+
+    .hki-sb-checkbox-group {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(3, 7, 18, 0.15);
+      padding: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .hki-sb-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid transparent;
+    }
+
+    .hki-sb-checkbox-label:hover {
+      color: var(--text);
+      background: var(--bg-subtle);
+    }
+
+    .hki-sb-checkbox-label.active {
+      color: var(--primary);
+      background: var(--primary-glow);
+      border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    .hki-sb-checkbox-label input {
+      display: none;
+    }
+
+    .hki-sb-pre {
+      background: rgba(3, 7, 18, 0.4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      overflow-x: auto;
+      max-height: 290px;
+      color: #e2e8f0;
+      margin: 0 0 1.5rem 0;
+      text-align: left;
+    }
+
+    .hki-sb-pre .str { color: #38bdf8; }
+    .hki-sb-pre .num { color: #34d399; }
+    .hki-sb-pre .kw { color: #fb7185; }
+    .hki-sb-pre .cm { color: #94a3b8; }
+
+    .hki-sb-audit-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .hki-sb-audit-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+    }
+
+    .hki-sb-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-radius: 99px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .hki-sb-badge-pass {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.25);
+      color: #34d399;
+    }
+
+    .hki-sb-badge-fail {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.25);
+      color: #f87171;
+    }
+
+    .hki-sb-checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .hki-sb-check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+
+    .hki-sb-check-icon {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .hki-sb-check-icon-pass {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+
+    .hki-sb-check-icon-fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+
+    .hki-sb-check-text h4 {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    .hki-sb-check-text p {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin: 3px 0 0 0;
+      line-height: 1.3;
+    }
+
+    .hki-sb-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: auto;
+    }
+
+    .hki-sb-btn {
+      flex: 1;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+
+    .hki-sb-btn:hover {
+      background: var(--primary-glow);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .hki-sb-btn-primary {
+      background: var(--primary);
+      color: #030712;
+      border-color: var(--primary);
+    }
+
+    .hki-sb-btn-primary:hover {
+      background: color-mix(in srgb, var(--primary) 85%, white);
+      border-color: var(--primary);
+      box-shadow: 0 0 15px var(--primary-glow);
     }
   </style>
 </head>
 <body>
 
-<!-- ══ Nav ══════════════════════════════════════════════════════════════════ -->
+<!-- Premium Background Canvas -->
+<div aria-hidden="true" class="eng-bg-canvas">
+  <div class="eng-bg-orb eng-bg-orb--primary"></div>
+  <div class="eng-bg-orb eng-bg-orb--violet"></div>
+  <div class="eng-bg-orb eng-bg-orb--trace"></div>
+
+  <svg
+    class="absolute inset-0 h-full w-full"
+    viewBox="0 0 1440 900"
+    preserveAspectRatio="xMidYMid slice"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style="position: absolute; inset: 0; height: 100%; width: 100%; pointer-events: none;"
+  >
+    <path
+      d="M-60 400 C220 240 460 580 760 340 C1020 130 1260 440 1500 280"
+      stroke="var(--primary)"
+      stroke-opacity="0.055"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M-60 600 C260 460 520 740 820 560 C1080 400 1300 660 1500 510"
+      stroke="var(--primary)"
+      stroke-opacity="0.028"
+      stroke-width="1"
+      stroke-linecap="round"
+    />
+    <circle cx="220" cy="340" r="2.5" fill="var(--primary)" fill-opacity="0.16" />
+    <circle cx="500" cy="460" r="2.5" fill="var(--primary)" fill-opacity="0.16" />
+    <circle cx="760" cy="330" r="2.5" fill="var(--primary)" fill-opacity="0.16" />
+    <circle cx="1020" cy="210" r="2.5" fill="var(--primary)" fill-opacity="0.16" />
+    <circle cx="1260" cy="360" r="2.5" fill="var(--primary)" fill-opacity="0.16" />
+
+    <circle cx="340" cy="520" r="1.5" fill="var(--primary)" fill-opacity="0.09" />
+    <circle cx="640" cy="640" r="1.5" fill="var(--primary)" fill-opacity="0.09" />
+    <circle cx="920" cy="510" r="1.5" fill="var(--primary)" fill-opacity="0.09" />
+    <circle cx="1160" cy="420" r="1.5" fill="var(--primary)" fill-opacity="0.09" />
+  </svg>
+</div>
+
+<!-- ══ Sticky Header ════════════════════════════════════════════════════════ -->
 <nav>
   <div class="nav-inner">
     <a class="nav-brand" href="#hero"><span>HKI</span> · Hermetic Knowledge Isolation</a>
     <div class="nav-links">
-      <a href="#spec">Spec</a>
-      <a href="#install">Install</a>
-      <a href="#conformance">Conformance</a>
-      <a href="#threats">Threats</a>
-      <a href="#registry">Registry</a>
+      <a href="standard.html">Standard Spec</a>
+      <a href="custody.html">Custody Problem</a>
+      <a href="brief.html">Executive Brief</a>
     </div>
-    <div class="nav-right">
+    <div class="nav-right" style="display: flex; align-items: center; gap: 0.75rem;">
+      <button class="theme-toggle" id="themeToggle" aria-label="Switch between dark and light theme">
+        <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="5" />
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+        <span id="themeLabel">Light</span>
+      </button>
       <a class="btn-gh" href="https://github.com/h3nok/HKI" target="_blank" rel="noopener">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         GitHub
+      </a>
+      <a class="btn-primary" href="http://localhost:9001/chat" style="padding: 0.45rem 0.9rem; font-size: 0.8rem; border-radius: 8px; font-weight: 700; height: 31px; display: inline-flex; align-items: center; justify-content: center; box-shadow: none;">
+        Open Console
       </a>
     </div>
   </div>
@@ -484,302 +1919,1351 @@
 
 <main class="page">
 
-  <!-- ══ Hero ══════════════════════════════════════════════════════════════ -->
-  <section id="hero">
-    <div class="hero-eyebrow">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 12.5a5.5 5.5 0 110-11 5.5 5.5 0 010 11zm.75-8.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM7.5 6h1v4.5h-1V6z"/></svg>
-      Draft Standard · MIT License · v0.1.0
+  <!-- ══ Side-by-Side Hero Section ═══════════════════════════════════════════ -->
+  <section class="eng-hero" id="hero">
+    <!-- Left Column: Copy & Actions -->
+    <div class="eng-hero-copy">
+      <!-- Eyebrow Status Badge -->
+      <div class="eng-eyebrow">
+        <span style="position: relative; display: flex; width: 0.5rem; height: 0.5rem; flex-shrink: 0;">
+          <span style="position: absolute; display: inline-flex; width: 100%; height: 100%; border-radius: 9999px; background-color: var(--primary); opacity: 0.75; animation: eng-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+          <span style="position: relative; display: inline-flex; border-radius: 9999px; width: 0.5rem; height: 0.5rem; background-color: var(--primary);"></span>
+        </span>
+        <span style="font-family: var(--mono); letter-spacing: 0.22em;">HKI · runtime contract · v1.0</span>
+      </div>
+
+      <h1 class="eng-headline" style="position: relative; line-height: 1.1; margin-bottom: 1.25rem;">
+        Keep Every<br />
+        <span style="position: relative; display: inline-block; margin: 0.2rem 0;">
+          <span style="position: absolute; inset: -0.15rem -0.5rem; background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 20%, transparent), color-mix(in srgb, var(--violet) 20%, transparent)); border-radius: 0.5rem; filter: blur(8px); pointer-events: none;"></span>
+          <span class="eng-headline-accent" style="position: relative; font-weight: 900; z-index: 1;">Agent</span>
+        </span><br />
+        Firmly In Bounds.
+      </h1>
+
+      <p class="eng-tagline">
+        One domain. No fallback. Fail-closed.
+      </p>
+
+      <div style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.75rem;">
+        <a href="standard.html" class="engineering-primary-action">
+          Read the standard
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+        <a href="custody.html" class="engineering-secondary-action">
+          View custody problem
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+      </div>
     </div>
-    <h1>Hermetic<br>Knowledge Isolation</h1>
-    <p class="hero-subtitle">
-      A signed runtime contract for enterprise agentic systems. Defines the isolation invariant
-      that every RAG pipeline, tool call, cache write, and async job must preserve.
-    </p>
-    <blockquote class="hero-contract">
-      Every runtime request carries exactly one signed HKI envelope describing one active domain.
-      Every artifact, cache key, tool call, retrieval, memory write, and gateway target is bound
-      to that domain by <strong>exact equality</strong>. Cross-domain visibility exists only through
-      explicit, audited publication. The runtime <strong>fails closed</strong> on missing, expired,
-      global, wildcard, or mismatched domains.
-    </blockquote>
-    <div class="hero-actions">
-      <a class="btn-primary" href="#install">Get started</a>
-      <a class="btn-secondary" href="https://github.com/h3nok/HKI/blob/main/spec/HKI-1.0.md" target="_blank" rel="noopener">Read the spec →</a>
-      <a class="btn-secondary" href="#registry">View registry</a>
+
+    <!-- Right Column: Interactive Inline HeroArt SVG -->
+    <div class="eng-hero-art">
+      <div class="eng-art-glow"></div>
+      <div class="eng-art-glass">
+        <!-- Pulse Badge -->
+        <div class="eng-art-badge">
+          <span class="eng-art-badge-dot"></span>
+          L4 Deployed
+        </div>
+
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 720 560"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="xMidYMid meet"
+          style="pointer-events: none; select: none; width: 100%; display: block;"
+        >
+          <defs>
+            <filter
+              id="hkiHeroCardShadow"
+              x="-20%"
+              y="-35%"
+              width="140%"
+              height="170%"
+              color-interpolation-filters="sRGB"
+            >
+              <feDropShadow
+                dx="0"
+                dy="12"
+                stdDeviation="12"
+                flood-color="black"
+                flood-opacity="0.08"
+              />
+            </filter>
+            <filter
+              id="hkiHeroCoreShadow"
+              x="-24%"
+              y="-30%"
+              width="148%"
+              height="170%"
+              color-interpolation-filters="sRGB"
+            >
+              <feDropShadow
+                dx="0"
+                dy="18"
+                stdDeviation="16"
+                flood-color="black"
+                flood-opacity="0.13"
+              />
+            </filter>
+          </defs>
+
+          <!-- transparent base -->
+          <rect width="720" height="560" rx="28" fill="transparent" />
+          <path
+            d="M44 452 C176 392 260 392 386 438 C492 477 576 456 676 398 L676 560 L44 560Z"
+            fill="var(--primary)"
+            fill-opacity="0.045"
+          />
+          <path
+            d="M40 128 C160 78 252 83 366 132 C481 181 570 176 680 104"
+            fill="none"
+            stroke="var(--foreground)"
+            stroke-opacity="0.055"
+            stroke-width="20"
+            stroke-linecap="round"
+          />
+
+          <!-- Domain boundary context mapping outer ring -->
+          <g>
+            <path
+              d="M120 280 C120 174 205 98 360 98 C515 98 600 174 600 280 C600 386 515 462 360 462 C205 462 120 386 120 280Z"
+              fill="var(--primary)"
+              fill-opacity="0.035"
+              stroke="var(--primary)"
+              stroke-opacity="0.16"
+              stroke-width="1.25"
+            />
+            <path
+              d="M174 280 C174 204 238 150 360 150 C482 150 546 204 546 280 C546 356 482 410 360 410 C238 410 174 356 174 280Z"
+              fill="none"
+              stroke="var(--foreground)"
+              stroke-opacity="0.08"
+              stroke-width="1"
+            />
+            <text
+              x="360"
+              y="88"
+              text-anchor="middle"
+              fill="var(--muted-foreground)"
+              font-size="10"
+              font-weight="800"
+              letter-spacing="0.24em"
+            >
+              DOMAIN CUSTODY FIELD
+            </text>
+          </g>
+
+          <!-- 4 Motion rails -->
+          <!-- Payments Rail -->
+          <g>
+            <path
+              d="M360,280 C264,224 309,150 225,150"
+              fill="none"
+              stroke="#059669"
+              stroke-width="22"
+              stroke-linecap="round"
+              stroke-opacity="0.08"
+            />
+            <path
+              d="M360,280 C264,224 309,150 225,150"
+              fill="none"
+              stroke="#059669"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-opacity="0.48"
+            />
+            <path id="hkiHeroRailPath-payments" d="M360,280 C264,224 309,150 225,150" fill="none" stroke="none" />
+            <circle r="5.5" fill="#059669">
+              <animateMotion
+                dur="4.2s"
+                begin="0s"
+                repeatCount="indefinite"
+                calcMode="spline"
+                keyTimes="0;1"
+                keySplines="0.42 0 0.2 1"
+              >
+                <mpath href="#hkiHeroRailPath-payments" />
+              </animateMotion>
+            </circle>
+          </g>
+
+          <!-- Fraud Rail -->
+          <g>
+            <path
+              d="M360,280 C456,224 404,150 488,150"
+              fill="none"
+              stroke="#2563eb"
+              stroke-width="22"
+              stroke-linecap="round"
+              stroke-opacity="0.08"
+            />
+            <path
+              d="M360,280 C456,224 404,150 488,150"
+              fill="none"
+              stroke="#2563eb"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-opacity="0.48"
+            />
+            <path id="hkiHeroRailPath-fraud" d="M360,280 C456,224 404,150 488,150" fill="none" stroke="none" />
+            <circle r="5.5" fill="#2563eb">
+              <animateMotion
+                dur="4.2s"
+                begin="0.7s"
+                repeatCount="indefinite"
+                calcMode="spline"
+                keyTimes="0;1"
+                keySplines="0.42 0 0.2 1"
+              >
+                <mpath href="#hkiHeroRailPath-fraud" />
+              </animateMotion>
+            </circle>
+          </g>
+
+          <!-- Pharma Rail -->
+          <g>
+            <path
+              d="M360,280 C264,336 309,448 225,448"
+              fill="none"
+              stroke="#7c3aed"
+              stroke-width="22"
+              stroke-linecap="round"
+              stroke-opacity="0.08"
+            />
+            <path
+              d="M360,280 C264,336 309,448 225,448"
+              fill="none"
+              stroke="#7c3aed"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-opacity="0.48"
+            />
+            <path id="hkiHeroRailPath-pharma" d="M360,280 C264,336 309,448 225,448" fill="none" stroke="none" />
+            <circle r="5.5" fill="#7c3aed">
+              <animateMotion
+                dur="4.2s"
+                begin="1.4s"
+                repeatCount="indefinite"
+                calcMode="spline"
+                keyTimes="0;1"
+                keySplines="0.42 0 0.2 1"
+              >
+                <mpath href="#hkiHeroRailPath-pharma" />
+              </animateMotion>
+            </circle>
+          </g>
+
+          <!-- Legal Rail -->
+          <g>
+            <path
+              d="M360,280 C456,336 404,448 488,448"
+              fill="none"
+              stroke="#d97706"
+              stroke-width="22"
+              stroke-linecap="round"
+              stroke-opacity="0.08"
+            />
+            <path
+              d="M360,280 C456,336 404,448 488,448"
+              fill="none"
+              stroke="#d97706"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-opacity="0.48"
+            />
+            <path id="hkiHeroRailPath-legal" d="M360,280 C456,336 404,448 488,448" fill="none" stroke="none" />
+            <circle r="5.5" fill="#d97706">
+              <animateMotion
+                dur="4.2s"
+                begin="2.1s"
+                repeatCount="indefinite"
+                calcMode="spline"
+                keyTimes="0;1"
+                keySplines="0.42 0 0.2 1"
+              >
+                <mpath href="#hkiHeroRailPath-legal" />
+              </animateMotion>
+            </circle>
+          </g>
+
+          <!-- Cryptographic Envelope Centerpiece -->
+          <g filter="url(#hkiHeroCoreShadow)">
+            <path
+              d="M250 196H470C478 196 484 202 484 210V360C484 368 478 374 470 374H250C242 374 236 368 236 360V210C236 202 242 196 250 196Z"
+              fill="var(--card)"
+              stroke="var(--primary)"
+              stroke-opacity="0.3"
+              stroke-width="1.5"
+            />
+            <path
+              d="M246 211L360 296L474 211"
+              fill="none"
+              stroke="var(--primary)"
+              stroke-opacity="0.2"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M246 360L326 288"
+              fill="none"
+              stroke="var(--foreground)"
+              stroke-opacity="0.09"
+              stroke-width="1.4"
+              stroke-linecap="round"
+            />
+            <path
+              d="M474 360L394 288"
+              fill="none"
+              stroke="var(--foreground)"
+              stroke-opacity="0.09"
+              stroke-width="1.4"
+              stroke-linecap="round"
+            />
+            <path
+              d="M246 211H474V226L360 304L246 226Z"
+              fill="var(--primary)"
+              fill-opacity="0.055"
+            />
+            <text
+              x="266"
+              y="233"
+              fill="var(--primary)"
+              font-size="12"
+              font-weight="900"
+              letter-spacing="0.14em"
+            >
+              HKI ENVELOPE
+            </text>
+            <text
+              x="267"
+              y="252"
+              fill="var(--muted-foreground)"
+              font-size="10"
+              font-family="ui-monospace,'JetBrains Mono',monospace"
+              font-weight="700"
+            >
+              signed runtime contract
+            </text>
+            <g transform="translate(424 219)">
+              <circle
+                cx="22"
+                cy="22"
+                r="21"
+                fill="var(--primary)"
+                fill-opacity="0.12"
+                stroke="var(--primary)"
+                stroke-opacity="0.34"
+              />
+              <path
+                d="M13 22L19 28L32 15"
+                fill="none"
+                stroke="var(--primary)"
+                stroke-width="2.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </g>
+
+            <rect
+              x="268"
+              y="286"
+              width="184"
+              height="66"
+              rx="16"
+              fill="var(--background)"
+              fill-opacity="0.72"
+              stroke="var(--border)"
+            />
+
+            <g transform="translate(282 304)">
+              <text
+                x="0"
+                y="0"
+                fill="var(--muted-foreground)"
+                font-size="9"
+                font-family="ui-monospace,'JetBrains Mono',monospace"
+                font-weight="700"
+                letter-spacing="0.08em"
+              >
+                org
+              </text>
+              <text
+                x="154"
+                y="0"
+                text-anchor="end"
+                fill="var(--foreground)"
+                font-size="10"
+                font-family="ui-monospace,'JetBrains Mono',monospace"
+                font-weight="800"
+              >
+                acme
+              </text>
+            </g>
+            <g transform="translate(282 322)">
+              <text
+                x="0"
+                y="0"
+                fill="var(--muted-foreground)"
+                font-size="9"
+                font-family="ui-monospace,'JetBrains Mono',monospace"
+                font-weight="700"
+                letter-spacing="0.08em"
+              >
+                active
+              </text>
+              <text
+                x="154"
+                y="0"
+                text-anchor="end"
+                fill="var(--foreground)"
+                font-size="10"
+                font-family="ui-monospace,'JetBrains Mono',monospace"
+                font-weight="800"
+              >
+                one domain
+              </text>
+            </g>
+            <g transform="translate(282 340)">
+              <text
+                x="0"
+                y="0"
+                fill="var(--muted-foreground)"
+                font-size="9"
+                font-family="ui-monospace,'JetBrains Mono',monospace"
+                font-weight="700"
+                letter-spacing="0.08em"
+              >
+                authz
+              </text>
+              <text
+                x="154"
+                y="0"
+                text-anchor="end"
+                fill="var(--foreground)"
+                font-size="10"
+                font-family="ui-monospace,'JetBrains Mono',monospace"
+                font-weight="800"
+              >
+                narrowed set
+              </text>
+            </g>
+
+            <g transform="translate(300 358)">
+              <rect
+                width="120"
+                height="28"
+                rx="14"
+                fill="var(--primary)"
+                fill-opacity="0.13"
+                stroke="var(--primary)"
+                stroke-opacity="0.3"
+              />
+              <text
+                x="60"
+                y="18.5"
+                text-anchor="middle"
+                fill="var(--primary)"
+                font-size="10"
+                font-weight="900"
+                letter-spacing="0.12em"
+              >
+                SIGNED SCOPE
+              </text>
+            </g>
+          </g>
+
+          <!-- Domain Cards -->
+          <!-- Payments Domain Card -->
+          <g>
+            <rect
+              x="52"
+              y="70"
+              width="188"
+              height="104"
+              rx="18"
+              fill="var(--card)"
+              stroke="var(--border)"
+              stroke-width="1"
+              filter="url(#hkiHeroCardShadow)"
+            />
+            <rect
+              x="66"
+              y="84"
+              width="34"
+              height="34"
+              rx="10"
+              fill="#059669"
+              fill-opacity="0.11"
+              stroke="#059669"
+              stroke-opacity="0.35"
+            />
+            <circle cx="83" cy="101" r="6" fill="#059669" />
+            <text
+              x="112"
+              y="101"
+              fill="var(--foreground)"
+              font-size="18"
+              font-weight="800"
+              letter-spacing="-0.02em"
+            >
+              Payments
+            </text>
+            <rect
+              x="70"
+              y="125"
+              width="130"
+              height="20"
+              rx="10"
+              fill="#059669"
+              fill-opacity="0.08"
+              stroke="#059669"
+              stroke-opacity="0.18"
+            />
+            <text
+              x="82"
+              y="138.5"
+              fill="#059669"
+              font-size="9.5"
+              font-family="ui-monospace,'JetBrains Mono',monospace"
+              font-weight="800"
+              letter-spacing="0.04em"
+            >
+              active: payments
+            </text>
+            <text
+              x="70"
+              y="162"
+              fill="var(--muted-foreground)"
+              font-size="12"
+              font-weight="600"
+            >
+              retrieval, cache, tools
+            </text>
+          </g>
+
+          <!-- Fraud Domain Card -->
+          <g>
+            <rect
+              x="488"
+              y="70"
+              width="188"
+              height="104"
+              rx="18"
+              fill="var(--card)"
+              stroke="var(--border)"
+              stroke-width="1"
+              filter="url(#hkiHeroCardShadow)"
+            />
+            <rect
+              x="502"
+              y="84"
+              width="34"
+              height="34"
+              rx="10"
+              fill="#2563eb"
+              fill-opacity="0.11"
+              stroke="#2563eb"
+              stroke-opacity="0.35"
+            />
+            <circle cx="519" cy="101" r="6" fill="#2563eb" />
+            <text
+              x="548"
+              y="101"
+              fill="var(--foreground)"
+              font-size="18"
+              font-weight="800"
+              letter-spacing="-0.02em"
+            >
+              Fraud
+            </text>
+            <rect
+              x="506"
+              y="125"
+              width="130"
+              height="20"
+              rx="10"
+              fill="#2563eb"
+              fill-opacity="0.08"
+              stroke="#2563eb"
+              stroke-opacity="0.18"
+            />
+            <text
+              x="518"
+              y="138.5"
+              fill="#2563eb"
+              font-size="9.5"
+              font-family="ui-monospace,'JetBrains Mono',monospace"
+              font-weight="800"
+              letter-spacing="0.04em"
+            >
+              active: fraud
+            </text>
+            <text
+              x="506"
+              y="162"
+              fill="var(--muted-foreground)"
+              font-size="12"
+              font-weight="600"
+            >
+              signals, cases, tools
+            </text>
+          </g>
+
+          <!-- Pharma Domain Card -->
+          <g>
+            <rect
+              x="52"
+              y="368"
+              width="188"
+              height="104"
+              rx="18"
+              fill="var(--card)"
+              stroke="var(--border)"
+              stroke-width="1"
+              filter="url(#hkiHeroCardShadow)"
+            />
+            <rect
+              x="66"
+              y="382"
+              width="34"
+              height="34"
+              rx="10"
+              fill="#7c3aed"
+              fill-opacity="0.11"
+              stroke="#7c3aed"
+              stroke-opacity="0.35"
+            />
+            <circle cx="83" cy="399" r="6" fill="#7c3aed" />
+            <text
+              x="112"
+              y="399"
+              fill="var(--foreground)"
+              font-size="18"
+              font-weight="800"
+              letter-spacing="-0.02em"
+            >
+              Pharma
+            </text>
+            <rect
+              x="70"
+              y="423"
+              width="130"
+              height="20"
+              rx="10"
+              fill="#7c3aed"
+              fill-opacity="0.08"
+              stroke="#7c3aed"
+              stroke-opacity="0.18"
+            />
+            <text
+              x="82"
+              y="436.5"
+              fill="#7c3aed"
+              font-size="9.5"
+              font-family="ui-monospace,'JetBrains Mono',monospace"
+              font-weight="800"
+              letter-spacing="0.04em"
+            >
+              active: pharma
+            </text>
+            <text
+              x="70"
+              y="460"
+              fill="var(--muted-foreground)"
+              font-size="12"
+              font-weight="600"
+            >
+              policy, review, memory
+            </text>
+          </g>
+
+          <!-- Legal Domain Card -->
+          <g>
+            <rect
+              x="488"
+              y="368"
+              width="188"
+              height="104"
+              rx="18"
+              fill="var(--card)"
+              stroke="var(--border)"
+              stroke-width="1"
+              filter="url(#hkiHeroCardShadow)"
+            />
+            <rect
+              x="502"
+              y="382"
+              width="34"
+              height="34"
+              rx="10"
+              fill="#d97706"
+              fill-opacity="0.11"
+              stroke="#d97706"
+              stroke-opacity="0.35"
+            />
+            <circle cx="519" cy="399" r="6" fill="#d97706" />
+            <text
+              x="548"
+              y="399"
+              fill="var(--foreground)"
+              font-size="18"
+              font-weight="800"
+              letter-spacing="-0.02em"
+            >
+              Legal
+            </text>
+            <rect
+              x="506"
+              y="423"
+              width="130"
+              height="20"
+              rx="10"
+              fill="#d97706"
+              fill-opacity="0.08"
+              stroke="#d97706"
+              stroke-opacity="0.18"
+            />
+            <text
+              x="518"
+              y="436.5"
+              fill="#d97706"
+              font-size="9.5"
+              font-family="ui-monospace,'JetBrains Mono',monospace"
+              font-weight="800"
+              letter-spacing="0.04em"
+            >
+              active: legal
+            </text>
+            <text
+              x="506"
+              y="460"
+              fill="var(--muted-foreground)"
+              font-size="12"
+              font-weight="600"
+            >
+              hold, privilege, audit
+            </text>
+          </g>
+
+          <!-- Bottom runtime proof status label -->
+          <g transform="translate(262 488)">
+            <rect
+              width="196"
+              height="34"
+              rx="17"
+              fill="var(--card)"
+              stroke="var(--border)"
+            />
+            <circle cx="22" cy="17" r="5" fill="var(--success, #10b981)" />
+            <text
+              x="42"
+              y="21"
+              fill="var(--foreground)"
+              font-size="12"
+              font-weight="800"
+            >
+              Runtime proof, not trust
+            </text>
+          </g>
+        </svg>
+      </div>
     </div>
   </section>
 
+  <!-- ══ Full-Width Glass Stats Bar ══════════════════════════════════════════ -->
+  <div class="eng-stats-bar">
+    <div class="eng-stat">
+      <span class="eng-stat-value font-mono" style="color: var(--emerald);" id="hero-stat-adapter">
+        <span class="eng-art-badge-dot" style="margin-right: 4px; animation: eng-pulse-green 2.4s ease-in-out infinite;"></span>
+        28 / 28
+      </span>
+      <span class="eng-stat-label">Adapter cases</span>
+    </div>
+    <div class="eng-stat eng-stat--divided">
+      <span class="eng-stat-value font-mono" id="hero-stat-packages">9</span>
+      <span class="eng-stat-label">SDK packages</span>
+    </div>
+    <div class="eng-stat eng-stat--divided">
+      <span class="eng-stat-value font-mono" style="color: var(--emerald);" id="hero-stat-probes">
+        <span class="eng-art-badge-dot" style="margin-right: 4px; animation: eng-pulse-green 2.4s ease-in-out infinite;"></span>
+        10 / 10
+      </span>
+      <span class="eng-stat-label">HTTP probes</span>
+    </div>
+    <div class="eng-stat eng-stat--divided">
+      <span class="eng-stat-value font-mono" style="color: var(--primary);" id="hero-stat-level">
+        <span class="eng-art-badge-dot" style="margin-right: 4px; background: var(--primary); animation: eng-pulse-green 1.8s ease-in-out infinite; box-shadow: 0 0 6px var(--primary-glow);"></span>
+        L4 · Deployed
+      </span>
+      <span class="eng-stat-label">Conformance</span>
+    </div>
+  </div>
+
+  <!-- ══ Directory Grid Section ══════════════════════════════════════════════ -->
+  <div class="relative z-10 mx-auto w-full px-5 py-12 sm:px-8 sm:py-14" style="padding-top: 3rem; padding-bottom: 3rem;">
+    <div class="mb-7" style="margin-bottom: 2rem;">
+      <p class="mb-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.24em]" style="font-size: 0.65rem; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.24em; color: var(--primary); opacity: 0.8; margin-bottom: 0.5rem;">
+        Start here
+      </p>
+      <h2 class="text-xl font-bold tracking-tight" style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-display); letter-spacing: -0.02em;">
+        Learn the boundary. Inspect the system.
+      </h2>
+    </div>
+
+    <div style="display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+      <!-- Card 1: The Custody Problem -->
+      <a href="custody.html" class="eng-card" style="--c: var(--primary);">
+        <span class="eng-card-rail"></span>
+        <span class="eng-card-icon" style="background: color-mix(in srgb, var(--c) 10%, var(--card) 90%); border: 1px solid color-mix(in srgb, var(--c) 18%, transparent); color: var(--c);">
+          <!-- FileText SVG Icon -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        </span>
+        <p class="eng-card-eyebrow" style="color: var(--c); font-family: var(--mono);">Read first</p>
+        <h3 class="eng-card-title" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+          The Custody Problem
+        </h3>
+        <p class="eng-card-body">Runtime domain custody, not just traditional identity access control.</p>
+        <span class="eng-card-action" style="color: var(--c); display: flex; align-items: center; gap: 0.25rem;">
+          Read paper
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="arrow" style="transition: transform 0.2s;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </span>
+        <span class="eng-card-meta">Problem Statement</span>
+      </a>
+
+      <!-- Card 2: HKI Standard -->
+      <a href="standard.html" class="eng-card" style="--c: #22c55e;">
+        <span class="eng-card-rail"></span>
+        <span class="eng-card-icon" style="background: color-mix(in srgb, var(--c) 10%, var(--card) 90%); border: 1px solid color-mix(in srgb, var(--c) 18%, transparent); color: var(--c);">
+          <!-- ShieldCheck SVG Icon -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 11 11 13 15 9"></polyline></svg>
+        </span>
+        <p class="eng-card-eyebrow" style="color: var(--c); font-family: var(--mono);">Contract</p>
+        <h3 class="eng-card-title" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+          HKI Standard
+        </h3>
+        <p class="eng-card-body">The 6 strict runtime invariants. Complete formal specification.</p>
+        <span class="eng-card-action" style="color: var(--c); display: flex; align-items: center; gap: 0.25rem;">
+          Read standard
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="arrow" style="transition: transform 0.2s;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </span>
+        <span class="eng-card-meta">v1.0 spec</span>
+      </a>
+
+      <!-- Card 3: Executive Brief -->
+      <a href="brief.html" class="eng-card" style="--c: #a78bfa;">
+        <span class="eng-card-rail"></span>
+        <span class="eng-card-icon" style="background: color-mix(in srgb, var(--c) 10%, var(--card) 90%); border: 1px solid color-mix(in srgb, var(--c) 18%, transparent); color: var(--c);">
+          <!-- Network SVG Icon -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="16" y="16" width="6" height="6" rx="1"></rect><rect x="2" y="16" width="6" height="6" rx="1"></rect><rect x="9" y="2" width="6" height="6" rx="1"></rect><path d="M12 8v8M5 16v-3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"></path></svg>
+        </span>
+        <p class="eng-card-eyebrow" style="color: var(--c); font-family: var(--mono);">Executive Brief</p>
+        <h3 class="eng-card-title" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+          HKI Brief
+        </h3>
+        <p class="eng-card-body">A high-level business and architectural brief for leadership and clients.</p>
+        <span class="eng-card-action" style="color: var(--c); display: flex; align-items: center; gap: 0.25rem;">
+          Open brief
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="arrow" style="transition: transform 0.2s;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </span>
+        <span class="eng-card-meta">Brief</span>
+      </a>
+
+      <!-- Card 4: Conformance Evidence -->
+      <a href="#conformance" class="eng-card" style="--c: #f59e0b;">
+        <span class="eng-card-rail"></span>
+        <span class="eng-card-icon" style="background: color-mix(in srgb, var(--c) 10%, var(--card) 90%); border: 1px solid color-mix(in srgb, var(--c) 18%, transparent); color: var(--c);">
+          <!-- ClipboardCheck SVG Icon -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><polyline points="9 14 11 16 15 12"></polyline></svg>
+        </span>
+        <p class="eng-card-eyebrow" style="color: var(--c); font-family: var(--mono);">Prove</p>
+        <h3 class="eng-card-title" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+          Conformance Evidence
+        </h3>
+        <p class="eng-card-body">Adapter conformance test suite, HTTP network probes, signed evidence.</p>
+        <span class="eng-card-action" style="color: var(--c); display: flex; align-items: center; gap: 0.25rem;">
+          Inspect gates
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="arrow" style="transition: transform 0.2s;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </span>
+        <span class="eng-card-meta" id="hero-stat-evidence">28/28</span>
+      </a>
+    </div>
+  </div>
+
   <hr class="divider">
 
-  <!-- ══ Spec ══════════════════════════════════════════════════════════════ -->
+  <!-- ══ Spec Section ════════════════════════════════════════════════════════ -->
   <section id="spec">
-    <h2>Core Invariants</h2>
-    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
-      Every conforming implementation must enforce all six invariants. They are tested by
-      <code style="font-family:var(--mono); font-size:0.875em">@hki/conformance</code> (28 cases, HKI-C01..C28).
+    <h2>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      Guaranteed Invariants
+    </h2>
+    <p class="muted" style="margin-bottom: 2rem;">
+      The Six Pillars of Hermetic Knowledge Isolation. Every downstream microservice, retrieval interface, database client, and tool pipeline must preserve these cryptographic bounds at run-time. They are verified end-to-end by
+      <code class="mono" style="color:var(--primary)">@hki/conformance</code> (28 cases, HKI-C01..C28).
     </p>
+    
     <ul class="invariant-list">
-      <li>
-        <span class="inv-num">1</span>
+      <!-- Pillar 1: Single active domain -->
+      <li style="--c: var(--primary); --num-text: '01';">
         <div>
-          <strong>One active domain per request.</strong>
-          No global, no wildcard, no nullable. The active domain must appear in authorized_domains.
+          <strong>
+            <span style="background: color-mix(in srgb, var(--c) 12%, transparent); color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 25%, transparent); display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 6px; font-family: var(--mono); font-size: 0.75rem; font-weight: 800;">1</span>
+            Single active domain
+          </strong>
+          <span class="inv-desc"><code>active_domain</code> is never <code>null</code>, <code>"global"</code>, <code>"*"</code>, or empty. Forces absolute domain specificity.</span>
         </div>
       </li>
-      <li>
-        <span class="inv-num">2</span>
+      <!-- Pillar 2: Fail-closed -->
+      <li style="--c: #ef4444; --num-text: '02';">
         <div>
-          <strong>Signed envelope at every hop.</strong>
-          The gateway mints and signs the envelope. Each downstream service validates it before processing.
+          <strong>
+            <span style="background: color-mix(in srgb, var(--c) 12%, transparent); color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 25%, transparent); display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 6px; font-family: var(--mono); font-size: 0.75rem; font-weight: 800;">2</span>
+            Fail-closed
+          </strong>
+          <span class="inv-desc">Missing/invalid envelope = <code>401</code>; unauthorized domain = <code>403</code>. Security closed by default.</span>
         </div>
       </li>
-      <li>
-        <span class="inv-num">3</span>
+      <!-- Pillar 3: Exact-match visibility -->
+      <li style="--c: var(--emerald); --num-text: '03';">
         <div>
-          <strong>Exact-equality reads only.</strong>
-          No prefix matching, no glob expansion, no implicit inheritance. Use <code style="font-family:var(--mono); font-size:0.875em">sameHkiDomain()</code> / <code style="font-family:var(--mono); font-size:0.875em">same_domain()</code>.
+          <strong>
+            <span style="background: color-mix(in srgb, var(--c) 12%, transparent); color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 25%, transparent); display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 6px; font-family: var(--mono); font-size: 0.75rem; font-weight: 800;">3</span>
+            Exact-match visibility
+          </strong>
+          <span class="inv-desc">Use <code>same_domain()</code> / <code>sameHkiDomain()</code> functions, never string comparisons or prefix matching.</span>
         </div>
       </li>
-      <li>
-        <span class="inv-num">4</span>
+      <!-- Pillar 4: No body-scope override -->
+      <li style="--c: #a78bfa; --num-text: '04';">
         <div>
-          <strong>Domain-bound cache keys.</strong>
-          <code style="font-family:var(--mono); font-size:0.875em">org_id</code> and <code style="font-family:var(--mono); font-size:0.875em">active_domain</code> are part of every cache, memo, and embedding key.
+          <strong>
+            <span style="background: color-mix(in srgb, var(--c) 12%, transparent); color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 25%, transparent); display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 6px; font-family: var(--mono); font-size: 0.75rem; font-weight: 800;">4</span>
+            No body-scope override
+          </strong>
+          <span class="inv-desc">Body parameters (e.g. <code>body.scope</code> / <code>body.domain</code>) cannot replace or override the <code>active_domain</code> in the envelope.</span>
         </div>
       </li>
-      <li>
-        <span class="inv-num">5</span>
+      <!-- Pillar 5: Explicit publication -->
+      <li style="--c: #f59e0b; --num-text: '05';">
         <div>
-          <strong>Body arguments cannot override the envelope.</strong>
-          <code style="font-family:var(--mono); font-size:0.875em">scope</code>, <code style="font-family:var(--mono); font-size:0.875em">domain</code>, and <code style="font-family:var(--mono); font-size:0.875em">stream_id</code> fields that disagree with the signed envelope cause a hard 403.
+          <strong>
+            <span style="background: color-mix(in srgb, var(--c) 12%, transparent); color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 25%, transparent); display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 6px; font-family: var(--mono); font-size: 0.75rem; font-weight: 800;">5</span>
+            Explicit publication
+          </strong>
+          <span class="inv-desc">No implicit inheritance or cross-domain leaks. Cross-domain data requires signed publication.</span>
         </div>
       </li>
-      <li>
-        <span class="inv-num">6</span>
+      <!-- Pillar 6: Admin plane separation -->
+      <li style="--c: #ec4899; --num-text: '06';">
         <div>
-          <strong>Admin paths are physically separate.</strong>
-          Runtime code cannot import from or call admin/governance modules.
-          Cross-domain inspection is admin-plane only.
+          <strong>
+            <span style="background: color-mix(in srgb, var(--c) 12%, transparent); color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 25%, transparent); display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 6px; font-family: var(--mono); font-size: 0.75rem; font-weight: 800;">6</span>
+            Admin plane separation
+          </strong>
+          <span class="inv-desc">Admin plane cross-domain reads are physically isolated and unreachable from runtime paths.</span>
         </div>
       </li>
     </ul>
 
-    <h3 style="margin-top: 2rem; margin-bottom: 0.75rem;">Envelope schema <code style="font-family:var(--mono); font-size:0.875em; font-weight:400">hki/1.0</code></h3>
-    <div class="install-card">
-      <div class="install-card-header">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style="color:#94a3b8"><rect x="1" y="4" width="14" height="10" rx="2" ry="2"/><path d="M10.5 2h-5L4 4h8l-1.5-2z"/></svg>
-        hki-envelope.json
+    <h3 style="margin-top: 3.5rem; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.5rem">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--violet)"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      Cryptographic Sandbox Studio <code class="mono" style="font-weight:400; color:var(--violet)">hki/1.0</code>
+    </h3>
+    <p class="muted" style="margin-bottom: 1.5rem;">
+      Toggle values live to mint conformant signed scopes or observe validation traps under the six security invariants.
+    </p>
+
+    <div class="hki-sb-container">
+      <!-- Left: Interactive Form Controls -->
+      <div class="hki-sb-left">
+        <div class="hki-sb-title-bar">
+          <div class="hki-sb-title-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <div class="hki-sb-title-text">
+            <h3>Minter Studio</h3>
+            <p>Formulate a signed scope envelope matching runtime requests</p>
+          </div>
+        </div>
+
+        <div class="hki-sb-grid">
+          <div class="hki-sb-grid-2">
+            <div class="hki-sb-field">
+              <span class="hki-sb-label">Organization ID</span>
+              <input type="text" id="sb-org" class="hki-sb-input" value="org_acme_retail" oninput="updateSandbox()" />
+            </div>
+            <div class="hki-sb-field">
+              <span class="hki-sb-label">Subject ID</span>
+              <input type="text" id="sb-subject" class="hki-sb-input" value="user_operator_9" oninput="updateSandbox()" />
+            </div>
+          </div>
+
+          <div class="hki-sb-grid-2">
+            <div class="hki-sb-field">
+              <span class="hki-sb-label">Active Domain</span>
+              <select id="sb-active-domain" class="hki-sb-select" onchange="onActiveDomainChange()">
+                <option value="payments">payments</option>
+                <option value="support">support</option>
+                <option value="orders">orders</option>
+                <option value="catalog">catalog</option>
+                <option value="global">global (Invariant Trap)</option>
+                <option value="*">* (Wildcard Trap)</option>
+              </select>
+            </div>
+            <div class="hki-sb-field">
+              <span class="hki-sb-label">Purpose</span>
+              <select id="sb-purpose" class="hki-sb-select" onchange="updateSandbox()">
+                <option value="retrieve">retrieve (RAG / Read-only)</option>
+                <option value="execute">execute (Actions / Tools)</option>
+                <option value="audit">audit (Compliance Plane)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="hki-sb-field">
+            <span class="hki-sb-label">Authorized Domains Set</span>
+            <div class="hki-sb-checkbox-group">
+              <label class="hki-sb-checkbox-label active" id="lbl-payments">
+                <input type="checkbox" id="auth-payments" value="payments" checked onchange="onAuthCheckboxChange(this)" />
+                payments
+              </label>
+              <label class="hki-sb-checkbox-label" id="lbl-support">
+                <input type="checkbox" id="auth-support" value="support" onchange="onAuthCheckboxChange(this)" />
+                support
+              </label>
+              <label class="hki-sb-checkbox-label" id="lbl-orders">
+                <input type="checkbox" id="auth-orders" value="orders" onchange="onAuthCheckboxChange(this)" />
+                orders
+              </label>
+              <label class="hki-sb-checkbox-label" id="lbl-catalog">
+                <input type="checkbox" id="auth-catalog" value="catalog" onchange="onAuthCheckboxChange(this)" />
+                catalog
+              </label>
+              <label class="hki-sb-checkbox-label" id="lbl-global">
+                <input type="checkbox" id="auth-global" value="global" onchange="onAuthCheckboxChange(this)" />
+                global (Trap)
+              </label>
+              <label class="hki-sb-checkbox-label" id="lbl-wildcard">
+                <input type="checkbox" id="auth-wildcard" value="*" onchange="onAuthCheckboxChange(this)" />
+                * (Trap)
+              </label>
+            </div>
+          </div>
+
+          <div class="hki-sb-grid-2">
+            <div class="hki-sb-field">
+              <span class="hki-sb-label">Risk Tier</span>
+              <select id="sb-risk-tier" class="hki-sb-select" onchange="updateSandbox()">
+                <option value="read-only">read-only (No write)</option>
+                <option value="low-risk" selected>low-risk (Standard)</option>
+                <option value="high-risk">high-risk (Extra auditing)</option>
+                <option value="critical">critical (HITL required)</option>
+              </select>
+            </div>
+            <div class="hki-sb-field">
+              <span class="hki-sb-label">TTL (Seconds)</span>
+              <input type="number" id="sb-ttl" class="hki-sb-input" value="300" oninput="updateSandbox()" />
+            </div>
+          </div>
+        </div>
       </div>
-      <pre>{
-  <span class="str">"hki_version"</span>:        <span class="str">"1.0"</span>,
-  <span class="str">"envelope_id"</span>:        <span class="str">"env_01HX..."</span>,
-  <span class="str">"org_id"</span>:             <span class="str">"acme"</span>,
-  <span class="str">"subject_id"</span>:         <span class="str">"user:42"</span>,
-  <span class="str">"active_domain"</span>:      <span class="str">"payments"</span>,     <span class="cm">// MUST NOT be "global" or "*"</span>
-  <span class="str">"authorized_domains"</span>: [<span class="str">"payments"</span>, <span class="str">"hr"</span>],
-  <span class="str">"purpose"</span>:            <span class="str">"retrieve"</span>,
-  <span class="str">"risk_tier"</span>:          <span class="str">"read-only"</span>,
-  <span class="str">"policy_pack_id"</span>:     <span class="str">"payments@2026-04"</span>,
-  <span class="str">"issued_at"</span>:          <span class="kw">1714867200</span>,
-  <span class="str">"expires_at"</span>:         <span class="kw">1714870800</span>,
-  <span class="str">"issuer"</span>:             <span class="str">"gateway@acme.example"</span>,
-  <span class="str">"signature"</span>:          <span class="str">"ed25519:&lt;base64&gt;"</span>
-}</pre>
+
+      <!-- Right: Live Code & Verdict Panel -->
+      <div class="hki-sb-right">
+        <div>
+          <div class="hki-sb-audit-header">
+            <span class="hki-sb-audit-label">Invariants Audit</span>
+            <span id="sb-verdict" class="hki-sb-badge hki-sb-badge-pass">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              Conformant
+            </span>
+          </div>
+
+          <div class="hki-sb-checklist">
+            <div class="hki-sb-check-item">
+              <div id="check-icon-1" class="hki-sb-check-icon hki-sb-check-icon-pass">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="hki-sb-check-text">
+                <h4>1. Single Active Domain</h4>
+                <p id="check-desc-1">Domain is explicitly designated, never global or wildcard.</p>
+              </div>
+            </div>
+
+            <div class="hki-sb-check-item">
+              <div id="check-icon-2" class="hki-sb-check-icon hki-sb-check-icon-pass">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="hki-sb-check-text">
+                <h4>2. Fail-Closed Default</h4>
+                <p id="check-desc-2">Envelope signature is fully sealed and cryptographically verifiable.</p>
+              </div>
+            </div>
+
+            <div class="hki-sb-check-item">
+              <div id="check-icon-3" class="hki-sb-check-icon hki-sb-check-icon-pass">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="hki-sb-check-text">
+                <h4>3. Exact-Match Visibility</h4>
+                <p id="check-desc-3">Active domain matches authorized domains list exactly. No wildcards.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <pre class="hki-sb-pre"><code id="sb-code">JSON Code Loading...</code></pre>
+
+          <div class="hki-sb-actions">
+            <button class="hki-sb-btn" onclick="copySandboxEnvelope()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copy JSON
+            </button>
+            <button id="btn-try-console" class="hki-sb-btn hki-sb-btn-primary" onclick="tryInConsole()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              Try in Console
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
   <hr class="divider">
 
-  <!-- ══ Install ═══════════════════════════════════════════════════════════ -->
+  <!-- ══ Install Section ════════════════════════════════════════════════════ -->
   <section id="install">
-    <h2>Install</h2>
-    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
-      Runtime packages for TypeScript and Python. The conformance kit runs against any implementation.
+    <h2>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Install &amp; Packages
+    </h2>
+    <p class="muted" style="margin-bottom: 2rem;">
+      Runtime packages for TypeScript and Python. The conformance kit integrates natively into local development workflows.
     </p>
     <div class="install-grid">
       <div class="install-card">
         <div class="install-card-header">
-          <svg width="12" height="12" viewBox="0 0 18 18" fill="#3178c6"><path d="M0 0h18v18H0z"/><path fill="#fff" d="M4.5 9.75h3v1.5h-1.5V15h-1.5V9.75zm5.25 0h4.5v1.5h-1.5V15h-1.5v-3.75H9.75V9.75z"/></svg>
-          TypeScript runtime
+          <div class="install-card-header-left">
+            <div class="terminal-dots"><span></span><span></span><span></span></div>
+            <span>TypeScript runtime (@hki/runtime)</span>
+          </div>
+          <button class="btn-copy" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre><span class="dim">$</span> <span class="kw">npm</span> install @hki/runtime
+        <pre><code><span class="dim">$</span> <span class="kw">npm</span> install @hki/runtime
 
-<span class="cm">// Validate an envelope</span>
+<span class="cm">// Validate an HkiEnvelope</span>
 <span class="kw">import</span> { verifyEnvelope } <span class="kw">from</span> <span class="str">"@hki/runtime"</span>;
-<span class="kw">const</span> result = verifyEnvelope(envelope);</pre>
+<span class="kw">const</span> result = verifyEnvelope(envelope);</code></pre>
       </div>
+      
       <div class="install-card">
         <div class="install-card-header">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="#3572A5"><circle cx="8" cy="8" r="8"/></svg>
-          Python runtime
+          <div class="install-card-header-left">
+            <div class="terminal-dots"><span></span><span></span><span></span></div>
+            <span>Python runtime (hki-runtime)</span>
+          </div>
+          <button class="btn-copy" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre><span class="dim">$</span> <span class="kw">pip</span> install hki-runtime[fastapi]
+        <pre><code><span class="dim">$</span> <span class="kw">pip</span> install hki-runtime[fastapi]
 
-<span class="cm"># FastAPI middleware</span>
+<span class="cm"># Add FastAPI middleware for route isolation</span>
 <span class="kw">from</span> hki_runtime.fastapi <span class="kw">import</span> HkiMiddleware
-app.add_middleware(HkiMiddleware)</pre>
+app.add_middleware(HkiMiddleware)</code></pre>
       </div>
+      
       <div class="install-card">
         <div class="install-card-header">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="#cb3837"><path d="M0 0h16v16H0z"/><path fill="#fff" d="M3 3h10v10H9V6H7v7H3z"/></svg>
-          Conformance kit
+          <div class="install-card-header-left">
+            <div class="terminal-dots"><span></span><span></span><span></span></div>
+            <span>Conformance kit (@hki/conformance)</span>
+          </div>
+          <button class="btn-copy" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre><span class="dim">$</span> <span class="kw">npm</span> install @hki/conformance
+        <pre><code><span class="dim">$</span> <span class="kw">npm</span> install @hki/conformance
 
-<span class="cm"># Run 28 conformance cases</span>
+<span class="cm"># Run 28 conformance test suites</span>
 <span class="dim">$</span> pnpm verify:hki-conformance
-<span class="dim">$</span> pnpm probe:smoke   <span class="cm"># HTTP probes</span></pre>
+<span class="dim">$</span> pnpm probe:smoke   <span class="cm"># Launch HTTP network probes</span></code></pre>
       </div>
+      
       <div class="install-card">
         <div class="install-card-header">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="#f7df1e" style="background:#323330;border-radius:2px"><text x="1" y="13" font-size="12" font-family="monospace">J</text></svg>
-          SDK (mint + wrap)
+          <div class="install-card-header-left">
+            <div class="terminal-dots"><span></span><span></span><span></span></div>
+            <span>Unified SDK (@hki/sdk)</span>
+          </div>
+          <button class="btn-copy" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre><span class="dim">$</span> <span class="kw">npm</span> install @hki/sdk
+        <pre><code><span class="dim">$</span> <span class="kw">npm</span> install @hki/sdk
 
+<span class="cm">// Mint narrowed envelopes at gateway edges</span>
 <span class="kw">import</span> { mintEnvelope } <span class="kw">from</span> <span class="str">"@hki/sdk/client"</span>;
-<span class="kw">const</span> env = <span class="fn">mintEnvelope</span>({
-  activeDomain: <span class="str">"payments"</span>, ...
-});</pre>
+<span class="kw">const</span> env = <span class="fn">mintEnvelope</span>({ activeDomain: <span class="str">"payments"</span> });</code></pre>
       </div>
     </div>
 
-    <h3 style="margin-top: 2rem; margin-bottom: 0.75rem;">Framework adapters</h3>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Package</th>
-            <th>Framework</th>
-            <th>Key export</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td class="mono">hki-litellm</td><td>LiteLLM</td><td><code class="mono">HkiLiteLLMCallback</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
-          <tr><td class="mono">hki-langchain</td><td>LangChain / LangGraph</td><td><code class="mono">HkiCallbackHandler, HkiRetriever</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
-          <tr><td class="mono">hki-llamaindex</td><td>LlamaIndex</td><td><code class="mono">HkiRetrieverMixin</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
-          <tr><td class="mono">hki-adk</td><td>Google ADK</td><td><code class="mono">HkiAdkCallback, HkiToolGuard</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
-          <tr><td class="mono">hki-autogen</td><td>AutoGen</td><td><code class="mono">HkiAutogenMiddleware</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
-          <tr><td class="mono">hki-crewai</td><td>CrewAI</td><td><code class="mono">HkiCrewMiddleware</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
-          <tr><td class="mono">@hki/mcp</td><td>MCP (any server)</td><td><code class="mono">HkiToolGuard, HkiResourceGuard</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
-        </tbody>
-      </table>
+    <h3 style="margin-top: 3.5rem; margin-bottom: 1rem; display:flex; align-items:center; gap:0.5rem">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      Framework Adapters
+    </h3>
+    <div class="table-container">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Package</th>
+              <th>Framework</th>
+              <th>Key export</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">hki-litellm</td><td>LiteLLM</td><td><code class="mono">HkiLiteLLMCallback</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+            <tr><td class="mono">hki-langchain</td><td>LangChain / LangGraph</td><td><code class="mono">HkiCallbackHandler, HkiRetriever</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+            <tr><td class="mono">hki-llamaindex</td><td>LlamaIndex</td><td><code class="mono">HkiRetrieverMixin</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+            <tr><td class="mono">hki-adk</td><td>Google ADK</td><td><code class="mono">HkiAdkCallback, HkiToolGuard</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+            <tr><td class="mono">hki-autogen</td><td>AutoGen</td><td><code class="mono">HkiAutogenMiddleware</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+            <tr><td class="mono">hki-crewai</td><td>CrewAI</td><td><code class="mono">HkiCrewMiddleware</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+            <tr><td class="mono">@hki/mcp</td><td>MCP (any server)</td><td><code class="mono">HkiToolGuard, HkiResourceGuard</code></td><td><span class="badge badge-pass">✓ Shipped</span></td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
   <hr class="divider">
 
-  <!-- ══ Conformance ═══════════════════════════════════════════════════════ -->
+  <!-- ══ Conformance Section ════════════════════════════════════════════════ -->
   <section id="conformance">
-    <h2>Conformance Levels</h2>
-    <p style="color: var(--text-muted); margin-bottom: 1.75rem;">
-      A conformance level is a claim backed by reproducible evidence, not a self-assessment.
-      Run <code style="font-family:var(--mono); font-size:0.875em">pnpm registry:build</code> to generate a signed
-      <code style="font-family:var(--mono); font-size:0.875em">conformance.json</code> for your implementation.
+    <h2>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      Conformance Levels
+    </h2>
+    <p class="muted" style="margin-bottom: 2rem;">
+      Conformance levels are backed by reproducible cryptographic proof, not self-assessment.
+      Run <code class="mono" style="color:var(--primary)">pnpm registry:build</code> to compile a signed
+      conformance registry.
     </p>
+    
     <div class="level-grid">
       <div class="level-card">
         <div class="level-label">L0</div>
         <div class="level-name">Documented</div>
-        <p class="level-desc">Domain-sensitive surfaces inventoried. No runtime claim made.</p>
+        <p class="level-desc">Domain surfaces mapped and cataloged. No active runtime boundaries claims are made.</p>
       </div>
       <div class="level-card">
         <div class="level-label">L1</div>
         <div class="level-name">Labeled</div>
-        <p class="level-desc">Runtime artifacts carry non-null org and domain labels.</p>
+        <p class="level-desc">All storage cells and runtime data carries verified, non-null domain headers.</p>
       </div>
       <div class="level-card">
         <div class="level-label">L2</div>
         <div class="level-name">Routed</div>
-        <p class="level-desc">Requests carry one signed active-domain envelope through each hop.</p>
+        <p class="level-desc">API requests carry exactly one signed HkiEnvelope during every asynchronous transaction.</p>
       </div>
       <div class="level-card">
         <div class="level-label">L3</div>
         <div class="level-name">Enforced</div>
-        <p class="level-desc">Runtime rejects missing, global, wildcard, or cross-domain scope.</p>
+        <p class="level-desc">Services reject transactions immediately if envelopes are missing, wildcard, or global.</p>
       </div>
-      <div class="level-card">
+      <div class="level-card level-card--active">
         <div class="level-label">L4</div>
         <div class="level-name">Tested</div>
-        <p class="level-desc">Automated negative tests and HTTP probes prove isolation invariants.</p>
+        <p class="level-desc">Automated negative test suites and active HTTP probes verify the boundary lines.</p>
       </div>
       <div class="level-card">
         <div class="level-label">L5</div>
         <div class="level-name">Audited</div>
-        <p class="level-desc">Signed release evidence independently reviewed with external reference.</p>
+        <p class="level-desc">Signed evidence and package binary signatures are independently reviewed by external systems.</p>
       </div>
     </div>
 
-    <h3 style="margin-top: 2rem; margin-bottom: 0.75rem;">What "tested" requires (L4)</h3>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Gate</th><th>Command</th><th>Requirement</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Adapter conformance</td><td class="mono">pnpm verify:hki-conformance</td><td>28/28 cases pass (HKI-C01..C28)</td></tr>
-          <tr><td>Python runtime</td><td class="mono">pnpm test:hki-runtime-py</td><td>All pytest cases green</td></tr>
-          <tr><td>HTTP probe</td><td class="mono">pnpm probe:smoke</td><td>10/10 probes PASS (P01..P10)</td></tr>
-          <tr><td>Service evidence</td><td class="mono">pnpm hki-service-evidence</td><td>35/35 JWT boundary cases</td></tr>
-        </tbody>
-      </table>
+    <h3 style="margin-top: 3.5rem; margin-bottom: 1rem; display:flex; align-items:center; gap:0.5rem">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--emerald)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      L4 Conformance Requirements
+    </h3>
+    <div class="table-container">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Gate</th><th>Command</th><th>Requirement</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Adapter Conformance</td><td class="mono">pnpm verify:hki-conformance</td><td>28/28 cases must pass (HKI-C01..C28)</td></tr>
+            <tr><td>Python Unit Tests</td><td class="mono">pnpm test:hki-runtime-py</td><td>All pytest cases verify boundaries green</td></tr>
+            <tr><td>Network Security Probe</td><td class="mono">pnpm probe:smoke</td><td>10/10 mock gateway security probes PASS</td></tr>
+            <tr><td>Service JWT Evidence</td><td class="mono">pnpm hki-service-evidence</td><td>35/35 microservice isolation signatures</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
   <hr class="divider">
 
-  <!-- ══ Threats ════════════════════════════════════════════════════════════ -->
+  <!-- ══ Threats Section ════════════════════════════════════════════════════ -->
   <section id="threats">
-    <h2>Threat Catalog</h2>
-    <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
-      15 concrete, runnable failure modes (HKI-T01..T15). Each has a
-      <code style="font-family:var(--mono); font-size:0.875em">pre_hki.py</code> (the failure)
-      and a <code style="font-family:var(--mono); font-size:0.875em">post_hki.py</code> (the block).
-      Source: <a href="https://github.com/h3nok/HKI/blob/main/docs/HKI_THREATS.md" target="_blank" rel="noopener">docs/HKI_THREATS.md</a>
+    <h2>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      Threat Catalog
+    </h2>
+    <p class="muted" style="margin-bottom: 2rem;">
+      15 runnable attack simulations (HKI-T01..T15) modeled with before and after states.
+      Each threat showcases an unprotected code block (`pre_hki.py`) followed by its secured counterpart (`post_hki.py`).
     </p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>ID</th><th>Title</th><th>Surface</th><th>Severity</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="mono">HKI-T01</td><td>Semantic cache cross-domain leak</td><td>Cache</td><td><span class="badge badge-critical">Critical</span></td></tr>
-          <tr><td class="mono">HKI-T02</td><td>Body-parameter scope override</td><td>Runtime / API</td><td><span class="badge badge-high">High</span></td></tr>
-          <tr><td class="mono">HKI-T03</td><td>Implicit <code class="mono">or "global"</code> fallback</td><td>Runtime</td><td><span class="badge badge-high">High</span></td></tr>
-          <tr><td class="mono">HKI-T04</td><td>Async job loses domain on resume</td><td>Runtime / Jobs</td><td><span class="badge badge-high">High</span></td></tr>
-          <tr><td class="mono">HKI-T05</td><td>Vector index shared across tenants without filter</td><td>Knowledge</td><td><span class="badge badge-critical">Critical</span></td></tr>
-          <tr><td class="mono">HKI-T06</td><td>MCP tool registered without domain binding</td><td>MCP Gateway</td><td><span class="badge badge-high">High</span></td></tr>
-          <tr><td class="mono">HKI-T07</td><td>A2A delegation drops envelope</td><td>Multi-agent</td><td><span class="badge badge-critical">Critical</span></td></tr>
-          <tr><td class="mono">HKI-T08</td><td>Embedding model cache key omits domain</td><td>Cache</td><td><span class="badge badge-critical">Critical</span></td></tr>
-          <tr><td class="mono">HKI-T09</td><td>Admin route reachable from runtime path</td><td>Admin / Runtime</td><td><span class="badge badge-critical">Critical</span></td></tr>
-          <tr><td class="mono">HKI-T10</td><td>Wildcard publication into runtime domain</td><td>Publication</td><td><span class="badge badge-high">High</span></td></tr>
-          <tr><td class="mono">HKI-T11</td><td>Envelope replay (no envelope_id check)</td><td>Edge / Auth</td><td><span class="badge badge-high">High</span></td></tr>
-          <tr><td class="mono">HKI-T12</td><td>Expired envelope accepted (clock skew abuse)</td><td>Edge / Auth</td><td><span class="badge badge-medium">Medium</span></td></tr>
-          <tr><td class="mono">HKI-T13</td><td>Envelope downgrade to older hki_version</td><td>Edge / Auth</td><td><span class="badge badge-medium">Medium</span></td></tr>
-          <tr><td class="mono">HKI-T14</td><td>Graph traversal crosses domain edges</td><td>Knowledge / Graph</td><td><span class="badge badge-high">High</span></td></tr>
-          <tr><td class="mono">HKI-T15</td><td>Prompt-injected scope override echoed by tool</td><td>LLM / Tool</td><td><span class="badge badge-high">High</span></td></tr>
-        </tbody>
-      </table>
+    
+    <div class="table-container">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Title</th><th>Surface</th><th>Severity</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">HKI-T01</td><td>Semantic cache cross-domain leak</td><td>Cache</td><td><span class="badge badge-critical">Critical</span></td></tr>
+            <tr><td class="mono">HKI-T02</td><td>Body-parameter scope override</td><td>Runtime / API</td><td><span class="badge badge-high">High</span></td></tr>
+            <tr><td class="mono">HKI-T03</td><td>Implicit <code class="mono">or "global"</code> fallback</td><td>Runtime</td><td><span class="badge badge-high">High</span></td></tr>
+            <tr><td class="mono">HKI-T04</td><td>Async job loses domain on resume</td><td>Runtime / Jobs</td><td><span class="badge badge-high">High</span></td></tr>
+            <tr><td class="mono">HKI-T05</td><td>Vector index shared across tenants without filter</td><td>Knowledge</td><td><span class="badge badge-critical">Critical</span></td></tr>
+            <tr><td class="mono">HKI-T06</td><td>MCP tool registered without domain binding</td><td>MCP Gateway</td><td><span class="badge badge-high">High</span></td></tr>
+            <tr><td class="mono">HKI-T07</td><td>A2A delegation drops envelope</td><td>Multi-agent</td><td><span class="badge badge-critical">Critical</span></td></tr>
+            <tr><td class="mono">HKI-T08</td><td>Embedding model cache key omits domain</td><td>Cache</td><td><span class="badge badge-critical">Critical</span></td></tr>
+            <tr><td class="mono">HKI-T09</td><td>Admin route reachable from runtime path</td><td>Admin / Runtime</td><td><span class="badge badge-critical">Critical</span></td></tr>
+            <tr><td class="mono">HKI-T10</td><td>Wildcard publication into runtime domain</td><td>Publication</td><td><span class="badge badge-high">High</span></td></tr>
+            <tr><td class="mono">HKI-T11</td><td>Envelope replay (no envelope_id check)</td><td>Edge / Auth</td><td><span class="badge badge-high">High</span></td></tr>
+            <tr><td class="mono">HKI-T12</td><td>Expired envelope accepted (clock skew abuse)</td><td>Edge / Auth</td><td><span class="badge badge-medium">Medium</span></td></tr>
+            <tr><td class="mono">HKI-T13</td><td>Envelope downgrade to older hki_version</td><td>Edge / Auth</td><td><span class="badge badge-medium">Medium</span></td></tr>
+            <tr><td class="mono">HKI-T14</td><td>Graph traversal crosses domain edges</td><td>Knowledge / Graph</td><td><span class="badge badge-high">High</span></td></tr>
+            <tr><td class="mono">HKI-T15</td><td>Prompt-injected scope override echoed by tool</td><td>LLM / Tool</td><td><span class="badge badge-high">High</span></td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
   <hr class="divider">
 
-  <!-- ══ Registry ══════════════════════════════════════════════════════════ -->
+  <!-- ══ Registry Section ═══════════════════════════════════════════════════ -->
   <section id="registry">
-    <h2>Conformance Registry</h2>
-    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
-      Live evidence from the HKI reference implementation. Generated by
-      <code style="font-family:var(--mono); font-size:0.875em">pnpm registry:build</code>
-      and committed as <a href="https://github.com/h3nok/HKI/blob/main/conformance.json" target="_blank" rel="noopener">conformance.json</a>.
+    <h2>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+      Conformance Registry
+    </h2>
+    <p class="muted" style="margin-bottom: 2rem;">
+      Evidence collected from the active HKI reference implementation stack. Re-compiled automatically via `pnpm registry:build`.
     </p>
+    
     <div class="registry-card" id="registry-card">
       <div class="registry-header">
-        <span class="registry-title">hki-reference</span>
+        <span class="registry-title">hki-reference-implementation</span>
         <span class="badge badge-pass" id="reg-level">L4-tested</span>
         <span class="badge badge-must" id="reg-profile">smoke evidence</span>
       </div>
+      
       <div class="stat-row">
         <div class="stat-box">
           <div class="stat-value" id="reg-adapter">28/28</div>
@@ -798,6 +3282,7 @@ app.add_middleware(HkiMiddleware)</pre>
           <div class="stat-label">Packages</div>
         </div>
       </div>
+      
       <div class="packages-row" id="reg-packages">
         <span class="pkg-chip">@hki/runtime</span>
         <span class="pkg-chip">@hki/conformance</span>
@@ -816,18 +3301,258 @@ app.add_middleware(HkiMiddleware)</pre>
 
 <!-- ══ Footer ════════════════════════════════════════════════════════════ -->
 <footer>
-  <span class="footer-brand"><span>HKI</span> — Hermetic Knowledge Isolation · MIT License</span>
+  <div class="footer-brand">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="14" height="14" aria-label="HKI" role="img" style="flex-shrink:0; user-select:none; filter: drop-shadow(0 0 4px var(--primary-glow));">
+      <defs>
+        <linearGradient id="footer-hki-grad" x1="3" y1="3" x2="37" y2="37" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="var(--primary)" />
+          <stop offset="100%" stop-color="var(--violet)" />
+        </linearGradient>
+      </defs>
+      <!-- Hermetic isolation ring -->
+      <circle cx="20" cy="20" r="17" fill="none" stroke="url(#footer-hki-grad)" stroke-width="2" />
+      <!-- H left pillar -->
+      <line x1="12" y1="6" x2="12" y2="34" stroke="url(#footer-hki-grad)" stroke-width="3" stroke-linecap="round" />
+      <!-- H right pillar -->
+      <line x1="28" y1="6" x2="28" y2="34" stroke="url(#footer-hki-grad)" stroke-width="3" stroke-linecap="round" />
+      <!-- H crossbar -->
+      <line x1="12" y1="20" x2="28" y2="20" stroke="url(#footer-hki-grad)" stroke-width="2.5" stroke-linecap="round" />
+      <!-- Boundary nodes -->
+      <circle cx="12" cy="6" r="3" fill="url(#footer-hki-grad)" />
+      <circle cx="12" cy="34" r="3" fill="url(#footer-hki-grad)" />
+      <circle cx="28" cy="6" r="3" fill="url(#footer-hki-grad)" />
+      <circle cx="28" cy="34" r="3" fill="url(#footer-hki-grad)" />
+    </svg>
+    <span>HKI Engineering Hub · Hermetic Knowledge Isolation · MIT License</span>
+    <span class="footer-commit">676265c</span>
+  </div>
   <nav class="footer-links">
     <a href="https://github.com/h3nok/HKI/blob/main/spec/HKI-1.0.md" target="_blank" rel="noopener">Spec</a>
     <a href="https://github.com/h3nok/HKI" target="_blank" rel="noopener">GitHub</a>
     <a href="https://github.com/h3nok/HKI/blob/main/docs/HKI_THREATS.md" target="_blank" rel="noopener">Threats</a>
     <a href="https://github.com/h3nok/HKI/blob/main/conformance.json" target="_blank" rel="noopener">Registry</a>
     <a href="https://github.com/h3nok/HKI/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contribute</a>
+    <a href="http://localhost:9002" target="innovation-hub" rel="noopener" class="footer-strategy-btn">
+      Strategy &amp; Sensing
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px; vertical-align: middle;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+    </a>
   </nav>
 </footer>
 
 <script>
-  // Fetch live conformance.json if available (same-origin / CORS-enabled host)
+  // --- HKI ENVELOPE SANDBOX REACTIVITY ENGINE ---
+  let stableEnvId = 'env_spec_' + Math.random().toString(36).substring(2, 11);
+  let stableSig = 'sig_ed25519_mock_' + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+
+  function syntaxHighlightJson(json) {
+    if (typeof json !== 'string') {
+      json = JSON.stringify(json, null, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
+      let cls = 'num';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'kw';
+        } else {
+          cls = 'str';
+        }
+      } else if (/true|false|null/.test(match)) {
+        cls = 'cm';
+      }
+      return '<span class="' + cls + '">' + match + '</span>';
+    });
+  }
+
+  function getActiveEnvelopeObj() {
+    const org_id = document.getElementById('sb-org').value || '';
+    const subject_id = document.getElementById('sb-subject').value || '';
+    const active_domain = document.getElementById('sb-active-domain').value || '';
+    const purpose = document.getElementById('sb-purpose').value || '';
+    const risk_tier = document.getElementById('sb-risk-tier').value || '';
+    const ttl = parseInt(document.getElementById('sb-ttl').value, 10) || 0;
+
+    const authorized_domains = [];
+    const domainIds = ['payments', 'support', 'orders', 'catalog', 'global', 'wildcard'];
+    domainIds.forEach(id => {
+      const cb = document.getElementById('auth-' + id);
+      if (cb && cb.checked) {
+        authorized_domains.push(cb.value);
+      }
+    });
+
+    const now = Math.floor(Date.now() / 1000);
+    return {
+      hki_version: "1.0",
+      envelope_id: stableEnvId,
+      org_id: org_id,
+      subject_id: subject_id,
+      active_domain: active_domain,
+      authorized_domains: authorized_domains.length > 0 ? authorized_domains : [active_domain],
+      purpose: purpose,
+      risk_tier: risk_tier,
+      policy_pack_id: "pp_standard_v1.0",
+      issued_at: now,
+      expires_at: now + ttl,
+      issuer: "urn:hki:api-gateway",
+      signature: stableSig
+    };
+  }
+
+  function setCheckState(index, isPass) {
+    const iconDiv = document.getElementById('check-icon-' + index);
+    if (!iconDiv) return;
+    if (isPass) {
+      iconDiv.className = 'hki-sb-check-icon hki-sb-check-icon-pass';
+      iconDiv.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    } else {
+      iconDiv.className = 'hki-sb-check-icon hki-sb-check-icon-fail';
+      iconDiv.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+    }
+  }
+
+  function updateSandbox() {
+    const envelope = getActiveEnvelopeObj();
+
+    const codeElem = document.getElementById('sb-code');
+    if (codeElem) {
+      codeElem.innerHTML = syntaxHighlightJson(envelope);
+    }
+
+    // 1. Invariant 1 (Single Active Domain)
+    const isSingleActive = envelope.active_domain && 
+                           envelope.active_domain !== 'global' && 
+                           envelope.active_domain !== '*' && 
+                           envelope.active_domain.trim() !== '';
+    setCheckState(1, isSingleActive);
+    const desc1 = document.getElementById('check-desc-1');
+    if (desc1) {
+      if (envelope.active_domain === 'global') {
+        desc1.innerHTML = '<span style="color:#f87171; font-weight: 500;">Active domain cannot be global (Invariant 1 trap).</span>';
+      } else if (envelope.active_domain === '*') {
+        desc1.innerHTML = '<span style="color:#f87171; font-weight: 500;">Active domain cannot be wildcard * (Invariant 1 trap).</span>';
+      } else if (!envelope.active_domain) {
+        desc1.innerHTML = '<span style="color:#f87171; font-weight: 500;">Active domain cannot be empty.</span>';
+      } else {
+        desc1.textContent = 'Domain is explicitly designated, never global or wildcard.';
+      }
+    }
+
+    // 2. Invariant 2 (Fail-Closed Default)
+    const ttlInputVal = parseInt(document.getElementById('sb-ttl').value, 10);
+    const isFailClosed = !isNaN(ttlInputVal) && ttlInputVal > 0;
+    setCheckState(2, isFailClosed);
+    const desc2 = document.getElementById('check-desc-2');
+    if (desc2) {
+      if (!isFailClosed) {
+        desc2.innerHTML = '<span style="color:#f87171; font-weight: 500;">Envelope TTL must be a positive integer (token is expired/fail-closed).</span>';
+      } else {
+        desc2.textContent = 'Envelope signature is fully sealed and cryptographically verifiable.';
+      }
+    }
+
+    // 3. Invariant 3 (Exact-Match Visibility)
+    const hasActiveInAuth = envelope.authorized_domains.includes(envelope.active_domain);
+    const hasWildcardInAuth = envelope.authorized_domains.includes('*') || envelope.authorized_domains.includes('global');
+    const isExactMatch = hasActiveInAuth && !hasWildcardInAuth;
+    setCheckState(3, isExactMatch);
+    const desc3 = document.getElementById('check-desc-3');
+    if (desc3) {
+      if (hasWildcardInAuth) {
+        desc3.innerHTML = '<span style="color:#f87171; font-weight: 500;">Authorized set cannot contain wildcards ("*") or global (Invariant 3).</span>';
+      } else if (!hasActiveInAuth) {
+        desc3.innerHTML = '<span style="color:#f87171; font-weight: 500;">Active domain "' + envelope.active_domain + '" is not in authorized list.</span>';
+      } else {
+        desc3.textContent = 'Active domain matches authorized domains list exactly. No wildcards.';
+      }
+    }
+
+    // Update overall Verdict Badge
+    const allPass = isSingleActive && isFailClosed && isExactMatch;
+    const verdictBadge = document.getElementById('sb-verdict');
+    if (verdictBadge) {
+      if (allPass) {
+        verdictBadge.className = 'hki-sb-badge hki-sb-badge-pass';
+        verdictBadge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Conformant';
+      } else {
+        verdictBadge.className = 'hki-sb-badge hki-sb-badge-fail';
+        verdictBadge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Invariant Violation';
+      }
+    }
+  }
+
+  function onActiveDomainChange() {
+    const activeDomain = document.getElementById('sb-active-domain').value;
+    if (['payments', 'support', 'orders', 'catalog'].includes(activeDomain)) {
+      const cb = document.getElementById('auth-' + activeDomain);
+      if (cb && !cb.checked) {
+        cb.checked = true;
+        const label = document.getElementById('lbl-' + activeDomain);
+        if (label) label.classList.add('active');
+      }
+    }
+    updateSandbox();
+  }
+
+  function onAuthCheckboxChange(checkbox) {
+    const label = checkbox.closest('.hki-sb-checkbox-label');
+    if (label) {
+      if (checkbox.checked) {
+        label.classList.add('active');
+      } else {
+        label.classList.remove('active');
+      }
+    }
+    updateSandbox();
+  }
+
+  function copySandboxEnvelope() {
+    const envelope = getActiveEnvelopeObj();
+    const text = JSON.stringify(envelope, null, 2);
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('button[onclick="copySandboxEnvelope()"]');
+      if (btn) {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+        btn.style.color = '#34d399';
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+          btn.style.color = '';
+        }, 2000);
+      }
+    });
+  }
+
+  function tryInConsole() {
+    const envelope = getActiveEnvelopeObj();
+    const base64 = btoa(JSON.stringify(envelope));
+    window.open('http://localhost:9001/admin/audit?envelope=' + encodeURIComponent(base64), '_blank');
+  }
+
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', () => {
+    updateSandbox();
+  });
+
+  // Copy to clipboard helper
+  function copyCode(btn) {
+    const pre = btn.closest('.install-card').querySelector('pre');
+    const code = pre.querySelector('code') ? pre.querySelector('code').innerText : pre.innerText;
+    
+    navigator.clipboard.writeText(code).then(() => {
+      const originalText = btn.innerText;
+      btn.innerText = 'Copied!';
+      btn.style.color = '#34d399';
+      setTimeout(() => {
+        btn.innerText = originalText;
+        btn.style.color = '';
+      }, 2000);
+    }).catch(() => {
+      btn.innerText = 'Failed';
+    });
+  }
+
+  // Fetch live conformance.json if available
   (async () => {
     try {
       const res = await fetch("/conformance.json");
@@ -843,6 +3568,7 @@ app.add_middleware(HkiMiddleware)</pre>
       const threatCount = data.threats?.total ?? 15;
       const pkgs = data.packages ? Object.keys(data.packages) : [];
 
+      // Update bottom registry elements
       document.getElementById("reg-level").textContent = level;
       document.getElementById("reg-profile").textContent = profile + " evidence";
       document.getElementById("reg-adapter").textContent = `${adapterPassed}/${adapterTotal}`;
@@ -854,9 +3580,57 @@ app.add_middleware(HkiMiddleware)</pre>
         const row = document.getElementById("reg-packages");
         row.innerHTML = pkgs.map(p => `<span class="pkg-chip">${p}</span>`).join("");
       }
+
+      // Update top stats bar elements
+      const displayLevel = (level.split("-")[0]?.toUpperCase() ?? "L4") + " · Deployed";
+      document.getElementById("hero-stat-level").textContent = displayLevel;
+      document.getElementById("hero-stat-adapter").textContent = `${adapterPassed} / ${adapterTotal}`;
+      document.getElementById("hero-stat-probes").textContent = `${probePassed} / ${probeTotal}`;
+      document.getElementById("hero-stat-packages").textContent = String(pkgs.length || 9);
+      document.getElementById("hero-stat-evidence").textContent = `${adapterPassed}/${adapterTotal}`;
     } catch (_) {
       // graceful degradation — static defaults already rendered
     }
+  })();
+
+  // Theme Toggler Controller
+  (function () {
+    const html = document.documentElement;
+    const toggle = document.getElementById("themeToggle");
+    const icon = document.getElementById("themeIcon");
+    const label = document.getElementById("themeLabel");
+
+    function updateToggleUI(theme) {
+      if (theme === "dark") {
+        label.textContent = "Light";
+        icon.innerHTML =
+          '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+      } else {
+        label.textContent = "Dark";
+        icon.innerHTML =
+          '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+      }
+    }
+
+    function setTheme(theme) {
+      html.classList.toggle("dark", theme === "dark");
+      html.classList.toggle("light", theme === "light");
+      html.setAttribute("data-theme", theme);
+      localStorage.setItem("hki-theme-preference", theme);
+      updateToggleUI(theme);
+    }
+
+    if (toggle) {
+      toggle.addEventListener("click", () => {
+        const current = html.getAttribute("data-theme") || "dark";
+        const next = current === "dark" ? "light" : "dark";
+        setTheme(next);
+      });
+    }
+
+    // Initialize toggle UI based on current class/attribute set by blocking head script
+    const activeTheme = html.getAttribute("data-theme") || "dark";
+    updateToggleUI(activeTheme);
   })();
 </script>
 

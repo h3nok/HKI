@@ -1,12 +1,12 @@
 /**
  * Knowledge Domains — Invite acceptance at /knowledge/join
  *
- * Public page where invited users enter an invite code to gain access to a
- * domain-scoped knowledge workspace.
+ * Stage-gated, conversational workspace where invited users interface with
+ * the HKI Sentinel to verify credentials and bind access securely.
  */
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   ArrowRight,
@@ -14,9 +14,9 @@ import {
   CheckCircle,
   Key,
   Loader2,
-  LogIn,
+  Lock,
   Shield,
-  User,
+  UserCheck,
 } from "lucide-react";
 import { Button, useNotifications } from "@hki/ui";
 
@@ -26,6 +26,8 @@ import {
   KnowledgeSelfServiceShell,
   useKnowledgePageMeta,
 } from "./components/SelfServiceChrome";
+import { StageGator, GateStatus } from "./components/StageGator";
+import { OnboardingSentinel } from "./components/OnboardingSentinel";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -35,47 +37,69 @@ export default function KnowledgeJoin() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { notify } = useNotifications();
-  const [code, setCode] = useState("");
-  const [success, setSuccess] = useState<{
+
+  // State-gates tracing
+  const [gateStates, setGateStates] = useState<Record<number, GateStatus>>({
+    1: "locked",
+    2: "locked",
+    3: "locked",
+    4: "locked",
+  });
+  const [digests, setDigests] = useState<Record<number, string>>({});
+
+  const [inviteCodeError, setInviteCodeError] = useState<string | null>(null);
+  const [successData, setSuccessData] = useState<{
     role: string;
     valueStreamId?: string;
   } | null>(null);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlCode = params.get("code");
-    if (urlCode) setCode(urlCode.toUpperCase());
-  }, []);
+  const handleGateChange = (
+    gateId: number,
+    status: GateStatus,
+    digest?: string
+  ) => {
+    setGateStates(prev => ({ ...prev, [gateId]: status }));
+    if (digest) {
+      setDigests(prev => ({ ...prev, [gateId]: digest }));
+    }
+  };
 
   const acceptMut = trpc.admin.acceptInvite.useMutation({
     onSuccess: (data: any) => {
-      setSuccess({ role: data.role, valueStreamId: data.valueStreamId });
+      setSuccessData({ role: data.role, valueStreamId: data.valueStreamId });
+      setInviteCodeError(null);
       notify({
         title: "Domain access granted",
         severity: "success",
         group: "team",
       });
+      // Trigger sentinel dialog success
+      if (window.__sentinel_trigger_success) {
+        window.__sentinel_trigger_success(data);
+      }
     },
-    onError: (error: any) =>
+    onError: (error: any) => {
+      const msg = error.message || "Invite failed";
+      setInviteCodeError(msg);
       notify({
         title: "Invite failed",
-        description: error.message,
+        description: msg,
         severity: "error",
         group: "team",
-      }),
+      });
+    },
   });
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!user) {
-      setLocation(`/login?from=${encodeURIComponent("/knowledge/join")}`);
-      return;
+  const handleFinalSuccess = () => {
+    if (successData) {
+      setLocation(
+        successData.valueStreamId
+          ? `/knowledge?stream=${encodeURIComponent(successData.valueStreamId)}`
+          : "/knowledge"
+      );
+    } else {
+      setLocation("/knowledge");
     }
-    if (!code.trim()) {
-      notify({ title: "Invite code is required", severity: "warning" });
-      return;
-    }
-    acceptMut.mutate({ inviteCode: code.trim().toUpperCase() });
   };
 
   return (
@@ -86,184 +110,47 @@ export default function KnowledgeJoin() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE }}
-        className="mx-auto grid w-full max-w-5xl flex-1 items-center gap-5 py-6 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]"
+        className="mx-auto grid w-full max-w-6xl flex-1 items-stretch gap-6 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]"
       >
-        <section className="kb-self-service-panel rounded-[28px] p-7 lg:p-9">
-          <div className="kb-self-service-chip">
-            <Key className="h-3.5 w-3.5" />
-            Domain Invite
-          </div>
-          <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            Join a knowledge domain
-          </h1>
-          <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">
-            Invite codes are issued by domain administrators. Sign in with the
-            account tied to the invite, then enter the code to attach access to
-            the correct domain boundary.
-          </p>
+        {/* Left Column: Visual Stage Gator & Telemetry */}
+        <section className="kb-self-service-panel rounded-[28px] p-7 lg:p-9 flex flex-col justify-between h-full relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full bg-primary/3 blur-2xl pointer-events-none" />
 
-          <div className="mt-7 grid gap-3">
-            {[
-              "Code is validated against your signed-in account.",
-              "Access is scoped to the assigned domain.",
-              "The workspace opens with the domain already selected.",
-            ].map(item => (
-              <div
-                key={item}
-                className="kb-self-service-inset flex items-center gap-3 rounded-2xl px-4 py-3"
-              >
-                <Shield className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">{item}</span>
-              </div>
-            ))}
+          <div>
+            <div className="kb-self-service-chip">
+              <Shield className="h-3.5 w-3.5" />
+              Onboarding Checklist
+            </div>
+            <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              Cryptographic Gateways
+            </h1>
+            <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">
+              To guarantee fail-closed security, the HKI platform requires a
+              strict sequence of trust handshakes. Connect your credentials and
+              enter your invite code to begin.
+            </p>
+          </div>
+
+          <div className="mt-8 flex-1">
+            <StageGator gateStates={gateStates} digests={digests} />
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-border/40 text-xs text-muted-foreground flex items-center gap-2">
+            <Lock className="h-3.5 w-3.5 text-primary" />
+            <span>Encrypted using AES-256 GCM edge tunnels.</span>
           </div>
         </section>
 
-        {!success ? (
-          <form
-            onSubmit={handleSubmit}
-            className="kb-self-service-panel rounded-[28px] p-6 lg:p-8"
-          >
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Accept Access
-              </p>
-              <h2 className="mt-2 text-xl font-semibold text-foreground">
-                Verify account and code
-              </h2>
-            </div>
-
-            <div className="mt-6 space-y-5">
-              <div>
-                <label className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  <User className="h-3.5 w-3.5" />
-                  Your account
-                </label>
-                {user ? (
-                  <div className="kb-self-service-inset rounded-2xl px-4 py-3">
-                    <p className="text-sm font-medium text-foreground">
-                      {user.email || user.name || "Signed in"}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      The invite must match this account.
-                    </p>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      setLocation(
-                        `/login?from=${encodeURIComponent("/knowledge/join")}`
-                      )
-                    }
-                    className="w-full gap-2 rounded-xl"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    Sign in to continue
-                  </Button>
-                )}
-              </div>
-
-              <div>
-                <label className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  <Key className="h-3.5 w-3.5" />
-                  Invite code
-                </label>
-                <input
-                  value={code}
-                  onChange={event => setCode(event.target.value.toUpperCase())}
-                  placeholder="ABCD1234"
-                  maxLength={8}
-                  required
-                  className="kb-self-service-field px-4 py-3 text-center font-mono uppercase tracking-[0.2em]"
-                />
-                <p className="mt-2 text-center text-xs text-muted-foreground/70">
-                  8-character code from the domain invite
-                </p>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={!user || code.length < 4 || acceptMut.isPending}
-                className="w-full gap-2 rounded-xl py-3 text-sm font-semibold"
-              >
-                {acceptMut.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Shield className="h-4 w-4" />
-                )}
-                {acceptMut.isPending ? "Verifying..." : "Join Domain"}
-                {!acceptMut.isPending ? (
-                  <ArrowRight className="h-4 w-4" />
-                ) : null}
-              </Button>
-            </div>
-
-            <div className="mt-6 flex flex-col items-center gap-2 text-center text-xs">
-              <button
-                type="button"
-                onClick={() => setLocation("/knowledge/request-access")}
-                className="font-medium text-primary hover:underline"
-              >
-                Request access instead
-              </button>
-              <button
-                type="button"
-                onClick={() => setLocation("/login?from=knowledge")}
-                className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
-              >
-                Already have access? Sign in
-                <ArrowRight className="h-3 w-3" />
-              </button>
-            </div>
-          </form>
-        ) : (
-          <motion.section
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.42, ease: EASE }}
-            className="kb-self-service-panel rounded-[28px] p-8 text-center"
-          >
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <CheckCircle className="h-8 w-8" />
-            </div>
-            <h2 className="mt-5 text-2xl font-semibold text-foreground">
-              Domain access granted
-            </h2>
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
-              You now have{" "}
-              <span className="font-semibold text-foreground">
-                {success.role}
-              </span>{" "}
-              access
-              {success.valueStreamId ? (
-                <>
-                  {" "}
-                  to{" "}
-                  <span className="font-medium text-foreground">
-                    {success.valueStreamId}
-                  </span>
-                </>
-              ) : null}
-              .
-            </p>
-            <Button
-              onClick={() =>
-                setLocation(
-                  success.valueStreamId
-                    ? `/knowledge?stream=${encodeURIComponent(success.valueStreamId)}`
-                    : "/knowledge"
-                )
-              }
-              className="mt-7 gap-2 rounded-xl px-8"
-            >
-              <BookOpen className="h-4 w-4" />
-              Open Domain
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </motion.section>
-        )}
+        {/* Right Column: Conversational Sentinel Interface */}
+        <section className="flex flex-col justify-center">
+          <OnboardingSentinel
+            onGateChange={handleGateChange}
+            onSuccess={handleFinalSuccess}
+            acceptInviteMut={acceptMut}
+            inviteCodeError={inviteCodeError}
+            setInviteCodeError={setInviteCodeError}
+          />
+        </section>
       </motion.div>
     </KnowledgeSelfServiceShell>
   );

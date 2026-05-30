@@ -92,7 +92,7 @@ export default function StatusCard({
       </div>
 
       {secondaryText && (
-        <p className="text-[11px] text-muted-foreground/72 leading-relaxed -mt-1">
+        <p className="text-[11px] text-muted-foreground/85 leading-relaxed -mt-1">
           {secondaryText}
         </p>
       )}

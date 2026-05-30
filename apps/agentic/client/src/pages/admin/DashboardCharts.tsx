@@ -189,7 +189,26 @@ function ChartStat({
 }
 
 // ── Custom tooltip ───────────────────────────────────────────────────────────
-function ChartTooltip({ active, payload, label, valueLabel }: any) {
+interface TooltipPayloadItem {
+  name?: string;
+  value?: number | string;
+  color?: string;
+  payload?: {
+    tooltip?: Array<{ label: string; value: string }>;
+  };
+}
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+  label?: string | number;
+  valueLabel?: string;
+}
+function ChartTooltip({
+  active,
+  payload,
+  label,
+  valueLabel,
+}: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   const metadata = payload[0]?.payload?.tooltip;
   return (
@@ -200,7 +219,7 @@ function ChartTooltip({ active, payload, label, valueLabel }: any) {
       )}
     >
       {label && <p className="font-medium text-foreground/80 mb-1">{label}</p>}
-      {payload.map((p: any, i: number) => (
+      {payload.map((p: TooltipPayloadItem, i: number) => (
         <div key={i} className="flex items-center gap-2">
           <span
             className="w-2 h-2 rounded-full"
@@ -708,21 +727,33 @@ interface ResourceData {
   guardrailChecks: number;
 }
 
-export function ResourceUsageChart({ data }: { data: ResourceData }) {
+export function ResourceUsageChart({
+  data,
+}: {
+  data: ResourceData | null | undefined;
+}) {
+  const safeData: ResourceData = data ?? {
+    tokensToday: 0,
+    apiCalls: 0,
+    knowledgeQueries: 0,
+    guardrailChecks: 0,
+  };
   const { chartData, tokenPressure, projectedTokens, maxValue } =
     useMemo(() => {
       const now = new Date();
       const elapsedHours =
         now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
       const projected =
-        data.tokensToday > 0
-          ? Math.round(data.tokensToday / clamp(elapsedHours / 24, 1 / 24, 1))
+        safeData.tokensToday > 0
+          ? Math.round(
+              safeData.tokensToday / clamp(elapsedHours / 24, 1 / 24, 1)
+            )
           : 0;
       const values = [
-        data.apiCalls,
-        data.knowledgeQueries,
-        data.guardrailChecks,
-        data.tokensToday,
+        safeData.apiCalls,
+        safeData.knowledgeQueries,
+        safeData.guardrailChecks,
+        safeData.tokensToday,
       ];
       const max = Math.max(1, ...values);
       return {
@@ -734,31 +765,31 @@ export function ResourceUsageChart({ data }: { data: ResourceData }) {
         chartData: [
           {
             name: "API",
-            value: data.apiCalls,
-            label: formatCompact(data.apiCalls),
+            value: safeData.apiCalls,
+            label: formatCompact(safeData.apiCalls),
             fill: CHART_COLORS.violet,
           },
           {
             name: "KB",
-            value: data.knowledgeQueries,
-            label: formatCompact(data.knowledgeQueries),
+            value: safeData.knowledgeQueries,
+            label: formatCompact(safeData.knowledgeQueries),
             fill: CHART_COLORS.slate,
           },
           {
             name: "Guard",
-            value: data.guardrailChecks,
-            label: formatCompact(data.guardrailChecks),
+            value: safeData.guardrailChecks,
+            label: formatCompact(safeData.guardrailChecks),
             fill: CHART_COLORS.emerald,
           },
           {
             name: "Tokens",
-            value: data.tokensToday,
-            label: formatCompact(data.tokensToday),
+            value: safeData.tokensToday,
+            label: formatCompact(safeData.tokensToday),
             fill: CHART_COLORS.blue,
           },
         ],
       };
-    }, [data]);
+    }, [safeData]);
 
   const gaugeColor =
     tokenPressure >= 100
@@ -806,7 +837,7 @@ export function ResourceUsageChart({ data }: { data: ResourceData }) {
           </div>
         </div>
         <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-          <span>{formatCompact(data.tokensToday)} used</span>
+          <span>{formatCompact(safeData.tokensToday)} used</span>
           <span>{formatCompact(DASHBOARD_TARGETS.dailyTokenBudget)} plan</span>
         </div>
       </div>
@@ -871,8 +902,8 @@ function EmptyChart({ label }: { label: string }) {
           "relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-border/70 bg-background/78 px-5 text-center"
         )}
       >
-        <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-primary/12" />
-        <div className="pointer-events-none absolute inset-x-10 bottom-4 h-10 rounded-full bg-primary/8 blur-2xl" />
+        <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-primary/12 dark:bg-slate-500/12" />
+        <div className="pointer-events-none absolute inset-x-10 bottom-4 h-10 rounded-full bg-primary/8 dark:bg-slate-500/4 blur-2xl" />
         <div
           className={cn(
             a.iconPrimary,

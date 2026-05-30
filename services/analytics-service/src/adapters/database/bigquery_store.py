@@ -243,7 +243,7 @@ class BigQueryEventStore(src.adapters.database.EventStoreProtocol):
                     service=_payload_text(payload, "service"),
                     scope=(
                         _payload_text(payload, "scope")
-                        or _payload_text(payload, "stream_id", "global")
+                        or _payload_text(payload, "stream_id", "unscoped-analytics")
                     ),
                     payload=payload,
                     timestamp=_coerce_timestamp(payload.get("timestamp"), fallback=created_at),
@@ -598,7 +598,7 @@ class BigQueryEventStore(src.adapters.database.EventStoreProtocol):
             scope_key: str = _payload_text(payload, "scope") or _payload_text(
                 payload,
                 "stream_id",
-                "global",
+                "unscoped-analytics",
             )
             scopes[scope_key] += 1
             if et in ("chat.message", "chat.response"):

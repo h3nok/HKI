@@ -42,7 +42,7 @@ export function MetricCard({
         <p className="text-lg font-bold tracking-tight text-foreground tabular-nums leading-tight">
           {value}
         </p>
-        <p className="mt-1 text-[10px] leading-4 text-muted-foreground/70">
+        <p className="mt-1 text-[10px] leading-4 text-muted-foreground/85">
           {description}
         </p>
       </div>

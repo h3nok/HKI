@@ -64,7 +64,11 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { trpc } from "@/lib/trpc";
+import { trpc, type RouterOutputs, type RouterInputs } from "@/lib/trpc";
+
+type AdminValueStream = RouterOutputs["admin"]["listValueStreams"][number];
+type AdminCollection = RouterOutputs["admin"]["listCollections"][number];
+type DocType = RouterInputs["admin"]["createCollection"]["defaultDocType"];
 import { FONT_FAMILY } from "@hki/ui";
 import type {
   GuardrailConfig,
@@ -233,7 +237,7 @@ function KnowledgeTabContent({
   streamId: string;
   streamName: string;
   isEdit: boolean;
-  setConfirmDialog: (dialog: any) => void;
+  setConfirmDialog: (dialog: ConfirmState) => void;
 }) {
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
@@ -332,7 +336,7 @@ function KnowledgeTabContent({
       {/* Collection list */}
       {collections.length > 0 ? (
         <div className="space-y-2">
-          {collections.map((c: any) => {
+          {collections.map((c: AdminCollection) => {
             const tags: string[] = (() => {
               try {
                 return c.autoTags ? JSON.parse(c.autoTags) : [];
@@ -518,7 +522,7 @@ function KnowledgeTabContent({
                   name: newName.trim(),
                   description: newDesc.trim() || undefined,
                   department: newDept.trim() || undefined,
-                  defaultDocType: newDocType as any,
+                  defaultDocType: newDocType as DocType,
                   autoTags: tags.length ? tags : undefined,
                 });
               }}
@@ -560,7 +564,7 @@ function StreamForm({
   onSave: (d: StreamFormData) => void;
   onCancel: () => void;
   isSaving: boolean;
-  setConfirmDialog: (dialog: any) => void;
+  setConfirmDialog: (dialog: ConfirmState) => void;
 }) {
   const [form, setForm] = useState<StreamFormData>({
     ...initial,
@@ -901,7 +905,7 @@ function StreamForm({
                     ))}
                   </div>
                   {form.icon && (
-                    <p className="mt-1 text-[11px] text-muted-foreground/60">
+                    <p className="mt-1 text-[11px] text-muted-foreground/85">
                       {STREAM_ICON_OPTIONS.find(o => o.id === form.icon)
                         ?.label ?? form.icon}
                     </p>
@@ -911,7 +915,7 @@ function StreamForm({
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-medium text-muted-foreground">
                       Sample Questions{" "}
-                      <span className="text-muted-foreground/60">
+                      <span className="text-muted-foreground/80">
                         (shown on chat welcome screen)
                       </span>
                     </label>
@@ -926,7 +930,7 @@ function StreamForm({
                     )}
                   </div>
                   {form.sampleQuestions.length === 0 && (
-                    <p className="text-xs text-muted-foreground/72 italic">
+                    <p className="text-xs text-muted-foreground/85 italic">
                       No sample questions — prompts will be auto-generated from
                       the description.
                     </p>
@@ -934,7 +938,7 @@ function StreamForm({
                   <div className="space-y-1.5">
                     {form.sampleQuestions.map((q, idx) => (
                       <div key={idx} className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-muted-foreground/65 w-4 text-right shrink-0">
+                        <span className="text-[10px] text-muted-foreground/80 w-4 text-right shrink-0">
                           {idx + 1}.
                         </span>
                         <input
@@ -1043,7 +1047,7 @@ function StreamForm({
                       "resize-none text-xs leading-relaxed"
                     )}
                   />
-                  <p className="text-[10px] text-muted-foreground/60 mt-1 text-right">
+                  <p className="text-[10px] text-muted-foreground/75 mt-1 text-right">
                     {form.systemPrompt.length} / 4000
                   </p>
                 </div>
@@ -1293,7 +1297,7 @@ function StreamForm({
                           }
                           className="w-full h-1.5 rounded-full appearance-none bg-muted accent-primary"
                         />
-                        <div className="flex justify-between text-[9px] text-muted-foreground/60 mt-0.5">
+                        <div className="flex justify-between text-[9px] text-muted-foreground/75 mt-0.5">
                           <span>Broader (0.50)</span>
                           <span>Stricter (1.00)</span>
                         </div>
@@ -1679,7 +1683,7 @@ function StreamForm({
                           }
                           className="w-full h-1.5 rounded-full appearance-none bg-muted accent-primary"
                         />
-                        <div className="flex justify-between text-[9px] text-muted-foreground/50 mt-0.5">
+                        <div className="flex justify-between text-[9px] text-muted-foreground/70 mt-0.5">
                           <span>128</span>
                           <span>2048</span>
                         </div>
@@ -1710,7 +1714,7 @@ function StreamForm({
                           }
                           className="w-full h-1.5 rounded-full appearance-none bg-muted accent-primary"
                         />
-                        <div className="flex justify-between text-[9px] text-muted-foreground/50 mt-0.5">
+                        <div className="flex justify-between text-[9px] text-muted-foreground/70 mt-0.5">
                           <span>0</span>
                           <span>256</span>
                         </div>
@@ -1780,7 +1784,7 @@ function StreamForm({
                         }
                         className="w-full h-1.5 rounded-full appearance-none bg-muted accent-primary"
                       />
-                      <div className="flex justify-between text-[9px] text-muted-foreground/50 mt-0.5">
+                      <div className="flex justify-between text-[9px] text-muted-foreground/70 mt-0.5">
                         <span>Broader</span>
                         <span>Stricter</span>
                       </div>
@@ -1813,7 +1817,7 @@ function StreamForm({
                         }}
                         className="w-full h-1.5 rounded-full appearance-none bg-muted accent-primary"
                       />
-                      <div className="flex justify-between text-[9px] text-muted-foreground/50 mt-0.5">
+                      <div className="flex justify-between text-[9px] text-muted-foreground/70 mt-0.5">
                         <span>Keyword</span>
                         <span>Semantic</span>
                       </div>
@@ -1844,7 +1848,7 @@ function StreamForm({
                         }
                         className="w-full h-1.5 rounded-full appearance-none bg-muted accent-primary"
                       />
-                      <div className="flex justify-between text-[9px] text-muted-foreground/50 mt-0.5">
+                      <div className="flex justify-between text-[9px] text-muted-foreground/70 mt-0.5">
                         <span>1</span>
                         <span>50</span>
                       </div>
@@ -1972,7 +1976,7 @@ function StreamForm({
                     className={inputCls}
                     autoComplete="off"
                   />
-                  <p className="text-[10px] text-muted-foreground/70 mt-2">
+                  <p className="text-[10px] text-muted-foreground/85 mt-2">
                     Leave blank to use the platform&apos;s shared gateway key.
                     KB self-service still works without a domain key; this only
                     overrides AI-assisted helper features that use the shared
@@ -2134,7 +2138,7 @@ export default function StreamsPage() {
   }, []);
 
   const parseSafe = useCallback(
-    (val: string | null | undefined, fallback: any) => {
+    (val: string | null | undefined, fallback: unknown) => {
       if (!val) return fallback;
       try {
         return JSON.parse(val);
@@ -2148,10 +2152,12 @@ export default function StreamsPage() {
   const streamsQ = trpc.admin.listValueStreams.useQuery(undefined, {
     retry: false,
   });
-  const streamRows = (streamsQ.data ?? []).filter((stream: any) => {
-    return stream.id !== "global";
-  });
-  const liveStreamCount = streamRows.filter((stream: any) => {
+  const streamRows = (streamsQ.data ?? []).filter(
+    (stream: AdminValueStream) => {
+      return stream.id !== "global";
+    }
+  );
+  const liveStreamCount = streamRows.filter((stream: AdminValueStream) => {
     return Boolean(stream.isActive);
   }).length;
 
@@ -2330,7 +2336,7 @@ export default function StreamsPage() {
               </HkiTr>
             </HkiThead>
             <HkiTbody>
-              {(streamsQ.data ?? []).map((s: any) => {
+              {(streamsQ.data ?? []).map((s: AdminValueStream) => {
                 const tools: string[] = (() => {
                   try {
                     return s.enabledTools ? JSON.parse(s.enabledTools) : [];
@@ -2361,7 +2367,7 @@ export default function StreamsPage() {
                   <HkiTr key={s.id}>
                     <HKITd>
                       <div className="flex items-center gap-2.5">
-                        <span className="text-foreground/70">
+                        <span className="text-foreground/85">
                           <StreamIcon id={s.icon} size={22} />
                         </span>
                         <div>
@@ -2369,7 +2375,7 @@ export default function StreamsPage() {
                             {s.name}
                           </span>
                           <code
-                            className="text-[10px] text-muted-foreground/60"
+                            className="text-[10px] text-muted-foreground/85"
                             style={{ fontFamily: FONT_FAMILY.mono }}
                           >
                             {s.id}
@@ -2453,7 +2459,7 @@ export default function StreamsPage() {
                             ? "custom-persona"
                             : "default-persona"}
                         </span>
-                        {(s as any).llmApiKey ? (
+                        {s.llmApiKey ? (
                           <span
                             className={cn(
                               a.pillPrimary,
@@ -2516,7 +2522,8 @@ export default function StreamsPage() {
                               sampleQuestions: parseSafe(s.sampleQuestions, []),
                               systemPrompt: s.systemPrompt || "",
                               retrievalStrategy:
-                                s.retrievalStrategy || "hybrid",
+                                (s.retrievalStrategy as RetrievalStrategy) ||
+                                "hybrid",
                               enabledTools: parseSafe(s.enabledTools, [
                                 "search_knowledge",
                               ]),
@@ -2531,7 +2538,7 @@ export default function StreamsPage() {
                                   ...DEFAULT_KNOWLEDGE_CONFIG,
                                 })
                               ),
-                              llmApiKey: (s as any).llmApiKey || "",
+                              llmApiKey: s.llmApiKey || "",
                             });
                           }}
                         />

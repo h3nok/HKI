@@ -21,7 +21,7 @@ logger: logging.Logger = src.core.logging.logger.getChild("use_cases")
 
 def _normalize_stream_id(value: typing.Any) -> str | None:
     stream_id: str = str(value or "").strip()
-    if not stream_id or stream_id == "global":
+    if not stream_id or stream_id.lower() in {"global", "*"}:
         return None
     return stream_id
 
@@ -307,7 +307,7 @@ def parse_pubsub_event(data: dict[str, typing.Any]) -> src.domain.entities.Agent
         user_id=str(data.get("user_id", "")),
         org_id=str(data.get("org_id", "default")),
         service=str(data.get("service", "")),
-        scope=str(data.get("scope", "global")),
+        scope=str(data.get("scope", "unscoped-analytics")),
         payload={
             k: v
             for k, v in data.items()

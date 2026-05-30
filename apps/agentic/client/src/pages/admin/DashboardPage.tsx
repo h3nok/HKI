@@ -9,7 +9,14 @@ import {
   SelectValue,
 } from "@hki/ui";
 
-import { trpc } from "@/lib/trpc";
+import { trpc, type RouterOutputs } from "@/lib/trpc";
+
+type AdminValueStream = RouterOutputs["admin"]["listValueStreams"][number];
+type KnowledgeOpsSummary = RouterOutputs["admin"]["knowledgeOperationsSummary"];
+type KnowledgeStreamSummary = KnowledgeOpsSummary["streams"][number];
+type KnowledgeJob = KnowledgeStreamSummary["jobs"][number];
+type ServiceHealth =
+  RouterOutputs["knowledge"]["serviceHealth"]["services"][number];
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { buildKnowledgeWorkspaceHref } from "@/_core/workspace-navigation";
@@ -19,6 +26,7 @@ import { KnowledgeStatsGrid } from "./components/KnowledgeStatsGrid";
 import { ValueStreamsWidget } from "./components/ValueStreamsWidget";
 import { AgentActivityWidget } from "./components/AgentActivityWidget";
 import { ForwardSignalsPanel } from "./components/ForwardSignalsPanel";
+import { OnPremNodeWidget } from "./components/OnPremNodeWidget";
 import { buildDashboardSignals } from "./dashboardSignals";
 import { a } from "./theme";
 
@@ -57,7 +65,9 @@ export default function DashboardPage() {
   const streamsQ = trpc.admin.listValueStreams.useQuery(undefined, {
     retry: false,
   });
-  const streams = (streamsQ.data ?? []).filter((s: any) => s.id !== "global");
+  const streams = (streamsQ.data ?? []).filter(
+    (s: AdminValueStream) => s.id !== "global"
+  );
   const usersQ = trpc.admin.listUsers.useQuery(
     { search: undefined },
     { retry: false }
@@ -93,10 +103,10 @@ export default function DashboardPage() {
 
   const userCount = usersQ.data?.total ?? 0;
   const selectedKbStream =
-    streams.find((stream: any) => stream.id === kbScopeId) ?? null;
+    streams.find((stream: AdminValueStream) => stream.id === kbScopeId) ?? null;
   const selectedKbStreamSummary =
     kbOverviewQ.data?.streams.find(
-      (stream: any) => stream.valueStreamId === kbScopeId
+      (stream: KnowledgeStreamSummary) => stream.valueStreamId === kbScopeId
     ) ?? null;
   const selectedKbSummary =
     kbScopeId === "all"
@@ -104,12 +114,13 @@ export default function DashboardPage() {
       : selectedKbStreamSummary;
   const allOk = useMemo(() => {
     const svcs = healthQ.data?.services ?? [];
-    return svcs.length > 0 && svcs.every((s: any) => s.ok);
+    return svcs.length > 0 && svcs.every((s: ServiceHealth) => s.ok);
   }, [healthQ.data]);
 
   useEffect(() => {
     if (kbScopeId === "all") return;
-    if (streams.some((stream: any) => stream.id === kbScopeId)) return;
+    if (streams.some((stream: AdminValueStream) => stream.id === kbScopeId))
+      return;
     setKbScopeId("all");
   }, [kbScopeId, streams]);
 
@@ -156,7 +167,7 @@ export default function DashboardPage() {
         ? `Inspecting ${selectedKbStream.name} knowledge operations.`
         : "Select a domain to inspect domain-level knowledge operations.";
   const kbActiveJobs = kbJobs.filter(
-    (j: any) => !["completed", "failed"].includes(j.status)
+    (j: KnowledgeJob) => !["completed", "failed"].includes(j.status)
   ).length;
   const kbFailedJobs = selectedKbSummary?.failedJobs ?? 0;
   const kbCompletedJobs = selectedKbSummary?.completedJobs ?? 0;
@@ -298,7 +309,7 @@ export default function DashboardPage() {
                 summary={kbSummaryText}
                 scopeControl={
                   <div className="flex w-full flex-col gap-1 sm:w-55 lg:w-60">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/85">
                       Scope
                     </span>
                     <Select
@@ -325,7 +336,7 @@ export default function DashboardPage() {
                         ) : (
                           <>
                             <SelectItem value="all">All domains</SelectItem>
-                            {streams.map((stream: any) => (
+                            {streams.map((stream: AdminValueStream) => (
                               <SelectItem key={stream.id} value={stream.id}>
                                 {stream.name}
                               </SelectItem>
@@ -367,6 +378,7 @@ export default function DashboardPage() {
               </Suspense>
             </div>
             <div className="order-first flex flex-col gap-5 lg:order-0 lg:col-span-4">
+              <OnPremNodeWidget />
               <ForwardSignalsPanel summary={forwardSignals} />
               <ValueStreamsWidget
                 streams={streams}

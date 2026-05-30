@@ -26,6 +26,7 @@ class Settings(ServiceSettings):
 
     # ── Event Buffer ──────────────────────────────────────────────────────
     EVENT_BUFFER_MAX: int = 10_000  # Max in-memory events before flush
+    ANALYTICS_INGEST_SECRET: str = ""  # Optional shared secret for service event producers
 
     # ── Downstream Services ───────────────────────────────────────────────
     ORCHESTRATOR_URL: str = "http://localhost:9501"

@@ -11,15 +11,23 @@ import contextlib
 import typing
 import urllib.parse
 
-from ..adapters.redis_memory import RedisDeclarativeMemory, RedisEpisodicMemory, RedisProceduralMemory, RedisSemanticMemory
 import fastapi
 import fastapi.middleware.cors
+import httpx
 
 import src.adapters.analytics_client
 import src.core.config
 import src.core.logging
 import src.domain.guardrails
 import src.domain.memory
+import src.domain.runtime_adapter
+
+from ..adapters.redis_memory import (
+    RedisDeclarativeMemory,
+    RedisEpisodicMemory,
+    RedisProceduralMemory,
+    RedisSemanticMemory,
+)
 
 settings: src.core.config.Settings = src.core.config.settings
 
@@ -62,7 +70,15 @@ async def lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncGenerator[None,
     # Try Redis-backed memory first; fall back to in-process dicts
     from src.adapters.redis_memory import create_redis_memory_stores
 
-    redis_stores: tuple[RedisSemanticMemory, RedisEpisodicMemory, RedisProceduralMemory, RedisDeclarativeMemory] | None = await create_redis_memory_stores(settings.REDIS_URL)
+    redis_stores: (
+        tuple[
+            RedisSemanticMemory,
+            RedisEpisodicMemory,
+            RedisProceduralMemory,
+            RedisDeclarativeMemory,
+        ]
+        | None
+    ) = await create_redis_memory_stores(settings.REDIS_URL)
     if redis_stores:
         sem, epi, proc, decl = redis_stores
         memory_manager = src.domain.memory.MemoryManager(
@@ -90,17 +106,38 @@ async def lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncGenerator[None,
     analytics = src.adapters.analytics_client.AnalyticsClient()
     await analytics.start()
 
-    # ── 4. Create the agent (ADK native Vertex AI) ────────────────────────
-    from src.domain.agent import AdkAgent
+    # ── 4. Create the runtime adapter ─────────────────────────────────────
+    agent: src.domain.runtime_adapter.AgentRuntimeAdapter
+    if settings.AGENT_ENGINE_ENABLED:
+        from src.adapters.agent_engine_client import AgentEngineClient
 
-    agent = AdkAgent(memory_manager=memory_manager, cache=cache)
-    src.core.logging.logger.info(
-        "ADK Agent initialized (native Vertex AI)",
-        extra={
-            "model": settings.AGENT_MODEL,
-            "vertex_location": settings.VERTEX_AI_LOCATION,
-        },
-    )
+        if not settings.AGENT_ENGINE_RESOURCE_NAME.strip():
+            raise RuntimeError(
+                "AGENT_ENGINE_ENABLED=true requires AGENT_ENGINE_RESOURCE_NAME"
+            )
+        agent = AgentEngineClient(
+            settings.AGENT_ENGINE_RESOURCE_NAME,
+            project=settings.GCP_PROJECT_ID,
+            location=settings.VERTEX_AI_LOCATION or settings.GCP_LOCATION,
+        )
+        src.core.logging.logger.info(
+            "Agent Engine runtime adapter initialized",
+            extra={
+                "resource_name": settings.AGENT_ENGINE_RESOURCE_NAME,
+                "vertex_location": settings.VERTEX_AI_LOCATION or settings.GCP_LOCATION,
+            },
+        )
+    else:
+        from src.domain.agent import AdkAgent
+
+        agent = AdkAgent(memory_manager=memory_manager, cache=cache)
+        src.core.logging.logger.info(
+            "ADK Agent initialized (native Vertex AI)",
+            extra={
+                "model": settings.AGENT_MODEL,
+                "vertex_location": settings.VERTEX_AI_LOCATION,
+            },
+        )
 
     # Stash on app state for route access
     app.state.memory_manager = memory_manager
@@ -194,17 +231,17 @@ async def health() -> dict[str, str]:
     return {"status": "healthy", "service": settings.SERVICE_NAME}
 
 
-# Shared lightweight client for health probes — avoids creating a new
-# TCP connection on every 5-second readiness check across all pods.
-import httpx  # noqa: E402 — needed for type annotation
-
 _probe_client: httpx.AsyncClient | None = None
 
 
 def _get_probe_client() -> httpx.AsyncClient:
     global _probe_client  # noqa: PLW0603
     if _probe_client is None:
-        _probe_client = create_service_client("orchestrator-probes", timeout=5.0, max_connections=4)
+        _probe_client = create_service_client(
+            "orchestrator-probes",
+            timeout=5.0,
+            max_connections=4,
+        )
     return _probe_client
 
 

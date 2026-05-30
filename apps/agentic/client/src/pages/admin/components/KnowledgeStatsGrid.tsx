@@ -3,6 +3,10 @@ import { motion } from "framer-motion";
 import { cn, textColor, HkiCard } from "@hki/ui";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import { a } from "../theme";
+import type { RouterOutputs } from "@/lib/trpc";
+
+type KnowledgeOpsSummary = RouterOutputs["admin"]["knowledgeOperationsSummary"];
+export type KnowledgeOpsJob = KnowledgeOpsSummary["recentActiveJobs"][number];
 
 interface KBStat {
   label: string;
@@ -14,7 +18,7 @@ interface KBStat {
 
 interface KnowledgeStatsGridProps {
   stats: KBStat[];
-  jobs?: any[];
+  jobs?: KnowledgeOpsJob[];
   isLoading: boolean;
   summary?: string;
   scopeControl?: ReactNode;
@@ -58,10 +62,10 @@ export function KnowledgeStatsGrid({
               )}
             >
               <div className="min-w-0">
-                <h2 className="text-sm font-medium text-foreground dark:text-foreground/78">
+                <h2 className="text-sm font-medium text-foreground">
                   Knowledge Operations
                 </h2>
-                <p className="mt-1 text-[11px] text-muted-foreground/80">
+                <p className="mt-1 text-[11px] text-muted-foreground">
                   {summary ?? "Indexing, graph coverage, and ingestion status."}
                 </p>
               </div>
@@ -110,7 +114,7 @@ export function KnowledgeStatsGrid({
                           ? stat.displayValue
                           : stat.rawValue}
                     </p>
-                    <span className="block text-[10px] text-muted-foreground/78">
+                    <span className="block text-[10px] text-muted-foreground">
                       {stat.sub}
                     </span>
                   </div>
@@ -127,7 +131,7 @@ export function KnowledgeStatsGrid({
               )}
             >
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-sm font-medium text-foreground dark:text-foreground/88">
+                <h3 className="text-sm font-medium text-foreground">
                   Active Pipeline Jobs
                 </h3>
                 <span
@@ -142,7 +146,7 @@ export function KnowledgeStatsGrid({
               </div>
 
               <div className="space-y-2">
-                {activeJobs.map((job: any) => (
+                {activeJobs.map((job: KnowledgeOpsJob) => (
                   <div
                     key={job.id}
                     className={cn(
@@ -167,21 +171,21 @@ export function KnowledgeStatsGrid({
                             "dark:text-foreground/78"
                           )}
                         >
-                          {job.type || "Ingestion Job"}
+                          {job.documentType || "Ingestion Job"}
                         </p>
-                        <p className="text-[10px] text-muted-foreground/65 font-mono">
+                        <p className="text-[10px] text-muted-foreground font-mono">
                           {job.id.slice(0, 8)}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-[10px] font-medium text-primary">
-                        {job.progress || 0}%
+                        0%
                       </div>
                       <div className="w-20 h-1 rounded-full bg-muted mt-1 overflow-hidden">
                         <div
                           className="h-full bg-primary"
-                          style={{ width: `${job.progress || 0}%` }}
+                          style={{ width: `0%` }}
                         />
                       </div>
                     </div>

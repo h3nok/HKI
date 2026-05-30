@@ -109,6 +109,8 @@ interface LibraryTabProps {
   focusDocumentId?: string;
   onFocusHandled?: () => void;
   onNavigate?: (tab: KnowledgeTab, section?: string) => void;
+  /** Opens the Add Content panel. Provided by KnowledgeContent when ingest is available. */
+  onAdd?: () => void;
 }
 
 export default function LibraryTab({
@@ -119,6 +121,7 @@ export default function LibraryTab({
   focusDocumentId,
   onFocusHandled,
   onNavigate,
+  onAdd,
 }: LibraryTabProps) {
   const { role } = usePermissions();
   const { canView: canViewFeature } = useFeatureAccess();
@@ -511,6 +514,21 @@ export default function LibraryTab({
           actions={
             view === "documents" ? (
               <>
+                {onAdd && canWriteKnowledge && (
+                  <Button
+                    size="sm"
+                    onClick={onAdd}
+                    data-tour="library-add-content"
+                    className={cn(
+                      "h-7 gap-1.5 px-3 text-xs font-semibold",
+                      k.duoToneAccentSolid,
+                      k.duoToneAccentSolidHover
+                    )}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add content
+                  </Button>
+                )}
                 <KBSearchBar
                   value={filterText}
                   onChange={setFilterText}

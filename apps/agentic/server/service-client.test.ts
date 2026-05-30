@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  signRequestJwt: vi.fn(),
+  signRequestJwtWithEnvelope: vi.fn(),
 }));
 
 vi.mock("./auth/sign-request-jwt", () => ({
-  signRequestJwt: mocks.signRequestJwt,
+  signRequestJwtWithEnvelope: mocks.signRequestJwtWithEnvelope,
 }));
 
 import { serviceJson } from "./service-client";
@@ -35,7 +35,11 @@ describe("serviceJson", () => {
   let warnSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    mocks.signRequestJwt.mockResolvedValue("signed-request-token");
+    mocks.signRequestJwtWithEnvelope.mockResolvedValue({
+      token: "signed-request-token",
+      envelope: {},
+      hkiEnvelope: undefined,
+    });
     fetchMock = vi.fn();
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     vi.stubGlobal("fetch", fetchMock);

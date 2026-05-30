@@ -12,7 +12,8 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { signRequestJwt } from "./auth/sign-request-jwt";
+import { serializeEnvelope } from "@hki/sdk/client";
+import { signRequestJwtWithEnvelope } from "./auth/sign-request-jwt";
 
 type TrpcErrorCode = ConstructorParameters<typeof TRPCError>[0]["code"];
 
@@ -120,10 +121,17 @@ export async function serviceCall(
 
   const scopes = ctx.scopes?.map(scope => scope.trim()).filter(Boolean);
   const scope = scopes?.[0];
-  const token = await signRequestJwt(ctx.user, scope, scopes);
+  const { token, hkiEnvelope } = await signRequestJwtWithEnvelope(
+    ctx.user,
+    scope,
+    scopes
+  );
   const idToken = await getGoogleIdToken(url);
 
   headers["X-Service-Auth"] = `Bearer ${token}`;
+  if (hkiEnvelope) {
+    headers["X-HKI-Envelope"] = serializeEnvelope(hkiEnvelope);
+  }
   if (idToken) {
     headers["Authorization"] = `Bearer ${idToken}`;
   } else {
@@ -276,7 +284,11 @@ export async function serviceMultipartUpload<T>(
 ): Promise<T> {
   const scopes = ctx.scopes?.map(scope => scope.trim()).filter(Boolean);
   const scope = scopes?.[0];
-  const token = await signRequestJwt(ctx.user, scope, scopes);
+  const { token, hkiEnvelope } = await signRequestJwtWithEnvelope(
+    ctx.user,
+    scope,
+    scopes
+  );
   const idToken = await getGoogleIdToken(url);
 
   const binaryStr = atob(fileBase64);
@@ -295,6 +307,9 @@ export async function serviceMultipartUpload<T>(
   const headers: Record<string, string> = {
     "X-Service-Auth": `Bearer ${token}`,
   };
+  if (hkiEnvelope) {
+    headers["X-HKI-Envelope"] = serializeEnvelope(hkiEnvelope);
+  }
   if (idToken) {
     headers["Authorization"] = `Bearer ${idToken}`;
   } else {

@@ -54,6 +54,54 @@ def _caller_scopes(identity: src.core.auth.RequestIdentity) -> list[str]:
     return [scope] if scope else []
 
 
+def _runtime_stream_scopes(identity: src.core.auth.RequestIdentity) -> list[str]:
+    result: list[str] = []
+    for raw_scope in _caller_scopes(identity):
+        scope = str(raw_scope).strip()
+        if not scope or scope.lower() in {"global", "*"}:
+            continue
+        result.append(scope)
+    return result
+
+
+def _same_stream(a: typing.Any, b: typing.Any) -> bool:
+    left = str(a).strip().lower() if a is not None else ""
+    right = str(b).strip().lower() if b is not None else ""
+    return bool(left and right and left == right)
+
+
+def _request_stream_id(request_model: typing.Any) -> str | None:
+    value = getattr(request_model, "stream_id", None)
+    return str(value) if value is not None else None
+
+
+def _resolve_stream_id(
+    identity: src.core.auth.RequestIdentity,
+    requested_stream_id: str | None,
+) -> str:
+    scopes: list[str] = _runtime_stream_scopes(identity)
+    if not scopes:
+        raise fastapi.HTTPException(
+            status_code=403,
+            detail="No runtime stream scope is configured for this caller",
+        )
+
+    normalized = (requested_stream_id or "").strip()
+    if not normalized:
+        raise fastapi.HTTPException(status_code=400, detail="Value stream ID is required")
+
+    if normalized.lower() in {"global", "*"}:
+        raise fastapi.HTTPException(status_code=403, detail="Runtime stream scope is invalid")
+
+    if any(_same_stream(normalized, scope) for scope in scopes):
+        return normalized
+
+    raise fastapi.HTTPException(
+        status_code=403,
+        detail="Requested stream is not assigned to this caller",
+    )
+
+
 def _identity_org_id(identity: src.core.auth.RequestIdentity) -> str:
     return getattr(identity, "org_id", "") or getattr(identity, "scope", "default")
 
@@ -62,10 +110,9 @@ def _record_visible(
     record: src.domain.review.ReviewRecord,
     identity: src.core.auth.RequestIdentity,
 ) -> bool:
-    scopes: list[str] = _caller_scopes(identity)
+    scopes: list[str] = _runtime_stream_scopes(identity)
     stream_id: typing.Any | None = getattr(record, "stream_id", None) or None
-    # "global" scope is a wildcard — grants visibility to all streams
-    return bool(stream_id) and ("global" in scopes or stream_id in scopes)
+    return bool(stream_id) and any(_same_stream(stream_id, scope) for scope in scopes)
 
 
 async def _sync_document_status(
@@ -133,6 +180,8 @@ async def submit_for_review(
 ) -> src.domain.review.ReviewRecord:
     """Submit a document for review. May auto-approve based on policy."""
     workflow = _get_workflow(request)
+    stream_id = _resolve_stream_id(identity, _request_stream_id(body))
+    body = body.model_copy(update={"stream_id": stream_id})
 
     if not body.submitted_by:
         body.submitted_by = identity.name

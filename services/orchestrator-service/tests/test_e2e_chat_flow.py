@@ -16,9 +16,11 @@ prompt assembly, and API serialization are all exercised end-to-end.
 from __future__ import annotations
 
 import json
+import time
 from typing import Any
 from unittest.mock import MagicMock
 
+import hki_runtime
 from fastapi.testclient import TestClient
 
 from src.api.app import app
@@ -49,7 +51,34 @@ def _make_mock_agent(
 def _inject_agent(agent) -> TestClient:
     """Return a ``TestClient`` with the given mock agent on ``app.state``."""
     app.state.agent = agent
-    return TestClient(app, raise_server_exceptions=False)
+    return TestClient(
+        app,
+        raise_server_exceptions=False,
+        headers={"X-HKI-Envelope": _hki_envelope_header()},
+    )
+
+
+def _hki_envelope_header(active_domain: str = "dev") -> str:
+    now = int(time.time())
+    envelope = {
+        "hki_version": "1.0",
+        "envelope_id": f"env-test-{active_domain}",
+        "org_id": "default",
+        "subject_id": "0",
+        "active_domain": active_domain,
+        "authorized_domains": [active_domain],
+        "purpose": "chat",
+        "risk_tier": "read-only",
+        "policy_pack_id": "policy-test",
+        "issued_at": now - 1,
+        "expires_at": now + 300,
+        "issuer": "agentic-bff",
+    }
+    envelope["signature"] = hki_runtime.sign_envelope(
+        envelope,
+        "unit-test-hki-secret",
+    )
+    return json.dumps(envelope)
 
 
 def _chat_payload(

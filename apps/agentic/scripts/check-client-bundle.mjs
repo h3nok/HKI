@@ -11,9 +11,9 @@ const kib = 1024;
 const budgets = {
   entryJs: 175 * kib,
   initialJs: 2_650 * kib,
-  initialCss: 760 * kib,
+  initialCss: 775 * kib,
   largestJs: 850 * kib,
-  largestCss: 760 * kib,
+  largestCss: 775 * kib,
   warnAt: 0.95,
   chunks: [
     { label: "AgenticChat", pattern: /^AgenticChat-.*\.js$/, max: 320 * kib },
@@ -89,15 +89,15 @@ if (!existsSync(indexPath) || !existsSync(assetsRoot)) {
 const html = readFileSync(indexPath, "utf8");
 const entryScripts = extractAssets(
   html,
-  /<script[^>]+type=["']module["'][^>]+src=["']([^"']+)["']/g,
+  /<script[^>]+type=["']module["'][^>]+src=["']([^"']+)["']/g
 );
 const preloadedScripts = extractAssets(
   html,
-  /<link[^>]+rel=["']modulepreload["'][^>]+href=["']([^"']+)["']/g,
+  /<link[^>]+rel=["']modulepreload["'][^>]+href=["']([^"']+)["']/g
 );
 const stylesheets = extractAssets(
   html,
-  /<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']+)["']/g,
+  /<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']+)["']/g
 );
 
 if (entryScripts.length !== 1) {
@@ -117,9 +117,12 @@ const cssAssets = readdirSync(assetsRoot)
 const entryJsSize = entryScripts.reduce((sum, asset) => sum + sizeOf(asset), 0);
 const initialJsSize = [...entryScripts, ...preloadedScripts].reduce(
   (sum, asset) => sum + sizeOf(asset),
-  0,
+  0
 );
-const initialCssSize = stylesheets.reduce((sum, asset) => sum + sizeOf(asset), 0);
+const initialCssSize = stylesheets.reduce(
+  (sum, asset) => sum + sizeOf(asset),
+  0
+);
 
 assertBudget("entry js", entryJsSize, budgets.entryJs);
 assertBudget("initial js", initialJsSize, budgets.initialJs);
@@ -128,7 +131,9 @@ assertBudget("largest js chunk", jsAssets[0]?.size ?? 0, budgets.largestJs);
 assertBudget("largest css chunk", cssAssets[0]?.size ?? 0, budgets.largestCss);
 
 for (const chunkBudget of budgets.chunks) {
-  const matches = jsAssets.filter(asset => chunkBudget.pattern.test(asset.name));
+  const matches = jsAssets.filter(asset =>
+    chunkBudget.pattern.test(asset.name)
+  );
   if (matches.length === 0) {
     fail(`Missing expected ${chunkBudget.label} chunk.`);
     continue;

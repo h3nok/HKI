@@ -175,7 +175,7 @@ endef
         dev-knowledge-api dev-knowledge-api-full \
         dev-ingestion dev-orchestrator dev-analytics dev-services dev-preflight dev-full \
         dev-kb-auth dev-kb-auth-stop dev-service-auth dev-service-auth-stop \
-        dev-stop dev-status dev-restart dev-reset \
+        dev-stop dev-status dev-restart dev-reset dev-site dev-all \
         infra-up infra-down infra-reset \
         test-services lint-services hki-check hki-audit hki-runtime-check \
         hki-runtime-py-check hki-conformance-check hki-service-evidence hki-service-evidence-auth \
@@ -1058,28 +1058,56 @@ dev-service-auth: ## Start auth-enabled service validation stack on :9601/:9608/
 dev-service-auth-stop: ## Stop auth-enabled service validation stack
 	@bash "$(DEV_STACK_SCRIPT)" stop-service-auth
 
-dev-full: ## Restart local stack and launch agentic UI in foreground
+dev-full: ## Restart local stack and launch agentic UI & public website concurrently
 	@echo ""
 	@echo "╔═══════════════════════════════════════════════════════════════╗"
-	@echo "║   AI Platform — Full Local Stack                             ║"
+	@echo "║   AI Platform — Full Local Stack (UI + Public Website)        ║"
 	@echo "╚═══════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@bash "$(DEV_STACK_SCRIPT)" start-full
 	@echo "  Checking agentic database migrations..."
 	@$(MAKE) db-migrate-preflight
+	@echo "  Compiling public site static assets..."
+	@pnpm build:hki-site
 	@echo "  Logs: $(CURDIR)/.dev/logs"
 	@command -v open >/dev/null 2>&1 && open http://localhost:9001 >/dev/null 2>&1 || true
+	@command -v open >/dev/null 2>&1 && open http://localhost:3100 >/dev/null 2>&1 || true
 	@echo ""
-	@echo "  Starting agentic UI on :9001 (Ctrl+C to stop UI — backend stays running)"
-	@echo "  Agentic landing :9001"
+	@echo "  Starting services concurrently... (Ctrl+C to stop)"
+	@echo "  Agentic UI:      http://localhost:9001"
+	@echo "  Public Website:  http://localhost:3100"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo ""
-	cd "$(AGENTIC_DIR)" && \
-		SERVICE_AUTH_SECRET="$${SERVICE_AUTH_SECRET:-local-dev-secret-key-12345}" \
+	@SERVICE_AUTH_SECRET="$${SERVICE_AUTH_SECRET:-local-dev-secret-key-12345}" \
 		JWT_SECRET="$${JWT_SECRET:-local-dev-jwt-secret-67890}" \
 		KB_HERMETIC_ISOLATION=true \
 		DB_AUTO_MIGRATE=false \
-		pnpm dev
+		pnpm turbo run dev --filter=@hki/agentic --filter=@hki/site
+
+dev-site: ## Launch only the public website on port 3100
+	pnpm --dir apps/hki-site dev
+
+dev-all: ## Launch the complete platform stack and the public site concurrently
+	@echo ""
+	@echo "╔═══════════════════════════════════════════════════════════════╗"
+	@echo "║   AI Platform — Complete Development Stack Concurrently       ║"
+	@echo "╚═══════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@bash "$(DEV_STACK_SCRIPT)" start-full
+	@echo "  Checking agentic database migrations..."
+	@$(MAKE) db-migrate-preflight
+	@echo "  Compiling public site static assets..."
+	@pnpm build:hki-site
+	@echo "  Logs: $(CURDIR)/.dev/logs"
+	@command -v open >/dev/null 2>&1 && open http://localhost:9001 >/dev/null 2>&1 || true
+	@command -v open >/dev/null 2>&1 && open http://localhost:3100 >/dev/null 2>&1 || true
+	@echo ""
+	@echo "  Starting services concurrently... (Ctrl+C to stop)"
+	@echo "  Agentic UI:      http://localhost:9001"
+	@echo "  Public Website:  http://localhost:3100"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo ""
+	@pnpm turbo run dev --filter=@hki/agentic --filter=@hki/site
 
 dev-stop: ## Stop local services and Docker infra
 	@bash "$(DEV_STACK_SCRIPT)" stop-all

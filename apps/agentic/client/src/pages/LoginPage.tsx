@@ -261,7 +261,7 @@ export function AgenticLoginPage() {
               <ArrowRight className="w-4 h-4 ml-0.5 relative z-10 group-hover:translate-x-0.5 transition-transform" />
             </a>
 
-            <p className="text-center text-[11px] text-muted-foreground/70 mt-3 tracking-wide">
+            <p className="text-center text-[11px] text-muted-foreground/85 mt-3 tracking-wide">
               Corporate single sign-on via Google Workspace
             </p>
 
@@ -273,7 +273,7 @@ export function AgenticLoginPage() {
                     <div className="w-full border-t border-border/40" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="bg-background/80 backdrop-blur-sm px-3 text-[10px] text-muted-foreground/60 uppercase tracking-widest">
+                    <span className="bg-background/80 backdrop-blur-sm px-3 text-[10px] text-muted-foreground/80 uppercase tracking-widest">
                       or
                     </span>
                   </div>
@@ -295,7 +295,7 @@ export function AgenticLoginPage() {
             {/* Security note */}
             <div className="flex items-center justify-center gap-1.5 mt-6 pt-4 border-t border-border/40">
               <Shield className="w-3 h-3 text-primary" />
-              <span className="text-[11px] text-muted-foreground/70">
+              <span className="text-[11px] text-muted-foreground/85">
                 End-to-end encrypted · SOC 2 compliant
               </span>
             </div>
@@ -309,7 +309,7 @@ export function AgenticLoginPage() {
           transition={{ duration: 0.5, delay: 1 }}
           className="mt-10 text-center"
         >
-          <p className="text-[11px] text-muted-foreground/60">
+          <p className="text-[11px] text-muted-foreground/75">
             © 2026 HKI · Hermetic Knowledge Isolation
           </p>
         </motion.div>

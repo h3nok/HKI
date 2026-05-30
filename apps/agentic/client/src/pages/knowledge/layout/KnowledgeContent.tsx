@@ -15,7 +15,7 @@ import {
   Suspense,
 } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { cn, useNotifications } from "@hki/ui";
 import { useSearch } from "wouter";
 import { SidebarInset } from "@/components/ui/sidebar";
@@ -40,6 +40,7 @@ import {
 } from "../feature-gates";
 import { useKB } from "../context/KnowledgeContext";
 import { useJourneyProgress } from "../hooks/useJourneyProgress";
+import { useKnowledgeJobsSocket } from "../hooks/useKnowledgeJobsSocket";
 import KnowledgeBreadcrumb from "./KnowledgeBreadcrumb";
 import KnowledgeLoader from "../components/KnowledgeLoader";
 import NextStepBanner, {
@@ -272,7 +273,8 @@ export default function KnowledgeContent() {
   const scopedJobsInput = hasExplicitStream
     ? { valueStreamId: selectedStream }
     : undefined;
-  const shouldFetchWorkspaceDocuments = tab === "library" || tab === "validate";
+  const shouldFetchWorkspaceDocuments =
+    tab === "library" || tab === "validate" || tab === "ingest";
   const statsQ = trpc.knowledge.stats.useQuery(scopedMetricsInput, {
     retry: false,
     staleTime: 10_000,
@@ -296,55 +298,9 @@ export default function KnowledgeContent() {
   });
 
   // ── WebSocket job status subscription ────────────────────────────────────
-  // Connects to /ws/jobs and refetches the jobs list whenever the server
-  // broadcasts a status change. Falls back silently if WS is unavailable.
-  useEffect(() => {
-    const wsUrl = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws/jobs`;
-    let ws: WebSocket | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    let closed = false;
-
-    function connect() {
-      if (closed) return;
-      ws = new WebSocket(wsUrl);
-
-      ws.onmessage = evt => {
-        try {
-          const msg = JSON.parse(evt.data as string);
-          if (msg.type === "job_update") {
-            const jobId =
-              typeof msg?.job?.id === "string" ? (msg.job.id as string) : null;
-
-            void utils.knowledge.listJobs.invalidate();
-            if (jobId) {
-              void utils.knowledge.getJob.invalidate({ jobId });
-            }
-          }
-        } catch {
-          // Malformed message — ignore.
-        }
-      };
-
-      ws.onerror = () => {
-        // WS unavailable (dev mode, network issue) — fall back to polling interval.
-      };
-
-      ws.onclose = () => {
-        if (!closed) {
-          // Reconnect after 5s on unexpected close.
-          reconnectTimer = setTimeout(connect, 5_000);
-        }
-      };
-    }
-
-    connect();
-    return () => {
-      closed = true;
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      ws?.close();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [utils]);
+  // Live updates via /ws/jobs with exponential backoff + visibility-aware
+  // reconnect. Falls back silently to query-level polling if WS is unavailable.
+  useKnowledgeJobsSocket(utils);
   const docsQ = trpc.knowledge.listDocuments.useQuery(
     hasExplicitStream
       ? { valueStreamId: selectedStream, limit: 100 }
@@ -514,8 +470,8 @@ export default function KnowledgeContent() {
       desc: "Add files, text, links, or connected sources to your domain library.",
     },
     library: {
-      title: "Library",
-      desc: "Browse, organize, and manage all indexed content.",
+      title: "Content",
+      desc: "Browse, organize, and add content to your domain.",
     },
     validate: {
       title: "Validate",
@@ -562,12 +518,7 @@ export default function KnowledgeContent() {
   const activeBanner = useMemo((): BannerConfig | null => {
     if (tab === "overview") return null; // Overview has its own guidance
 
-    // Ingest tab: suggest next step (pipeline status now flows through notification stream)
-    if (tab === "ingest") {
-      if (docCount > 0 && chunkCount > 0)
-        return BANNERS.afterIngest(docCount, chunkCount);
-      return null;
-    }
+    if (tab === "ingest") return null;
 
     if (tab === "library") return null;
 
@@ -742,26 +693,6 @@ export default function KnowledgeContent() {
             {/* Contextual next-step banner (appears above tab content) */}
             <NextStepBanner banner={activeBanner} onNavigate={navigateTo} />
 
-            {/* IngestTab stays mounted (hidden) so file data, analysis
-                results, and upload progress survive tab switches. It is keyed
-                by stream so uploads cannot carry across stream changes. */}
-            <div className={tab !== "ingest" ? "hidden" : undefined}>
-              <Suspense fallback={<TabContentLoader />}>
-                <KBErrorBoundary
-                  tab="ingest"
-                  onNavigateHome={() => navigateTo("overview")}
-                >
-                  <IngestTab
-                    key={`ingest-${streamKey}`}
-                    streamName={streamLabel}
-                    streamId={selectedStream || undefined}
-                    onStepComplete={journey.completeStep}
-                    onNavigate={navigateTo}
-                  />
-                </KBErrorBoundary>
-              </Suspense>
-            </div>
-
             <AnimatePresence mode="wait">
               {tab === "overview" && (
                 <Suspense key="overview" fallback={<TabContentLoader />}>
@@ -785,24 +716,62 @@ export default function KnowledgeContent() {
                   </KBErrorBoundary>
                 </Suspense>
               )}
-              {tab === "library" && (
-                <Suspense key="library" fallback={<TabContentLoader />}>
-                  <KBErrorBoundary
-                    tab="library"
-                    onNavigateHome={() => navigateTo("overview")}
+              {(tab === "library" || tab === "ingest") && (
+                <div key="content-area" className="relative overflow-hidden">
+                  <Suspense fallback={<TabContentLoader />}>
+                    <KBErrorBoundary
+                      tab="library"
+                      onNavigateHome={() => navigateTo("overview")}
+                    >
+                      <LibraryTab
+                        key="library"
+                        docsQ={docsQ}
+                        selectedStream={selectedStream}
+                        streamLabel={streamLabel}
+                        onStepComplete={journey.completeStep}
+                        focusDocumentId={focusDocumentId}
+                        onFocusHandled={() => setFocusDocumentId(undefined)}
+                        onNavigate={navigateTo}
+                        onAdd={() => navigateTo("ingest")}
+                      />
+                    </KBErrorBoundary>
+                  </Suspense>
+                  {/* IngestTab slide-over — stays mounted via CSS transform so
+                      file data and upload progress survive tab switches. Keyed
+                      by stream so state cannot carry across stream changes. */}
+                  <div
+                    className={cn(
+                      "absolute inset-0 bg-background z-10 overflow-y-auto",
+                      "transition-transform duration-300",
+                      tab === "ingest" ? "translate-x-0" : "translate-x-full"
+                    )}
                   >
-                    <LibraryTab
-                      key="library"
-                      docsQ={docsQ}
-                      selectedStream={selectedStream}
-                      streamLabel={streamLabel}
-                      onStepComplete={journey.completeStep}
-                      focusDocumentId={focusDocumentId}
-                      onFocusHandled={() => setFocusDocumentId(undefined)}
-                      onNavigate={navigateTo}
-                    />
-                  </KBErrorBoundary>
-                </Suspense>
+                    <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-border/50 bg-background/95 backdrop-blur-sm px-6 py-3">
+                      <button
+                        type="button"
+                        onClick={() => navigateTo("library")}
+                        className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Content
+                      </button>
+                    </div>
+                    <Suspense fallback={<TabContentLoader />}>
+                      <KBErrorBoundary
+                        tab="ingest"
+                        onNavigateHome={() => navigateTo("overview")}
+                      >
+                        <IngestTab
+                          key={`ingest-${streamKey}`}
+                          streamName={streamLabel}
+                          streamId={selectedStream || undefined}
+                          onStepComplete={journey.completeStep}
+                          onNavigate={navigateTo}
+                        />
+                      </KBErrorBoundary>
+                    </Suspense>
+                  </div>
+                </div>
               )}
               {tab === "govern" && (
                 <Suspense

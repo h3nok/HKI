@@ -23,30 +23,17 @@ import {
 import { openBugReport } from "./_core/support";
 import { usePermissions } from "./_core/hooks/usePermissions";
 import { LifeBuoy } from "lucide-react";
-import {
-  ENGINEERING_HUB_ROUTE,
-  HKI_ARCHITECTURE_ROUTE,
-  HKI_CUSTODY_PROBLEM_ROUTE,
-  HKI_STANDARD_ROUTE,
-} from "./pages/engineering/constants";
+export const ENGINEERING_HUB_ROUTE = "/engineering";
+export const HKI_CUSTODY_PROBLEM_ROUTE = "/engineering/problem";
+export const HKI_STANDARD_ROUTE = "/engineering/standard";
+export const HKI_ARCHITECTURE_ROUTE = "/engineering/architecture";
 
 import { BrandLoader } from "@/components/ui/brand-loader";
 
 const AdminLayout = lazy(() => import("./pages/admin"));
 const AgenticChat = lazy(() => import("./pages/AgenticChat"));
 const AgenticLoginPage = lazy(() => import("./pages/LoginPage"));
-const AgenticPlatformLanding = lazy(() => import("./pages/landing"));
 const ComponentDemo = lazy(() => import("./pages/ComponentDemo"));
-const EngineeringHub = lazy(() => import("./pages/EngineeringHub"));
-const EngineeringArchitecturePage = lazy(
-  () => import("./pages/EngineeringArchitecturePage")
-);
-const EngineeringCustodyProblemPage = lazy(
-  () => import("./pages/EngineeringCustodyProblemPage")
-);
-const EngineeringStandardPage = lazy(
-  () => import("./pages/EngineeringStandardPage")
-);
 const KnowledgeCreate = lazy(() => import("./pages/knowledge/create"));
 const KnowledgeJoin = lazy(() => import("./pages/knowledge/join"));
 const KnowledgePage = lazy(() => import("./pages/knowledge"));
@@ -56,6 +43,18 @@ const KnowledgeRequestAccess = lazy(
 const KnowledgeWelcome = lazy(() => import("./pages/knowledge/welcome"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const UIShowcase = lazy(() => import("./pages/UIShowcase"));
+
+function PublicSiteRedirect({ path }: { path: string }) {
+  if (typeof window !== "undefined") {
+    const { hostname } = window.location;
+    const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
+    const publicUrl = isLocal
+      ? `http://localhost:3100${path}`
+      : `https://hki.dev${path}`;
+    window.location.replace(publicUrl);
+  }
+  return <BrandLoader variant="fullscreen" />;
+}
 
 function getAssignedKnowledgeScope(valueStreams: string | null | undefined) {
   return (
@@ -165,17 +164,19 @@ function Router() {
     <Suspense fallback={<BrandLoader variant="fullscreen" />}>
       <Switch>
         {/* Public routes */}
-        <Route path="/">{() => <AgenticPlatformLanding />}</Route>
+        <Route path="/">{() => <Redirect to="/chat" />}</Route>
         <Route path={HKI_CUSTODY_PROBLEM_ROUTE}>
-          {() => <EngineeringCustodyProblemPage />}
+          {() => <PublicSiteRedirect path="/custody.html" />}
         </Route>
         <Route path={HKI_STANDARD_ROUTE}>
-          {() => <EngineeringStandardPage />}
+          {() => <PublicSiteRedirect path="/standard.html" />}
         </Route>
         <Route path={HKI_ARCHITECTURE_ROUTE}>
-          {() => <EngineeringArchitecturePage />}
+          {() => <PublicSiteRedirect path="/brief.html" />}
         </Route>
-        <Route path={ENGINEERING_HUB_ROUTE}>{() => <EngineeringHub />}</Route>
+        <Route path={ENGINEERING_HUB_ROUTE}>
+          {() => <PublicSiteRedirect path="/" />}
+        </Route>
         <Route path="/login">{() => <AgenticLoginPage />}</Route>
         <Route path="/demo">{() => <ComponentDemo />}</Route>
         <Route path="/ui-showcase">{() => <UIShowcase />}</Route>
