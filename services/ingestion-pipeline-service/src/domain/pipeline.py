@@ -121,10 +121,14 @@ class IngestionPipeline:
         job_store: typing.Any = None,
         document_store: typing.Any = None,
         analytics: src.adapters.analytics_client.AnalyticsClient | None = None,
+        raptor_builder: typing.Any = None,
+        llm_judge: typing.Any = None,
     ) -> None:
         self._job_store = job_store
         self._doc_store = document_store
         self._analytics: src.adapters.analytics_client.AnalyticsClient | None = analytics
+        self._raptor_builder = raptor_builder
+        self._llm_judge = llm_judge
         self._http: httpx.AsyncClient = shared.http_client.create_service_client(
             "knowledge-pipeline",
             timeout=60.0,
@@ -712,6 +716,66 @@ class IngestionPipeline:
         job.document_id = result.get("document_id")
         job.chunk_count = result.get("chunk_count", 0)
         job.entity_count = result.get("entity_count", 0)
+
+        if src.core.config.settings.EVAL_ON_INGEST_ENABLED and job.document_id:
+            src.core.logging.logger.info(
+                "Evaluation gating enabled. Starting automatic QA-based evaluation...",
+                extra={"job_id": job.id, "document_id": job.document_id},
+            )
+            try:
+                score = await self._evaluate_and_gate(
+                    org_id=job.org_id,
+                    document_id=job.document_id,
+                    stream_id=job.stream_id,
+                )
+                job.evaluation_score = score
+                
+                # Check threshold for promotion
+                if score >= src.core.config.settings.EVAL_PROMOTION_THRESHOLD:
+                    src.core.logging.logger.info(
+                        "Document promoted to published status",
+                        extra={"document_id": job.document_id, "score": score, "threshold": src.core.config.settings.EVAL_PROMOTION_THRESHOLD},
+                    )
+                    # Call PATCH status to promote to published
+                    patch_url = f"{src.core.config.settings.KNOWLEDGE_API_URL}/v1/internal/documents/{job.document_id}/status"
+                    patch_headers = {
+                        "Content-Type": "application/json",
+                        "X-Service-Name": "knowledge-pipeline-service",
+                    }
+                    if src.core.config.settings.KNOWLEDGE_API_PIPELINE_SECRET:
+                        patch_headers["X-Pipeline-Secret"] = src.core.config.settings.KNOWLEDGE_API_PIPELINE_SECRET
+                    
+                    patch_payload = {
+                        "status": "published",
+                        "org_id": job.org_id,
+                        "stream_id": job.stream_id,
+                    }
+                    patch_resp = await self._http.patch(patch_url, json=patch_payload, headers=patch_headers)
+                    patch_resp.raise_for_status()
+                else:
+                    src.core.logging.logger.info(
+                        "Document kept in pending_review status",
+                        extra={"document_id": job.document_id, "score": score, "threshold": src.core.config.settings.EVAL_PROMOTION_THRESHOLD},
+                    )
+            except Exception as exc:
+                src.core.logging.logger.error(
+                    "Evaluation gating failed",
+                    extra={"job_id": job.id, "document_id": job.document_id, "error": str(exc)},
+                )
+
+        if src.core.config.settings.RAPTOR_ENABLED and self._raptor_builder:
+            src.core.logging.logger.info(
+                "RAPTOR enabled. Spawning background tree building task...",
+                extra={"org_id": job.org_id},
+            )
+            task = asyncio.create_task(
+                self._raptor_builder.build(
+                    org_id=job.org_id,
+                    max_levels=src.core.config.settings.RAPTOR_MAX_LEVELS,
+                )
+            )
+            self._background_tasks.add(task)
+            task.add_done_callback(self._background_tasks.discard)
 
         if (
             self._change_detector
@@ -1691,3 +1755,153 @@ class IngestionPipeline:
                 normalized_jobs.append(await self._expire_stale_job_if_needed(job))
             return normalized_jobs, total
         return [], 0
+
+    def _heuristic_faithfulness(self, answer: str, contexts: list[str]) -> float:
+        """Fallback heuristic when no LLM judge is available."""
+        if not answer or not contexts:
+            return 0.0
+        # Simple word overlap
+        words = set(re.findall(r"\w+", answer.lower()))
+        if not words:
+            return 1.0
+        context_words = set(re.findall(r"\w+", " ".join(contexts).lower()))
+        overlap = words.intersection(context_words)
+        return len(overlap) / len(words)
+
+    async def _evaluate_and_gate(
+        self,
+        org_id: str,
+        document_id: str,
+        stream_id: str,
+    ) -> float:
+        """
+        Orchestrates evaluation loop and returns average faithfulness score.
+        """
+        import src.core.config
+        from src.domain.synthesis import ChunkSource, DatasetBuilder, GenerationConfig, QuestionType
+        from src.domain.qa_backend import GeminiQABackend
+
+        # 1. Fetch chunks for org_id to get leaf chunks
+        headers = {
+            "X-Service-Name": "knowledge-pipeline-service",
+        }
+        if src.core.config.settings.KNOWLEDGE_API_PIPELINE_SECRET:
+            headers["X-Pipeline-Secret"] = src.core.config.settings.KNOWLEDGE_API_PIPELINE_SECRET
+
+        try:
+            resp = await self._http.get(
+                f"{src.core.config.settings.KNOWLEDGE_API_URL}/v1/chunks",
+                params={"org_id": org_id, "include_embeddings": "false"},
+                headers=headers,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            all_chunks = data.get("chunks", [])
+        except Exception as exc:
+            src.core.logging.logger.error(
+                "Evaluation gating: failed to fetch leaf chunks",
+                extra={"org_id": org_id, "document_id": document_id, "error": str(exc)},
+            )
+            return 0.0
+
+        # 2. Filter matching document_id
+        doc_chunks = [c for c in all_chunks if c.get("document_id") == document_id]
+        if not doc_chunks:
+            src.core.logging.logger.warning(
+                "Evaluation gating: no chunks found for document_id",
+                extra={"org_id": org_id, "document_id": document_id},
+            )
+            return 1.0  # Safe default if no chunks were stored
+
+        limit = src.core.config.settings.EVAL_QUESTIONS_PER_DOC
+        chunks_to_eval = doc_chunks[:limit]
+        sources = [
+            ChunkSource(
+                chunk_id=c["chunk_id"],
+                document_id=c["document_id"],
+                content=c["content"],
+            )
+            for c in chunks_to_eval
+        ]
+
+        # 3. Generate QA dataset
+        try:
+            backend = GeminiQABackend()
+            builder = DatasetBuilder(backend)
+            config = GenerationConfig(
+                questions_per_chunk=1,
+                question_types=[QuestionType.FACTOID, QuestionType.REASONING, QuestionType.PROCEDURAL],
+            )
+            dataset = await builder.build(
+                chunks=sources,
+                config=config,
+                org_id=org_id,
+            )
+        except Exception as exc:
+            src.core.logging.logger.error(
+                "Evaluation gating: synthetic QA generation failed",
+                extra={"org_id": org_id, "document_id": document_id, "error": str(exc)},
+            )
+            return 0.0
+
+        if not dataset.qa_pairs:
+            src.core.logging.logger.warning(
+                "Evaluation gating: no QA pairs generated",
+                extra={"org_id": org_id, "document_id": document_id},
+            )
+            return 1.0
+
+        # 4. Search and Evaluate for each generated QA pair
+        scores = []
+        for qa in dataset.qa_pairs:
+            try:
+                payload = {
+                    "query": qa.question,
+                    "org_id": org_id,
+                    "top_k": 3,
+                    "include_pending": True,
+                }
+                if stream_id:
+                    payload["stream_id"] = stream_id
+
+                search_resp = await self._http.post(
+                    f"{src.core.config.settings.KNOWLEDGE_API_URL}/v1/internal/search",
+                    json=payload,
+                    headers=headers,
+                )
+                search_resp.raise_for_status()
+                search_data = search_resp.json()
+                contexts = [r["content"] for r in search_data.get("results", [])]
+            except Exception as exc:
+                src.core.logging.logger.warning(
+                    "Evaluation gating: search request failed for QA",
+                    extra={"question": qa.question, "error": str(exc)},
+                )
+                contexts = []
+
+            # Evaluate faithfulness
+            if self._llm_judge:
+                try:
+                    score = await self._llm_judge.judge_faithfulness(answer=qa.answer, contexts=contexts)
+                except Exception as exc:
+                    src.core.logging.logger.warning(
+                        "Evaluation gating: LLM judge failed, falling back to heuristic",
+                        extra={"error": str(exc)},
+                    )
+                    score = self._heuristic_faithfulness(answer=qa.answer, contexts=contexts)
+            else:
+                score = self._heuristic_faithfulness(answer=qa.answer, contexts=contexts)
+
+            scores.append(score)
+
+        avg_score = sum(scores) / len(scores) if scores else 0.0
+        src.core.logging.logger.info(
+            "Evaluation gating complete",
+            extra={
+                "org_id": org_id,
+                "document_id": document_id,
+                "score": avg_score,
+                "num_questions": len(scores),
+            },
+        )
+        return avg_score

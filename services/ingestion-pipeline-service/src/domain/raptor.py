@@ -295,8 +295,14 @@ class RaptorBuilder:
     ) -> list[dict[str, typing.Any]]:
         """Fetch all chunks with embeddings from the knowledge API."""
         try:
+            import src.core.config
+            headers = {
+                "X-Service-Name": "knowledge-pipeline-service",
+            }
+            if src.core.config.settings.KNOWLEDGE_API_PIPELINE_SECRET:
+                headers["X-Pipeline-Secret"] = src.core.config.settings.KNOWLEDGE_API_PIPELINE_SECRET
             async with create_service_client(
-                "pipeline-raptor", timeout=30.0
+                "pipeline-raptor", timeout=30.0, headers=headers
             ) as client:
                 resp: httpx.Response = await client.get(
                     f"{self._api_url}/v1/chunks",
@@ -361,8 +367,14 @@ class RaptorBuilder:
     ) -> None:
         """Store a RAPTOR summary chunk in the knowledge API."""
         try:
+            import src.core.config
+            headers = {
+                "X-Service-Name": "knowledge-pipeline-service",
+            }
+            if src.core.config.settings.KNOWLEDGE_API_PIPELINE_SECRET:
+                headers["X-Pipeline-Secret"] = src.core.config.settings.KNOWLEDGE_API_PIPELINE_SECRET
             async with create_service_client(
-                "pipeline-raptor", timeout=15.0
+                "pipeline-raptor", timeout=15.0, headers=headers
             ) as client:
                 await client.post(
                     f"{self._api_url}/v1/chunks/raptor",

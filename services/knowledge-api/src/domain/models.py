@@ -216,6 +216,8 @@ class Chunk(pydantic.BaseModel):
     start_char: int = 0  # Character offset in original document
     end_char: int = 0  # End character offset
     token_count: int = 0  # Number of tokens in this chunk
+    node_level: int = 0
+    source_chunk_ids: list[str] = pydantic.Field(default_factory=list)
     metadata: dict[str, typing.Any] = pydantic.Field(
         default_factory=dict
     )  # Inherited + chunk-level
@@ -289,6 +291,7 @@ class SearchFilters(pydantic.BaseModel):
     caller_principals: list[str] = pydantic.Field(default_factory=list)
     date_from: datetime.datetime | None = None
     date_to: datetime.datetime | None = None
+    include_summary_nodes: bool = False
 
     @pydantic.field_validator("caller_principals", mode="before")
     @classmethod

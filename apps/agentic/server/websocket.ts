@@ -15,6 +15,7 @@ import {
   canAccessChatScope,
   getAllowedChatScopes,
 } from "./_core/chat-scope-auth";
+import { sameDomain } from "@hki/runtime";
 
 const log = createLogger("websocket");
 
@@ -24,6 +25,7 @@ interface AuthenticatedWebSocket extends WebSocket {
   conversationId?: string;
   isAlive?: boolean;
   connectionType?: "trace" | "jobs";
+  allowedScopes?: string[];
 }
 
 const connections = new Map<string, Set<AuthenticatedWebSocket>>();
@@ -245,6 +247,39 @@ export function setupWebSocket(server: any) {
         return;
       }
 
+      // ── Retrieve user's allowed scopes/domains ──
+      let allowedScopes: string[] = [];
+      try {
+        const db = await getDb();
+        if (db) {
+          allowedScopes = await getAllowedChatScopes(
+            authenticatedUser || {
+              id: userId!,
+              role: null,
+              valueStreams: null,
+            },
+            db
+          );
+        } else {
+          socket.write("HTTP/1.1 503 Service Unavailable\r\n\r\n");
+          socket.destroy();
+          return;
+        }
+      } catch (err) {
+        log.warn({ err }, "Allowed scopes check failed during upgrade");
+        socket.write("HTTP/1.1 503 Service Unavailable\r\n\r\n");
+        socket.destroy();
+        return;
+      }
+
+      // Enforce fail-closed: empty allowedScopes is rejected
+      if (!allowedScopes || allowedScopes.length === 0) {
+        log.warn({ userId }, "User has no authorized domains — connection rejected");
+        socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+        socket.destroy();
+        return;
+      }
+
       // ── Authorize: verify user owns the conversation (trace channel only) ──
       if (!isJobsChannel && !ENV.devBypassEnabled) {
         try {
@@ -261,15 +296,6 @@ export function setupWebSocket(server: any) {
             // If conversation exists, user must own it.
             // If it doesn't exist yet (will be created), allow the connection.
             if (conv) {
-              const allowedScopes = await getAllowedChatScopes(
-                authenticatedUser || {
-                  id: userId!,
-                  role: null,
-                  valueStreams: null,
-                },
-                db,
-                conv.scope
-              );
               if (
                 conv.userId !== userId ||
                 !canAccessChatScope(conv.scope, allowedScopes)
@@ -297,6 +323,7 @@ export function setupWebSocket(server: any) {
         ws.userId = userId;
         ws.conversationId = conversationId ?? undefined;
         ws.connectionType = isJobsChannel ? "jobs" : "trace";
+        ws.allowedScopes = allowedScopes;
         wss.emit("connection", ws, request);
       });
     }
@@ -517,13 +544,35 @@ export function broadcastJobUpdate(
 ) {
   const conns = jobConnections.get(userId);
   if (!conns || conns.size === 0) return;
-  const message = JSON.stringify({
-    type: "job_update",
-    job,
-    timestamp: new Date().toISOString(),
-  });
+
+  const streamId = job.stream_id;
+
   conns.forEach(ws => {
+    // Enforce domain boundary validation
+    if (!streamId) {
+      log.warn({ userId, jobId: job.id }, "Job update missing stream_id — terminating connection (fail-closed)");
+      ws.close(4403, "Forbidden: Missing job stream boundary");
+      ws.terminate();
+      return;
+    }
+
+    const isAuthorized = ws.allowedScopes?.some(scope => sameDomain(scope, streamId));
+    if (!isAuthorized) {
+      log.warn(
+        { userId, jobId: job.id, streamId, allowedScopes: ws.allowedScopes },
+        "Job stream boundary violation detected — terminating connection immediately"
+      );
+      ws.close(4403, "Forbidden: Unauthorized stream boundary");
+      ws.terminate();
+      return;
+    }
+
     if (ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: "job_update",
+        job,
+        timestamp: new Date().toISOString(),
+      });
       ws.send(message);
     }
   });

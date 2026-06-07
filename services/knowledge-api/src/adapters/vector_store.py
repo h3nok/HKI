@@ -539,6 +539,84 @@ class VectorStore:
         )
         return True
 
+    async def list_chunks(
+        self,
+        org_id: str = "default",
+        include_embeddings: bool = False,
+    ) -> list[src.domain.models.Chunk]:
+        """List all non-summary (node_level = 0) leaf chunks for RAPTOR or diagnostic ingestion views."""
+        results = []
+        for chunk in self._chunks.values():
+            if getattr(chunk, "org_id", "default") == org_id and chunk.node_level == 0:
+                if include_embeddings:
+                    results.append(chunk)
+                else:
+                    chunk_copy = chunk.model_copy()
+                    chunk_copy.embedding = []
+                    results.append(chunk_copy)
+        return results
+
+    async def store_raptor_chunk(
+        self,
+        chunk_id: str,
+        content: str,
+        embedding: list[float],
+        org_id: str,
+        level: int,
+        source_chunk_ids: list[str],
+    ) -> None:
+        """Upsert a single summary RAPTOR chunk belonging to the virtual document raptor-summaries-{org_id}."""
+        doc_id = f"raptor-summaries-{org_id}"
+        if doc_id not in self._documents:
+            from src.domain.models import Document, DocumentMetadata, DocumentStatus, DocumentType
+            virtual_doc = Document(
+                id=doc_id,
+                org_id=org_id,
+                stream_id="raptor",
+                content="Virtual Document for RAPTOR hierarchical summaries.",
+                metadata=DocumentMetadata(
+                    title=f"RAPTOR summaries ({org_id})",
+                    document_type=DocumentType.GENERAL,
+                    stream_id="raptor",
+                ),
+                status=DocumentStatus.PUBLISHED,
+                chunk_count=0,
+            )
+            self._documents[doc_id] = virtual_doc
+            self._doc_chunks[doc_id] = []
+
+        # Create the summary chunk
+        from src.domain.models import Chunk
+        chunk = Chunk(
+            id=chunk_id,
+            document_id=doc_id,
+            org_id=org_id,
+            content=content,
+            embedding=embedding,
+            node_level=level,
+            source_chunk_ids=source_chunk_ids,
+            metadata={
+                "raptor_level": level,
+                "source_chunks": source_chunk_ids,
+                "strategy": "raptor_summary",
+            },
+        )
+        self._chunks[chunk_id] = chunk
+        if chunk_id not in self._doc_chunks[doc_id]:
+            self._doc_chunks[doc_id].append(chunk_id)
+            self._documents[doc_id].chunk_count += 1
+            self._total_chunks += 1
+
+        # Update inverted index for BM25
+        terms = _tokenize(f"{content} RAPTOR summaries {org_id}")
+        unique_terms = set(terms)
+        for term in unique_terms:
+            if term not in self._inverted_index:
+                self._inverted_index[term] = set()
+                self._doc_freq[term] = 0
+            self._inverted_index[term].add(chunk_id)
+            self._doc_freq[term] += 1
+
     # ═══════════════════════════════════════════════════════════════════════
     # Search — Vector, Keyword, and Hybrid
     # ═══════════════════════════════════════════════════════════════════════
@@ -645,7 +723,10 @@ class VectorStore:
 
             # 2. Value-stream isolation
             doc_stream: typing.Any | None = getattr(doc, "stream_id", None) or getattr(doc.metadata, "stream_id", None)
-            if not doc_stream or doc_stream not in stream_filters:
+            if doc_id.startswith("raptor-summaries-"):
+                # Virtual RAPTOR document is accessible under any stream in the organization
+                pass
+            elif not doc_stream or doc_stream not in stream_filters:
                 continue
 
             # 3. Document-type filter
@@ -675,7 +756,12 @@ class VectorStore:
         # Resolve to chunk IDs
         chunk_ids: set[str] = set()
         for doc_id in matching_doc_ids:
-            chunk_ids.update(self._doc_chunks.get(doc_id, []))
+            for cid in self._doc_chunks.get(doc_id, []):
+                chunk = self._chunks.get(cid)
+                if chunk:
+                    if not filters.include_summary_nodes and chunk.node_level > 0:
+                        continue
+                    chunk_ids.add(cid)
 
         return chunk_ids
 

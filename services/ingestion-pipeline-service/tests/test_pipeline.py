@@ -17,7 +17,7 @@ API conventions:
 import datetime
 import types
 import typing
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -25,6 +25,8 @@ import adapters.job_store
 import src.core.config
 import src.domain.models
 import src.domain.pipeline
+import src.domain.qa_backend
+from src.domain.synthesis import SyntheticQA, QuestionType
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Text Extraction
@@ -605,3 +607,376 @@ class TestDomainModels:
         assert chunk.index == 0
         assert "pharmacy" in chunk.context
         assert chunk.contextualized_content.startswith("This is")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Evaluation Gating & RAPTOR tests
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestEvaluationAndRaptorGating:
+    @pytest.fixture
+    def pipeline(self) -> src.domain.pipeline.IngestionPipeline:
+        p = src.domain.pipeline.IngestionPipeline(
+            job_store=adapters.job_store.InMemoryJobStore()
+        )
+        p._review_workflow = AsyncMock()
+        return p
+
+    @pytest.mark.asyncio
+    async def test_evaluation_gating_promotes_when_score_above_threshold(
+        self,
+        pipeline: src.domain.pipeline.IngestionPipeline,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import httpx
+        # Enable EVAL_ON_INGEST
+        monkeypatch.setattr(src.core.config.settings, "EVAL_ON_INGEST_ENABLED", True)
+        monkeypatch.setattr(src.core.config.settings, "EVAL_PROMOTION_THRESHOLD", 0.65)
+        monkeypatch.setattr(src.core.config.settings, "EVAL_QUESTIONS_PER_DOC", 2)
+        monkeypatch.setattr(src.core.config.settings, "RAPTOR_ENABLED", False)
+
+        # Mock QA generation
+        mock_generate_qa = AsyncMock()
+        mock_generate_qa.return_value = [
+            SyntheticQA(
+                question="Is this a test question?",
+                answer="Yes, this is a test answer.",
+                difficulty=1,
+                question_type=QuestionType.FACTOID,
+            )
+        ]
+        monkeypatch.setattr(src.domain.qa_backend.GeminiQABackend, "generate_qa", mock_generate_qa)
+
+        # Mock Judge
+        mock_judge = AsyncMock()
+        mock_judge.judge_faithfulness.return_value = 0.9  # Above 0.65
+        pipeline._llm_judge = mock_judge
+
+        # Mock HTTP responses
+        captured_requests = []
+
+        class MockResponse:
+            def __init__(self, json_data: dict, status_code: int = 200) -> None:
+                self._json = json_data
+                self.status_code = status_code
+                self.request = types.SimpleNamespace()
+
+            async def aread(self) -> bytes:
+                return b""
+
+            def raise_for_status(self) -> None:
+                if self.status_code >= 400:
+                    raise httpx.HTTPStatusError("Error", request=None, response=self)
+
+            def json(self) -> dict:
+                return self._json
+
+        async def mock_post(url: str, json: dict = None, headers: dict = None, **kwargs) -> MockResponse:
+            captured_requests.append(("POST", url, json))
+            if url.endswith("/v1/internal/store"):
+                return MockResponse({
+                    "document_id": "doc-123",
+                    "chunk_count": 1,
+                    "entity_count": 0,
+                    "status": "pending_review",
+                })
+            elif url.endswith("/v1/internal/search"):
+                return MockResponse({
+                    "results": [{"content": "Yes, this is a test answer. Verified context."}]
+                })
+            return MockResponse({})
+
+        async def mock_get(url: str, params: dict = None, headers: dict = None, **kwargs) -> MockResponse:
+            captured_requests.append(("GET", url, params))
+            if url.endswith("/v1/chunks"):
+                return MockResponse({
+                    "chunks": [
+                        {
+                            "chunk_id": "chunk-1",
+                            "document_id": "doc-123",
+                            "content": "Yes, this is a test answer. Verified context. This is padded content to ensure the word count is well above fifty words for the synthetic dataset builder to function properly and generate the QA dataset during this unit test. " * 3,
+                        }
+                    ]
+                })
+            return MockResponse({})
+
+        async def mock_patch(url: str, json: dict = None, headers: dict = None, **kwargs) -> MockResponse:
+            captured_requests.append(("PATCH", url, json))
+            return MockResponse({"status": "published"})
+
+        mock_http = MagicMock()
+        mock_http.post = mock_post
+        mock_http.get = mock_get
+        mock_http.patch = mock_patch
+        pipeline._http = mock_http
+
+        # Run ingestion
+        job = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="High Quality Doc")
+        job.org_id = "test-org"
+        job.stream_id = "test-stream"
+
+        text_content = "High quality document with excellent information. " * 15
+        extracted = src.domain.models.ExtractedContent(
+            text=text_content,
+            source_type=src.domain.models.SourceType.TEXT,
+            byte_count=len(text_content.encode("utf-8")),
+        )
+
+        await pipeline._run_shared_stages(
+            job=job,
+            extracted=extracted,
+            title="High Quality Doc",
+            department="QA",
+            document_type="policy",
+            tags=["test"],
+            chunk_size=512,
+            chunk_overlap=64,
+        )
+
+        # Assertions
+        assert job.evaluation_score == 0.9
+        # Check that we patched status to promote to published
+        patched_requests = [r for r in captured_requests if r[0] == "PATCH"]
+        assert len(patched_requests) == 1
+        assert "doc-123/status" in patched_requests[0][1]
+        assert patched_requests[0][2]["status"] == "published"
+
+    @pytest.mark.asyncio
+    async def test_evaluation_gating_keeps_pending_when_score_below_threshold(
+        self,
+        pipeline: src.domain.pipeline.IngestionPipeline,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import httpx
+        # Enable EVAL_ON_INGEST
+        monkeypatch.setattr(src.core.config.settings, "EVAL_ON_INGEST_ENABLED", True)
+        monkeypatch.setattr(src.core.config.settings, "EVAL_PROMOTION_THRESHOLD", 0.65)
+        monkeypatch.setattr(src.core.config.settings, "EVAL_QUESTIONS_PER_DOC", 2)
+        monkeypatch.setattr(src.core.config.settings, "RAPTOR_ENABLED", False)
+
+        # Mock QA generation
+        mock_generate_qa = AsyncMock()
+        mock_generate_qa.return_value = [
+            SyntheticQA(
+                question="Is this a bad test question?",
+                answer="No, this is completely wrong.",
+                difficulty=1,
+                question_type=QuestionType.FACTOID,
+            )
+        ]
+        monkeypatch.setattr(src.domain.qa_backend.GeminiQABackend, "generate_qa", mock_generate_qa)
+
+        # Mock Judge
+        mock_judge = AsyncMock()
+        mock_judge.judge_faithfulness.return_value = 0.4  # Below 0.65
+        pipeline._llm_judge = mock_judge
+
+        # Mock HTTP responses
+        captured_requests = []
+
+        class MockResponse:
+            def __init__(self, json_data: dict, status_code: int = 200) -> None:
+                self._json = json_data
+                self.status_code = status_code
+                self.request = types.SimpleNamespace()
+
+            async def aread(self) -> bytes:
+                return b""
+
+            def raise_for_status(self) -> None:
+                if self.status_code >= 400:
+                    raise httpx.HTTPStatusError("Error", request=None, response=self)
+
+            def json(self) -> dict:
+                return self._json
+
+        async def mock_post(url: str, json: dict = None, headers: dict = None, **kwargs) -> MockResponse:
+            captured_requests.append(("POST", url, json))
+            if url.endswith("/v1/internal/store"):
+                return MockResponse({
+                    "document_id": "doc-456",
+                    "chunk_count": 1,
+                    "entity_count": 0,
+                    "status": "pending_review",
+                })
+            elif url.endswith("/v1/internal/search"):
+                return MockResponse({
+                    "results": [{"content": "Unrelated content. This is just filler to make the word count exceed fifty words so that the dataset builder does not skip this chunk during our evaluation test. Let's make sure it is long enough. " * 3}]
+                })
+            return MockResponse({})
+
+        async def mock_get(url: str, params: dict = None, headers: dict = None, **kwargs) -> MockResponse:
+            captured_requests.append(("GET", url, params))
+            if url.endswith("/v1/chunks"):
+                return MockResponse({
+                    "chunks": [
+                        {
+                            "chunk_id": "chunk-1",
+                            "document_id": "doc-456",
+                            "content": "Unrelated content. This is just filler to make the word count exceed fifty words so that the dataset builder does not skip this chunk during our evaluation test. Let's make sure it is long enough. " * 3,
+                        }
+                    ]
+                })
+            return MockResponse({})
+
+        mock_http = MagicMock()
+        mock_http.post = mock_post
+        mock_http.get = mock_get
+        pipeline._http = mock_http
+
+        # Run ingestion
+        job = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Low Quality Doc")
+        job.org_id = "test-org"
+        job.stream_id = "test-stream"
+
+        text_content = "Low quality document content. " * 20
+        extracted = src.domain.models.ExtractedContent(
+            text=text_content,
+            source_type=src.domain.models.SourceType.TEXT,
+            byte_count=len(text_content.encode("utf-8")),
+        )
+
+        await pipeline._run_shared_stages(
+            job=job,
+            extracted=extracted,
+            title="Low Quality Doc",
+            department="QA",
+            document_type="policy",
+            tags=["test"],
+            chunk_size=512,
+            chunk_overlap=64,
+        )
+
+        # Assertions
+        assert job.evaluation_score == 0.4
+        # Check that we did NOT patch status to promote to published
+        patched_requests = [r for r in captured_requests if r[0] == "PATCH"]
+        assert len(patched_requests) == 0
+
+    @pytest.mark.asyncio
+    async def test_raptor_triggered_when_enabled(
+        self,
+        pipeline: src.domain.pipeline.IngestionPipeline,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import asyncio
+
+        # Disable eval, enable RAPTOR
+        monkeypatch.setattr(src.core.config.settings, "EVAL_ON_INGEST_ENABLED", False)
+        monkeypatch.setattr(src.core.config.settings, "RAPTOR_ENABLED", True)
+        monkeypatch.setattr(src.core.config.settings, "RAPTOR_MAX_LEVELS", 3)
+
+        # Mock RaptorBuilder
+        mock_raptor = AsyncMock()
+        pipeline._raptor_builder = mock_raptor
+
+        # Mock HTTP responses
+        class MockResponse:
+            status_code = 200
+            def json(self) -> dict:
+                return {
+                    "document_id": "doc-raptor",
+                    "chunk_count": 1,
+                    "entity_count": 0,
+                    "status": "pending_review",
+                }
+            def raise_for_status(self) -> None:
+                pass
+
+        async def mock_post(*args, **kwargs) -> MockResponse:
+            return MockResponse()
+
+        mock_http = MagicMock()
+        mock_http.post = mock_post
+        pipeline._http = mock_http
+
+        # Run ingestion
+        job = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Raptor Doc")
+        job.org_id = "raptor-org"
+        job.stream_id = "raptor-stream"
+
+        extracted = src.domain.models.ExtractedContent(
+            text="Document text to build RAPTOR tree.",
+            source_type=src.domain.models.SourceType.TEXT,
+            byte_count=len("Document text to build RAPTOR tree."),
+        )
+
+        await pipeline._run_shared_stages(
+            job=job,
+            extracted=extracted,
+            title="Raptor Doc",
+            department="QA",
+            document_type="policy",
+            tags=["test"],
+            chunk_size=512,
+            chunk_overlap=64,
+        )
+
+        # Wait a small moment for any background tasks to run or finish their await
+        await asyncio.sleep(0.01)
+
+        # Assert RaptorBuilder was called with the correct org_id and max_levels
+        mock_raptor.build.assert_called_once_with(
+            org_id="raptor-org",
+            max_levels=3,
+        )
+
+    @pytest.mark.asyncio
+    async def test_raptor_no_op_when_disabled(
+        self,
+        pipeline: src.domain.pipeline.IngestionPipeline,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        # Disable eval and RAPTOR
+        monkeypatch.setattr(src.core.config.settings, "EVAL_ON_INGEST_ENABLED", False)
+        monkeypatch.setattr(src.core.config.settings, "RAPTOR_ENABLED", False)
+
+        mock_raptor = AsyncMock()
+        pipeline._raptor_builder = mock_raptor
+
+        # Mock HTTP responses
+        class MockResponse:
+            status_code = 200
+            def json(self) -> dict:
+                return {
+                    "document_id": "doc-noraptor",
+                    "chunk_count": 1,
+                    "entity_count": 0,
+                    "status": "pending_review",
+                }
+            def raise_for_status(self) -> None:
+                pass
+
+        async def mock_post(*args, **kwargs) -> MockResponse:
+            return MockResponse()
+
+        mock_http = MagicMock()
+        mock_http.post = mock_post
+        pipeline._http = mock_http
+
+        # Run ingestion
+        job = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="No Raptor Doc")
+        job.org_id = "raptor-org"
+        job.stream_id = "raptor-stream"
+
+        extracted = src.domain.models.ExtractedContent(
+            text="No RAPTOR tree document.",
+            source_type=src.domain.models.SourceType.TEXT,
+            byte_count=len("No RAPTOR tree document."),
+        )
+
+        await pipeline._run_shared_stages(
+            job=job,
+            extracted=extracted,
+            title="No Raptor Doc",
+            department="QA",
+            document_type="policy",
+            tags=["test"],
+            chunk_size=512,
+            chunk_overlap=64,
+        )
+
+        # Assert RaptorBuilder was NOT called
+        mock_raptor.build.assert_not_called()
+

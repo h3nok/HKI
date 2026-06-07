@@ -91,10 +91,22 @@ async def lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncGenerator[None,
     await analytics.start()
     app.state.analytics = analytics
 
+    from src.adapters.gemini_client import PipelineLLMJudge, RaptorGeminiClient, PipelineEmbeddingClient
+    from src.domain.raptor import RaptorBuilder
+
+    llm_judge = PipelineLLMJudge()
+    raptor_builder = RaptorBuilder(
+        knowledge_api_url=src.core.config.settings.KNOWLEDGE_API_URL,
+        gemini_client=RaptorGeminiClient(),
+        embedding_client=PipelineEmbeddingClient(),
+    )
+
     pipeline = src.domain.pipeline.IngestionPipeline(
         job_store=job_store,
         document_store=doc_store,
         analytics=analytics,
+        raptor_builder=raptor_builder,
+        llm_judge=llm_judge,
     )
     app.state.pipeline = pipeline
 

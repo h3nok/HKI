@@ -308,3 +308,117 @@ async def _call_llm_vertex(prompt: str) -> str:
     if response.text:
         return response.text.strip()
     return ""
+
+
+class RaptorGeminiClient:
+    """Wrapper around _call_llm for RAPTOR tree summarization."""
+
+    async def generate(self, prompt: str) -> str:
+        return await _call_llm(prompt)
+
+
+class PipelineEmbeddingClient:
+    """Async embedding client for generating dense vectors for RAPTOR summary chunks."""
+
+    def __init__(self, model: str = "text-embedding-004") -> None:
+        self._model = model
+
+    async def embed_single(self, text: str) -> list[float]:
+        if not text.strip():
+            return []
+
+        if settings.LLM_GATEWAY_URL:
+            # LiteLLM gateway mode
+            url = f"{settings.LLM_GATEWAY_URL.rstrip('/')}/embeddings"
+            payload = {
+                "model": self._model,
+                "input": [text],
+            }
+            try:
+                async with create_service_client(
+                    "pipeline-embedding",
+                    timeout=30.0,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {settings.LLM_API_KEY}",
+                    },
+                ) as client:
+                    resp = await client.post(url, json=payload)
+                    resp.raise_for_status()
+                    data = resp.json()
+                    embeddings = data.get("data", [])
+                    if embeddings:
+                        return embeddings[0].get("embedding", [])
+            except Exception as exc:
+                logger.warning("Pipeline gateway embedding failed", extra={"error": str(exc)})
+        else:
+            # Vertex AI direct mode
+            import os
+            os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "true")
+            if settings.GCP_PROJECT_ID:
+                os.environ.setdefault("GOOGLE_CLOUD_PROJECT", settings.GCP_PROJECT_ID)
+            location = getattr(settings, "VERTEX_AI_LOCATION", None) or settings.GCP_LOCATION
+            if location:
+                os.environ.setdefault("GOOGLE_CLOUD_LOCATION", location)
+
+            try:
+                from google import genai
+                client = genai.Client()
+                response = await client.aio.models.embed_content(
+                    model=self._model,
+                    contents=[text],
+                )
+                if response.embeddings:
+                    return response.embeddings[0].values
+            except Exception as exc:
+                logger.warning("Pipeline Vertex AI embedding failed", extra={"error": str(exc)})
+        return []
+
+
+class PipelineLLMJudge:
+    """LLM-as-judge for the ingestion pipeline evaluation loop."""
+
+    async def judge_faithfulness(self, answer: str, contexts: list[str]) -> float:
+        """
+        Judge whether the answer is faithful to the provided contexts.
+        Returns a score between 0.0 and 1.0.
+        """
+        if not answer.strip() or not contexts:
+            return 0.0
+
+        # Construct a fact-checking prompt
+        context_block = "\n\n---\n\n".join(
+            f"[Chunk {i + 1}]\n{c}" for i, c in enumerate(contexts[:10])
+        )
+        prompt = f"""You are an expert fact-checking judge. Your task is to evaluate whether the given answer is FAITHFUL to the provided source context — meaning every claim in the answer is directly supported by the context.
+
+## Context (Retrieved Chunks)
+{context_block}
+
+## Answer to Evaluate
+{answer}
+
+## Instructions
+1. Identify each factual claim in the answer.
+2. For each claim, check if it is directly supported by the context above.
+3. Score = (number of supported claims) / (total claims).
+4. If the answer says "I don't know" or makes no factual claims, score 1.0.
+
+Return ONLY a JSON object (no markdown, no explanation):
+{{"score": <float 0.0 to 1.0>}}
+"""
+        try:
+            raw = await _call_llm(prompt)
+            # Parse score from JSON response
+            cleaned = raw.strip()
+            if cleaned.startswith("```"):
+                cleaned = cleaned.split("\n", 1)[-1].rsplit("```", 1)[0]
+            import json
+            data = json.loads(cleaned)
+            score = float(data.get("score", 0.5))
+            return max(0.0, min(1.0, score))
+        except Exception as exc:
+            logger.warning("Pipeline LLM judge call failed: %s", exc)
+            return 0.5
+
+

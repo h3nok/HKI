@@ -376,6 +376,116 @@ class AlloyDBVectorStore:
             return None
         return _row_to_chunk(row)
 
+    async def list_chunks(
+        self,
+        org_id: str = "default",
+        include_embeddings: bool = False,
+    ) -> list[src.domain.models.Chunk]:
+        """List all non-summary (node_level = 0) leaf chunks for RAPTOR or diagnostic ingestion views."""
+        pool: asyncpg.Pool = self._ensure_pool()
+        async with pool.acquire() as conn:
+            if include_embeddings:
+                rows = await conn.fetch(
+                    """
+                    SELECT id, document_id, org_id, content, embedding::text as embedding,
+                           position, start_char, end_char, token_count, metadata,
+                           node_level, source_chunk_ids
+                    FROM chunks
+                    WHERE org_id = $1 AND node_level = 0
+                    ORDER BY position ASC
+                    """,
+                    org_id,
+                )
+            else:
+                rows = await conn.fetch(
+                    """
+                    SELECT id, document_id, org_id, content, NULL as embedding,
+                           position, start_char, end_char, token_count, metadata,
+                           node_level, source_chunk_ids
+                    FROM chunks
+                    WHERE org_id = $1 AND node_level = 0
+                    ORDER BY position ASC
+                    """,
+                    org_id,
+                )
+        return [_row_to_chunk(row) for row in rows]
+
+    async def store_raptor_chunk(
+        self,
+        chunk_id: str,
+        content: str,
+        embedding: list[float],
+        org_id: str,
+        level: int,
+        source_chunk_ids: list[str],
+    ) -> None:
+        """Upsert a single summary RAPTOR chunk belonging to the virtual document raptor-summaries-{org_id}."""
+        doc_id = f"raptor-summaries-{org_id}"
+        pool: asyncpg.Pool = self._ensure_pool()
+        async with pool.acquire() as conn, conn.transaction():
+            # 1. Upsert virtual document
+            await conn.execute(
+                """
+                INSERT INTO documents (
+                    id, org_id, content, title, author, department,
+                    document_type, source_url, tags, language, version,
+                    status, chunk_count, custom_metadata,
+                    created_at, updated_at
+                ) VALUES (
+                    $1, $2, 'Virtual Document for RAPTOR hierarchical summaries.',
+                    $3, '', '', 'general', '', '{}', 'en', '1.0',
+                    'published', 0, '{}', NOW(), NOW()
+                )
+                ON CONFLICT (id) DO NOTHING
+                """,
+                doc_id,
+                org_id,
+                f"RAPTOR summaries ({org_id})",
+            )
+
+            # 2. Store summary chunk
+            metadata_dict = {
+                "raptor_level": level,
+                "source_chunks": source_chunk_ids,
+                "strategy": "raptor_summary",
+            }
+            await conn.execute(
+                """
+                INSERT INTO chunks (
+                    id, document_id, org_id, content, embedding,
+                    position, start_char, end_char, token_count, metadata,
+                    node_level, source_chunk_ids
+                ) VALUES (
+                    $1, $2, $3, $4, $5::vector, 0, 0, 0, 0, $6::jsonb, $7, $8
+                )
+                ON CONFLICT (id) DO UPDATE SET
+                    content = EXCLUDED.content,
+                    embedding = EXCLUDED.embedding,
+                    metadata = EXCLUDED.metadata,
+                    node_level = EXCLUDED.node_level,
+                    source_chunk_ids = EXCLUDED.source_chunk_ids
+                """,
+                chunk_id,
+                doc_id,
+                org_id,
+                content,
+                _to_pgvector(embedding),
+                json.dumps(metadata_dict),
+                level,
+                source_chunk_ids,
+            )
+
+            # 3. Update virtual document's chunk_count
+            await conn.execute(
+                """
+                UPDATE documents
+                SET chunk_count = (SELECT COUNT(*) FROM chunks WHERE document_id = $1),
+                    updated_at = NOW()
+                WHERE id = $1
+                """,
+                doc_id,
+            )
+
     async def list_documents(
         self,
         limit: int = 50,
@@ -1410,7 +1520,7 @@ def _normalize_keyword_query(query: str) -> str:
     if not raw_tokens:
         return str(query).strip()
     normalized_tokens: list[str] = [
-        token for token in _IGNORED_FILENAME_TOKENS
+        token for token in raw_tokens if token not in _IGNORED_FILENAME_TOKENS
     ]
     return " ".join(normalized_tokens or raw_tokens)
 
@@ -1527,11 +1637,14 @@ def _build_filter_clause(
     stream_filters: list[str] = _runtime_stream_filters(filters.value_streams)
     if stream_filters:
         stream_expr: str = _stream_id_expr("d.")
-        conditions.append(f"{stream_expr} = ANY(${param_idx}::text[])")
+        conditions.append(f"({stream_expr} = ANY(${param_idx}::text[]) OR d.id LIKE 'raptor-summaries-%')")
         params.append(stream_filters)
         param_idx += 1
     else:
         conditions.append("FALSE")
+
+    if not filters.include_summary_nodes:
+        conditions.append("c.node_level = 0")
 
     if filters.date_from:
         conditions.append(f"d.created_at >= ${param_idx}")
@@ -1605,18 +1718,36 @@ def _row_to_document(row: asyncpg.Record) -> src.domain.models.Document:
     )
 
 
+def _from_pgvector(val: typing.Any) -> list[float]:
+    """Parse a pgvector string format '[0.1,0.2,...]' into a list of floats."""
+    if not val:
+        return []
+    if isinstance(val, list):
+        return [float(x) for x in val]
+    if isinstance(val, str):
+        clean = val.strip("[]")
+        if not clean:
+            return []
+        return [float(x) for x in clean.split(",") if x.strip()]
+    return []
+
+
 def _row_to_chunk(row: asyncpg.Record) -> src.domain.models.Chunk:
     """Convert a database row to a Chunk model."""
+    embedding_val = row.get("embedding")
+    embedding_list = _from_pgvector(embedding_val) if embedding_val is not None else []
     return src.domain.models.Chunk(
         id=row["id"],
         document_id=row["document_id"],
         org_id=row.get("org_id", "default"),
         content=row["content"],
-        embedding=[],  # Don't load full embedding vector into memory
+        embedding=embedding_list,
         position=row["position"],
         start_char=row["start_char"],
         end_char=row["end_char"],
         token_count=row["token_count"],
+        node_level=row.get("node_level", 0),
+        source_chunk_ids=list(row.get("source_chunk_ids", [])) if row.get("source_chunk_ids") is not None else [],
         metadata=json.loads(row["metadata"]) if row["metadata"] else {},
     )
 

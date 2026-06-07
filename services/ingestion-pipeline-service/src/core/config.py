@@ -73,6 +73,16 @@ class Settings(shared.config.ServiceSettings):
     LLM_CONTEXT_MAX_TOKENS: int = 200  # Max tokens per context summary
     VERTEX_AI_LOCATION: str = "us-central1"  # For Vertex AI direct mode
 
+    # ── RAPTOR Hierarchical Summarization (KB-1) ──────────────────────────
+    RAPTOR_ENABLED: bool = False
+    RAPTOR_MAX_LEVELS: int = 3
+
+    # ── Evaluation Gating (KB-2) ──────────────────────────────────────────
+    EVAL_ON_INGEST_ENABLED: bool = False
+    EVAL_PROMOTION_THRESHOLD: float = 0.65
+    EVAL_QUESTIONS_PER_DOC: int = 5
+
+
     # ── Gemini (pre-ingestion enrichment) ───────────────────────────────
     GEMINI_ENABLED: bool = False  # Enable Gemini-based pre-ingestion enrichment
 

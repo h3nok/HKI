@@ -69,6 +69,8 @@ CREATE TABLE IF NOT EXISTS chunks (
     token_count     INTEGER NOT NULL DEFAULT 0,
     metadata        JSONB NOT NULL DEFAULT '{}',
     search_vector   tsvector,              -- PostgreSQL full-text search
+    node_level      INTEGER NOT NULL DEFAULT 0,
+    source_chunk_ids TEXT[] NOT NULL DEFAULT '{}',
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -158,3 +160,7 @@ DO $$ BEGIN
             USING (org_id = current_setting('app.current_org_id', true));
     END IF;
 END $$;
+
+-- Migration support for older schemas
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS node_level INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE chunks ADD COLUMN IF NOT EXISTS source_chunk_ids TEXT[] NOT NULL DEFAULT '{}';

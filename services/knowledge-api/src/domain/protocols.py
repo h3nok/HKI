@@ -114,6 +114,26 @@ class VectorStoreProtocol(typing.Protocol):
         """Retrieve a single chunk by ID."""
         ...
 
+    async def list_chunks(
+        self,
+        org_id: str = "default",
+        include_embeddings: bool = False,
+    ) -> list[src.domain.models.Chunk]:
+        """List all non-summary (node_level = 0) leaf chunks for RAPTOR or diagnostic ingestion views."""
+        ...
+
+    async def store_raptor_chunk(
+        self,
+        chunk_id: str,
+        content: str,
+        embedding: list[float],
+        org_id: str,
+        level: int,
+        source_chunk_ids: list[str],
+    ) -> None:
+        """Upsert a single summary RAPTOR chunk belonging to the virtual document raptor-summaries-{org_id}."""
+        ...
+
     # ── Search ────────────────────────────────────────────────────────────
 
     async def search(

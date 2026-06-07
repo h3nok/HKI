@@ -95,7 +95,79 @@ class StoreRequest(pydantic.BaseModel):
     chunk_overlap: int = 64
 
 
+class InternalSearchRequest(pydantic.BaseModel):
+    """Internal search request for service-to-service evaluation runs."""
+
+    query: str
+    org_id: str
+    mode: src.domain.models.SearchMode = src.domain.models.SearchMode.HYBRID
+    top_k: int = 5
+    min_score: float = 0.0
+    document_types: list[src.domain.models.DocumentType] = pydantic.Field(default_factory=list)
+    departments: list[str] = pydantic.Field(default_factory=list)
+    tags: list[str] = pydantic.Field(default_factory=list)
+    include_content: bool = True
+    include_citations: bool = True
+    include_pending: bool = False
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
+# Store & Search Endpoints
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+@internal_router.post("/search", response_model=src.domain.models.SearchResponse)
+async def internal_search(
+    body: InternalSearchRequest,
+    request: fastapi.Request,
+    identity: ServiceIdentityDependency,
+) -> src.domain.models.SearchResponse:
+    """
+    Service-to-service search endpoint used by evaluation gating pipeline.
+
+    Enforces exact org-based tenant isolation.
+    """
+    store = _get_store(request)
+    embedder = _get_embedder(request)
+
+    search_query = src.domain.models.SearchQuery(
+        query=body.query,
+        org_id=body.org_id,
+        mode=body.mode,
+        top_k=body.top_k,
+        min_score=body.min_score,
+        filters=src.domain.models.SearchFilters(
+            document_types=body.document_types,
+            departments=body.departments,
+            tags=body.tags,
+            document_statuses=(
+                [src.domain.models.DocumentStatus.PUBLISHED, src.domain.models.DocumentStatus.INDEXED, src.domain.models.DocumentStatus.PENDING_REVIEW]
+                if body.include_pending
+                else [src.domain.models.DocumentStatus.PUBLISHED, src.domain.models.DocumentStatus.INDEXED]
+            ),
+        ),
+        include_content=body.include_content,
+        include_citations=body.include_citations,
+    )
+
+    using_local = getattr(request.app.state, "using_local_embedder", False)
+    if using_local and body.mode in (src.domain.models.SearchMode.VECTOR, src.domain.models.SearchMode.HYBRID):
+        search_query.mode = src.domain.models.SearchMode.KEYWORD
+
+    query_embedding = None
+    if search_query.mode in (src.domain.models.SearchMode.VECTOR, src.domain.models.SearchMode.HYBRID):
+        try:
+            query_embedding = await embedder.embed_single(body.query)
+        except Exception as exc:
+            src.core.logging.logger.warning(
+                "Internal search embedding failed, falling back to keyword search",
+                extra={"error": str(exc)},
+            )
+            search_query.mode = src.domain.models.SearchMode.KEYWORD
+
+    result = await store.search(search_query, query_embedding)
+    return result
+
 # Store Endpoint
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -288,3 +360,114 @@ async def store_document(
         chunk_count=len(chunks),
         message=f"Indexed {len(chunks)} chunks, awaiting review publish",
     )
+
+
+class InternalUpdateStatusRequest(pydantic.BaseModel):
+    status: str
+    org_id: str
+    stream_id: str
+
+
+@internal_router.patch("/documents/{document_id}/status")
+async def internal_update_document_status(
+    document_id: str,
+    body: InternalUpdateStatusRequest,
+    request: fastapi.Request,
+    identity: ServiceIdentityDependency,
+) -> dict[str, str]:
+    """Internal status update endpoint for service-to-service calls."""
+    store = _get_store(request)
+    allowed: set[str] = {"pending_review", "published", "indexed", "archived", "pending"}
+    if body.status not in allowed:
+        raise fastapi.HTTPException(
+            status_code=400,
+            detail=f"Invalid status '{body.status}'. Must be one of: {', '.join(sorted(allowed))}",
+        )
+    updated = await store.update_document_status(
+        document_id=document_id,
+        status=body.status,
+        org_id=body.org_id,
+        allowed_streams=[body.stream_id],
+    )
+    if not updated:
+        raise fastapi.HTTPException(status_code=404, detail=f"Document {document_id} not found")
+    return {"status": body.status, "document_id": document_id}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RAPTOR Routes (KB-1)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+raptor_router = fastapi.APIRouter(prefix="/v1", tags=["raptor"])
+
+
+class RaptorMetadata(pydantic.BaseModel):
+    """Metadata payload for a RAPTOR summary chunk."""
+
+    raptor_level: int
+    source_chunks: list[str] = pydantic.Field(default_factory=list)
+    strategy: typing.Optional[str] = None
+
+
+class RaptorStoreRequest(pydantic.BaseModel):
+    """Payload to store a newly generated RAPTOR summary chunk."""
+
+    chunk_id: str
+    content: str
+    embedding: list[float]
+    org_id: str
+    metadata: RaptorMetadata
+
+
+@raptor_router.get("/chunks")
+async def list_chunks(
+    org_id: str,
+    request: fastapi.Request,
+    identity: ServiceIdentityDependency,
+    include_embeddings: bool = False,
+) -> dict[str, list[dict[str, typing.Any]]]:
+    """
+    List all leaf chunks (node_level = 0) for a specific organization.
+
+    Called by the RAPTOR builder during hierarchical summary tree construction.
+    """
+    store = _get_store(request)
+    chunks = await store.list_chunks(org_id=org_id, include_embeddings=include_embeddings)
+    return {
+        "chunks": [
+            {
+                "chunk_id": chunk.id,
+                "document_id": chunk.document_id,
+                "content": chunk.content,
+                "embedding": chunk.embedding,
+            }
+            for chunk in chunks
+        ]
+    }
+
+
+@raptor_router.post("/chunks/raptor", status_code=fastapi.status.HTTP_201_CREATED)
+async def store_raptor_chunk(
+    body: RaptorStoreRequest,
+    request: fastapi.Request,
+    identity: ServiceIdentityDependency,
+) -> dict[str, typing.Any]:
+    """
+    Store a newly generated high-level summary chunk.
+
+    Called recursively by the RAPTOR builder.
+    """
+    store = _get_store(request)
+    await store.store_raptor_chunk(
+        chunk_id=body.chunk_id,
+        content=body.content,
+        embedding=body.embedding,
+        org_id=body.org_id,
+        level=body.metadata.raptor_level,
+        source_chunk_ids=body.metadata.source_chunks,
+    )
+    return {
+        "status": "success",
+        "chunk_id": body.chunk_id,
+    }
+

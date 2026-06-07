@@ -266,6 +266,8 @@ class RedisJobStore:
                     parsed[k] = None
             elif k in ("document_id", "error", "stream_id", "failed_at_stage"):
                 parsed[k] = v if v else None
+            elif k == "evaluation_score":
+                parsed[k] = float(v) if v else None
             elif k == "status":
                 parsed[k] = src.domain.models.JobStatus(v)
             elif k == "source_type":

@@ -128,6 +128,7 @@ class IngestionJob(pydantic.BaseModel):
     entity_count: int = 0
     error: str | None = None
     failed_at_stage: str | None = None  # Stage where failure occurred
+    evaluation_score: float | None = None
 
     # Metrics
     raw_size_bytes: int = 0  # Size of raw input

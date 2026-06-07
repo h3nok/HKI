@@ -151,6 +151,7 @@ async function watchJob(
         broadcastJobUpdate(userId, {
           id: jobId,
           status: "expired",
+          stream_id: scope,
           error:
             "Job record is no longer available. It may have been cleaned up after retention TTL.",
         });
@@ -205,6 +206,7 @@ async function watchJob(
   broadcastJobUpdate(userId, {
     id: jobId,
     status: "timeout",
+    stream_id: scope,
     error:
       "Job monitoring exceeded 10-minute limit. The job may still be processing — check the Pipelines tab.",
   });

@@ -363,7 +363,7 @@ async def readiness() -> dict[str, Any]:
 # ── Import and include API routes ─────────────────────────────────────────
 
 from src.api.evaluation_routes import router as eval_router  # noqa: E402
-from src.api.internal_routes import internal_router  # noqa: E402
+from src.api.internal_routes import internal_router, raptor_router  # noqa: E402
 from src.api.routes import router  # noqa: E402
 from src.api.taxonomy_routes import router as taxonomy_router  # noqa: E402
 
@@ -371,3 +371,5 @@ app.include_router(router)
 app.include_router(eval_router)
 app.include_router(taxonomy_router)
 app.include_router(internal_router)
+app.include_router(raptor_router)
+
