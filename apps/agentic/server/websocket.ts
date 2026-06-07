@@ -274,7 +274,10 @@ export function setupWebSocket(server: any) {
 
       // Enforce fail-closed: empty allowedScopes is rejected
       if (!allowedScopes || allowedScopes.length === 0) {
-        log.warn({ userId }, "User has no authorized domains — connection rejected");
+        log.warn(
+          { userId },
+          "User has no authorized domains — connection rejected"
+        );
         socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
         socket.destroy();
         return;
@@ -550,13 +553,18 @@ export function broadcastJobUpdate(
   conns.forEach(ws => {
     // Enforce domain boundary validation
     if (!streamId) {
-      log.warn({ userId, jobId: job.id }, "Job update missing stream_id — terminating connection (fail-closed)");
+      log.warn(
+        { userId, jobId: job.id },
+        "Job update missing stream_id — terminating connection (fail-closed)"
+      );
       ws.close(4403, "Forbidden: Missing job stream boundary");
       ws.terminate();
       return;
     }
 
-    const isAuthorized = ws.allowedScopes?.some(scope => sameDomain(scope, streamId));
+    const isAuthorized = ws.allowedScopes?.some(scope =>
+      sameDomain(scope, streamId)
+    );
     if (!isAuthorized) {
       log.warn(
         { userId, jobId: job.id, streamId, allowedScopes: ws.allowedScopes },
