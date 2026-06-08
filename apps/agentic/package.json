@@ -35,6 +35,8 @@
     "@hki/chat": "workspace:*",
     "@hki/runtime": "workspace:*",
     "@hki/sdk": "workspace:*",
+    "@myelin/core": "workspace:*",
+    "@myelin/react": "workspace:*",
     "@hki/ui": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",

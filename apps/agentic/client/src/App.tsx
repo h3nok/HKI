@@ -43,6 +43,7 @@ const KnowledgeRequestAccess = lazy(
 const KnowledgeWelcome = lazy(() => import("./pages/knowledge/welcome"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const UIShowcase = lazy(() => import("./pages/UIShowcase"));
+const OrchestratorPage = lazy(() => import("./pages/OrchestratorPage"));
 
 function PublicSiteRedirect({ path }: { path: string }) {
   if (typeof window !== "undefined") {
@@ -175,11 +176,12 @@ function Router() {
           {() => <PublicSiteRedirect path="/brief.html" />}
         </Route>
         <Route path={ENGINEERING_HUB_ROUTE}>
-          {() => <PublicSiteRedirect path="/" />}
+          {() => <Redirect to="/admin/engineering" />}
         </Route>
         <Route path="/login">{() => <AgenticLoginPage />}</Route>
         <Route path="/demo">{() => <ComponentDemo />}</Route>
         <Route path="/ui-showcase">{() => <UIShowcase />}</Route>
+        <Route path="/orchestrator">{() => <OrchestratorPage />}</Route>
         <Route path="/welcome">{() => <KnowledgeWelcome />}</Route>
         <Route path="/knowledge/welcome">
           {() => <Redirect to="/welcome" />}

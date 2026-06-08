@@ -49,6 +49,7 @@ import {
   Cpu,
   Activity,
   Bot,
+  Network,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -94,6 +95,7 @@ import AuditPage from "./AuditPage";
 import GeapPage from "./GeapPage";
 import FeatureControlsPage from "./FeatureControlsPage";
 import FeaturePresetsPage from "./FeaturePresetsPage";
+import EngineeringPage from "./EngineeringPage";
 import { a } from "./theme";
 import {
   AdminCommandPalette,
@@ -131,6 +133,17 @@ const NAV_GROUPS: NavGroup[] = [
         label: "Overview",
         path: "/admin",
         shortcut: "⌘1",
+      },
+    ],
+  },
+  {
+    label: "Engineering",
+    items: [
+      {
+        icon: Network,
+        label: "Myelin",
+        path: "/admin/engineering",
+        shortcut: "⌘M",
       },
     ],
   },
@@ -215,7 +228,8 @@ type AdminPage =
   | "users"
   | "audit"
   | "features"
-  | "featurePresets";
+  | "featurePresets"
+  | "engineering";
 
 function resolvePageFromPath(pathname: string): AdminPage {
   if (pathname === SETTINGS_PRESETS_PATH) return "featurePresets";
@@ -223,6 +237,7 @@ function resolvePageFromPath(pathname: string): AdminPage {
   if (pathname === "/admin/audit") return "audit";
   if (pathname === "/admin/streams") return "streams";
   if (pathname === "/admin/users") return "users";
+  if (pathname === "/admin/engineering") return "engineering";
   if (pathname === "/admin/features" || pathname === SETTINGS_PATH)
     return "features";
   return "dashboard";
@@ -826,6 +841,11 @@ const ADMIN_PAGE_META: Record<
     group: "Settings",
     groupPath: SETTINGS_PATH,
   },
+  engineering: {
+    title: "Myelin",
+    group: "Engineering",
+    groupPath: "/admin",
+  },
 };
 
 function AdminContent() {
@@ -997,6 +1017,7 @@ function AdminContent() {
               {guardedPage === "featurePresets" && isAdmin && (
                 <FeaturePresetsPage />
               )}
+              {guardedPage === "engineering" && <EngineeringPage />}
             </div>
           </div>
         )}

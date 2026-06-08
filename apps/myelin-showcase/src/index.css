@@ -1,0 +1,197 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* HKI design tokens — full stack matching apps/agentic */
+@import "@hki/ui/tokens";
+@import "@hki/ui/tokens/themes/agentic";
+@import "@hki/ui/tokens/glass";
+
+/* Scan @hki/ui source for Tailwind class generation */
+@source "../../../../packages/ui/src";
+@source not "../../../../packages/ui/src/stories";
+@source not "../../../../packages/ui/src/__tests__";
+@source not "../../../../packages/ui/src/components/dashboard";
+
+/* Tailwind v4 dark mode variant */
+@custom-variant dark (&:is(.dark *));
+
+/* Map CSS variables to Tailwind theme — exact same mapping as apps/agentic */
+@theme inline {
+  /* Fonts — wire Tailwind font utilities to @hki/ui font primitives */
+  --font-sans: var(--font-ui);
+  --font-serif: var(--font-reading);
+  --font-mono: var(--font-code);
+
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Surface colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --radius: 0.375rem;
+  --myelin-primary: #38d6c7;
+  --myelin-secondary: color-mix(
+    in srgb,
+    var(--myelin-primary) 72%,
+    #79a8ff 28%
+  );
+  --primary: var(--myelin-primary);
+  --ring: color-mix(in srgb, var(--myelin-primary) 72%, transparent);
+  --sidebar-primary: var(--myelin-primary);
+  --sidebar-ring: var(--ring);
+  --plane-publication: var(--myelin-secondary);
+  --admin-duotone-a: var(--myelin-primary);
+  --admin-duotone-b: var(--myelin-secondary);
+}
+
+html {
+  background: var(--background, #000);
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background, #000);
+  color: var(--foreground, #f4f4f5);
+  font-family: var(--font-ui, "Inter", system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100svh;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border, #3f3f46);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground, #71717a);
+}
+
+/* ── Selection ─────────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(31, 169, 165, 0.25);
+  color: #f4f4f5;
+}
+
+/* ── Focus ─────────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--primary, #1fa9a5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Marquee ───────────────────────────────────────────────────────────────── */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: marquee 28s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* ── Dot grid background ───────────────────────────────────────────────────── */
+.dot-grid {
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.06) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+}
+
+/* ── Gradient text — token-driven ──────────────────────────────────────────── */
+.text-gradient-white {
+  background: linear-gradient(
+    135deg,
+    var(--foreground) 0%,
+    color-mix(in srgb, var(--foreground) 50%, transparent) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-brand {
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--plane-publication, #8b36d6) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Display type scale — responsive fluid sizes ───────────────────────────── */
+/* Use alongside .text-display-tight from @hki/ui/tokens/signature.css         */
+.size-hero {
+  font-size: clamp(60px, 9vw, 108px);
+  line-height: 0.9;
+}
+.size-display {
+  font-size: clamp(34px, 4.5vw, 48px);
+  line-height: 1.05;
+}
+.size-title {
+  font-size: clamp(20px, 2.5vw, 26px);
+  line-height: 1.2;
+}
+
+/* ── Vignette radial overlay ───────────────────────────────────────────────── */
+.vignette {
+  background: radial-gradient(
+    ellipse 80% 80% at 50% 50%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.28) 100%
+  );
+}

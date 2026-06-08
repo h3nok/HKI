@@ -153,6 +153,7 @@ endef
         deploy-ingestion-pipeline \
         deploy-analytics \
         deploy-agentic \
+		myelin-dev myelin-build myelin-typecheck \
 	rollout-runtime \
 	rollout-knowledge-api-runtime \
 	rollout-orchestrator-runtime \
@@ -268,11 +269,32 @@ help-dev: ## Show curated local development commands
 	@echo "  make infra-up"
 	@echo "  make dev-services"
 	@echo "  make dev-full"
+	@echo "  make myelin-dev"
+	@echo "  make myelin-typecheck"
+	@echo "  make myelin-build"
 	@echo "  make dev-status"
 	@echo "  make dev-stop"
 	@echo ""
 	@echo "Docs: docs/FIRST_SETUP.md docs/ENV_SETUP.md"
 	@echo ""
+
+# ── Myelin ─────────────────────────────────────────────────────────────────────
+myelin-dev: ## Run Myelin showcase in dev mode
+	@echo ""
+	@echo "━━━ Starting Myelin showcase dev server ━━━━━━━━━━━━━━━━━━━━━━━"
+	@pnpm dev:myelin
+
+myelin-build: ## Build Myelin packages (core, react, showcase)
+	@echo ""
+	@echo "━━━ Building Myelin packages ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@pnpm build:myelin
+
+myelin-typecheck: ## Typecheck Myelin packages and showcase
+	@echo ""
+	@echo "━━━ Typechecking Myelin packages ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@pnpm --filter @myelin/core typecheck
+	@pnpm --filter @myelin/react typecheck
+	@pnpm --filter @myelin/showcase typecheck
 
 help-test: ## Show curated testing commands
 	@echo ""

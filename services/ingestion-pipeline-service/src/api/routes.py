@@ -368,7 +368,10 @@ async def ingest_url(
     return result
 
 
-ALLOWED_EXTENSIONS: set[str] = {"pdf", "docx", "txt", "csv", "md", "markdown"}
+ALLOWED_EXTENSIONS: set[str] = {
+    "pdf", "docx", "txt", "csv", "md", "markdown",
+    "png", "jpg", "jpeg", "tiff", "tif", "bmp", "gif", "webp"
+}
 MAX_UPLOAD_SIZE: int = src.core.config.settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
 
 
@@ -1323,7 +1326,7 @@ async def pre_ingest_analyze_file(
         )
 
     try:
-        extracted: src.domain.models.ExtractedContent = pipeline._extract_file(
+        extracted: src.domain.models.ExtractedContent = await pipeline._extract_file(
             file_bytes,
             filename,
             file.content_type or "",

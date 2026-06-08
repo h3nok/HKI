@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "skipLibCheck": true,
+    "composite": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/components/ui/sidebar": [
+        "../../packages/ui/src/components/sidebar-full.tsx"
+      ],
+      "@myelin/react": ["../../packages/myelin-react/src/index.ts"],
+      "@myelin/core": ["../../packages/myelin-core/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

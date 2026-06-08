@@ -558,7 +558,7 @@ class IngestionPipeline:
                 # Stage 1: Extract text from file
                 job.status = src.domain.models.JobStatus.EXTRACTING
                 await self._persist_job(job)
-                extracted: src.domain.models.ExtractedContent = self._extract_file(
+                extracted: src.domain.models.ExtractedContent = await self._extract_file(
                     file_bytes,
                     filename,
                     content_type,
@@ -887,7 +887,7 @@ class IngestionPipeline:
         )
 
     @staticmethod
-    def _extract_file(
+    async def _extract_file(
         file_bytes: bytes,
         filename: str,
         content_type: str,
@@ -895,15 +895,38 @@ class IngestionPipeline:
         """
         Extract text from an uploaded file.
 
-        Supports: PDF, DOCX, TXT, CSV, Markdown.
-        Uses PyPDF2 for PDF, python-docx for DOCX, and built-in
-        libraries for plain text and CSV.
+        Supports: PDF, DOCX, TXT, CSV, Markdown, Images.
+        Uses GCP Document AI for PDFs and images when enabled, and falls back to
+        PyPDF and python-docx.
         """
         ext: str = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
         ct: str = content_type.lower()
 
+        # ── Images ──────────────────────────────────────────────────
+        is_image = ext in ("png", "jpg", "jpeg", "tiff", "tif", "bmp", "gif", "webp") or ct.startswith("image/")
+        if is_image:
+            from src.adapters.document_ai import create_document_extractor
+            extractor = await create_document_extractor()
+            try:
+                mime_type = ct if ct.startswith("image/") else f"image/{ext if ext != 'jpg' else 'jpeg'}"
+                extracted = await extractor.extract_image(
+                    content=file_bytes,
+                    mime_type=mime_type,
+                    filename=filename,
+                )
+                metadata = extracted.metadata or {}
+                metadata.update({"content_type": content_type})
+                return src.domain.models.ExtractedContent(
+                    text=extracted.text,
+                    source_type=src.domain.models.SourceType.FILE,
+                    byte_count=len(file_bytes),
+                    metadata=metadata,
+                )
+            finally:
+                await extractor.close()
+
         # ── Plain text / Markdown ───────────────────────────────────
-        if ext in ("txt", "md", "markdown") or "text/plain" in ct:
+        elif ext in ("txt", "md", "markdown") or "text/plain" in ct:
             text: str = file_bytes.decode("utf-8", errors="replace")
 
         # ── CSV ─────────────────────────────────────────────────────
@@ -931,28 +954,25 @@ class IngestionPipeline:
 
         # ── PDF ─────────────────────────────────────────────────────
         elif ext == "pdf" or "application/pdf" in ct:
+            from src.adapters.document_ai import create_document_extractor
+            extractor = await create_document_extractor()
             try:
-                import io
-
-                from pypdf import PdfReader
-
-                reader = PdfReader(io.BytesIO(file_bytes))
-                pages = []
-                for page in reader.pages:
-                    page_text: str = page.extract_text()
-                    if page_text:
-                        pages.append(page_text)
-                text: str = "\n\n".join(pages)
+                extracted = await extractor.extract_pdf(file_bytes, filename)
+                text = extracted.text
+                metadata = extracted.metadata or {}
+                metadata.update({"content_type": content_type})
                 if not text.strip():
                     raise ValueError(
-                        "PDF appears to be image-based or empty. "
-                        "OCR is not yet supported — please paste "
-                        "the text content instead."
+                        "PDF appears to be empty or image-based with no extractable text."
                     )
-            except ImportError as exc:
-                raise ValueError(
-                    "PDF processing requires pypdf. Install with: pip install pypdf"
-                ) from exc
+                return src.domain.models.ExtractedContent(
+                    text=text,
+                    source_type=src.domain.models.SourceType.FILE,
+                    byte_count=len(file_bytes),
+                    metadata=metadata,
+                )
+            finally:
+                await extractor.close()
 
         # ── DOCX ────────────────────────────────────────────────────
         elif ext == "docx" or "officedocument.wordprocessingml" in ct:
@@ -981,7 +1001,7 @@ class IngestionPipeline:
                 raise ValueError(
                     f"Unsupported file type: .{ext} "
                     f"(content-type: {content_type}). "
-                    "Supported: PDF, DOCX, TXT, CSV, Markdown."
+                    "Supported: PDF, DOCX, TXT, CSV, Markdown, Images."
                 ) from exc
 
         return src.domain.models.ExtractedContent(

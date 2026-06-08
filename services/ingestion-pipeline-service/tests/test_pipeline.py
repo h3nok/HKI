@@ -55,6 +55,119 @@ class TestTextExtraction:
         assert result.byte_count == len(text.encode("utf-8"))
 
 
+class TestFileExtraction:
+    @pytest.mark.asyncio
+    async def test_extract_file_plain_text(self) -> None:
+        result = await src.domain.pipeline.IngestionPipeline._extract_file(
+            file_bytes=b"Hello plain text",
+            filename="test.txt",
+            content_type="text/plain",
+        )
+        assert result.text == "Hello plain text"
+        assert result.metadata["filename"] == "test.txt"
+
+    @pytest.mark.asyncio
+    async def test_extract_file_csv(self) -> None:
+        result = await src.domain.pipeline.IngestionPipeline._extract_file(
+            file_bytes=b"header1,header2\nval1,val2",
+            filename="test.csv",
+            content_type="text/csv",
+        )
+        assert "header1: val1" in result.text
+        assert "header2: val2" in result.text
+
+    @pytest.mark.asyncio
+    async def test_extract_file_pypdf_fallback_when_disabled(self) -> None:
+        from unittest.mock import patch
+        with patch("src.core.config.settings.DOCAI_ENABLED", False):
+            import io
+            from pypdf import PdfWriter
+            writer = PdfWriter()
+            writer.add_blank_page(width=100, height=100)
+            pdf_buf = io.BytesIO()
+            writer.write(pdf_buf)
+            pdf_bytes = pdf_buf.getvalue()
+
+            with patch("pypdf.PageObject.extract_text", return_value="Extracted text from PyPDF"):
+                result = await src.domain.pipeline.IngestionPipeline._extract_file(
+                    file_bytes=pdf_bytes,
+                    filename="test.pdf",
+                    content_type="application/pdf",
+                )
+                assert result.text == "Extracted text from PyPDF"
+                assert result.metadata["extraction_method"] == "pypdf"
+
+    @pytest.mark.asyncio
+    async def test_extract_file_docai_pdf_when_enabled(self) -> None:
+        from unittest.mock import patch, AsyncMock
+        from src.domain.models import ExtractedContent, SourceType
+
+        mock_extracted = ExtractedContent(
+            text="Text extracted via Document AI",
+            source_type=SourceType.TEXT,
+            metadata={"extraction_method": "document_ai"}
+        )
+
+        with patch("src.core.config.settings.DOCAI_ENABLED", True), \
+             patch("src.core.config.settings.DOCAI_PROCESSOR_ID", "test-processor"):
+
+            mock_extractor = AsyncMock()
+            mock_extractor.extract_pdf.return_value = mock_extracted
+
+            with patch("src.adapters.document_ai.create_document_extractor", return_value=mock_extractor):
+                result = await src.domain.pipeline.IngestionPipeline._extract_file(
+                    file_bytes=b"dummy pdf bytes",
+                    filename="test.pdf",
+                    content_type="application/pdf",
+                )
+                assert result.text == "Text extracted via Document AI"
+                mock_extractor.extract_pdf.assert_called_once_with(b"dummy pdf bytes", "test.pdf")
+                mock_extractor.close.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_extract_file_docai_image_when_enabled(self) -> None:
+        from unittest.mock import patch, AsyncMock
+        from src.domain.models import ExtractedContent, SourceType
+
+        mock_extracted = ExtractedContent(
+            text="Text OCR from Image via Document AI",
+            source_type=SourceType.TEXT,
+            metadata={"extraction_method": "document_ai_ocr"}
+        )
+
+        with patch("src.core.config.settings.DOCAI_ENABLED", True), \
+             patch("src.core.config.settings.DOCAI_PROCESSOR_ID", "test-processor"):
+
+            mock_extractor = AsyncMock()
+            mock_extractor.extract_image.return_value = mock_extracted
+
+            with patch("src.adapters.document_ai.create_document_extractor", return_value=mock_extractor):
+                result = await src.domain.pipeline.IngestionPipeline._extract_file(
+                    file_bytes=b"dummy image bytes",
+                    filename="test.png",
+                    content_type="image/png",
+                )
+                assert result.text == "Text OCR from Image via Document AI"
+                mock_extractor.extract_image.assert_called_once_with(
+                    content=b"dummy image bytes",
+                    mime_type="image/png",
+                    filename="test.png",
+                )
+                mock_extractor.close.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_extract_file_image_fails_when_disabled(self) -> None:
+        from unittest.mock import patch
+        with patch("src.core.config.settings.DOCAI_ENABLED", False):
+            with pytest.raises(RuntimeError) as exc_info:
+                await src.domain.pipeline.IngestionPipeline._extract_file(
+                    file_bytes=b"dummy image bytes",
+                    filename="test.png",
+                    content_type="image/png",
+                )
+            assert "Image OCR requires Document AI" in str(exc_info.value)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Content Cleaning
 # ═══════════════════════════════════════════════════════════════════════════════
