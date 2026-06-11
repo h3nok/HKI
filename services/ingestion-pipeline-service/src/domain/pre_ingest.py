@@ -1493,17 +1493,30 @@ def _heuristic_decide(
 
     if contradiction_matches:
         best: ContradictionMatch = max(contradiction_matches, key=lambda match: match.confidence)
-        return DecideResult(
-            recommendation="review",
-            relevance_score=relevance,
-            reasoning=(
-                f'Potential contradiction found with "{best.title}". '
-                "Send this through human review before it is published."
-            ),
-            value_stream_match=relevance >= 0.5,
-            duplicates=dupes,
-            contradictions=contradiction_matches,
-        )
+        if best.confidence >= 0.85:
+            return DecideResult(
+                recommendation="reject",
+                relevance_score=relevance,
+                reasoning=(
+                    f'High-confidence contradiction found with "{best.title}" (confidence {best.confidence:.0%}). '
+                    f'Direct policy conflict: {best.rationale or "The candidate document directly contradicts an existing record."}'
+                ),
+                value_stream_match=relevance >= 0.5,
+                duplicates=dupes,
+                contradictions=contradiction_matches,
+            )
+        else:
+            return DecideResult(
+                recommendation="review",
+                relevance_score=relevance,
+                reasoning=(
+                    f'Potential contradiction found with "{best.title}". '
+                    "Send this through human review before it is published."
+                ),
+                value_stream_match=relevance >= 0.5,
+                duplicates=dupes,
+                contradictions=contradiction_matches,
+            )
 
     qs: float = validate.quality_score
     if qs >= 70 and relevance >= 0.5:
@@ -1579,16 +1592,23 @@ async def _run_decide(
                 result.reasoning += (
                     f' Note: similar content found — "{best.title}" ({best.similarity:.0%} match).'
                 )
-            elif contradiction_matches and result.recommendation == "ingest":
+            elif contradiction_matches:
                 best: ContradictionMatch = max(
                     contradiction_matches,
                     key=lambda match: match.confidence,
                 )
-                result.recommendation = "review"
-                result.reasoning += (
-                    f' Note: potential contradiction found with "{best.title}". '
-                    "Human review is required before publish."
-                )
+                if best.confidence >= 0.85:
+                    result.recommendation = "reject"
+                    result.reasoning = (
+                        f'High-confidence contradiction found with "{best.title}" (confidence {best.confidence:.0%}). '
+                        f'Direct policy conflict: {best.rationale or "The candidate document directly contradicts an existing record."}'
+                    )
+                elif result.recommendation == "ingest":
+                    result.recommendation = "review"
+                    result.reasoning += (
+                        f' Note: potential contradiction found with "{best.title}". '
+                        "Human review is required before publish."
+                    )
             return result
     except Exception as exc:
         src.core.logging.logger.warning(

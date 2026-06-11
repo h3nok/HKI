@@ -177,10 +177,23 @@ class NoOpDocumentStore:
         pass
 
 
-async def create_document_store() -> GCSDocumentStore | NoOpDocumentStore:
-    """Factory — returns GCS store if enabled, no-op otherwise."""
+async def create_document_store() -> GCSDocumentStore | S3DocumentStore | NoOpDocumentStore:
+    """Factory — returns GCS store if enabled, S3 store if enabled, or no-op otherwise."""
+    if getattr(settings, "S3_ENABLED", False):
+        try:
+            from src.adapters.s3_store import S3DocumentStore
+            store = S3DocumentStore()
+            logger.info("S3/MinIO document store ready")
+            return store
+        except Exception as exc:
+            logger.warning(
+                "S3 document store initialization failed — falling back to no-op",
+                extra={"error": str(exc)},
+            )
+            return NoOpDocumentStore()
+
     if not settings.GCS_ENABLED or not settings.GCS_BUCKET:
-        logger.info("GCS document store disabled — raw documents not persisted")
+        logger.info("GCS/S3 document store disabled — raw documents not persisted")
         return NoOpDocumentStore()
 
     try:

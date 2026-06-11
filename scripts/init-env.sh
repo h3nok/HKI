@@ -110,23 +110,23 @@ normalize_exact_value() {
 printf "Bootstrapping AI Platform local env files in %s\n\n" "${ROOT_DIR}"
 
 copy_if_missing "deploy/compose/.env.example" "deploy/compose/.env"
-copy_if_missing "agentic/.env.example" "agentic/.env"
-copy_if_missing "orchestrator-service/.env.example" "orchestrator-service/.env"
-copy_if_missing "ingestion-pipeline-service/.env.example" "ingestion-pipeline-service/.env"
-copy_if_missing "knowledge-api/.env.example" "knowledge-api/.env"
-copy_if_missing "analytics-service/.env.example" "analytics-service/.env"
+copy_if_missing "apps/agentic/.env.example" "apps/agentic/.env"
+copy_if_missing "services/orchestrator-service/.env.example" "services/orchestrator-service/.env"
+copy_if_missing "services/ingestion-pipeline-service/.env.example" "services/ingestion-pipeline-service/.env"
+copy_if_missing "services/knowledge-api/.env.example" "services/knowledge-api/.env"
+copy_if_missing "services/analytics-service/.env.example" "services/analytics-service/.env"
 
 append_key_from_example_if_missing \
-  "ingestion-pipeline-service/.env.example" \
-  "ingestion-pipeline-service/.env" \
+  "services/ingestion-pipeline-service/.env.example" \
+  "services/ingestion-pipeline-service/.env" \
   "KNOWLEDGE_API_URL"
 append_key_from_example_if_missing \
-  "orchestrator-service/.env.example" \
-  "orchestrator-service/.env" \
+  "services/orchestrator-service/.env.example" \
+  "services/orchestrator-service/.env" \
   "ANALYTICS_SERVICE_URL"
 append_key_from_example_if_missing \
-  "knowledge-api/.env.example" \
-  "knowledge-api/.env" \
+  "services/knowledge-api/.env.example" \
+  "services/knowledge-api/.env" \
   "ANALYTICS_SERVICE_URL"
 
 normalize_exact_value \
@@ -136,31 +136,31 @@ normalize_exact_value \
   "4000" \
   "local stack now standardizes LiteLLM on port 4000"
 normalize_exact_value \
-  "agentic/.env" \
+  "apps/agentic/.env" \
   "LLM_GATEWAY_URL" \
   "http://localhost:9400/v1" \
   "http://localhost:4000/v1" \
   "local stack now standardizes LiteLLM on port 4000"
 normalize_exact_value \
-  "orchestrator-service/.env" \
+  "services/orchestrator-service/.env" \
   "LLM_GATEWAY_URL" \
   "http://localhost:9400/v1" \
   "http://localhost:4000/v1" \
   "local stack now standardizes LiteLLM on port 4000"
 normalize_exact_value \
-  "knowledge-api/.env" \
+  "services/knowledge-api/.env" \
   "EMBEDDING_GATEWAY_URL" \
   "http://localhost:9400/v1" \
   "http://localhost:4000/v1" \
   "local stack now standardizes LiteLLM on port 4000"
 normalize_exact_value \
-  "orchestrator-service/.env" \
+  "services/orchestrator-service/.env" \
   "ANALYTICS_SERVICE_URL" \
   "http://localhost:9512" \
   "http://localhost:9510" \
   "local wrappers bind analytics on port 9510"
 normalize_exact_value \
-  "knowledge-api/.env" \
+  "services/knowledge-api/.env" \
   "ANALYTICS_SERVICE_URL" \
   "http://localhost:9512" \
   "http://localhost:9510" \

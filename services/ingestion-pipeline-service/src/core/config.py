@@ -82,6 +82,9 @@ class Settings(shared.config.ServiceSettings):
     EVAL_PROMOTION_THRESHOLD: float = 0.65
     EVAL_QUESTIONS_PER_DOC: int = 5
 
+    # ── Governance Controls (Phase 8) ─────────────────────────────────────
+    PII_REDACTION_ENABLED: bool = True
+
 
     # ── Gemini (pre-ingestion enrichment) ───────────────────────────────
     GEMINI_ENABLED: bool = False  # Enable Gemini-based pre-ingestion enrichment
@@ -90,6 +93,15 @@ class Settings(shared.config.ServiceSettings):
     GCS_ENABLED: bool = False  # Enable GCS landing zone
     GCS_BUCKET: str = ""  # Bucket name for raw documents
     GCS_PREFIX: str = "knowledge/raw/"  # Object prefix
+
+    # ── S3-Compatible / MinIO Storage (Phase 8 On-Prem) ───────────────────
+    S3_ENABLED: bool = False
+    S3_ENDPOINT_URL: str = "http://localhost:9000"
+    S3_ACCESS_KEY_ID: str = "minioadmin"
+    S3_SECRET_ACCESS_KEY: str = "minioadmin"
+    S3_BUCKET: str = "knowledge-raw"
+    S3_PREFIX: str = "knowledge/raw/"
+    S3_REGION: str = "us-east-1"
 
     # ── Document AI (optional OCR/layout extraction) ─────────────────────
     DOCAI_ENABLED: bool = False

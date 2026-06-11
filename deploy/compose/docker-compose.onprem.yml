@@ -1,0 +1,122 @@
+# Hermetic Knowledge Isolation (HKI) — On-Premise Production Container Stack
+# All ports mapped to exact required standards for off-grid on-prem deployment.
+#
+
+services:
+  # ── Storage Layer ──────────────────────────────────────────────────────────
+
+  # MinIO: Local S3-compatible document landing zone
+  minio:
+    image: minio/minio:latest
+    container_name: hki-onprem-minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9091}:9001"
+    volumes:
+      - minio_onprem_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO bucket creation helper
+  minio-init:
+    image: minio/mc:latest
+    container_name: hki-onprem-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin};
+      /usr/bin/mc mb myminio/knowledge-raw || true;
+      /usr/bin/mc policy set public myminio/knowledge-raw || true;
+      exit 0;
+      "
+
+  # Redis: Queuing, rate limiting, and in-pipeline job store
+  redis:
+    image: redis:7.2-alpine
+    container_name: hki-onprem-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_onprem_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # MySQL: Relational Agentic BFF database
+  mysql:
+    image: mysql:8.0.36
+    container_name: hki-onprem-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-retail_agentic}
+    ports:
+      - "${MYSQL_PORT:-9306}:3306"
+    volumes:
+      - mysql_onprem_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL + pgvector: Vector search indexing matching AlloyDB local behavior
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: hki-onprem-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-knowledge}
+    ports:
+      - "${POSTGRES_PORT:-9432}:5432"
+    volumes:
+      - postgres_onprem_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Neo4j: Graph database layer
+  neo4j:
+    image: neo4j:5.19-community
+    container_name: hki-onprem-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-knowledge}
+      NEO4J_PLUGINS: '["apoc"]'
+    ports:
+      - "${NEO4J_BOLT_PORT:-7687}:7687"
+      - "${NEO4J_HTTP_PORT:-7474}:7474"
+    volumes:
+      - neo4j_onprem_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "cypher-shell -u neo4j -p ${NEO4J_PASSWORD:-knowledge} 'RETURN 1'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  minio_onprem_data:
+  redis_onprem_data:
+  mysql_onprem_data:
+  postgres_onprem_data:
+  neo4j_onprem_data:
+
+networks:
+  default:
+    name: hki-onprem-network

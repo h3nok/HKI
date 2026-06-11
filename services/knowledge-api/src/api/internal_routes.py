@@ -265,6 +265,29 @@ async def store_document(
             message="No chunks produced — document may be empty",
         )
 
+    # Stage 4 (optional): Contextual Chunk Augmentation
+    if getattr(src.core.config.settings, "CONTEXTUAL_RETRIEVAL_ENABLED", False):
+        try:
+            from src.domain.contextualizer import ContextualChunkAugmentor
+
+            llm_url = src.core.config.settings.EMBEDDING_GATEWAY_URL or None
+            augmentor = ContextualChunkAugmentor(
+                llm_url=llm_url,
+                llm_api_key=src.core.config.settings.EMBEDDING_API_KEY,
+                model=getattr(src.core.config.settings, "CONTEXTUAL_RETRIEVAL_MODEL", "gemini-2.0-flash"),
+            )
+            await augmentor.augment_chunks(body.content, chunks)
+            await augmentor.close()
+            src.core.logging.logger.info(
+                "Contextual Chunk Augmentation completed successfully",
+                extra={"document_id": doc_id, "chunk_count": len(chunks)},
+            )
+        except Exception as exc:
+            src.core.logging.logger.warning(
+                "Contextual Chunk Augmentation failed (falling back to original chunks)",
+                extra={"document_id": doc_id, "error": str(exc)},
+            )
+
     # Generate embeddings
     try:
         chunk_texts: list[str] = [c.content for c in chunks]

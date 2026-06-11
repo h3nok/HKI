@@ -828,6 +828,47 @@ infra-up: ## Start local dev infrastructure (PostgreSQL, Redis, MySQL, LiteLLM)
 infra-down: ## Stop local dev infrastructure
 	cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) down
 
+bootstrap-onprem: ## Idempotent bootstrap of on-premise local production infrastructure (MinIO, Redis, MySQL, PostgreSQL, Neo4j)
+	@echo "Checking for Docker installation..."
+	@command -v docker >/dev/null 2>&1 || { echo "ERROR: docker is not installed." >&2; exit 1; }
+	@echo "Starting on-premise production Docker Compose stack..."
+	cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) -f docker-compose.onprem.yml up -d
+	@echo "Polling for container health..."
+	@echo "  MySQL on port 9306..."
+	@until docker exec hki-onprem-mysql mysqladmin ping -h localhost --silent >/dev/null 2>&1; do \
+		echo "    Waiting for MySQL..."; \
+		sleep 2; \
+	done
+	@echo "  PostgreSQL on port 9432..."
+	@until docker exec hki-onprem-postgres pg_isready -U postgres >/dev/null 2>&1; do \
+		echo "    Waiting for PostgreSQL..."; \
+		sleep 2; \
+	done
+	@echo "  MinIO on port 9000/9001..."
+	@until [ "$$(docker inspect -f '{{.State.Status}}' hki-onprem-minio-init 2>/dev/null)" = "exited" ]; do \
+		echo "    Waiting for MinIO / initialization..."; \
+		sleep 2; \
+	done
+	@echo "✅ Core containers are UP and healthy."
+	@echo "Initializing on-premise configuration..."
+	@bash scripts/init-env.sh
+	@echo "Applying database migrations..."
+	@cd "$(AGENTIC_DIR)" && DATABASE_URL=mysql://root:root@127.0.0.1:9306/retail_agentic pnpm db:migrate
+	@echo "✅ On-premise environment bootstrapped successfully!"
+
+onprem-down: ## Stop on-premise local production infrastructure
+	cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) -f docker-compose.onprem.yml down
+
+onprem-reset: ## Nuke volumes and restart on-premise production infrastructure
+	cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) -f docker-compose.onprem.yml down -v --remove-orphans
+	@docker volume prune -f 2>/dev/null || true
+	cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) -f docker-compose.onprem.yml up -d
+	@echo "Polling for health..."
+	@until docker exec hki-onprem-mysql mysqladmin ping -h localhost --silent >/dev/null 2>&1; do sleep 1; done
+	@cd "$(AGENTIC_DIR)" && DATABASE_URL=mysql://root:root@127.0.0.1:9306/retail_agentic pnpm db:migrate
+	@echo "On-premise infrastructure reset complete"
+
+
 infra-reset: ## Nuke volumes and restart infrastructure
 	cd "$(COMPOSE_DIR)" && $(DOCKER_COMPOSE) down -v --remove-orphans
 	@docker volume prune -f 2>/dev/null || true

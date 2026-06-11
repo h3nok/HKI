@@ -75,6 +75,19 @@ import {
   ExecutionPlanCard,
   InterventionCard,
 } from "@hki/ui";
+import type {
+  FailClosedKind,
+  GuardrailOverallStatus,
+  GuardrailCheck,
+  StreamStatus,
+  ThoughtChunk,
+  ApprovalItem,
+  PlanStatus,
+  StepStatus,
+  ExecutionPlanData,
+  InterventionData,
+  InterventionAction,
+} from "@hki/ui";
 import { FONT_FAMILY } from "@/design-system/tokens";
 import {
   ThinkingAnimation,
@@ -1427,9 +1440,7 @@ function GuardrailsSection() {
                 </div>
                 <div className="flex justify-center pt-2">
                   <RiskScoreIndicator
-                    score={riskScore}
-                    showLabel
-                    label="Audit Risk Coefficient"
+                    score={riskScore * 100}
                   />
                 </div>
               </div>
@@ -1461,8 +1472,8 @@ function GuardrailsSection() {
                       className="pt-2"
                     >
                       <HallucinationWarning
-                        confidenceScore={confidence}
-                        alertMessage="Fact Check Indicator shows high variation across referenced corpus database records."
+                        severity={confidence < 0.4 ? "critical" : confidence < 0.6 ? "warning" : "caution"}
+                        message="Fact Check Indicator shows high variation across referenced corpus database records."
                       />
                     </motion.div>
                   )}
@@ -1477,8 +1488,8 @@ function GuardrailsSection() {
                 Active Policy Check:
               </span>
               <GuardrailsIndicator
-                status={overallStatus}
-                totalChecks={checks.length}
+                overallStatus={overallStatus}
+                checks={checks}
               />
             </div>
           </Demo>
@@ -1670,24 +1681,12 @@ function AgenticTraceSection() {
 
               <ToolExecutionCard
                 toolName="vector_search_products"
-                durationMs={380}
-                status={toolStatus}
-                input={JSON.stringify(
-                  { query: "trial active components", limit: 3 },
-                  null,
-                  2
-                )}
-                output={
-                  toolStatus === "success"
-                    ? JSON.stringify(
-                        { matches: ["active_v1", "active_v3"], score: 0.98 },
-                        null,
-                        2
-                      )
-                    : toolStatus === "failed"
-                      ? "Error: Access denied. activeDomain 'logistics' does not match target 'payments'."
-                      : "Executing read target..."
-                }
+                duration={380}
+                timestamp={new Date().toISOString()}
+                status={toolStatus === "failed" ? "error" : toolStatus}
+                input={{ query: "trial active components", limit: 3 }}
+                output={toolStatus === "success" ? { matches: ["active_v1", "active_v3"], score: 0.98 } : null}
+                error={toolStatus === "failed" ? "Error: Access denied. activeDomain 'logistics' does not match target 'payments'." : undefined}
               />
             </div>
           </Demo>
@@ -1700,7 +1699,7 @@ function AgenticTraceSection() {
                 </span>
                 <StreamingIndicator
                   status={
-                    streamStatus === "streaming" ? "streaming" : "completed"
+                    streamStatus === "streaming" ? "generating" : "thinking"
                   }
                 />
               </div>
@@ -1710,7 +1709,7 @@ function AgenticTraceSection() {
                   Agent Confidence
                 </span>
                 <ConfidenceIndicator
-                  confidence={0.92}
+                  score={92}
                   label="Result Accuracy Score"
                   size="sm"
                 />
@@ -1789,38 +1788,50 @@ function HitlSection() {
     );
   };
 
-  const planData = {
-    title: "Multi-Step Trial Supply Chain Strategy",
-    status: "running" as PlanStatus,
+  const planData: ExecutionPlanData = {
+    planId: "plan_01",
+    goal: "Multi-Step Trial Supply Chain Strategy",
+    status: "executing" as PlanStatus,
+    totalSteps: 4,
+    completedSteps: 2,
     steps: [
       {
-        id: "st_1",
-        title: "Verify trial storage location bounds",
-        description:
-          "Verifies the current HKI envelope activeDomain fits targeted store.",
-        status: "success" as StepStatus,
+        stepId: "st_1",
+        toolName: "verify_hki_envelope_domain",
+        description: "Verifies the current HKI envelope activeDomain fits targeted store.",
+        status: "succeeded" as StepStatus,
         durationMs: 120,
       },
       {
-        id: "st_2",
-        title: "Pull compound records for batch LOT_77",
+        stepId: "st_2",
+        toolName: "read_vector_db",
         description: "Read action against vector DB within trial bounds.",
-        status: "success" as StepStatus,
+        status: "succeeded" as StepStatus,
         durationMs: 440,
       },
       {
-        id: "st_3",
-        title: "Execute relocator distribute tool",
+        stepId: "st_3",
+        toolName: "relocator_distribute_tool",
         description: "Writes distribution entries. Awaiting HITL Approval.",
-        status: "running" as StepStatus,
+        status: "executing" as StepStatus,
       },
       {
-        id: "st_4",
-        title: "Stamp audit ledger",
+        stepId: "st_4",
+        toolName: "stamp_audit_ledger",
         description: "Mints audit trace & publishes to immutable ledger.",
-        status: "pending" as StepStatus,
+        status: "planned" as StepStatus,
       },
     ],
+  };
+
+  const interventionData: InterventionData = {
+    planId: "plan_01",
+    failedStepId: "st_3",
+    error: "Low Nitrogen Volume Warning on 'cold_store_09'",
+    context: "Relocator distributing tool requires clarification on backup store ID. The target 'cold_store_09' is reporting low nitrogen volume.",
+    completedSteps: ["Verify trial storage location bounds", "Pull compound records for batch LOT_77"],
+    scratchpadSummary: {},
+    availableActions: ["retry", "skip", "abort"] as InterventionAction[],
   };
 
   return (
@@ -1854,24 +1865,16 @@ function HitlSection() {
                 Execution steps tracking live progress:
               </p>
               <ExecutionPlanCard
-                title={planData.title}
-                steps={planData.steps}
-                status={planData.status}
+                plan={planData}
               />
             </div>
           </Demo>
 
           <Demo title="Inline Intervention Request">
             <InterventionCard
-              title="Operator Intervention"
-              description="Relocator distributing tool requires clarification on backup store ID. The target 'cold_store_09' is reporting low nitrogen volume."
-              status="active"
-              suggestedActions={[
-                { id: "act_1", label: "Use alternative store 'cold_store_12'" },
-                { id: "act_2", label: "Override volume warnings" },
-              ]}
-              onAction={actId => {
-                alert(`Intervened with action: ${actId}`);
+              intervention={interventionData}
+              onAction={action => {
+                alert(`Intervened with action: ${action}`);
               }}
             />
           </Demo>

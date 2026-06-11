@@ -14,6 +14,7 @@
  */
 
 import { z } from "zod";
+import crypto from "crypto";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import type { Role } from "@shared/access-control";
@@ -419,6 +420,15 @@ function resolveKnowledgeStreamId(
     allowGlobalSelection: false,
     missingSelectionMessage,
   });
+}
+
+function getReleaseSigningSecret(): string {
+  return (
+    process.env.HKI_SIGNING_SECRET ||
+    process.env.SERVICE_AUTH_SECRET ||
+    process.env.JWT_SECRET ||
+    "default-signing-secret-key-123"
+  );
 }
 
 function resolveKnowledgeRuntimeStreamId(
@@ -3134,13 +3144,41 @@ export const knowledgeRouter = router({
         }
 
         const promotedAt = new Date();
+        const timestamp = promotedAt.toISOString();
+        const approverId = ctx.user.id;
+        const action = "promote" as const;
+        const releaseId = releaseRow.id;
+
+        const signaturePayload = JSON.stringify({
+          releaseId,
+          approverId,
+          timestamp,
+          action,
+        });
+        const secret = getReleaseSigningSecret();
+        const signature = crypto
+          .createHmac("sha256", secret)
+          .update(signaturePayload)
+          .digest("hex");
+
+        const snapshotWithSignature = {
+          ...launchState.snapshot,
+          signatureBlock: {
+            approverId,
+            timestamp,
+            action,
+            releaseId,
+            signature,
+          },
+        };
+
         await db
           .update(knowledgeReleases)
           .set({
             status: "promoted",
             promotedAt,
             rolledBackAt: null,
-            snapshot: JSON.stringify(launchState.snapshot),
+            snapshot: JSON.stringify(snapshotWithSignature),
           })
           .where(eq(knowledgeReleases.id, releaseRow.id));
 
@@ -3148,7 +3186,7 @@ export const knowledgeRouter = router({
           release: {
             ...serializeKnowledgeRelease(releaseRow),
             status: "promoted",
-            snapshot: launchState.snapshot,
+            snapshot: snapshotWithSignature,
             promotedAt: promotedAt.toISOString(),
             rolledBackAt: null,
           },
@@ -3227,18 +3265,60 @@ export const knowledgeRouter = router({
           .where(inArray(knowledgeReleases.id, currentPromotedIds));
       }
 
+      const targetSnapshot = safeJsonParse<KnowledgeReleaseSnapshot | null>(
+        targetRelease.snapshot,
+        null
+      ) || {
+        liveDocumentCount: 0,
+        pendingReviewCount: 0,
+        attestationCount: 0,
+        connectorIssueCount: 0,
+        serviceIssueCount: 0,
+        latestEvalPassRate: null,
+      };
+
+      const timestamp = rollbackAt.toISOString();
+      const approverId = ctx.user.id;
+      const action = "rollback" as const;
+      const releaseId = targetRelease.id;
+
+      const signaturePayload = JSON.stringify({
+        releaseId,
+        approverId,
+        timestamp,
+        action,
+      });
+      const secret = getReleaseSigningSecret();
+      const signature = crypto
+        .createHmac("sha256", secret)
+        .update(signaturePayload)
+        .digest("hex");
+
+      const snapshotWithSignature = {
+        ...targetSnapshot,
+        signatureBlock: {
+          approverId,
+          timestamp,
+          action,
+          releaseId,
+          signature,
+        },
+      };
+
       await db
         .update(knowledgeReleases)
         .set({
           status: "promoted",
           promotedAt: rollbackAt,
           rolledBackAt: null,
+          snapshot: JSON.stringify(snapshotWithSignature),
         })
         .where(eq(knowledgeReleases.id, targetRelease.id));
 
       return {
         ...serializeKnowledgeRelease(targetRelease),
         status: "promoted",
+        snapshot: snapshotWithSignature,
         promotedAt: rollbackAt.toISOString(),
         rolledBackAt: null,
       };

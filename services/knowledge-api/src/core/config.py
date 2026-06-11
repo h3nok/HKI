@@ -72,6 +72,10 @@ class Settings(ServiceSettings):
     ENTITY_EXTRACTION_ENABLED: bool = True
     ENTITY_EXTRACTION_MODEL: str = "gemini-2.0-flash"
 
+    # ── Contextual Retrieval ──────────────────────────────────────────────
+    CONTEXTUAL_RETRIEVAL_ENABLED: bool = False
+    CONTEXTUAL_RETRIEVAL_MODEL: str = "gemini-2.0-flash"
+
     # ── Pipeline-to-Store Write Secret ────────────────────────────────────
     # Shared secret that knowledge-pipeline-service must present in the
     # X-Pipeline-Secret header when calling POST /v1/internal/store.

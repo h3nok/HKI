@@ -1102,6 +1102,15 @@ class IngestionPipeline:
         lines: list[str] = [line.strip() for line in cleaned.split("\n")]
         cleaned: str = "\n".join(lines).strip()
 
+        # In-Pipeline PII Redaction (Phase 8 Governance)
+        from src.core.config import settings
+        from src.domain.quality_gates import redact_pii
+        if getattr(settings, "PII_REDACTION_ENABLED", True):
+            res = redact_pii(cleaned)
+            if res.redactions_applied > 0:
+                cleaned = res.redacted_text
+                changes.append("pii_redacted")
+
         return src.domain.models.CleanedContent(
             text=cleaned,
             original_length=original_length,

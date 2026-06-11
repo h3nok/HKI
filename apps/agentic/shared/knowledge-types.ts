@@ -426,6 +426,13 @@ export interface KnowledgeReleaseSnapshot {
   connectorIssueCount: number;
   serviceIssueCount: number;
   latestEvalPassRate: number | null;
+  signatureBlock?: {
+    approverId: number;
+    timestamp: string;
+    action: "promote" | "rollback";
+    releaseId: string;
+    signature: string;
+  };
 }
 
 export interface KnowledgeReleaseSummary {

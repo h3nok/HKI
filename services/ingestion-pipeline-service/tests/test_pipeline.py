@@ -17,7 +17,7 @@ API conventions:
 import datetime
 import types
 import typing
-from unittest.mock import AsyncMock, MagicMock, patch
+import unittest.mock
 
 import pytest
 
@@ -26,7 +26,7 @@ import src.core.config
 import src.domain.models
 import src.domain.pipeline
 import src.domain.qa_backend
-from src.domain.synthesis import SyntheticQA, QuestionType
+import src.domain.synthesis
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Text Extraction
@@ -58,7 +58,7 @@ class TestTextExtraction:
 class TestFileExtraction:
     @pytest.mark.asyncio
     async def test_extract_file_plain_text(self) -> None:
-        result = await src.domain.pipeline.IngestionPipeline._extract_file(
+        result: src.domain.models.ExtractedContent = await src.domain.pipeline.IngestionPipeline._extract_file(
             file_bytes=b"Hello plain text",
             filename="test.txt",
             content_type="text/plain",
@@ -68,7 +68,7 @@ class TestFileExtraction:
 
     @pytest.mark.asyncio
     async def test_extract_file_csv(self) -> None:
-        result = await src.domain.pipeline.IngestionPipeline._extract_file(
+        result: src.domain.models.ExtractedContent = await src.domain.pipeline.IngestionPipeline._extract_file(
             file_bytes=b"header1,header2\nval1,val2",
             filename="test.csv",
             content_type="text/csv",
@@ -78,18 +78,18 @@ class TestFileExtraction:
 
     @pytest.mark.asyncio
     async def test_extract_file_pypdf_fallback_when_disabled(self) -> None:
-        from unittest.mock import patch
-        with patch("src.core.config.settings.DOCAI_ENABLED", False):
+        with unittest.mock.patch("src.core.config.settings.DOCAI_ENABLED", False):
             import io
+
             from pypdf import PdfWriter
             writer = PdfWriter()
             writer.add_blank_page(width=100, height=100)
             pdf_buf = io.BytesIO()
             writer.write(pdf_buf)
-            pdf_bytes = pdf_buf.getvalue()
+            pdf_bytes: bytes = pdf_buf.getvalue()
 
-            with patch("pypdf.PageObject.extract_text", return_value="Extracted text from PyPDF"):
-                result = await src.domain.pipeline.IngestionPipeline._extract_file(
+            with unittest.mock.patch("pypdf.PageObject.extract_text", return_value="Extracted text from PyPDF"):
+                result: src.domain.models.ExtractedContent = await src.domain.pipeline.IngestionPipeline._extract_file(
                     file_bytes=pdf_bytes,
                     filename="test.pdf",
                     content_type="application/pdf",
@@ -99,7 +99,8 @@ class TestFileExtraction:
 
     @pytest.mark.asyncio
     async def test_extract_file_docai_pdf_when_enabled(self) -> None:
-        from unittest.mock import patch, AsyncMock
+        from unittest.mock import AsyncMock
+
         from src.domain.models import ExtractedContent, SourceType
 
         mock_extracted = ExtractedContent(
@@ -108,14 +109,14 @@ class TestFileExtraction:
             metadata={"extraction_method": "document_ai"}
         )
 
-        with patch("src.core.config.settings.DOCAI_ENABLED", True), \
-             patch("src.core.config.settings.DOCAI_PROCESSOR_ID", "test-processor"):
+        with unittest.mock.patch("src.core.config.settings.DOCAI_ENABLED", True), \
+             unittest.mock.patch("src.core.config.settings.DOCAI_PROCESSOR_ID", "test-processor"):
 
-            mock_extractor = AsyncMock()
+            mock_extractor = unittest.mock.AsyncMock()
             mock_extractor.extract_pdf.return_value = mock_extracted
 
-            with patch("src.adapters.document_ai.create_document_extractor", return_value=mock_extractor):
-                result = await src.domain.pipeline.IngestionPipeline._extract_file(
+            with unittest.mock.patch("src.adapters.document_ai.create_document_extractor", return_value=mock_extractor):
+                result: src.domain.models.ExtractedContent = await src.domain.pipeline.IngestionPipeline._extract_file(
                     file_bytes=b"dummy pdf bytes",
                     filename="test.pdf",
                     content_type="application/pdf",
@@ -126,7 +127,8 @@ class TestFileExtraction:
 
     @pytest.mark.asyncio
     async def test_extract_file_docai_image_when_enabled(self) -> None:
-        from unittest.mock import patch, AsyncMock
+        from unittest.mock import AsyncMock
+
         from src.domain.models import ExtractedContent, SourceType
 
         mock_extracted = ExtractedContent(
@@ -135,14 +137,14 @@ class TestFileExtraction:
             metadata={"extraction_method": "document_ai_ocr"}
         )
 
-        with patch("src.core.config.settings.DOCAI_ENABLED", True), \
-             patch("src.core.config.settings.DOCAI_PROCESSOR_ID", "test-processor"):
+        with unittest.mock.patch("src.core.config.settings.DOCAI_ENABLED", True), \
+             unittest.mock.patch("src.core.config.settings.DOCAI_PROCESSOR_ID", "test-processor"):
 
-            mock_extractor = AsyncMock()
+            mock_extractor = unittest.mock.AsyncMock()
             mock_extractor.extract_image.return_value = mock_extracted
 
-            with patch("src.adapters.document_ai.create_document_extractor", return_value=mock_extractor):
-                result = await src.domain.pipeline.IngestionPipeline._extract_file(
+            with unittest.mock.patch("src.adapters.document_ai.create_document_extractor", return_value=mock_extractor):
+                result: src.domain.models.ExtractedContent = await src.domain.pipeline.IngestionPipeline._extract_file(
                     file_bytes=b"dummy image bytes",
                     filename="test.png",
                     content_type="image/png",
@@ -157,8 +159,7 @@ class TestFileExtraction:
 
     @pytest.mark.asyncio
     async def test_extract_file_image_fails_when_disabled(self) -> None:
-        from unittest.mock import patch
-        with patch("src.core.config.settings.DOCAI_ENABLED", False):
+        with unittest.mock.patch("src.core.config.settings.DOCAI_ENABLED", False):
             with pytest.raises(RuntimeError) as exc_info:
                 await src.domain.pipeline.IngestionPipeline._extract_file(
                     file_bytes=b"dummy image bytes",
@@ -633,9 +634,8 @@ class TestVectorStoreForwarding:
         pipeline: src.domain.pipeline.IngestionPipeline,
     ) -> None:
         """Size validation happens before background dispatch."""
-        from unittest.mock import patch
 
-        with patch("src.core.config.settings") as mock_settings:
+        with unittest.mock.patch("src.core.config.settings") as mock_settings:
             mock_settings.MAX_DOCUMENT_SIZE_MB = 0
             mock_settings.MAX_CONCURRENT_JOBS = 5
             with pytest.raises(ValueError, match="exceeds maximum size"):
@@ -733,7 +733,7 @@ class TestEvaluationAndRaptorGating:
         p = src.domain.pipeline.IngestionPipeline(
             job_store=adapters.job_store.InMemoryJobStore()
         )
-        p._review_workflow = AsyncMock()
+        p._review_workflow = unittest.mock.AsyncMock()
         return p
 
     @pytest.mark.asyncio
@@ -750,19 +750,19 @@ class TestEvaluationAndRaptorGating:
         monkeypatch.setattr(src.core.config.settings, "RAPTOR_ENABLED", False)
 
         # Mock QA generation
-        mock_generate_qa = AsyncMock()
+        mock_generate_qa = unittest.mock.AsyncMock()
         mock_generate_qa.return_value = [
-            SyntheticQA(
+            src.domain.synthesis.SyntheticQA(
                 question="Is this a test question?",
                 answer="Yes, this is a test answer.",
                 difficulty=1,
-                question_type=QuestionType.FACTOID,
+                question_type=src.domain.synthesis.QuestionType.FACTOID,
             )
         ]
         monkeypatch.setattr(src.domain.qa_backend.GeminiQABackend, "generate_qa", mock_generate_qa)
 
         # Mock Judge
-        mock_judge = AsyncMock()
+        mock_judge = unittest.mock.AsyncMock()
         mock_judge.judge_faithfulness.return_value = 0.9  # Above 0.65
         pipeline._llm_judge = mock_judge
 
@@ -772,7 +772,7 @@ class TestEvaluationAndRaptorGating:
         class MockResponse:
             def __init__(self, json_data: dict, status_code: int = 200) -> None:
                 self._json = json_data
-                self.status_code = status_code
+                self.status_code: int = status_code
                 self.request = types.SimpleNamespace()
 
             async def aread(self) -> bytes:
@@ -818,18 +818,18 @@ class TestEvaluationAndRaptorGating:
             captured_requests.append(("PATCH", url, json))
             return MockResponse({"status": "published"})
 
-        mock_http = MagicMock()
+        mock_http = unittest.mock.MagicMock()
         mock_http.post = mock_post
         mock_http.get = mock_get
         mock_http.patch = mock_patch
         pipeline._http = mock_http
 
         # Run ingestion
-        job = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="High Quality Doc")
+        job: src.domain.models.IngestionJob = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="High Quality Doc")
         job.org_id = "test-org"
         job.stream_id = "test-stream"
 
-        text_content = "High quality document with excellent information. " * 15
+        text_content: str = "High quality document with excellent information. " * 15
         extracted = src.domain.models.ExtractedContent(
             text=text_content,
             source_type=src.domain.models.SourceType.TEXT,
@@ -869,19 +869,19 @@ class TestEvaluationAndRaptorGating:
         monkeypatch.setattr(src.core.config.settings, "RAPTOR_ENABLED", False)
 
         # Mock QA generation
-        mock_generate_qa = AsyncMock()
+        mock_generate_qa = unittest.mock.AsyncMock()
         mock_generate_qa.return_value = [
-            SyntheticQA(
+            src.domain.synthesis.SyntheticQA(
                 question="Is this a bad test question?",
                 answer="No, this is completely wrong.",
                 difficulty=1,
-                question_type=QuestionType.FACTOID,
+                question_type=src.domain.synthesis.QuestionType.FACTOID,
             )
         ]
         monkeypatch.setattr(src.domain.qa_backend.GeminiQABackend, "generate_qa", mock_generate_qa)
 
         # Mock Judge
-        mock_judge = AsyncMock()
+        mock_judge = unittest.mock.AsyncMock()
         mock_judge.judge_faithfulness.return_value = 0.4  # Below 0.65
         pipeline._llm_judge = mock_judge
 
@@ -891,7 +891,7 @@ class TestEvaluationAndRaptorGating:
         class MockResponse:
             def __init__(self, json_data: dict, status_code: int = 200) -> None:
                 self._json = json_data
-                self.status_code = status_code
+                self.status_code: int = status_code
                 self.request = types.SimpleNamespace()
 
             async def aread(self) -> bytes:
@@ -933,17 +933,17 @@ class TestEvaluationAndRaptorGating:
                 })
             return MockResponse({})
 
-        mock_http = MagicMock()
+        mock_http = unittest.mock.MagicMock()
         mock_http.post = mock_post
         mock_http.get = mock_get
         pipeline._http = mock_http
 
         # Run ingestion
-        job = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Low Quality Doc")
+        job: src.domain.models.IngestionJob = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Low Quality Doc")
         job.org_id = "test-org"
         job.stream_id = "test-stream"
 
-        text_content = "Low quality document content. " * 20
+        text_content: str = "Low quality document content. " * 20
         extracted = src.domain.models.ExtractedContent(
             text=text_content,
             source_type=src.domain.models.SourceType.TEXT,
@@ -981,7 +981,7 @@ class TestEvaluationAndRaptorGating:
         monkeypatch.setattr(src.core.config.settings, "RAPTOR_MAX_LEVELS", 3)
 
         # Mock RaptorBuilder
-        mock_raptor = AsyncMock()
+        mock_raptor = unittest.mock.AsyncMock()
         pipeline._raptor_builder = mock_raptor
 
         # Mock HTTP responses
@@ -1000,12 +1000,12 @@ class TestEvaluationAndRaptorGating:
         async def mock_post(*args, **kwargs) -> MockResponse:
             return MockResponse()
 
-        mock_http = MagicMock()
+        mock_http = unittest.mock.MagicMock()
         mock_http.post = mock_post
         pipeline._http = mock_http
 
         # Run ingestion
-        job = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Raptor Doc")
+        job: src.domain.models.IngestionJob = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="Raptor Doc")
         job.org_id = "raptor-org"
         job.stream_id = "raptor-stream"
 
@@ -1045,7 +1045,7 @@ class TestEvaluationAndRaptorGating:
         monkeypatch.setattr(src.core.config.settings, "EVAL_ON_INGEST_ENABLED", False)
         monkeypatch.setattr(src.core.config.settings, "RAPTOR_ENABLED", False)
 
-        mock_raptor = AsyncMock()
+        mock_raptor = unittest.mock.AsyncMock()
         pipeline._raptor_builder = mock_raptor
 
         # Mock HTTP responses
@@ -1064,12 +1064,12 @@ class TestEvaluationAndRaptorGating:
         async def mock_post(*args, **kwargs) -> MockResponse:
             return MockResponse()
 
-        mock_http = MagicMock()
+        mock_http = unittest.mock.MagicMock()
         mock_http.post = mock_post
         pipeline._http = mock_http
 
         # Run ingestion
-        job = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="No Raptor Doc")
+        job: src.domain.models.IngestionJob = await pipeline._create_job(src.domain.models.SourceType.TEXT, title="No Raptor Doc")
         job.org_id = "raptor-org"
         job.stream_id = "raptor-stream"
 
